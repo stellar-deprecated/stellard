@@ -39,9 +39,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
-      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -64,7 +65,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     <ul class="tablist">
       <li><a href="annotated.html"><span>Class&#160;List</span></a></li>
       <li><a href="classes.html"><span>Class&#160;Index</span></a></li>
-      <li><a href="hierarchy.html"><span>Class&#160;Hierarchy</span></a></li>
+      <li><a href="inherits.html"><span>Class&#160;Hierarchy</span></a></li>
+      <li><a href="functions.html"><span>Class&#160;Members</span></a></li>
     </ul>
   </div>
 <!-- window showing the filter options -->
@@ -72,7 +74,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(10)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -90,21 +92,21 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p>This is the complete list of members for <a class="el" href="class_log_partition.html">LogPartition</a>, including all inherited members.</p>
 <table class="directory">
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>doLog</b>(LogSeverity s) const  (defined in <a class="el" href="class_log_partition.html">LogPartition</a>)</td><td class="entry"><a class="el" href="class_log_partition.html">LogPartition</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>get</b>() (defined in <a class="el" href="class_log_partition.html">LogPartition</a>)</td><td class="entry"><a class="el" href="class_log_partition.html">LogPartition</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">static</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>getName</b>() const  (defined in <a class="el" href="class_log_partition.html">LogPartition</a>)</td><td class="entry"><a class="el" href="class_log_partition.html">LogPartition</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>getSeverities</b>() (defined in <a class="el" href="class_log_partition.html">LogPartition</a>)</td><td class="entry"><a class="el" href="class_log_partition.html">LogPartition</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>headLog</b> (defined in <a class="el" href="class_log_partition.html">LogPartition</a>)</td><td class="entry"><a class="el" href="class_log_partition.html">LogPartition</a></td><td class="entry"><span class="mlabel">protected</span><span class="mlabel">static</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>LogPartition</b>(const char *name) (defined in <a class="el" href="class_log_partition.html">LogPartition</a>)</td><td class="entry"><a class="el" href="class_log_partition.html">LogPartition</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>mMinSeverity</b> (defined in <a class="el" href="class_log_partition.html">LogPartition</a>)</td><td class="entry"><a class="el" href="class_log_partition.html">LogPartition</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>mName</b> (defined in <a class="el" href="class_log_partition.html">LogPartition</a>)</td><td class="entry"><a class="el" href="class_log_partition.html">LogPartition</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>mNextLog</b> (defined in <a class="el" href="class_log_partition.html">LogPartition</a>)</td><td class="entry"><a class="el" href="class_log_partition.html">LogPartition</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>setSeverity</b>(const std::string &amp;partition, LogSeverity severity) (defined in <a class="el" href="class_log_partition.html">LogPartition</a>)</td><td class="entry"><a class="el" href="class_log_partition.html">LogPartition</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>setSeverity</b>(LogSeverity severity) (defined in <a class="el" href="class_log_partition.html">LogPartition</a>)</td><td class="entry"><a class="el" href="class_log_partition.html">LogPartition</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_log_partition.html#a33a9310f1e8a0be450c5e24951074fe3">doLog</a>(LogSeverity s) const </td><td class="entry"><a class="el" href="class_log_partition.html">LogPartition</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr><td class="entry"><a class="el" href="class_log_partition.html#a5185eed73bafa8b81a7ea7c1a8912849">get</a>()</td><td class="entry"><a class="el" href="class_log_partition.html">LogPartition</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">static</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_log_partition.html#a07b8237de48f0145b62972b12d688507">getName</a>() const </td><td class="entry"><a class="el" href="class_log_partition.html">LogPartition</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr><td class="entry"><a class="el" href="class_log_partition.html#ac27b9ad909d523f1b44e1a80e7bac299">getSeverities</a>()</td><td class="entry"><a class="el" href="class_log_partition.html">LogPartition</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_log_partition.html#ad8922c3c5c4e2fe46b619addf0b29f3f">headLog</a></td><td class="entry"><a class="el" href="class_log_partition.html">LogPartition</a></td><td class="entry"><span class="mlabel">protected</span><span class="mlabel">static</span></td></tr>
+  <tr><td class="entry"><a class="el" href="class_log_partition.html#ad4cda4578884ef4d7983a4fa88d04e1f">LogPartition</a>(const char *name)</td><td class="entry"><a class="el" href="class_log_partition.html">LogPartition</a></td><td class="entry"></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_log_partition.html#afd8770c5a91750c5c796ec33658201d7">mMinSeverity</a></td><td class="entry"><a class="el" href="class_log_partition.html">LogPartition</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
+  <tr><td class="entry"><a class="el" href="class_log_partition.html#a647f5cee98559b55bea03a46d2294b87">mName</a></td><td class="entry"><a class="el" href="class_log_partition.html">LogPartition</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_log_partition.html#a63bad0e338699a014807f4b54dfbf6f4">mNextLog</a></td><td class="entry"><a class="el" href="class_log_partition.html">LogPartition</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
+  <tr><td class="entry"><a class="el" href="class_log_partition.html#a84c9b9346467e7774c0256ea118bacbe">setSeverity</a>(const std::string &amp;partition, LogSeverity severity)</td><td class="entry"><a class="el" href="class_log_partition.html">LogPartition</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_log_partition.html#a18dc32fbca5a371665edf49c79266c2e">setSeverity</a>(LogSeverity severity)</td><td class="entry"><a class="el" href="class_log_partition.html">LogPartition</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
 </table></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon May 27 2013 16:47:08 for RippleD by &#160;<a href="http://www.doxygen.org/index.html">
+Generated by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>

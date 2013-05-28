@@ -39,9 +39,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
-      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -64,7 +65,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     <ul class="tablist">
       <li><a href="annotated.html"><span>Class&#160;List</span></a></li>
       <li><a href="classes.html"><span>Class&#160;Index</span></a></li>
-      <li><a href="hierarchy.html"><span>Class&#160;Hierarchy</span></a></li>
+      <li><a href="inherits.html"><span>Class&#160;Hierarchy</span></a></li>
+      <li><a href="functions.html"><span>Class&#160;Members</span></a></li>
     </ul>
   </div>
 <!-- window showing the filter options -->
@@ -72,7 +74,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(10)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -95,40 +97,119 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Tracks program uptime.  
  <a href="class_uptime_timer.html#details">More...</a></p>
 
-<p><code>#include &lt;<a class="el" href="ripple___uptime_timer_8h_source.html">ripple_UptimeTimer.h</a>&gt;</code></p>
+<p><code>#include &lt;ripple_UptimeTimer.h&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a1caaa3b5737e3cdb9342eed22d27a78c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1caaa3b5737e3cdb9342eed22d27a78c"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>getElapsedSeconds</b> () const </td></tr>
+<tr class="memitem:a1caaa3b5737e3cdb9342eed22d27a78c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_uptime_timer.html#a1caaa3b5737e3cdb9342eed22d27a78c">getElapsedSeconds</a> () const </td></tr>
 <tr class="separator:a1caaa3b5737e3cdb9342eed22d27a78c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abdfc4c6992be6e7d937253bfa9974b50"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abdfc4c6992be6e7d937253bfa9974b50"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>beginManualUpdates</b> ()</td></tr>
+<tr class="memitem:abdfc4c6992be6e7d937253bfa9974b50"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_uptime_timer.html#abdfc4c6992be6e7d937253bfa9974b50">beginManualUpdates</a> ()</td></tr>
 <tr class="separator:abdfc4c6992be6e7d937253bfa9974b50"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5015e436598970fd8f74e605e17dd3c6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5015e436598970fd8f74e605e17dd3c6"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>endManualUpdates</b> ()</td></tr>
+<tr class="memitem:a5015e436598970fd8f74e605e17dd3c6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_uptime_timer.html#a5015e436598970fd8f74e605e17dd3c6">endManualUpdates</a> ()</td></tr>
 <tr class="separator:a5015e436598970fd8f74e605e17dd3c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6fd63dc61303cfff8c840ab982db1cef"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6fd63dc61303cfff8c840ab982db1cef"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>incrementElapsedTime</b> ()</td></tr>
+<tr class="memitem:a6fd63dc61303cfff8c840ab982db1cef"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_uptime_timer.html#a6fd63dc61303cfff8c840ab982db1cef">incrementElapsedTime</a> ()</td></tr>
 <tr class="separator:a6fd63dc61303cfff8c840ab982db1cef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a9116ea63560ccfd22d71ec7cddc43a63"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9116ea63560ccfd22d71ec7cddc43a63"></a>
-static <a class="el" href="class_uptime_timer.html">UptimeTimer</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getInstance</b> ()</td></tr>
+<tr class="memitem:a9116ea63560ccfd22d71ec7cddc43a63"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="class_uptime_timer.html">UptimeTimer</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_uptime_timer.html#a9116ea63560ccfd22d71ec7cddc43a63">getInstance</a> ()</td></tr>
 <tr class="separator:a9116ea63560ccfd22d71ec7cddc43a63"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Tracks program uptime. </p>
 <p>The timer can be switched to a manual system of updating, to reduce system calls. (?) </p>
-</div><hr/>The documentation for this class was generated from the following files:<ul>
-<li><a class="el" href="ripple___uptime_timer_8h_source.html">ripple_UptimeTimer.h</a></li>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a1caaa3b5737e3cdb9342eed22d27a78c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int UptimeTimer::getElapsedSeconds </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="abdfc4c6992be6e7d937253bfa9974b50"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void UptimeTimer::beginManualUpdates </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a5015e436598970fd8f74e605e17dd3c6"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void UptimeTimer::endManualUpdates </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a6fd63dc61303cfff8c840ab982db1cef"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void UptimeTimer::incrementElapsedTime </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a9116ea63560ccfd22d71ec7cddc43a63"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="class_uptime_timer.html">UptimeTimer</a> &amp; UptimeTimer::getInstance </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following files:<ul>
+<li>ripple_UptimeTimer.h</li>
 <li>ripple_UptimeTimer.cpp</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon May 27 2013 16:47:08 for RippleD by &#160;<a href="http://www.doxygen.org/index.html">
+Generated by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>

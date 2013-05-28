@@ -1,0 +1,5 @@
+<map id="TransactionAcquire" name="TransactionAcquire">
+<area shape="rect" id="node3" href="$class_peer_set.html" title="A set of peers used to acquire data." alt="" coords="388,56,457,83"/>
+<area shape="rect" id="node4" href="$classuint256.html" title="uint256" alt="" coords="155,56,219,83"/>
+<area shape="rect" id="node5" href="$classbase__uint.html" title="base_uint256" alt="" coords="5,56,104,83"/>
+</map>

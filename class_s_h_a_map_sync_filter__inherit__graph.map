@@ -1,0 +1,5 @@
+<map id="SHAMapSyncFilter" name="SHAMapSyncFilter">
+<area shape="rect" id="node2" href="$class_account_state_s_f.html" title="AccountStateSF" alt="" coords="5,80,123,107"/>
+<area shape="rect" id="node3" href="$class_consensus_trans_set_s_f.html" title="ConsensusTransSetSF" alt="" coords="148,80,305,107"/>
+<area shape="rect" id="node4" href="$class_transaction_state_s_f.html" title="TransactionStateSF" alt="" coords="329,80,468,107"/>
+</map>

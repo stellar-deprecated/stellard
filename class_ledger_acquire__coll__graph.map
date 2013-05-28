@@ -1,0 +1,5 @@
+<map id="LedgerAcquire" name="LedgerAcquire">
+<area shape="rect" id="node3" href="$class_peer_set.html" title="A set of peers used to acquire data." alt="" coords="220,181,289,208"/>
+<area shape="rect" id="node4" href="$classuint256.html" title="uint256" alt="" coords="223,83,287,109"/>
+<area shape="rect" id="node5" href="$classbase__uint.html" title="base_uint256" alt="" coords="205,5,304,32"/>
+</map>

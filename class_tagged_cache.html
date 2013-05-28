@@ -39,9 +39,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
-      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -64,7 +65,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     <ul class="tablist">
       <li><a href="annotated.html"><span>Class&#160;List</span></a></li>
       <li><a href="classes.html"><span>Class&#160;Index</span></a></li>
-      <li><a href="hierarchy.html"><span>Class&#160;Hierarchy</span></a></li>
+      <li><a href="inherits.html"><span>Class&#160;Hierarchy</span></a></li>
+      <li><a href="functions.html"><span>Class&#160;Members</span></a></li>
     </ul>
   </div>
 <!-- window showing the filter options -->
@@ -72,7 +74,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(10)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -87,8 +89,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pro-types">Protected Types</a> &#124;
-<a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="class_tagged_cache-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">TaggedCache&lt; c_Key, c_Data, Timer &gt; Class Template Reference</div>  </div>
@@ -98,130 +98,59 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Combination cache/map container.  
  <a href="class_tagged_cache.html#details">More...</a></p>
 
-<p><code>#include &lt;<a class="el" href="ripple___tagged_cache_8h_source.html">ripple_TaggedCache.h</a>&gt;</code></p>
+<p><code>#include &lt;ripple_TaggedCache.h&gt;</code></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
-Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_tagged_cache_1_1cache__entry.html">cache_entry</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:af19e0e3eb0615d87775f438b06f7ad1f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af19e0e3eb0615d87775f438b06f7ad1f"></a>
-typedef c_Key&#160;</td><td class="memItemRight" valign="bottom"><b>key_type</b></td></tr>
+<tr class="memitem:af19e0e3eb0615d87775f438b06f7ad1f"><td class="memItemLeft" align="right" valign="top">typedef c_Key&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_tagged_cache.html#af19e0e3eb0615d87775f438b06f7ad1f">key_type</a></td></tr>
 <tr class="separator:af19e0e3eb0615d87775f438b06f7ad1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afb99323d0718579be614c9f330597581"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afb99323d0718579be614c9f330597581"></a>
-typedef c_Data&#160;</td><td class="memItemRight" valign="bottom"><b>data_type</b></td></tr>
+<tr class="memitem:afb99323d0718579be614c9f330597581"><td class="memItemLeft" align="right" valign="top">typedef c_Data&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_tagged_cache.html#afb99323d0718579be614c9f330597581">data_type</a></td></tr>
 <tr class="separator:afb99323d0718579be614c9f330597581"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5f52fd7fdc745ccf6db1ea85d6cff39b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5f52fd7fdc745ccf6db1ea85d6cff39b"></a>
-typedef boost::weak_ptr<br class="typebreak"/>
-&lt; data_type &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>weak_data_ptr</b></td></tr>
+<tr class="memitem:a5f52fd7fdc745ccf6db1ea85d6cff39b"><td class="memItemLeft" align="right" valign="top">typedef boost::weak_ptr<br class="typebreak"/>
+&lt; <a class="el" href="class_tagged_cache.html#afb99323d0718579be614c9f330597581">data_type</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_tagged_cache.html#a5f52fd7fdc745ccf6db1ea85d6cff39b">weak_data_ptr</a></td></tr>
 <tr class="separator:a5f52fd7fdc745ccf6db1ea85d6cff39b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa935ae9b35990975979754745f52f09e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa935ae9b35990975979754745f52f09e"></a>
-typedef boost::shared_ptr<br class="typebreak"/>
-&lt; data_type &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>data_ptr</b></td></tr>
+<tr class="memitem:aa935ae9b35990975979754745f52f09e"><td class="memItemLeft" align="right" valign="top">typedef boost::shared_ptr<br class="typebreak"/>
+&lt; <a class="el" href="class_tagged_cache.html#afb99323d0718579be614c9f330597581">data_type</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_tagged_cache.html#aa935ae9b35990975979754745f52f09e">data_ptr</a></td></tr>
 <tr class="separator:aa935ae9b35990975979754745f52f09e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a0ab57b3d31ed36d09c56b389083f1d3b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0ab57b3d31ed36d09c56b389083f1d3b"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>TaggedCache</b> (const char *name, int size, int age)</td></tr>
+<tr class="memitem:a0ab57b3d31ed36d09c56b389083f1d3b"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_tagged_cache.html#a0ab57b3d31ed36d09c56b389083f1d3b">TaggedCache</a> (const char *name, int size, int age)</td></tr>
 <tr class="separator:a0ab57b3d31ed36d09c56b389083f1d3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a696ed1feff883cf35333fdd2b3eeed22"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a696ed1feff883cf35333fdd2b3eeed22"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>getTargetSize</b> () const </td></tr>
+<tr class="memitem:a696ed1feff883cf35333fdd2b3eeed22"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_tagged_cache.html#a696ed1feff883cf35333fdd2b3eeed22">getTargetSize</a> () const </td></tr>
 <tr class="separator:a696ed1feff883cf35333fdd2b3eeed22"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a52527021abb7d7025057e22df17e7a62"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a52527021abb7d7025057e22df17e7a62"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>getTargetAge</b> () const </td></tr>
+<tr class="memitem:a52527021abb7d7025057e22df17e7a62"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_tagged_cache.html#a52527021abb7d7025057e22df17e7a62">getTargetAge</a> () const </td></tr>
 <tr class="separator:a52527021abb7d7025057e22df17e7a62"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a82cb874fda927be1de51c8eec7f62be4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a82cb874fda927be1de51c8eec7f62be4"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>getCacheSize</b> ()</td></tr>
+<tr class="memitem:a82cb874fda927be1de51c8eec7f62be4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_tagged_cache.html#a82cb874fda927be1de51c8eec7f62be4">getCacheSize</a> ()</td></tr>
 <tr class="separator:a82cb874fda927be1de51c8eec7f62be4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8a0314195352d5d16f302287c25fc8ff"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8a0314195352d5d16f302287c25fc8ff"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>getTrackSize</b> ()</td></tr>
+<tr class="memitem:a8a0314195352d5d16f302287c25fc8ff"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_tagged_cache.html#a8a0314195352d5d16f302287c25fc8ff">getTrackSize</a> ()</td></tr>
 <tr class="separator:a8a0314195352d5d16f302287c25fc8ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adf6e02a752a5c8eddc3e67fb666b3899"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adf6e02a752a5c8eddc3e67fb666b3899"></a>
-float&#160;</td><td class="memItemRight" valign="bottom"><b>getHitRate</b> ()</td></tr>
+<tr class="memitem:adf6e02a752a5c8eddc3e67fb666b3899"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_tagged_cache.html#adf6e02a752a5c8eddc3e67fb666b3899">getHitRate</a> ()</td></tr>
 <tr class="separator:adf6e02a752a5c8eddc3e67fb666b3899"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6fcd3340cf2afb44b0e0cc8132a3da56"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6fcd3340cf2afb44b0e0cc8132a3da56"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>clearStats</b> ()</td></tr>
+<tr class="memitem:a6fcd3340cf2afb44b0e0cc8132a3da56"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_tagged_cache.html#a6fcd3340cf2afb44b0e0cc8132a3da56">clearStats</a> ()</td></tr>
 <tr class="separator:a6fcd3340cf2afb44b0e0cc8132a3da56"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afa30f0a60c03adf4229d740bed8efd0c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afa30f0a60c03adf4229d740bed8efd0c"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setTargetSize</b> (int size)</td></tr>
+<tr class="memitem:afa30f0a60c03adf4229d740bed8efd0c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_tagged_cache.html#afa30f0a60c03adf4229d740bed8efd0c">setTargetSize</a> (int size)</td></tr>
 <tr class="separator:afa30f0a60c03adf4229d740bed8efd0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af873fecc1f5882fe6e1c89942cb2938e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af873fecc1f5882fe6e1c89942cb2938e"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setTargetAge</b> (int age)</td></tr>
+<tr class="memitem:af873fecc1f5882fe6e1c89942cb2938e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_tagged_cache.html#af873fecc1f5882fe6e1c89942cb2938e">setTargetAge</a> (int age)</td></tr>
 <tr class="separator:af873fecc1f5882fe6e1c89942cb2938e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a041cef9a643214d016799cdbc92c1d66"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a041cef9a643214d016799cdbc92c1d66"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>sweep</b> ()</td></tr>
+<tr class="memitem:a041cef9a643214d016799cdbc92c1d66"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_tagged_cache.html#a041cef9a643214d016799cdbc92c1d66">sweep</a> ()</td></tr>
 <tr class="separator:a041cef9a643214d016799cdbc92c1d66"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac02e6d180be420fa59ecac9593b5b387"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac02e6d180be420fa59ecac9593b5b387"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>clear</b> ()</td></tr>
+<tr class="memitem:ac02e6d180be420fa59ecac9593b5b387"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_tagged_cache.html#ac02e6d180be420fa59ecac9593b5b387">clear</a> ()</td></tr>
 <tr class="separator:ac02e6d180be420fa59ecac9593b5b387"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6919b509f5802a27f72cb9872d814bf2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6919b509f5802a27f72cb9872d814bf2"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>touch</b> (const key_type &amp;key)</td></tr>
+<tr class="memitem:a6919b509f5802a27f72cb9872d814bf2"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_tagged_cache.html#a6919b509f5802a27f72cb9872d814bf2">touch</a> (const <a class="el" href="class_tagged_cache.html#af19e0e3eb0615d87775f438b06f7ad1f">key_type</a> &amp;key)</td></tr>
 <tr class="separator:a6919b509f5802a27f72cb9872d814bf2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8f7fd00b56cb52a97c54ab8a225eea37"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8f7fd00b56cb52a97c54ab8a225eea37"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>del</b> (const key_type &amp;key, bool valid)</td></tr>
+<tr class="memitem:a8f7fd00b56cb52a97c54ab8a225eea37"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_tagged_cache.html#a8f7fd00b56cb52a97c54ab8a225eea37">del</a> (const <a class="el" href="class_tagged_cache.html#af19e0e3eb0615d87775f438b06f7ad1f">key_type</a> &amp;key, bool valid)</td></tr>
 <tr class="separator:a8f7fd00b56cb52a97c54ab8a225eea37"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a704f910e5153f069f69b6e38d285bed4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a704f910e5153f069f69b6e38d285bed4"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>canonicalize</b> (const key_type &amp;key, boost::shared_ptr&lt; c_Data &gt; &amp;data, bool replace=false)</td></tr>
+<tr class="memitem:a704f910e5153f069f69b6e38d285bed4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_tagged_cache.html#a704f910e5153f069f69b6e38d285bed4">canonicalize</a> (const <a class="el" href="class_tagged_cache.html#af19e0e3eb0615d87775f438b06f7ad1f">key_type</a> &amp;key, boost::shared_ptr&lt; c_Data &gt; &amp;data, bool replace=false)</td></tr>
 <tr class="separator:a704f910e5153f069f69b6e38d285bed4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8cbebd4f846ac54069086f98bf554f75"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8cbebd4f846ac54069086f98bf554f75"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>store</b> (const key_type &amp;key, const c_Data &amp;data)</td></tr>
+<tr class="memitem:a8cbebd4f846ac54069086f98bf554f75"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_tagged_cache.html#a8cbebd4f846ac54069086f98bf554f75">store</a> (const <a class="el" href="class_tagged_cache.html#af19e0e3eb0615d87775f438b06f7ad1f">key_type</a> &amp;key, const c_Data &amp;data)</td></tr>
 <tr class="separator:a8cbebd4f846ac54069086f98bf554f75"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a336353e479b724ff819f90dc11c0ab80"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a336353e479b724ff819f90dc11c0ab80"></a>
-boost::shared_ptr&lt; c_Data &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>fetch</b> (const key_type &amp;key)</td></tr>
+<tr class="memitem:a336353e479b724ff819f90dc11c0ab80"><td class="memItemLeft" align="right" valign="top">boost::shared_ptr&lt; c_Data &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_tagged_cache.html#a336353e479b724ff819f90dc11c0ab80">fetch</a> (const <a class="el" href="class_tagged_cache.html#af19e0e3eb0615d87775f438b06f7ad1f">key_type</a> &amp;key)</td></tr>
 <tr class="separator:a336353e479b724ff819f90dc11c0ab80"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad823788fc0f7df89555d2602b80e4501"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad823788fc0f7df89555d2602b80e4501"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>retrieve</b> (const key_type &amp;key, c_Data &amp;data)</td></tr>
+<tr class="memitem:ad823788fc0f7df89555d2602b80e4501"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_tagged_cache.html#ad823788fc0f7df89555d2602b80e4501">retrieve</a> (const <a class="el" href="class_tagged_cache.html#af19e0e3eb0615d87775f438b06f7ad1f">key_type</a> &amp;key, c_Data &amp;data)</td></tr>
 <tr class="separator:ad823788fc0f7df89555d2602b80e4501"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a667869af53ec236db73844753992a574"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a667869af53ec236db73844753992a574"></a>
-boost::recursive_mutex &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>peekMutex</b> ()</td></tr>
+<tr class="memitem:a667869af53ec236db73844753992a574"><td class="memItemLeft" align="right" valign="top">boost::recursive_mutex &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_tagged_cache.html#a667869af53ec236db73844753992a574">peekMutex</a> ()</td></tr>
 <tr class="separator:a667869af53ec236db73844753992a574"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-types"></a>
-Protected Types</h2></td></tr>
-<tr class="memitem:af3c48c0f6697324369f0ab0392371dd2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af3c48c0f6697324369f0ab0392371dd2"></a>
-typedef std::pair&lt; key_type, <br class="typebreak"/>
-<a class="el" href="class_tagged_cache_1_1cache__entry.html">cache_entry</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>cache_pair</b></td></tr>
-<tr class="separator:af3c48c0f6697324369f0ab0392371dd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4e03f0e0a38ce848666ff2de9809e8d9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4e03f0e0a38ce848666ff2de9809e8d9"></a>
-typedef boost::unordered_map<br class="typebreak"/>
-&lt; key_type, <a class="el" href="class_tagged_cache_1_1cache__entry.html">cache_entry</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>cache_type</b></td></tr>
-<tr class="separator:a4e03f0e0a38ce848666ff2de9809e8d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2872afbf4eafed3f72fd5f1f7bb4f3dc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2872afbf4eafed3f72fd5f1f7bb4f3dc"></a>
-typedef cache_type::iterator&#160;</td><td class="memItemRight" valign="bottom"><b>cache_iterator</b></td></tr>
-<tr class="separator:a2872afbf4eafed3f72fd5f1f7bb4f3dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
-Protected Attributes</h2></td></tr>
-<tr class="memitem:a4d5c1cac067b886afe19264dcf9d22df"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4d5c1cac067b886afe19264dcf9d22df"></a>
-boost::recursive_mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mLock</b></td></tr>
-<tr class="separator:a4d5c1cac067b886afe19264dcf9d22df"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4137cf2f4f7cf7ff65888c35adb99f77"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4137cf2f4f7cf7ff65888c35adb99f77"></a>
-std::string&#160;</td><td class="memItemRight" valign="bottom"><b>mName</b></td></tr>
-<tr class="separator:a4137cf2f4f7cf7ff65888c35adb99f77"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae626458b95678c482388a5f34d569a59"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae626458b95678c482388a5f34d569a59"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>mTargetSize</b></td></tr>
-<tr class="separator:ae626458b95678c482388a5f34d569a59"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2323aa3338f3e028bf18d8596dd94d4c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2323aa3338f3e028bf18d8596dd94d4c"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>mTargetAge</b></td></tr>
-<tr class="separator:a2323aa3338f3e028bf18d8596dd94d4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9a0b75cf49f78a578a47351ab986ee36"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9a0b75cf49f78a578a47351ab986ee36"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>mCacheCount</b></td></tr>
-<tr class="separator:a9a0b75cf49f78a578a47351ab986ee36"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0b02f3f33418ad7e6ac4275e2656afc9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0b02f3f33418ad7e6ac4275e2656afc9"></a>
-cache_type&#160;</td><td class="memItemRight" valign="bottom"><b>mCache</b></td></tr>
-<tr class="separator:a0b02f3f33418ad7e6ac4275e2656afc9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af004639dadeaf387016eeb7badb79a7b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af004639dadeaf387016eeb7badb79a7b"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>mLastSweep</b></td></tr>
-<tr class="separator:af004639dadeaf387016eeb7badb79a7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a57309e1efa251cd2f4d0142bff5f1bcf"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a57309e1efa251cd2f4d0142bff5f1bcf"></a>
-uint64&#160;</td><td class="memItemRight" valign="bottom"><b>mHits</b></td></tr>
-<tr class="separator:a57309e1efa251cd2f4d0142bff5f1bcf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a53c7c6f0a315d2b29086bd1f04ff8741"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a53c7c6f0a315d2b29086bd1f04ff8741"></a>
-uint64&#160;</td><td class="memItemRight" valign="bottom"><b>mMisses</b></td></tr>
-<tr class="separator:a53c7c6f0a315d2b29086bd1f04ff8741"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><h3>template&lt;typename c_Key, typename c_Data, class Timer&gt;<br/>
@@ -231,13 +160,465 @@ class TaggedCache&lt; c_Key, c_Data, Timer &gt;</h3>
 <p>NOTE:</p>
 <p>Timer must have this interface:</p>
 <p>static int Timer::getElapsedSeconds (); </p>
-</div><hr/>The documentation for this class was generated from the following file:<ul>
-<li><a class="el" href="ripple___tagged_cache_8h_source.html">ripple_TaggedCache.h</a></li>
+</div><h2 class="groupheader">Member Typedef Documentation</h2>
+<a class="anchor" id="af19e0e3eb0615d87775f438b06f7ad1f"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename c_Key, typename c_Data, class Timer&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef c_Key <a class="el" href="class_tagged_cache.html">TaggedCache</a>&lt; c_Key, c_Data, Timer &gt;::<a class="el" href="class_tagged_cache.html#af19e0e3eb0615d87775f438b06f7ad1f">key_type</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="afb99323d0718579be614c9f330597581"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename c_Key, typename c_Data, class Timer&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef c_Data <a class="el" href="class_tagged_cache.html">TaggedCache</a>&lt; c_Key, c_Data, Timer &gt;::<a class="el" href="class_tagged_cache.html#afb99323d0718579be614c9f330597581">data_type</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a5f52fd7fdc745ccf6db1ea85d6cff39b"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename c_Key, typename c_Data, class Timer&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef boost::weak_ptr&lt;<a class="el" href="class_tagged_cache.html#afb99323d0718579be614c9f330597581">data_type</a>&gt; <a class="el" href="class_tagged_cache.html">TaggedCache</a>&lt; c_Key, c_Data, Timer &gt;::<a class="el" href="class_tagged_cache.html#a5f52fd7fdc745ccf6db1ea85d6cff39b">weak_data_ptr</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa935ae9b35990975979754745f52f09e"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename c_Key, typename c_Data, class Timer&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef boost::shared_ptr&lt;<a class="el" href="class_tagged_cache.html#afb99323d0718579be614c9f330597581">data_type</a>&gt; <a class="el" href="class_tagged_cache.html">TaggedCache</a>&lt; c_Key, c_Data, Timer &gt;::<a class="el" href="class_tagged_cache.html#aa935ae9b35990975979754745f52f09e">data_ptr</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a class="anchor" id="a0ab57b3d31ed36d09c56b389083f1d3b"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename c_Key, typename c_Data, class Timer&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="class_tagged_cache.html">TaggedCache</a>&lt; c_Key, c_Data, Timer &gt;::<a class="el" href="class_tagged_cache.html">TaggedCache</a> </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>age</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a696ed1feff883cf35333fdd2b3eeed22"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename c_Key , typename c_Data , class Timer &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">int <a class="el" href="class_tagged_cache.html">TaggedCache</a>&lt; c_Key, c_Data, Timer &gt;::getTargetSize </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a52527021abb7d7025057e22df17e7a62"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename c_Key , typename c_Data , class Timer &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">int <a class="el" href="class_tagged_cache.html">TaggedCache</a>&lt; c_Key, c_Data, Timer &gt;::getTargetAge </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a82cb874fda927be1de51c8eec7f62be4"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename c_Key , typename c_Data , class Timer &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">int <a class="el" href="class_tagged_cache.html">TaggedCache</a>&lt; c_Key, c_Data, Timer &gt;::getCacheSize </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a8a0314195352d5d16f302287c25fc8ff"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename c_Key , typename c_Data , class Timer &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">int <a class="el" href="class_tagged_cache.html">TaggedCache</a>&lt; c_Key, c_Data, Timer &gt;::getTrackSize </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="adf6e02a752a5c8eddc3e67fb666b3899"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename c_Key , typename c_Data , class Timer &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">float <a class="el" href="class_tagged_cache.html">TaggedCache</a>&lt; c_Key, c_Data, Timer &gt;::getHitRate </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a6fcd3340cf2afb44b0e0cc8132a3da56"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename c_Key , typename c_Data , class Timer &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="class_tagged_cache.html">TaggedCache</a>&lt; c_Key, c_Data, Timer &gt;::clearStats </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="afa30f0a60c03adf4229d740bed8efd0c"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename c_Key , typename c_Data , class Timer &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="class_tagged_cache.html">TaggedCache</a>&lt; c_Key, c_Data, Timer &gt;::setTargetSize </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>size</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="af873fecc1f5882fe6e1c89942cb2938e"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename c_Key , typename c_Data , class Timer &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="class_tagged_cache.html">TaggedCache</a>&lt; c_Key, c_Data, Timer &gt;::setTargetAge </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>age</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a041cef9a643214d016799cdbc92c1d66"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename c_Key , typename c_Data , class Timer &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="class_tagged_cache.html">TaggedCache</a>&lt; c_Key, c_Data, Timer &gt;::sweep </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ac02e6d180be420fa59ecac9593b5b387"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename c_Key , typename c_Data , class Timer &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="class_tagged_cache.html">TaggedCache</a>&lt; c_Key, c_Data, Timer &gt;::clear </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a6919b509f5802a27f72cb9872d814bf2"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename c_Key , typename c_Data , class Timer &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="class_tagged_cache.html">TaggedCache</a>&lt; c_Key, c_Data, Timer &gt;::touch </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="class_tagged_cache.html#af19e0e3eb0615d87775f438b06f7ad1f">key_type</a> &amp;&#160;</td>
+          <td class="paramname"><em>key</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a8f7fd00b56cb52a97c54ab8a225eea37"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename c_Key , typename c_Data , class Timer &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="class_tagged_cache.html">TaggedCache</a>&lt; c_Key, c_Data, Timer &gt;::del </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="class_tagged_cache.html#af19e0e3eb0615d87775f438b06f7ad1f">key_type</a> &amp;&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>valid</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a704f910e5153f069f69b6e38d285bed4"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename c_Key , typename c_Data, class Timer &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="class_tagged_cache.html">TaggedCache</a>&lt; c_Key, c_Data, Timer &gt;::canonicalize </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="class_tagged_cache.html#af19e0e3eb0615d87775f438b06f7ad1f">key_type</a> &amp;&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">boost::shared_ptr&lt; c_Data &gt; &amp;&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>replace</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a8cbebd4f846ac54069086f98bf554f75"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename c_Key , typename c_Data, class Timer &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="class_tagged_cache.html">TaggedCache</a>&lt; c_Key, c_Data, Timer &gt;::store </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="class_tagged_cache.html#af19e0e3eb0615d87775f438b06f7ad1f">key_type</a> &amp;&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const c_Data &amp;&#160;</td>
+          <td class="paramname"><em>data</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a336353e479b724ff819f90dc11c0ab80"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename c_Key , typename c_Data , class Timer &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">boost::shared_ptr&lt; c_Data &gt; <a class="el" href="class_tagged_cache.html">TaggedCache</a>&lt; c_Key, c_Data, Timer &gt;::fetch </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="class_tagged_cache.html#af19e0e3eb0615d87775f438b06f7ad1f">key_type</a> &amp;&#160;</td>
+          <td class="paramname"><em>key</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ad823788fc0f7df89555d2602b80e4501"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename c_Key , typename c_Data, class Timer &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="class_tagged_cache.html">TaggedCache</a>&lt; c_Key, c_Data, Timer &gt;::retrieve </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="class_tagged_cache.html#af19e0e3eb0615d87775f438b06f7ad1f">key_type</a> &amp;&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">c_Data &amp;&#160;</td>
+          <td class="paramname"><em>data</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a667869af53ec236db73844753992a574"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename c_Key, typename c_Data, class Timer&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">boost::recursive_mutex&amp; <a class="el" href="class_tagged_cache.html">TaggedCache</a>&lt; c_Key, c_Data, Timer &gt;::peekMutex </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>ripple_TaggedCache.h</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon May 27 2013 16:47:08 for RippleD by &#160;<a href="http://www.doxygen.org/index.html">
+Generated by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>

@@ -1,0 +1,6 @@
+<map id="STObject" name="STObject">
+<area shape="rect" id="node4" href="$class_serialized_ledger_entry.html" title="SerializedLedgerEntry" alt="" coords="5,155,155,181"/>
+<area shape="rect" id="node5" href="$class_serialized_transaction.html" title="SerializedTransaction" alt="" coords="179,155,325,181"/>
+<area shape="rect" id="node6" href="$class_serialized_validation.html" title="SerializedValidation" alt="" coords="349,155,485,181"/>
+<area shape="rect" id="node2" href="$class_serialized_type.html" title="SerializedType" alt="" coords="109,5,216,32"/>
+</map>

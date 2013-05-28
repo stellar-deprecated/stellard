@@ -39,9 +39,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
-      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -64,7 +65,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     <ul class="tablist">
       <li><a href="annotated.html"><span>Class&#160;List</span></a></li>
       <li><a href="classes.html"><span>Class&#160;Index</span></a></li>
-      <li><a href="hierarchy.html"><span>Class&#160;Hierarchy</span></a></li>
+      <li><a href="inherits.html"><span>Class&#160;Hierarchy</span></a></li>
+      <li><a href="functions.html"><span>Class&#160;Members</span></a></li>
     </ul>
   </div>
 <!-- window showing the filter options -->
@@ -72,7 +74,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(10)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -90,29 +92,21 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p>This is the complete list of members for <a class="el" href="class_log.html">Log</a>, including all inherited members.</p>
 <table class="directory">
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>getMinSeverity</b>() (defined in <a class="el" href="class_log.html">Log</a>)</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>Log</b>(LogSeverity s) (defined in <a class="el" href="class_log.html">Log</a>)</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>Log</b>(LogSeverity s, const LogPartition &amp;p) (defined in <a class="el" href="class_log.html">Log</a>)</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>logRotateCounter</b> (defined in <a class="el" href="class_log.html">Log</a>)</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">protected</span><span class="mlabel">static</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>mPartitionName</b> (defined in <a class="el" href="class_log.html">Log</a>)</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>mSeverity</b> (defined in <a class="el" href="class_log.html">Log</a>)</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>operator&lt;&lt;</b>(const T &amp;t) const  (defined in <a class="el" href="class_log.html">Log</a>)</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>oss</b> (defined in <a class="el" href="class_log.html">Log</a>)</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">mutable</span><span class="mlabel">protected</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>outStream</b> (defined in <a class="el" href="class_log.html">Log</a>)</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">protected</span><span class="mlabel">static</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>pathToLog</b> (defined in <a class="el" href="class_log.html">Log</a>)</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">protected</span><span class="mlabel">static</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>ref</b>(void) const  (defined in <a class="el" href="class_log.html">Log</a>)</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>rotateLog</b>(void) (defined in <a class="el" href="class_log.html">Log</a>)</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>setLogFile</b>(boost::filesystem::path const &amp;) (defined in <a class="el" href="class_log.html">Log</a>)</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>setMinSeverity</b>(LogSeverity, bool all) (defined in <a class="el" href="class_log.html">Log</a>)</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>severityToString</b>(LogSeverity) (defined in <a class="el" href="class_log.html">Log</a>)</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>sLock</b> (defined in <a class="el" href="class_log.html">Log</a>)</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">protected</span><span class="mlabel">static</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>sMinSeverity</b> (defined in <a class="el" href="class_log.html">Log</a>)</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">protected</span><span class="mlabel">static</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>stringToSeverity</b>(const std::string &amp;) (defined in <a class="el" href="class_log.html">Log</a>)</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>~Log</b>() (defined in <a class="el" href="class_log.html">Log</a>)</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_log.html#af55f57fc1793e1189b6d37c843e5901a">getMinSeverity</a>()</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
+  <tr><td class="entry"><a class="el" href="class_log.html#afdd3b0c2dfa0d22f3c85ad20a2f62b72">Log</a>(LogSeverity s)</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">explicit</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_log.html#ae9c15516ab333f6bb42b79bd22575114">Log</a>(LogSeverity s, LogPartition const &amp;p)</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr><td class="entry"><a class="el" href="class_log.html#aa7c93a36c19866ff540d2c451a94f429">operator&lt;&lt;</a>(const T &amp;t) const </td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_log.html#a8687ee4d6ae2498a5e1c20f1fbc43ada">ref</a>() const </td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr><td class="entry"><a class="el" href="class_log.html#a9e7cf845b49a65ba652c7ecef0e13dee">rotateLog</a>()</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_log.html#ab91d35fe0340c66bfeb51b420ed6ecae">setLogFile</a>(boost::filesystem::path const &amp;pathToLogFile)</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
+  <tr><td class="entry"><a class="el" href="class_log.html#a2490ebe637a3928ec514ba42f4b1fd1b">setMinSeverity</a>(LogSeverity, bool all)</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_log.html#a3db960d0b5e8815e628354a8d61e8286">severityToString</a>(LogSeverity)</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
+  <tr><td class="entry"><a class="el" href="class_log.html#ac9c831180ad1cac7adb177ccd3807577">stringToSeverity</a>(std::string const &amp;)</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_log.html#a0fbfda88fbee5027c89f6eb121059360">~Log</a>()</td><td class="entry"><a class="el" href="class_log.html">Log</a></td><td class="entry"></td></tr>
 </table></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon May 27 2013 16:47:08 for RippleD by &#160;<a href="http://www.doxygen.org/index.html">
+Generated by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>

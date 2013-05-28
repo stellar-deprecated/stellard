@@ -39,9 +39,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
-      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -64,7 +65,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     <ul class="tablist">
       <li><a href="annotated.html"><span>Class&#160;List</span></a></li>
       <li><a href="classes.html"><span>Class&#160;Index</span></a></li>
-      <li><a href="hierarchy.html"><span>Class&#160;Hierarchy</span></a></li>
+      <li><a href="inherits.html"><span>Class&#160;Hierarchy</span></a></li>
+      <li><a href="functions.html"><span>Class&#160;Members</span></a></li>
     </ul>
   </div>
 <!-- window showing the filter options -->
@@ -72,7 +74,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(10)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -90,41 +92,29 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p>This is the complete list of members for <a class="el" href="class_range_set.html">RangeSet</a>, including all inherited members.</p>
 <table class="directory">
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>begin</b>() (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>begin</b>() const  (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>clearRange</b>(uint32, uint32) (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>clearValue</b>(uint32) (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>const_iterator</b> typedef (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>const_reverse_iterator</b> typedef (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>end</b>() (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>end</b>() const  (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>getFirst</b>() const  (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>getLast</b>() const  (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>getNext</b>(uint32) const  (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>getPrev</b>(uint32) const  (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>hasValue</b>(uint32) const  (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>iRangeSet</b> typedef (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>iterator</b> typedef (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>lower</b>(const_iterator &amp;it) (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">static</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>lower</b>(const_reverse_iterator &amp;it) (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">static</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>mRanges</b> (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>prevMissing</b>(uint32) const  (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>RangeSet</b>() (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>RangeSetAbsent</b> (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>rbegin</b>() (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>rbegin</b>() const  (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>rend</b>() (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>rend</b>() const  (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>reverse_iterator</b> typedef (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>setRange</b>(uint32, uint32) (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>setValue</b>(uint32) (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>toString</b>() const  (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>upper</b>(const_iterator &amp;it) (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">static</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>upper</b>(const_reverse_iterator &amp;it) (defined in <a class="el" href="class_range_set.html">RangeSet</a>)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">static</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_range_set.html#a990148b75a568a8f562fba4037949b82">clearValue</a>(uint32)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"></td></tr>
+  <tr><td class="entry"><a class="el" href="class_range_set.html#a2b2fdd804b901093de60c727a73e781e">const_iterator</a> typedef</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_range_set.html#a6d7f5ebb0c4eb9a8db0de4b3319a7a7f">const_reverse_iterator</a> typedef</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
+  <tr><td class="entry"><a class="el" href="class_range_set.html#a2389c415d9e4b4c1f8a24e26be0670a4">contains</a>(value_type const &amp;it, uint32 v)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">protected</span><span class="mlabel">static</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_range_set.html#a0bccb0ac227995a824c012b3c5b6cc28">getFirst</a>() const </td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"></td></tr>
+  <tr><td class="entry"><a class="el" href="class_range_set.html#af18cb4867af09ef20071a83e311dd41d">getLast</a>() const </td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_range_set.html#ac23fa7f6205d9908ce5abc71e4d8cd5f">getNext</a>(uint32) const </td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"></td></tr>
+  <tr><td class="entry"><a class="el" href="class_range_set.html#ab4cfddcc9e72cb0f1cc98e98ce265aee">getPrev</a>(uint32) const </td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_range_set.html#a61b9928bc8d147951c9f94280f3a5cd6">hasValue</a>(uint32) const </td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"></td></tr>
+  <tr><td class="entry"><a class="el" href="class_range_set.html#a909f06f40e85a9895a65d13fc9df4283">iterator</a> typedef</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_range_set.html#aa41c75277bdb5cdf07a792e9281c3799">mRanges</a></td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
+  <tr><td class="entry"><a class="el" href="class_range_set.html#a3afd66e013089fe44c85be5ad85e5697">prevMissing</a>(uint32) const </td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_range_set.html#a92262ebd91d5cea9b4c43ffa491232d9">RangeSet</a>()</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr><td class="entry"><a class="el" href="class_range_set.html#ade43ecad1277f511c737d13c0bd516b5">RangeSetAbsent</a></td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_range_set.html#a510aa7532cbdc9587e6cbc81b44fbd7b">setRange</a>(uint32, uint32)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"></td></tr>
+  <tr><td class="entry"><a class="el" href="class_range_set.html#a1752ce3afee74297bf1265ee4b7a7a14">setValue</a>(uint32)</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_range_set.html#a2d286bd0a0c9ad6fa9586f47ea8f9e74">simplify</a>()</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
+  <tr><td class="entry"><a class="el" href="class_range_set.html#a453fa1047ff3434c591b83707caaea74">toString</a>() const </td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_range_set.html#a51ac7b27b528771b456324022fd5e6ab">value_type</a> typedef</td><td class="entry"><a class="el" href="class_range_set.html">RangeSet</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
 </table></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon May 27 2013 16:47:08 for RippleD by &#160;<a href="http://www.doxygen.org/index.html">
+Generated by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>

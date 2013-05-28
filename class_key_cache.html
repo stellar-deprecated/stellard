@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.3.1"/>
-<title>RippleD: KeyCache&lt; c_Key, Timer &gt; Class Template Reference</title>
+<title>RippleD: KeyCache&lt; Key, Timer &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -39,9 +39,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
-      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -64,7 +65,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     <ul class="tablist">
       <li><a href="annotated.html"><span>Class&#160;List</span></a></li>
       <li><a href="classes.html"><span>Class&#160;Index</span></a></li>
-      <li><a href="hierarchy.html"><span>Class&#160;Hierarchy</span></a></li>
+      <li><a href="inherits.html"><span>Class&#160;Hierarchy</span></a></li>
+      <li><a href="functions.html"><span>Class&#160;Members</span></a></li>
     </ul>
   </div>
 <!-- window showing the filter options -->
@@ -72,7 +74,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(10)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -86,96 +88,631 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div class="summary">
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pro-types">Protected Types</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="class_key_cache-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">KeyCache&lt; c_Key, Timer &gt; Class Template Reference</div>  </div>
+<div class="title">KeyCache&lt; Key, Timer &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__ripple__basics.html">Ripple_basics</a></div></div>  </div>
 </div><!--header-->
 <div class="contents">
 
 <p>Maintains a cache of keys with no associated data.  
  <a href="class_key_cache.html#details">More...</a></p>
 
-<p><code>#include &lt;<a class="el" href="ripple___key_cache_8h_source.html">ripple_KeyCache.h</a>&gt;</code></p>
+<p><code>#include &lt;ripple_KeyCache.h&gt;</code></p>
+<div id="dynsection-0" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-0-trigger" src="closed.png" alt="+"/> Collaboration diagram for KeyCache&lt; Key, Timer &gt;:</div>
+<div id="dynsection-0-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-0-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="class_key_cache__coll__graph.png" border="0" usemap="#_key_cache_3_01_key_00_01_timer_01_4_coll__map" alt="Collaboration graph"/></div>
+<map name="_key_cache_3_01_key_00_01_timer_01_4_coll__map" id="_key_cache_3_01_key_00_01_timer_01_4_coll__map">
+<area shape="rect" id="node2" title="STL class." alt="" coords="51,99,131,125"/><area shape="rect" id="node3" title="STL class." alt="" coords="27,6,153,47"/></map>
+<center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:ac26c7345839b8fc98d56a860e79cdfc9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac26c7345839b8fc98d56a860e79cdfc9"></a>
-typedef c_Key&#160;</td><td class="memItemRight" valign="bottom"><b>key_type</b></td></tr>
-<tr class="separator:ac26c7345839b8fc98d56a860e79cdfc9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a92b3896ee4359efb058935f1acf1dc79"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a92b3896ee4359efb058935f1acf1dc79"></a>
-typedef boost::unordered_map<br class="typebreak"/>
-&lt; key_type, int &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>map_type</b></td></tr>
-<tr class="separator:a92b3896ee4359efb058935f1acf1dc79"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae693c8586d18b677bef5830b53f7ca2c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae693c8586d18b677bef5830b53f7ca2c"></a>
-typedef map_type::iterator&#160;</td><td class="memItemRight" valign="bottom"><b>map_iterator</b></td></tr>
-<tr class="separator:ae693c8586d18b677bef5830b53f7ca2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6c668afdc88e38be27d833cd067972ef"><td class="memItemLeft" align="right" valign="top">typedef Key&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_key_cache.html#a6c668afdc88e38be27d833cd067972ef">key_type</a></td></tr>
+<tr class="memdesc:a6c668afdc88e38be27d833cd067972ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provides a type for the key.  <a href="#a6c668afdc88e38be27d833cd067972ef">More...</a><br/></td></tr>
+<tr class="separator:a6c668afdc88e38be27d833cd067972ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:acd74a831db322d21513ac0ef2f805160"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acd74a831db322d21513ac0ef2f805160"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>KeyCache</b> (const std::string &amp;name, int size=0, int age=120)</td></tr>
-<tr class="separator:acd74a831db322d21513ac0ef2f805160"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afdca09a42f37ef15553b7f75affd262a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afdca09a42f37ef15553b7f75affd262a"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>getSize</b> ()</td></tr>
-<tr class="separator:afdca09a42f37ef15553b7f75affd262a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5cebfee4faead6f83d7df405b944be2d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5cebfee4faead6f83d7df405b944be2d"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>getTargetSize</b> ()</td></tr>
-<tr class="separator:a5cebfee4faead6f83d7df405b944be2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0289ee7078bd980129935b9894ac4454"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0289ee7078bd980129935b9894ac4454"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>getTargetAge</b> ()</td></tr>
-<tr class="separator:a0289ee7078bd980129935b9894ac4454"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa8110a5dfdd734162576425719356618"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa8110a5dfdd734162576425719356618"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setTargets</b> (int size, int age)</td></tr>
-<tr class="separator:aa8110a5dfdd734162576425719356618"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af9a492271819cbbb6e892f3d38a075a6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af9a492271819cbbb6e892f3d38a075a6"></a>
-const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getName</b> ()</td></tr>
-<tr class="separator:af9a492271819cbbb6e892f3d38a075a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9efa69948ee6e3994164b2111be685d4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9efa69948ee6e3994164b2111be685d4"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>isPresent</b> (const key_type &amp;key, bool refresh=true)</td></tr>
-<tr class="separator:a9efa69948ee6e3994164b2111be685d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaf0f060b9d07ba2a11ba404c53023ede"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aaf0f060b9d07ba2a11ba404c53023ede"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>del</b> (const key_type &amp;key)</td></tr>
-<tr class="separator:aaf0f060b9d07ba2a11ba404c53023ede"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9978575df6e4e2d462e7a0f678283f75"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9978575df6e4e2d462e7a0f678283f75"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>add</b> (const key_type &amp;key)</td></tr>
-<tr class="separator:a9978575df6e4e2d462e7a0f678283f75"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adc6739e6f4f3e270422845ea0ef2c893"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adc6739e6f4f3e270422845ea0ef2c893"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>sweep</b> ()</td></tr>
-<tr class="separator:adc6739e6f4f3e270422845ea0ef2c893"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af9aee2163a3cb25d70112eebcc7a3f60"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_key_cache.html#af9aee2163a3cb25d70112eebcc7a3f60">KeyCache</a> (const std::string &amp;name, int size=0, int age=120)</td></tr>
+<tr class="memdesc:af9aee2163a3cb25d70112eebcc7a3f60"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct with the specified name.  <a href="#af9aee2163a3cb25d70112eebcc7a3f60">More...</a><br/></td></tr>
+<tr class="separator:af9aee2163a3cb25d70112eebcc7a3f60"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c0759ca60f44fe6eb7dd45ede311146"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_key_cache.html#a0c0759ca60f44fe6eb7dd45ede311146">getSize</a> ()</td></tr>
+<tr class="memdesc:a0c0759ca60f44fe6eb7dd45ede311146"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the current size.  <a href="#a0c0759ca60f44fe6eb7dd45ede311146">More...</a><br/></td></tr>
+<tr class="separator:a0c0759ca60f44fe6eb7dd45ede311146"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a667f4960d4876d4e028206bd3489da0b"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_key_cache.html#a667f4960d4876d4e028206bd3489da0b">getTargetSize</a> ()</td></tr>
+<tr class="memdesc:a667f4960d4876d4e028206bd3489da0b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the desired target size.  <a href="#a667f4960d4876d4e028206bd3489da0b">More...</a><br/></td></tr>
+<tr class="separator:a667f4960d4876d4e028206bd3489da0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a22e61831b6de622220c3e8acbac597e8"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_key_cache.html#a22e61831b6de622220c3e8acbac597e8">getTargetAge</a> ()</td></tr>
+<tr class="memdesc:a22e61831b6de622220c3e8acbac597e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the desired target age.  <a href="#a22e61831b6de622220c3e8acbac597e8">More...</a><br/></td></tr>
+<tr class="separator:a22e61831b6de622220c3e8acbac597e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a61afe1c9f04654494094cdf3db285feb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_key_cache.html#a61afe1c9f04654494094cdf3db285feb">setTargets</a> (int size, int age)</td></tr>
+<tr class="memdesc:a61afe1c9f04654494094cdf3db285feb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Simultaneously set the target size and age.  <a href="#a61afe1c9f04654494094cdf3db285feb">More...</a><br/></td></tr>
+<tr class="separator:a61afe1c9f04654494094cdf3db285feb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac133ebfafc1f363a765a8cd40ce9e746"><td class="memItemLeft" align="right" valign="top">const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_key_cache.html#ac133ebfafc1f363a765a8cd40ce9e746">getName</a> ()</td></tr>
+<tr class="memdesc:ac133ebfafc1f363a765a8cd40ce9e746"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the name of this object.  <a href="#ac133ebfafc1f363a765a8cd40ce9e746">More...</a><br/></td></tr>
+<tr class="separator:ac133ebfafc1f363a765a8cd40ce9e746"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a382a3a4030a7f2917ed2fd59b6457b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_key_cache.html#a4a382a3a4030a7f2917ed2fd59b6457b">isPresent</a> (const <a class="el" href="class_key_cache.html#a6c668afdc88e38be27d833cd067972ef">key_type</a> &amp;key, bool refresh=true)</td></tr>
+<tr class="memdesc:a4a382a3a4030a7f2917ed2fd59b6457b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine if the specified key is cached, and optionally refresh it.  <a href="#a4a382a3a4030a7f2917ed2fd59b6457b">More...</a><br/></td></tr>
+<tr class="separator:a4a382a3a4030a7f2917ed2fd59b6457b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d046f3ff07d603f7c74bd5521ca6e75"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_key_cache.html#a1d046f3ff07d603f7c74bd5521ca6e75">del</a> (const <a class="el" href="class_key_cache.html#a6c668afdc88e38be27d833cd067972ef">key_type</a> &amp;key)</td></tr>
+<tr class="memdesc:a1d046f3ff07d603f7c74bd5521ca6e75"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove the specified cache entry.  <a href="#a1d046f3ff07d603f7c74bd5521ca6e75">More...</a><br/></td></tr>
+<tr class="separator:a1d046f3ff07d603f7c74bd5521ca6e75"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade1260bf49001df1688b46965942d760"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_key_cache.html#ade1260bf49001df1688b46965942d760">add</a> (const <a class="el" href="class_key_cache.html#a6c668afdc88e38be27d833cd067972ef">key_type</a> &amp;key)</td></tr>
+<tr class="memdesc:ade1260bf49001df1688b46965942d760"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add the specified cache entry.  <a href="#ade1260bf49001df1688b46965942d760">More...</a><br/></td></tr>
+<tr class="separator:ade1260bf49001df1688b46965942d760"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a04322d413c88385a1d565a28e4bc801d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_key_cache.html#a04322d413c88385a1d565a28e4bc801d">sweep</a> ()</td></tr>
+<tr class="memdesc:a04322d413c88385a1d565a28e4bc801d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove stale entries from the cache.  <a href="#a04322d413c88385a1d565a28e4bc801d">More...</a><br/></td></tr>
+<tr class="separator:a04322d413c88385a1d565a28e4bc801d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-types"></a>
+Protected Types</h2></td></tr>
+<tr class="memitem:a0a0a149521e9a613edbd3d3b2830d835"><td class="memItemLeft" align="right" valign="top">typedef boost::unordered_map<br class="typebreak"/>
+&lt; <a class="el" href="class_key_cache.html#a6c668afdc88e38be27d833cd067972ef">key_type</a>, int &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_key_cache.html#a0a0a149521e9a613edbd3d3b2830d835">map_type</a></td></tr>
+<tr class="memdesc:a0a0a149521e9a613edbd3d3b2830d835"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provides a type for the underlying map.  <a href="#a0a0a149521e9a613edbd3d3b2830d835">More...</a><br/></td></tr>
+<tr class="separator:a0a0a149521e9a613edbd3d3b2830d835"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adff82e0945316d16664a708ddf6abcd3"><td class="memItemLeft" align="right" valign="top">typedef map_type::iterator&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_key_cache.html#adff82e0945316d16664a708ddf6abcd3">map_iterator</a></td></tr>
+<tr class="memdesc:adff82e0945316d16664a708ddf6abcd3"><td class="mdescLeft">&#160;</td><td class="mdescRight">The type of the iterator used for traversals.  <a href="#adff82e0945316d16664a708ddf6abcd3">More...</a><br/></td></tr>
+<tr class="separator:adff82e0945316d16664a708ddf6abcd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
-<tr class="memitem:ad9a4a612ae14d7fa591464fdd9ddf2e3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad9a4a612ae14d7fa591464fdd9ddf2e3"></a>
-const std::string&#160;</td><td class="memItemRight" valign="bottom"><b>mName</b></td></tr>
-<tr class="separator:ad9a4a612ae14d7fa591464fdd9ddf2e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab86d51bf9c7fbb5a73102d71b42ae8bf"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab86d51bf9c7fbb5a73102d71b42ae8bf"></a>
-boost::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mNCLock</b></td></tr>
-<tr class="separator:ab86d51bf9c7fbb5a73102d71b42ae8bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5cc0d9d419b874c38c0f86ac71a34a77"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5cc0d9d419b874c38c0f86ac71a34a77"></a>
-map_type&#160;</td><td class="memItemRight" valign="bottom"><b>mCache</b></td></tr>
-<tr class="separator:a5cc0d9d419b874c38c0f86ac71a34a77"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acdeff7d7383c9879552ad9fa609cb856"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acdeff7d7383c9879552ad9fa609cb856"></a>
-unsigned int&#160;</td><td class="memItemRight" valign="bottom"><b>mTargetSize</b></td></tr>
-<tr class="separator:acdeff7d7383c9879552ad9fa609cb856"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1dc1e6ca0edc594db07650ff0b39c05a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1dc1e6ca0edc594db07650ff0b39c05a"></a>
-unsigned int&#160;</td><td class="memItemRight" valign="bottom"><b>mTargetAge</b></td></tr>
-<tr class="separator:a1dc1e6ca0edc594db07650ff0b39c05a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d82ec8def47323cf0327b752f966009"><td class="memItemLeft" align="right" valign="top">std::string const&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_key_cache.html#a4d82ec8def47323cf0327b752f966009">mName</a></td></tr>
+<tr class="separator:a4d82ec8def47323cf0327b752f966009"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76a56857cecfe190b8bb9c539400d37e"><td class="memItemLeft" align="right" valign="top">boost::mutex&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_key_cache.html#a76a56857cecfe190b8bb9c539400d37e">mNCLock</a></td></tr>
+<tr class="separator:a76a56857cecfe190b8bb9c539400d37e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ae7c2517b57de7f8e1bcebc9ece2fb0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_key_cache.html#a0a0a149521e9a613edbd3d3b2830d835">map_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_key_cache.html#a9ae7c2517b57de7f8e1bcebc9ece2fb0">mCache</a></td></tr>
+<tr class="separator:a9ae7c2517b57de7f8e1bcebc9ece2fb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6c32998f6bd5ab3cca1381205ced6c8e"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_key_cache.html#a6c32998f6bd5ab3cca1381205ced6c8e">mTargetSize</a></td></tr>
+<tr class="separator:a6c32998f6bd5ab3cca1381205ced6c8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e6cf8783745e8b02cc453c79da1b7c6"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_key_cache.html#a2e6cf8783745e8b02cc453c79da1b7c6">mTargetAge</a></td></tr>
+<tr class="separator:a2e6cf8783745e8b02cc453c79da1b7c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><h3>template&lt;typename c_Key, class Timer&gt;<br/>
-class KeyCache&lt; c_Key, Timer &gt;</h3>
+<div class="textblock"><h3>template&lt;class Key, class Timer&gt;<br/>
+class KeyCache&lt; Key, Timer &gt;</h3>
 
 <p>Maintains a cache of keys with no associated data. </p>
-<p>Timer must have this interface:</p>
-<p>static int Timer::getElapsedSeconds (); </p>
-</div><hr/>The documentation for this class was generated from the following file:<ul>
-<li><a class="el" href="ripple___key_cache_8h_source.html">ripple_KeyCache.h</a></li>
+<p>The cache has a target size and an expiration time. When cached items become older than the maximum age they are eligible for removal during a call to <a class="el" href="class_key_cache.html#a04322d413c88385a1d565a28e4bc801d">sweep</a>.</p>
+<dl class="section note"><dt>Note</dt><dd>Timer must provide this function: <div class="fragment"><div class="line"><span class="keyword">static</span> <span class="keywordtype">int</span> getElapsedSeconds ();</div>
+</div><!-- fragment --></dd></dl>
+<p>file vf_db.h </p>
+</div><h2 class="groupheader">Member Typedef Documentation</h2>
+<a class="anchor" id="a6c668afdc88e38be27d833cd067972ef"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Key, class Timer&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef Key <a class="el" href="class_key_cache.html">KeyCache</a>&lt; Key, Timer &gt;::<a class="el" href="class_key_cache.html#a6c668afdc88e38be27d833cd067972ef">key_type</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Provides a type for the key. </p>
+
+</div>
+</div>
+<a class="anchor" id="a0a0a149521e9a613edbd3d3b2830d835"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Key, class Timer&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef boost::unordered_map&lt;<a class="el" href="class_key_cache.html#a6c668afdc88e38be27d833cd067972ef">key_type</a>, int&gt; <a class="el" href="class_key_cache.html">KeyCache</a>&lt; Key, Timer &gt;::<a class="el" href="class_key_cache.html#a0a0a149521e9a613edbd3d3b2830d835">map_type</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Provides a type for the underlying map. </p>
+
+</div>
+</div>
+<a class="anchor" id="adff82e0945316d16664a708ddf6abcd3"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Key, class Timer&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef map_type::iterator <a class="el" href="class_key_cache.html">KeyCache</a>&lt; Key, Timer &gt;::<a class="el" href="class_key_cache.html#adff82e0945316d16664a708ddf6abcd3">map_iterator</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The type of the iterator used for traversals. </p>
+
+</div>
+</div>
+<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a class="anchor" id="af9aee2163a3cb25d70112eebcc7a3f60"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Key, class Timer&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="class_key_cache.html">KeyCache</a>&lt; Key, Timer &gt;::<a class="el" href="class_key_cache.html">KeyCache</a> </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>size</em> = <code>0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>age</em> = <code>120</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Construct with the specified name. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">size</td><td>The initial target size. </td></tr>
+    <tr><td class="paramname">age</td><td>The initial expiration time. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a0c0759ca60f44fe6eb7dd45ede311146"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Key, class Timer&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned int <a class="el" href="class_key_cache.html">KeyCache</a>&lt; Key, Timer &gt;::getSize </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the current size. </p>
+
+</div>
+</div>
+<a class="anchor" id="a667f4960d4876d4e028206bd3489da0b"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Key, class Timer&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned int <a class="el" href="class_key_cache.html">KeyCache</a>&lt; Key, Timer &gt;::getTargetSize </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the desired target size. </p>
+
+</div>
+</div>
+<a class="anchor" id="a22e61831b6de622220c3e8acbac597e8"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Key, class Timer&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned int <a class="el" href="class_key_cache.html">KeyCache</a>&lt; Key, Timer &gt;::getTargetAge </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the desired target age. </p>
+
+</div>
+</div>
+<a class="anchor" id="a61afe1c9f04654494094cdf3db285feb"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Key, class Timer&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="class_key_cache.html">KeyCache</a>&lt; Key, Timer &gt;::setTargets </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>age</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Simultaneously set the target size and age. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">size</td><td>The target size. </td></tr>
+    <tr><td class="paramname">age</td><td>The target age. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ac133ebfafc1f363a765a8cd40ce9e746"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Key, class Timer&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const std::string&amp; <a class="el" href="class_key_cache.html">KeyCache</a>&lt; Key, Timer &gt;::getName </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Retrieve the name of this object. </p>
+
+</div>
+</div>
+<a class="anchor" id="a4a382a3a4030a7f2917ed2fd59b6457b"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Key, class Timer&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="class_key_cache.html">KeyCache</a>&lt; Key, Timer &gt;::isPresent </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="class_key_cache.html#a6c668afdc88e38be27d833cd067972ef">key_type</a> &amp;&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>refresh</em> = <code>true</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Determine if the specified key is cached, and optionally refresh it. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">key</td><td>The key to check </td></tr>
+    <tr><td class="paramname">refresh</td><td>Whether or not to refresh the entry. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><code>true</code> if the key was found. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a1d046f3ff07d603f7c74bd5521ca6e75"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Key, class Timer&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="class_key_cache.html">KeyCache</a>&lt; Key, Timer &gt;::del </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="class_key_cache.html#a6c668afdc88e38be27d833cd067972ef">key_type</a> &amp;&#160;</td>
+          <td class="paramname"><em>key</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Remove the specified cache entry. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">key</td><td>The key to remove. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><code>false</code> if the key was not found. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ade1260bf49001df1688b46965942d760"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Key, class Timer&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="class_key_cache.html">KeyCache</a>&lt; Key, Timer &gt;::add </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="class_key_cache.html#a6c668afdc88e38be27d833cd067972ef">key_type</a> &amp;&#160;</td>
+          <td class="paramname"><em>key</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Add the specified cache entry. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">key</td><td>The key to add. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><code>true</code> if the key did not previously exist. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a04322d413c88385a1d565a28e4bc801d"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Key, class Timer&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="class_key_cache.html">KeyCache</a>&lt; Key, Timer &gt;::sweep </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Remove stale entries from the cache. </p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a class="anchor" id="a4d82ec8def47323cf0327b752f966009"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Key, class Timer&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string const <a class="el" href="class_key_cache.html">KeyCache</a>&lt; Key, Timer &gt;::mName</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a76a56857cecfe190b8bb9c539400d37e"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Key, class Timer&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">boost::mutex <a class="el" href="class_key_cache.html">KeyCache</a>&lt; Key, Timer &gt;::mNCLock</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a9ae7c2517b57de7f8e1bcebc9ece2fb0"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Key, class Timer&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="class_key_cache.html#a0a0a149521e9a613edbd3d3b2830d835">map_type</a> <a class="el" href="class_key_cache.html">KeyCache</a>&lt; Key, Timer &gt;::mCache</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a6c32998f6bd5ab3cca1381205ced6c8e"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Key, class Timer&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned int <a class="el" href="class_key_cache.html">KeyCache</a>&lt; Key, Timer &gt;::mTargetSize</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a2e6cf8783745e8b02cc453c79da1b7c6"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Key, class Timer&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned int <a class="el" href="class_key_cache.html">KeyCache</a>&lt; Key, Timer &gt;::mTargetAge</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>ripple_KeyCache.h</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon May 27 2013 16:47:08 for RippleD by &#160;<a href="http://www.doxygen.org/index.html">
+Generated by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>

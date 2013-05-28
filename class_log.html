@@ -39,9 +39,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
-      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -64,7 +65,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     <ul class="tablist">
       <li><a href="annotated.html"><span>Class&#160;List</span></a></li>
       <li><a href="classes.html"><span>Class&#160;Index</span></a></li>
-      <li><a href="hierarchy.html"><span>Class&#160;Hierarchy</span></a></li>
+      <li><a href="inherits.html"><span>Class&#160;Hierarchy</span></a></li>
+      <li><a href="functions.html"><span>Class&#160;Members</span></a></li>
     </ul>
   </div>
 <!-- window showing the filter options -->
@@ -72,7 +74,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(10)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -86,89 +88,328 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
-<a href="#pro-attribs">Protected Attributes</a> &#124;
-<a href="#pro-static-attribs">Static Protected Attributes</a> &#124;
 <a href="class_log-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">Log Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;ripple_Log.h&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:afdd3b0c2dfa0d22f3c85ad20a2f62b72"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afdd3b0c2dfa0d22f3c85ad20a2f62b72"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Log</b> (LogSeverity s)</td></tr>
+<tr class="memitem:afdd3b0c2dfa0d22f3c85ad20a2f62b72"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_log.html#afdd3b0c2dfa0d22f3c85ad20a2f62b72">Log</a> (LogSeverity s)</td></tr>
 <tr class="separator:afdd3b0c2dfa0d22f3c85ad20a2f62b72"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae85dd04504afde294816c55b5f31a7ff"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae85dd04504afde294816c55b5f31a7ff"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Log</b> (LogSeverity s, const <a class="el" href="class_log_partition.html">LogPartition</a> &amp;p)</td></tr>
-<tr class="separator:ae85dd04504afde294816c55b5f31a7ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa7c93a36c19866ff540d2c451a94f429"><td class="memTemplParams" colspan="2"><a class="anchor" id="aa7c93a36c19866ff540d2c451a94f429"></a>
-template&lt;typename T &gt; </td></tr>
-<tr class="memitem:aa7c93a36c19866ff540d2c451a94f429"><td class="memTemplItemLeft" align="right" valign="top">std::ostream &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>operator&lt;&lt;</b> (const T &amp;t) const </td></tr>
+<tr class="memitem:ae9c15516ab333f6bb42b79bd22575114"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_log.html#ae9c15516ab333f6bb42b79bd22575114">Log</a> (LogSeverity s, <a class="el" href="class_log_partition.html">LogPartition</a> const &amp;p)</td></tr>
+<tr class="separator:ae9c15516ab333f6bb42b79bd22575114"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0fbfda88fbee5027c89f6eb121059360"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_log.html#a0fbfda88fbee5027c89f6eb121059360">~Log</a> ()</td></tr>
+<tr class="separator:a0fbfda88fbee5027c89f6eb121059360"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa7c93a36c19866ff540d2c451a94f429"><td class="memTemplParams" colspan="2">template&lt;class T &gt; </td></tr>
+<tr class="memitem:aa7c93a36c19866ff540d2c451a94f429"><td class="memTemplItemLeft" align="right" valign="top">std::ostream &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_log.html#aa7c93a36c19866ff540d2c451a94f429">operator&lt;&lt;</a> (const T &amp;t) const </td></tr>
 <tr class="separator:aa7c93a36c19866ff540d2c451a94f429"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a16e0c1d491a74975af793a007d57019c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a16e0c1d491a74975af793a007d57019c"></a>
-std::ostringstream &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>ref</b> (void) const </td></tr>
-<tr class="separator:a16e0c1d491a74975af793a007d57019c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8687ee4d6ae2498a5e1c20f1fbc43ada"><td class="memItemLeft" align="right" valign="top">std::ostringstream &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_log.html#a8687ee4d6ae2498a5e1c20f1fbc43ada">ref</a> () const </td></tr>
+<tr class="separator:a8687ee4d6ae2498a5e1c20f1fbc43ada"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a3db960d0b5e8815e628354a8d61e8286"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3db960d0b5e8815e628354a8d61e8286"></a>
-static std::string&#160;</td><td class="memItemRight" valign="bottom"><b>severityToString</b> (LogSeverity)</td></tr>
+<tr class="memitem:a3db960d0b5e8815e628354a8d61e8286"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_log.html#a3db960d0b5e8815e628354a8d61e8286">severityToString</a> (LogSeverity)</td></tr>
 <tr class="separator:a3db960d0b5e8815e628354a8d61e8286"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a86784aaeb5efce4b97dee2f2cbd00ac9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a86784aaeb5efce4b97dee2f2cbd00ac9"></a>
-static LogSeverity&#160;</td><td class="memItemRight" valign="bottom"><b>stringToSeverity</b> (const std::string &amp;)</td></tr>
-<tr class="separator:a86784aaeb5efce4b97dee2f2cbd00ac9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af55f57fc1793e1189b6d37c843e5901a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af55f57fc1793e1189b6d37c843e5901a"></a>
-static LogSeverity&#160;</td><td class="memItemRight" valign="bottom"><b>getMinSeverity</b> ()</td></tr>
+<tr class="memitem:ac9c831180ad1cac7adb177ccd3807577"><td class="memItemLeft" align="right" valign="top">static LogSeverity&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_log.html#ac9c831180ad1cac7adb177ccd3807577">stringToSeverity</a> (std::string const &amp;)</td></tr>
+<tr class="separator:ac9c831180ad1cac7adb177ccd3807577"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af55f57fc1793e1189b6d37c843e5901a"><td class="memItemLeft" align="right" valign="top">static LogSeverity&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_log.html#af55f57fc1793e1189b6d37c843e5901a">getMinSeverity</a> ()</td></tr>
 <tr class="separator:af55f57fc1793e1189b6d37c843e5901a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2490ebe637a3928ec514ba42f4b1fd1b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2490ebe637a3928ec514ba42f4b1fd1b"></a>
-static void&#160;</td><td class="memItemRight" valign="bottom"><b>setMinSeverity</b> (LogSeverity, bool all)</td></tr>
+<tr class="memitem:a2490ebe637a3928ec514ba42f4b1fd1b"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_log.html#a2490ebe637a3928ec514ba42f4b1fd1b">setMinSeverity</a> (LogSeverity, bool all)</td></tr>
 <tr class="separator:a2490ebe637a3928ec514ba42f4b1fd1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8ce12f0231d419d91f5ddfb0527062dd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8ce12f0231d419d91f5ddfb0527062dd"></a>
-static void&#160;</td><td class="memItemRight" valign="bottom"><b>setLogFile</b> (boost::filesystem::path const &amp;)</td></tr>
-<tr class="separator:a8ce12f0231d419d91f5ddfb0527062dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a07ebb25569280a90e128b7af4824a57d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a07ebb25569280a90e128b7af4824a57d"></a>
-static std::string&#160;</td><td class="memItemRight" valign="bottom"><b>rotateLog</b> (void)</td></tr>
-<tr class="separator:a07ebb25569280a90e128b7af4824a57d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
-Protected Attributes</h2></td></tr>
-<tr class="memitem:a0239e77c79aaf03754205331ae6d82c9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0239e77c79aaf03754205331ae6d82c9"></a>
-std::ostringstream&#160;</td><td class="memItemRight" valign="bottom"><b>oss</b></td></tr>
-<tr class="separator:a0239e77c79aaf03754205331ae6d82c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2c6fcd518b167ca945319acd0f14ff0d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2c6fcd518b167ca945319acd0f14ff0d"></a>
-LogSeverity&#160;</td><td class="memItemRight" valign="bottom"><b>mSeverity</b></td></tr>
-<tr class="separator:a2c6fcd518b167ca945319acd0f14ff0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a665dd1a9a7f62b0c3ec88c95c6b98de0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a665dd1a9a7f62b0c3ec88c95c6b98de0"></a>
-std::string&#160;</td><td class="memItemRight" valign="bottom"><b>mPartitionName</b></td></tr>
-<tr class="separator:a665dd1a9a7f62b0c3ec88c95c6b98de0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-attribs"></a>
-Static Protected Attributes</h2></td></tr>
-<tr class="memitem:a71ccd5e4a1228869ecf7e0c36dd3f302"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a71ccd5e4a1228869ecf7e0c36dd3f302"></a>
-static boost::recursive_mutex&#160;</td><td class="memItemRight" valign="bottom"><b>sLock</b></td></tr>
-<tr class="separator:a71ccd5e4a1228869ecf7e0c36dd3f302"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a752a83fbd722d3b890143c10af99ff51"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a752a83fbd722d3b890143c10af99ff51"></a>
-static LogSeverity&#160;</td><td class="memItemRight" valign="bottom"><b>sMinSeverity</b> = lsINFO</td></tr>
-<tr class="separator:a752a83fbd722d3b890143c10af99ff51"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8b54f66c5331317a8a9508db2ddcff77"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8b54f66c5331317a8a9508db2ddcff77"></a>
-static std::ofstream *&#160;</td><td class="memItemRight" valign="bottom"><b>outStream</b> = NULL</td></tr>
-<tr class="separator:a8b54f66c5331317a8a9508db2ddcff77"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab1ddbbe093000d6065591e0e52463afb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab1ddbbe093000d6065591e0e52463afb"></a>
-static boost::filesystem::path *&#160;</td><td class="memItemRight" valign="bottom"><b>pathToLog</b> = NULL</td></tr>
-<tr class="separator:ab1ddbbe093000d6065591e0e52463afb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1aa4c519792eca92a76bec0775fc7879"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1aa4c519792eca92a76bec0775fc7879"></a>
-static uint32&#160;</td><td class="memItemRight" valign="bottom"><b>logRotateCounter</b> = 0</td></tr>
-<tr class="separator:a1aa4c519792eca92a76bec0775fc7879"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab91d35fe0340c66bfeb51b420ed6ecae"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_log.html#ab91d35fe0340c66bfeb51b420ed6ecae">setLogFile</a> (boost::filesystem::path const &amp;pathToLogFile)</td></tr>
+<tr class="separator:ab91d35fe0340c66bfeb51b420ed6ecae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e7cf845b49a65ba652c7ecef0e13dee"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_log.html#a9e7cf845b49a65ba652c7ecef0e13dee">rotateLog</a> ()</td></tr>
+<tr class="separator:a9e7cf845b49a65ba652c7ecef0e13dee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a class="anchor" id="afdd3b0c2dfa0d22f3c85ad20a2f62b72"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Log::Log </td>
+          <td>(</td>
+          <td class="paramtype">LogSeverity&#160;</td>
+          <td class="paramname"><em>s</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">explicit</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ae9c15516ab333f6bb42b79bd22575114"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Log::Log </td>
+          <td>(</td>
+          <td class="paramtype">LogSeverity&#160;</td>
+          <td class="paramname"><em>s</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_log_partition.html">LogPartition</a> const &amp;&#160;</td>
+          <td class="paramname"><em>p</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a0fbfda88fbee5027c89f6eb121059360"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Log::~Log </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="aa7c93a36c19866ff540d2c451a94f429"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class T &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::ostream&amp; Log::operator&lt;&lt; </td>
+          <td>(</td>
+          <td class="paramtype">const T &amp;&#160;</td>
+          <td class="paramname"><em>t</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a8687ee4d6ae2498a5e1c20f1fbc43ada"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::ostringstream&amp; Log::ref </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a3db960d0b5e8815e628354a8d61e8286"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string Log::severityToString </td>
+          <td>(</td>
+          <td class="paramtype">LogSeverity&#160;</td>
+          <td class="paramname"><em>s</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ac9c831180ad1cac7adb177ccd3807577"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">LogSeverity Log::stringToSeverity </td>
+          <td>(</td>
+          <td class="paramtype">std::string const &amp;&#160;</td>
+          <td class="paramname"><em>s</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="af55f57fc1793e1189b6d37c843e5901a"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">LogSeverity Log::getMinSeverity </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a2490ebe637a3928ec514ba42f4b1fd1b"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Log::setMinSeverity </td>
+          <td>(</td>
+          <td class="paramtype">LogSeverity&#160;</td>
+          <td class="paramname"><em>s</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>all</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ab91d35fe0340c66bfeb51b420ed6ecae"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Log::setLogFile </td>
+          <td>(</td>
+          <td class="paramtype">boost::filesystem::path const &amp;&#160;</td>
+          <td class="paramname"><em>pathToLogFile</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a9e7cf845b49a65ba652c7ecef0e13dee"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string Log::rotateLog </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li><a class="el" href="ripple___log_8h_source.html">ripple_Log.h</a></li>
+<li>ripple_Log.h</li>
 <li>ripple_Log.cpp</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon May 27 2013 16:47:08 for RippleD by &#160;<a href="http://www.doxygen.org/index.html">
+Generated by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>

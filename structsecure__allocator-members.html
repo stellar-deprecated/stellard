@@ -39,9 +39,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
-      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -64,7 +65,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     <ul class="tablist">
       <li><a href="annotated.html"><span>Class&#160;List</span></a></li>
       <li><a href="classes.html"><span>Class&#160;Index</span></a></li>
-      <li><a href="hierarchy.html"><span>Class&#160;Hierarchy</span></a></li>
+      <li><a href="inherits.html"><span>Class&#160;Hierarchy</span></a></li>
+      <li><a href="functions.html"><span>Class&#160;Members</span></a></li>
     </ul>
   </div>
 <!-- window showing the filter options -->
@@ -72,7 +74,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(10)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -90,25 +92,25 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p>This is the complete list of members for <a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a>, including all inherited members.</p>
 <table class="directory">
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>allocate</b>(std::size_t n, const void *hint=0) (defined in <a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a>)</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>base</b> typedef (defined in <a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a>)</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>const_pointer</b> typedef (defined in <a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a>)</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>const_reference</b> typedef (defined in <a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a>)</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>deallocate</b>(T *p, std::size_t n) (defined in <a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a>)</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>difference_type</b> typedef (defined in <a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a>)</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="structsecure__allocator.html#aee6c375ead3ab5b477898787308bd2d9">allocate</a>(std::size_t n, const void *hint=0)</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr><td class="entry"><a class="el" href="structsecure__allocator.html#aecbe486abe3e32e35e3289e149bd2356">base</a> typedef</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="structsecure__allocator.html#abf76dd1c45de47c15d7a8c53cb2d8ab9">const_pointer</a> typedef</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"></td></tr>
+  <tr><td class="entry"><a class="el" href="structsecure__allocator.html#a5ec58945b7a8010f7e8a77ebfd96ae8e">const_reference</a> typedef</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="structsecure__allocator.html#af86cc49185bd507b8b479e070d744eb0">deallocate</a>(T *p, std::size_t n)</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr><td class="entry"><a class="el" href="structsecure__allocator.html#a6ced0c166194ce9a266df10018cbb862">difference_type</a> typedef</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"></td></tr>
   <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>elements</b> (defined in <b>std::allocator&lt; T &gt;</b>)</td><td class="entry"><a class="el" href="classstd_1_1allocator.html">std::allocator&lt; T &gt;</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>pointer</b> typedef (defined in <a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a>)</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>reference</b> typedef (defined in <a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a>)</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>secure_allocator</b>() (defined in <a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a>)</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>secure_allocator</b>(const secure_allocator &amp;a) (defined in <a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a>)</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>secure_allocator</b>(const secure_allocator&lt; U &gt; &amp;a) (defined in <a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a>)</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>size_type</b> typedef (defined in <a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a>)</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>value_type</b> typedef (defined in <a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a>)</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>~secure_allocator</b>() (defined in <a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a>)</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr><td class="entry"><a class="el" href="structsecure__allocator.html#a71b267e8d1667eacf8c3505cce785aea">pointer</a> typedef</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="structsecure__allocator.html#a6d85bb5fed183fb2304b8403a8843eb4">reference</a> typedef</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"></td></tr>
+  <tr><td class="entry"><a class="el" href="structsecure__allocator.html#ac5a927e4133d37b72aece43242903760">secure_allocator</a>()</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="structsecure__allocator.html#ae5bfb3589a310e55894bae988d566c44">secure_allocator</a>(const secure_allocator &amp;a)</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr><td class="entry"><a class="el" href="structsecure__allocator.html#ad7605317012ed2eed2eecb955345d140">secure_allocator</a>(const secure_allocator&lt; U &gt; &amp;a)</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="structsecure__allocator.html#aa9db67804b069d61983213bded98c08f">size_type</a> typedef</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"></td></tr>
+  <tr><td class="entry"><a class="el" href="structsecure__allocator.html#a344198c1316ccf0a1b58ce9c0de7c012">value_type</a> typedef</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="structsecure__allocator.html#ac942adb3e90eff2b3b17be72a63c86a8">~secure_allocator</a>()</td><td class="entry"><a class="el" href="structsecure__allocator.html">secure_allocator&lt; T &gt;</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
 </table></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon May 27 2013 16:47:08 for RippleD by &#160;<a href="http://www.doxygen.org/index.html">
+Generated by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>

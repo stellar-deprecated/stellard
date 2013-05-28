@@ -39,9 +39,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="namespaces.html"><span>Namespaces</span></a></li>
       <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
-      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -64,7 +65,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     <ul class="tablist">
       <li><a href="annotated.html"><span>Class&#160;List</span></a></li>
       <li><a href="classes.html"><span>Class&#160;Index</span></a></li>
-      <li><a href="hierarchy.html"><span>Class&#160;Hierarchy</span></a></li>
+      <li><a href="inherits.html"><span>Class&#160;Hierarchy</span></a></li>
+      <li><a href="functions.html"><span>Class&#160;Members</span></a></li>
     </ul>
   </div>
 <!-- window showing the filter options -->
@@ -72,7 +74,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(10)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -93,165 +95,1304 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">base_uint&lt; BITS &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="dynheader">
-Inheritance diagram for base_uint&lt; BITS &gt;:</div>
-<div class="dyncontent">
- <div class="center">
-  <img src="classbase__uint.png" usemap="#base_uint&lt; BITS &gt;_map" alt=""/>
-  <map id="base_uint&lt; BITS &gt;_map" name="base_uint&lt; BITS &gt;_map">
-<area href="classuint128.html" alt="uint128" shape="rect" coords="0,56,116,80"/>
-<area href="classuint160.html" alt="uint160" shape="rect" coords="126,56,242,80"/>
-<area href="classuint256.html" alt="uint256" shape="rect" coords="252,56,368,80"/>
-</map>
- </div></div>
+
+<p><code>#include &lt;ripple_UInt256.h&gt;</code></p>
+<div id="dynsection-0" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-0-trigger" src="closed.png" alt="+"/> Inheritance diagram for base_uint&lt; BITS &gt;:</div>
+<div id="dynsection-0-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-0-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classbase__uint__inherit__graph.png" border="0" usemap="#base__uint_3_01_b_i_t_s_01_4_inherit__map" alt="Inheritance graph"/></div>
+<map name="base__uint_3_01_b_i_t_s_01_4_inherit__map" id="base__uint_3_01_b_i_t_s_01_4_inherit__map">
+<area shape="rect" id="node2" href="classuint128.html" title="uint128\&lt; 128 \&gt;" alt="" coords="5,80,115,107"/><area shape="rect" id="node3" href="classuint160.html" title="uint160\&lt; 160 \&gt;" alt="" coords="139,80,248,107"/><area shape="rect" id="node4" href="classuint256.html" title="uint256\&lt; 256 \&gt;" alt="" coords="272,80,381,107"/></map>
+<center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a5cc197e472bd52cd3b178fc367f35e5d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5cc197e472bd52cd3b178fc367f35e5d"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>isZero</b> () const </td></tr>
+<tr class="memitem:a5cc197e472bd52cd3b178fc367f35e5d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a5cc197e472bd52cd3b178fc367f35e5d">isZero</a> () const </td></tr>
 <tr class="separator:a5cc197e472bd52cd3b178fc367f35e5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a10eb96311682090e9d6de6b6c85118bb"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a10eb96311682090e9d6de6b6c85118bb"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>isNonZero</b> () const </td></tr>
+<tr class="memitem:a10eb96311682090e9d6de6b6c85118bb"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a10eb96311682090e9d6de6b6c85118bb">isNonZero</a> () const </td></tr>
 <tr class="separator:a10eb96311682090e9d6de6b6c85118bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0f528438872245b8fc54ff60bbb6118a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0f528438872245b8fc54ff60bbb6118a"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!</b> () const </td></tr>
+<tr class="memitem:a0f528438872245b8fc54ff60bbb6118a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a0f528438872245b8fc54ff60bbb6118a">operator!</a> () const </td></tr>
 <tr class="separator:a0f528438872245b8fc54ff60bbb6118a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad64a83e128fcf2d2ac072811a3e36300"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad64a83e128fcf2d2ac072811a3e36300"></a>
-const <a class="el" href="classbase__uint.html">base_uint</a>&#160;</td><td class="memItemRight" valign="bottom"><b>operator~</b> () const </td></tr>
+<tr class="memitem:ad64a83e128fcf2d2ac072811a3e36300"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classbase__uint.html">base_uint</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#ad64a83e128fcf2d2ac072811a3e36300">operator~</a> () const </td></tr>
 <tr class="separator:ad64a83e128fcf2d2ac072811a3e36300"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4b1eb7eea2ef3454f4da5ab32e7bb593"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4b1eb7eea2ef3454f4da5ab32e7bb593"></a>
-<a class="el" href="classbase__uint.html">base_uint</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (uint64 uHost)</td></tr>
+<tr class="memitem:a4b1eb7eea2ef3454f4da5ab32e7bb593"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbase__uint.html">base_uint</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a4b1eb7eea2ef3454f4da5ab32e7bb593">operator=</a> (uint64 uHost)</td></tr>
 <tr class="separator:a4b1eb7eea2ef3454f4da5ab32e7bb593"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad5ec10977ebeab115fe857637990e267"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad5ec10977ebeab115fe857637990e267"></a>
-<a class="el" href="classbase__uint.html">base_uint</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator^=</b> (const <a class="el" href="classbase__uint.html">base_uint</a> &amp;b)</td></tr>
+<tr class="memitem:ad5ec10977ebeab115fe857637990e267"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbase__uint.html">base_uint</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#ad5ec10977ebeab115fe857637990e267">operator^=</a> (const <a class="el" href="classbase__uint.html">base_uint</a> &amp;b)</td></tr>
 <tr class="separator:ad5ec10977ebeab115fe857637990e267"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6cb549b322e5bbcca794366f5fd3fb15"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6cb549b322e5bbcca794366f5fd3fb15"></a>
-<a class="el" href="classbase__uint.html">base_uint</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator&amp;=</b> (const <a class="el" href="classbase__uint.html">base_uint</a> &amp;b)</td></tr>
+<tr class="memitem:a6cb549b322e5bbcca794366f5fd3fb15"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbase__uint.html">base_uint</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a6cb549b322e5bbcca794366f5fd3fb15">operator&amp;=</a> (const <a class="el" href="classbase__uint.html">base_uint</a> &amp;b)</td></tr>
 <tr class="separator:a6cb549b322e5bbcca794366f5fd3fb15"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab116d89cbae68b32fbecf5d1de98bb2e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab116d89cbae68b32fbecf5d1de98bb2e"></a>
-<a class="el" href="classbase__uint.html">base_uint</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator|=</b> (const <a class="el" href="classbase__uint.html">base_uint</a> &amp;b)</td></tr>
+<tr class="memitem:ab116d89cbae68b32fbecf5d1de98bb2e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbase__uint.html">base_uint</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#ab116d89cbae68b32fbecf5d1de98bb2e">operator|=</a> (const <a class="el" href="classbase__uint.html">base_uint</a> &amp;b)</td></tr>
 <tr class="separator:ab116d89cbae68b32fbecf5d1de98bb2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a56b54869886808961092d3f764fadd9f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a56b54869886808961092d3f764fadd9f"></a>
-<a class="el" href="classbase__uint.html">base_uint</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator++</b> ()</td></tr>
+<tr class="memitem:a56b54869886808961092d3f764fadd9f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbase__uint.html">base_uint</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a56b54869886808961092d3f764fadd9f">operator++</a> ()</td></tr>
 <tr class="separator:a56b54869886808961092d3f764fadd9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2d5a123c856b2b31fae5f65891832486"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2d5a123c856b2b31fae5f65891832486"></a>
-const <a class="el" href="classbase__uint.html">base_uint</a>&#160;</td><td class="memItemRight" valign="bottom"><b>operator++</b> (int)</td></tr>
+<tr class="memitem:a2d5a123c856b2b31fae5f65891832486"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classbase__uint.html">base_uint</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a2d5a123c856b2b31fae5f65891832486">operator++</a> (int)</td></tr>
 <tr class="separator:a2d5a123c856b2b31fae5f65891832486"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2cc581d32afac619acd12601ddea4180"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2cc581d32afac619acd12601ddea4180"></a>
-<a class="el" href="classbase__uint.html">base_uint</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator--</b> ()</td></tr>
+<tr class="memitem:a2cc581d32afac619acd12601ddea4180"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbase__uint.html">base_uint</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a2cc581d32afac619acd12601ddea4180">operator--</a> ()</td></tr>
 <tr class="separator:a2cc581d32afac619acd12601ddea4180"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a78a8e46c434c0e61be86282fe9543587"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a78a8e46c434c0e61be86282fe9543587"></a>
-const <a class="el" href="classbase__uint.html">base_uint</a>&#160;</td><td class="memItemRight" valign="bottom"><b>operator--</b> (int)</td></tr>
+<tr class="memitem:a78a8e46c434c0e61be86282fe9543587"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classbase__uint.html">base_uint</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a78a8e46c434c0e61be86282fe9543587">operator--</a> (int)</td></tr>
 <tr class="separator:a78a8e46c434c0e61be86282fe9543587"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8fb3109e7c46536bb66ac41242176246"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8fb3109e7c46536bb66ac41242176246"></a>
-<a class="el" href="classbase__uint.html">base_uint</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator+=</b> (const <a class="el" href="classbase__uint.html">base_uint</a> &amp;b)</td></tr>
+<tr class="memitem:a8fb3109e7c46536bb66ac41242176246"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbase__uint.html">base_uint</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a8fb3109e7c46536bb66ac41242176246">operator+=</a> (const <a class="el" href="classbase__uint.html">base_uint</a> &amp;b)</td></tr>
 <tr class="separator:a8fb3109e7c46536bb66ac41242176246"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6c6da0b47ca560a828bb892b632632be"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6c6da0b47ca560a828bb892b632632be"></a>
-std::size_t&#160;</td><td class="memItemRight" valign="bottom"><b>hash_combine</b> (std::size_t &amp;seed) const </td></tr>
+<tr class="memitem:a6c6da0b47ca560a828bb892b632632be"><td class="memItemLeft" align="right" valign="top">std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a6c6da0b47ca560a828bb892b632632be">hash_combine</a> (std::size_t &amp;seed) const </td></tr>
 <tr class="separator:a6c6da0b47ca560a828bb892b632632be"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac9929c28600796a9acf75881bb750576"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac9929c28600796a9acf75881bb750576"></a>
-std::string&#160;</td><td class="memItemRight" valign="bottom"><b>GetHex</b> () const </td></tr>
+<tr class="memitem:ac9929c28600796a9acf75881bb750576"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#ac9929c28600796a9acf75881bb750576">GetHex</a> () const </td></tr>
 <tr class="separator:ac9929c28600796a9acf75881bb750576"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a95ae7e2c6c87d32de143ecfa7dbe64bf"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a95ae7e2c6c87d32de143ecfa7dbe64bf"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>SetHexExact</b> (const char *psz)</td></tr>
+<tr class="memitem:a95ae7e2c6c87d32de143ecfa7dbe64bf"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a95ae7e2c6c87d32de143ecfa7dbe64bf">SetHexExact</a> (const char *psz)</td></tr>
 <tr class="separator:a95ae7e2c6c87d32de143ecfa7dbe64bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4fb11313e8b9e917b0cfaadf1419684e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4fb11313e8b9e917b0cfaadf1419684e"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>SetHex</b> (const char *psz, bool bStrict=false)</td></tr>
+<tr class="memitem:a4fb11313e8b9e917b0cfaadf1419684e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a4fb11313e8b9e917b0cfaadf1419684e">SetHex</a> (const char *psz, bool bStrict=false)</td></tr>
 <tr class="separator:a4fb11313e8b9e917b0cfaadf1419684e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5948cb1a7642e22d0503d24e26461ec9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5948cb1a7642e22d0503d24e26461ec9"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>SetHex</b> (const std::string &amp;str, bool bStrict=false)</td></tr>
+<tr class="memitem:a5948cb1a7642e22d0503d24e26461ec9"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a5948cb1a7642e22d0503d24e26461ec9">SetHex</a> (const std::string &amp;str, bool bStrict=false)</td></tr>
 <tr class="separator:a5948cb1a7642e22d0503d24e26461ec9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a73d70c312b2abc936bb571f3f7f6a541"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a73d70c312b2abc936bb571f3f7f6a541"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>SetHexExact</b> (const std::string &amp;str)</td></tr>
+<tr class="memitem:a73d70c312b2abc936bb571f3f7f6a541"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a73d70c312b2abc936bb571f3f7f6a541">SetHexExact</a> (const std::string &amp;str)</td></tr>
 <tr class="separator:a73d70c312b2abc936bb571f3f7f6a541"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac3080a72402cadf28dbc9f9b69cc60be"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac3080a72402cadf28dbc9f9b69cc60be"></a>
-std::string&#160;</td><td class="memItemRight" valign="bottom"><b>ToString</b> () const </td></tr>
+<tr class="memitem:ac3080a72402cadf28dbc9f9b69cc60be"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#ac3080a72402cadf28dbc9f9b69cc60be">ToString</a> () const </td></tr>
 <tr class="separator:ac3080a72402cadf28dbc9f9b69cc60be"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaa32054bf4e8fbb31d54a75f6065174d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aaa32054bf4e8fbb31d54a75f6065174d"></a>
-unsigned char *&#160;</td><td class="memItemRight" valign="bottom"><b>begin</b> ()</td></tr>
+<tr class="memitem:aaa32054bf4e8fbb31d54a75f6065174d"><td class="memItemLeft" align="right" valign="top">unsigned char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#aaa32054bf4e8fbb31d54a75f6065174d">begin</a> ()</td></tr>
 <tr class="separator:aaa32054bf4e8fbb31d54a75f6065174d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a76539ef6be800bc02e4038f457a4f74a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a76539ef6be800bc02e4038f457a4f74a"></a>
-unsigned char *&#160;</td><td class="memItemRight" valign="bottom"><b>end</b> ()</td></tr>
+<tr class="memitem:a76539ef6be800bc02e4038f457a4f74a"><td class="memItemLeft" align="right" valign="top">unsigned char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a76539ef6be800bc02e4038f457a4f74a">end</a> ()</td></tr>
 <tr class="separator:a76539ef6be800bc02e4038f457a4f74a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae2049504988d5024ccfe71fb52b2009a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae2049504988d5024ccfe71fb52b2009a"></a>
-const unsigned char *&#160;</td><td class="memItemRight" valign="bottom"><b>begin</b> () const </td></tr>
+<tr class="memitem:ae2049504988d5024ccfe71fb52b2009a"><td class="memItemLeft" align="right" valign="top">const unsigned char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#ae2049504988d5024ccfe71fb52b2009a">begin</a> () const </td></tr>
 <tr class="separator:ae2049504988d5024ccfe71fb52b2009a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4e073e41505b8fb901881342a7ea397a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4e073e41505b8fb901881342a7ea397a"></a>
-const unsigned char *&#160;</td><td class="memItemRight" valign="bottom"><b>end</b> () const </td></tr>
+<tr class="memitem:a4e073e41505b8fb901881342a7ea397a"><td class="memItemLeft" align="right" valign="top">const unsigned char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a4e073e41505b8fb901881342a7ea397a">end</a> () const </td></tr>
 <tr class="separator:a4e073e41505b8fb901881342a7ea397a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae0e221686cd63384569a8db5cc06d4c9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae0e221686cd63384569a8db5cc06d4c9"></a>
-unsigned int&#160;</td><td class="memItemRight" valign="bottom"><b>size</b> () const </td></tr>
+<tr class="memitem:ae0e221686cd63384569a8db5cc06d4c9"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#ae0e221686cd63384569a8db5cc06d4c9">size</a> () const </td></tr>
 <tr class="separator:ae0e221686cd63384569a8db5cc06d4c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acfd4cc3fa9c180a77a3cc5c2ab519fe7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acfd4cc3fa9c180a77a3cc5c2ab519fe7"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>zero</b> ()</td></tr>
+<tr class="memitem:acfd4cc3fa9c180a77a3cc5c2ab519fe7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#acfd4cc3fa9c180a77a3cc5c2ab519fe7">zero</a> ()</td></tr>
 <tr class="separator:acfd4cc3fa9c180a77a3cc5c2ab519fe7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3daf5d7741927839811c6672a541eb11"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3daf5d7741927839811c6672a541eb11"></a>
-unsigned int&#160;</td><td class="memItemRight" valign="bottom"><b>GetSerializeSize</b> (int nType=0) const </td></tr>
+<tr class="memitem:a3daf5d7741927839811c6672a541eb11"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a3daf5d7741927839811c6672a541eb11">GetSerializeSize</a> (int nType=0) const </td></tr>
 <tr class="separator:a3daf5d7741927839811c6672a541eb11"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a451d3ddaeffcff19a1dc3413c3dd3968"><td class="memTemplParams" colspan="2"><a class="anchor" id="a451d3ddaeffcff19a1dc3413c3dd3968"></a>
-template&lt;typename Stream &gt; </td></tr>
-<tr class="memitem:a451d3ddaeffcff19a1dc3413c3dd3968"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>Serialize</b> (Stream &amp;s, int nType=0) const </td></tr>
+<tr class="memitem:a451d3ddaeffcff19a1dc3413c3dd3968"><td class="memTemplParams" colspan="2">template&lt;typename Stream &gt; </td></tr>
+<tr class="memitem:a451d3ddaeffcff19a1dc3413c3dd3968"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a451d3ddaeffcff19a1dc3413c3dd3968">Serialize</a> (Stream &amp;s, int nType=0) const </td></tr>
 <tr class="separator:a451d3ddaeffcff19a1dc3413c3dd3968"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4c947f5ffd583063abdccc0f99837adf"><td class="memTemplParams" colspan="2"><a class="anchor" id="a4c947f5ffd583063abdccc0f99837adf"></a>
-template&lt;typename Stream &gt; </td></tr>
-<tr class="memitem:a4c947f5ffd583063abdccc0f99837adf"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>Unserialize</b> (Stream &amp;s, int nType=0)</td></tr>
+<tr class="memitem:a4c947f5ffd583063abdccc0f99837adf"><td class="memTemplParams" colspan="2">template&lt;typename Stream &gt; </td></tr>
+<tr class="memitem:a4c947f5ffd583063abdccc0f99837adf"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a4c947f5ffd583063abdccc0f99837adf">Unserialize</a> (Stream &amp;s, int nType=0)</td></tr>
 <tr class="separator:a4c947f5ffd583063abdccc0f99837adf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-types"></a>
 Protected Types</h2></td></tr>
-<tr class="memitem:afee51629f03ba95d823ab4ee94cf6c81"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <b>WIDTH</b> =BITS/32
+<tr class="memitem:afee51629f03ba95d823ab4ee94cf6c81"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="classbase__uint.html#afee51629f03ba95d823ab4ee94cf6c81adf579395d753e2d9607ecd61424f0853">WIDTH</a> =BITS/32
  }</td></tr>
 <tr class="separator:afee51629f03ba95d823ab4ee94cf6c81"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
-<tr class="memitem:af84c551177d5de2f5cbce0fe0c2bab64"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af84c551177d5de2f5cbce0fe0c2bab64"></a>
-unsigned int&#160;</td><td class="memItemRight" valign="bottom"><b>pn</b> [WIDTH]</td></tr>
+<tr class="memitem:af84c551177d5de2f5cbce0fe0c2bab64"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#af84c551177d5de2f5cbce0fe0c2bab64">pn</a> [<a class="el" href="classbase__uint.html#afee51629f03ba95d823ab4ee94cf6c81adf579395d753e2d9607ecd61424f0853">WIDTH</a>]</td></tr>
 <tr class="separator:af84c551177d5de2f5cbce0fe0c2bab64"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
-<tr class="memitem:a4c0ad808d866f80efa054eaf149e3ef7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4c0ad808d866f80efa054eaf149e3ef7"></a>
-class&#160;</td><td class="memItemRight" valign="bottom"><b>uint128</b></td></tr>
+<tr class="memitem:a4c0ad808d866f80efa054eaf149e3ef7"><td class="memItemLeft" align="right" valign="top">class&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a4c0ad808d866f80efa054eaf149e3ef7">uint128</a></td></tr>
 <tr class="separator:a4c0ad808d866f80efa054eaf149e3ef7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa02da58f540b087723acd9a92ceca5f1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa02da58f540b087723acd9a92ceca5f1"></a>
-class&#160;</td><td class="memItemRight" valign="bottom"><b>uint160</b></td></tr>
+<tr class="memitem:aa02da58f540b087723acd9a92ceca5f1"><td class="memItemLeft" align="right" valign="top">class&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#aa02da58f540b087723acd9a92ceca5f1">uint160</a></td></tr>
 <tr class="separator:aa02da58f540b087723acd9a92ceca5f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2748616a40a1e4fdd6db14b92e9619e2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2748616a40a1e4fdd6db14b92e9619e2"></a>
-class&#160;</td><td class="memItemRight" valign="bottom"><b>uint256</b></td></tr>
+<tr class="memitem:a2748616a40a1e4fdd6db14b92e9619e2"><td class="memItemLeft" align="right" valign="top">class&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a2748616a40a1e4fdd6db14b92e9619e2">uint256</a></td></tr>
 <tr class="separator:a2748616a40a1e4fdd6db14b92e9619e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a11fa9c8ab1f6e661f2354c9115e32615"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a11fa9c8ab1f6e661f2354c9115e32615"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>compare</b> (const <a class="el" href="classbase__uint.html">base_uint</a> &amp;a, const <a class="el" href="classbase__uint.html">base_uint</a> &amp;b)</td></tr>
+<tr class="memitem:a11fa9c8ab1f6e661f2354c9115e32615"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a11fa9c8ab1f6e661f2354c9115e32615">compare</a> (const <a class="el" href="classbase__uint.html">base_uint</a> &amp;a, const <a class="el" href="classbase__uint.html">base_uint</a> &amp;b)</td></tr>
 <tr class="separator:a11fa9c8ab1f6e661f2354c9115e32615"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a89272b5112f90ba683c0f066ba1426c1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a89272b5112f90ba683c0f066ba1426c1"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator&lt;</b> (const <a class="el" href="classbase__uint.html">base_uint</a> &amp;a, const <a class="el" href="classbase__uint.html">base_uint</a> &amp;b)</td></tr>
+<tr class="memitem:a89272b5112f90ba683c0f066ba1426c1"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a89272b5112f90ba683c0f066ba1426c1">operator&lt;</a> (const <a class="el" href="classbase__uint.html">base_uint</a> &amp;a, const <a class="el" href="classbase__uint.html">base_uint</a> &amp;b)</td></tr>
 <tr class="separator:a89272b5112f90ba683c0f066ba1426c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac7f1bdba7208bd852f7b00f7c49624f8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac7f1bdba7208bd852f7b00f7c49624f8"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator&lt;=</b> (const <a class="el" href="classbase__uint.html">base_uint</a> &amp;a, const <a class="el" href="classbase__uint.html">base_uint</a> &amp;b)</td></tr>
+<tr class="memitem:ac7f1bdba7208bd852f7b00f7c49624f8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#ac7f1bdba7208bd852f7b00f7c49624f8">operator&lt;=</a> (const <a class="el" href="classbase__uint.html">base_uint</a> &amp;a, const <a class="el" href="classbase__uint.html">base_uint</a> &amp;b)</td></tr>
 <tr class="separator:ac7f1bdba7208bd852f7b00f7c49624f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac59719bd052d5dc2afcc35ae4a8843ab"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac59719bd052d5dc2afcc35ae4a8843ab"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator&gt;</b> (const <a class="el" href="classbase__uint.html">base_uint</a> &amp;a, const <a class="el" href="classbase__uint.html">base_uint</a> &amp;b)</td></tr>
+<tr class="memitem:ac59719bd052d5dc2afcc35ae4a8843ab"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#ac59719bd052d5dc2afcc35ae4a8843ab">operator&gt;</a> (const <a class="el" href="classbase__uint.html">base_uint</a> &amp;a, const <a class="el" href="classbase__uint.html">base_uint</a> &amp;b)</td></tr>
 <tr class="separator:ac59719bd052d5dc2afcc35ae4a8843ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9eb243df5a6dfa3d0cd326427d99bfa6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9eb243df5a6dfa3d0cd326427d99bfa6"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator&gt;=</b> (const <a class="el" href="classbase__uint.html">base_uint</a> &amp;a, const <a class="el" href="classbase__uint.html">base_uint</a> &amp;b)</td></tr>
+<tr class="memitem:a9eb243df5a6dfa3d0cd326427d99bfa6"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a9eb243df5a6dfa3d0cd326427d99bfa6">operator&gt;=</a> (const <a class="el" href="classbase__uint.html">base_uint</a> &amp;a, const <a class="el" href="classbase__uint.html">base_uint</a> &amp;b)</td></tr>
 <tr class="separator:a9eb243df5a6dfa3d0cd326427d99bfa6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aafca305decdfd2ded4688213ab4a55fa"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aafca305decdfd2ded4688213ab4a55fa"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="classbase__uint.html">base_uint</a> &amp;a, const <a class="el" href="classbase__uint.html">base_uint</a> &amp;b)</td></tr>
+<tr class="memitem:aafca305decdfd2ded4688213ab4a55fa"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#aafca305decdfd2ded4688213ab4a55fa">operator==</a> (const <a class="el" href="classbase__uint.html">base_uint</a> &amp;a, const <a class="el" href="classbase__uint.html">base_uint</a> &amp;b)</td></tr>
 <tr class="separator:aafca305decdfd2ded4688213ab4a55fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3cc3bccf252004fbbd2b96dc769378e7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3cc3bccf252004fbbd2b96dc769378e7"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!=</b> (const <a class="el" href="classbase__uint.html">base_uint</a> &amp;a, const <a class="el" href="classbase__uint.html">base_uint</a> &amp;b)</td></tr>
+<tr class="memitem:a3cc3bccf252004fbbd2b96dc769378e7"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a3cc3bccf252004fbbd2b96dc769378e7">operator!=</a> (const <a class="el" href="classbase__uint.html">base_uint</a> &amp;a, const <a class="el" href="classbase__uint.html">base_uint</a> &amp;b)</td></tr>
 <tr class="separator:a3cc3bccf252004fbbd2b96dc769378e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4693ae47fe4f0b658eccfb36e6d51343"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4693ae47fe4f0b658eccfb36e6d51343"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>Testuint256AdHoc</b> (std::vector&lt; std::string &gt; vArg)</td></tr>
+<tr class="memitem:a4693ae47fe4f0b658eccfb36e6d51343"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classbase__uint.html#a4693ae47fe4f0b658eccfb36e6d51343">Testuint256AdHoc</a> (std::vector&lt; std::string &gt; vArg)</td></tr>
 <tr class="separator:a4693ae47fe4f0b658eccfb36e6d51343"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Enumeration Documentation</h2>
+<a class="anchor" id="afee51629f03ba95d823ab4ee94cf6c81"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">anonymous enum</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><em><a class="anchor" id="afee51629f03ba95d823ab4ee94cf6c81adf579395d753e2d9607ecd61424f0853"></a>WIDTH</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+</table>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a5cc197e472bd52cd3b178fc367f35e5d"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::isZero </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a10eb96311682090e9d6de6b6c85118bb"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::isNonZero </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a0f528438872245b8fc54ff60bbb6118a"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::operator! </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ad64a83e128fcf2d2ac072811a3e36300"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="classbase__uint.html">base_uint</a> <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::operator~ </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a4b1eb7eea2ef3454f4da5ab32e7bb593"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbase__uint.html">base_uint</a>&amp; <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::operator= </td>
+          <td>(</td>
+          <td class="paramtype">uint64&#160;</td>
+          <td class="paramname"><em>uHost</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ad5ec10977ebeab115fe857637990e267"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbase__uint.html">base_uint</a>&amp; <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::operator^= </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt; &amp;&#160;</td>
+          <td class="paramname"><em>b</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a6cb549b322e5bbcca794366f5fd3fb15"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbase__uint.html">base_uint</a>&amp; <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::operator&amp;= </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt; &amp;&#160;</td>
+          <td class="paramname"><em>b</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ab116d89cbae68b32fbecf5d1de98bb2e"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbase__uint.html">base_uint</a>&amp; <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::operator|= </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt; &amp;&#160;</td>
+          <td class="paramname"><em>b</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a56b54869886808961092d3f764fadd9f"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbase__uint.html">base_uint</a>&amp; <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::operator++ </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a2d5a123c856b2b31fae5f65891832486"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="classbase__uint.html">base_uint</a> <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::operator++ </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a2cc581d32afac619acd12601ddea4180"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbase__uint.html">base_uint</a>&amp; <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::operator-- </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a78a8e46c434c0e61be86282fe9543587"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="classbase__uint.html">base_uint</a> <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::operator-- </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a8fb3109e7c46536bb66ac41242176246"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbase__uint.html">base_uint</a>&amp; <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::operator+= </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt; &amp;&#160;</td>
+          <td class="paramname"><em>b</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a6c6da0b47ca560a828bb892b632632be"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::size_t <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::hash_combine </td>
+          <td>(</td>
+          <td class="paramtype">std::size_t &amp;&#160;</td>
+          <td class="paramname"><em>seed</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ac9929c28600796a9acf75881bb750576"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::GetHex </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a95ae7e2c6c87d32de143ecfa7dbe64bf"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::SetHexExact </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>psz</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a4fb11313e8b9e917b0cfaadf1419684e"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::SetHex </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>psz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>bStrict</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a5948cb1a7642e22d0503d24e26461ec9"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::SetHex </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>str</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>bStrict</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a73d70c312b2abc936bb571f3f7f6a541"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::SetHexExact </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>str</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ac3080a72402cadf28dbc9f9b69cc60be"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::ToString </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aaa32054bf4e8fbb31d54a75f6065174d"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned char* <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::begin </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a76539ef6be800bc02e4038f457a4f74a"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned char* <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::end </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ae2049504988d5024ccfe71fb52b2009a"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const unsigned char* <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::begin </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a4e073e41505b8fb901881342a7ea397a"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const unsigned char* <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::end </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ae0e221686cd63384569a8db5cc06d4c9"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned int <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::size </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="acfd4cc3fa9c180a77a3cc5c2ab519fe7"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::zero </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a3daf5d7741927839811c6672a541eb11"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned int <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::GetSerializeSize </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>nType</em> = <code>0</code></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a451d3ddaeffcff19a1dc3413c3dd3968"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<div class="memtemplate">
+template&lt;typename Stream &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::Serialize </td>
+          <td>(</td>
+          <td class="paramtype">Stream &amp;&#160;</td>
+          <td class="paramname"><em>s</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>nType</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a4c947f5ffd583063abdccc0f99837adf"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<div class="memtemplate">
+template&lt;typename Stream &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::Unserialize </td>
+          <td>(</td>
+          <td class="paramtype">Stream &amp;&#160;</td>
+          <td class="paramname"><em>s</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>nType</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Friends And Related Function Documentation</h2>
+<a class="anchor" id="a4c0ad808d866f80efa054eaf149e3ef7"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">friend class <a class="el" href="classuint128.html">uint128</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa02da58f540b087723acd9a92ceca5f1"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">friend class <a class="el" href="classuint160.html">uint160</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a2748616a40a1e4fdd6db14b92e9619e2"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">friend class <a class="el" href="classuint256.html">uint256</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a11fa9c8ab1f6e661f2354c9115e32615"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int compare </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt; &amp;&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt; &amp;&#160;</td>
+          <td class="paramname"><em>b</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a89272b5112f90ba683c0f066ba1426c1"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool operator&lt; </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt; &amp;&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt; &amp;&#160;</td>
+          <td class="paramname"><em>b</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ac7f1bdba7208bd852f7b00f7c49624f8"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool operator&lt;= </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt; &amp;&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt; &amp;&#160;</td>
+          <td class="paramname"><em>b</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ac59719bd052d5dc2afcc35ae4a8843ab"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool operator&gt; </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt; &amp;&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt; &amp;&#160;</td>
+          <td class="paramname"><em>b</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a9eb243df5a6dfa3d0cd326427d99bfa6"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool operator&gt;= </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt; &amp;&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt; &amp;&#160;</td>
+          <td class="paramname"><em>b</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aafca305decdfd2ded4688213ab4a55fa"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool operator== </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt; &amp;&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt; &amp;&#160;</td>
+          <td class="paramname"><em>b</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a3cc3bccf252004fbbd2b96dc769378e7"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classbase__uint.html#a0f528438872245b8fc54ff60bbb6118a">operator!</a>= </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt; &amp;&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt; &amp;&#160;</td>
+          <td class="paramname"><em>b</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a4693ae47fe4f0b658eccfb36e6d51343"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int Testuint256AdHoc </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; std::string &gt;&#160;</td>
+          <td class="paramname"><em>vArg</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a class="anchor" id="af84c551177d5de2f5cbce0fe0c2bab64"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;unsigned int BITS&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned int <a class="el" href="classbase__uint.html">base_uint</a>&lt; BITS &gt;::pn[<a class="el" href="classbase__uint.html#afee51629f03ba95d823ab4ee94cf6c81adf579395d753e2d9607ecd61424f0853">WIDTH</a>]</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li><a class="el" href="ripple___u_int256_8h_source.html">ripple_UInt256.h</a></li>
+<li>ripple_UInt256.h</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon May 27 2013 16:47:08 for RippleD by &#160;<a href="http://www.doxygen.org/index.html">
+Generated by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.3.1
 </small></address>
