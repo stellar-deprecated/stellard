@@ -1,7 +1,7 @@
 {
-  "name": "rippled",
+  "name": "stellard",
   "version": "0.0.1",
-  "description": "Rippled Server",
+  "description": "Stellard Server",
 
   "private": true,
 
@@ -10,7 +10,6 @@
   },
 
   "dependencies": {
-    "ripple-lib": "0.7.25",
     "async": "~0.2.9",
     "extend": "~1.2.0",
     "simple-jsonrpc": "~0.0.2",
@@ -27,7 +26,7 @@
 
   "repository": {
     "type": "git",
-    "url": "git://github.com/ripple/rippled.git"
+    "url": "git://github.com/stellar/stellard.git"
   },
 
   "readmeFilename": "README.md"
