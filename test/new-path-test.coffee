@@ -12,7 +12,7 @@ deep_eq                    = require 'deep-equal'
  Transaction
  PathFind
  sjcl
- UInt160}                  = require 'ripple-lib'
+ UInt160}                  = require 'stellar-lib'
 
 testutils                  = require './testutils'
 {Server}                   = require './server'
@@ -314,7 +314,7 @@ create_path_test = (pth) ->
     one_message = (f) ->
       self.remote._servers[0].once 'before_send_message_for_non_mutators', f
 
-    sent = "TODO: need to patch ripple-lib"
+    sent = "TODO: need to patch stellar-lib"
     one_message (m) -> sent = m
 
     error_info = (m, more) ->
@@ -333,7 +333,7 @@ create_path_test = (pth) ->
     _dst = UInt160.json_rewrite(pth.dst)
     _amt = Amount.from_json(pth.send)
 
-    # self.server.clear_logs() "TODO: need to patch ripple-lib"
+    # self.server.clear_logs() "TODO: need to patch stellar-lib"
     pf = self.remote.path_find(_src, _dst, _amt, [{currency: pth.via}])
 
     updates  = 0
@@ -365,7 +365,7 @@ create_path_test = (pth) ->
       #   testutils.ledger_close(self.remote, -> )
 
       if updates == 2
-        # "TODO: need to patch ripple-lib"
+        # "TODO: need to patch stellar-lib"
         # self.log_pre(self.server.get_logs(), "Server Logs")
 
         if pth.do_send?

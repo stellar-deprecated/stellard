@@ -3,7 +3,7 @@ var assert       = require('assert');
 var http         = require("http");
 var jsonrpc      = require("simple-jsonrpc");
 var EventEmitter = require('events').EventEmitter;
-var Remote       = require("ripple-lib").Remote;
+var Remote       = require("stellar-lib").Remote;
 var testutils    = require("./testutils");
 var config       = testutils.init_config();
 

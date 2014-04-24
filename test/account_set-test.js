@@ -1,6 +1,6 @@
 var async     = require("async");
 var assert    = require('assert');
-var Remote    = require("ripple-lib").Remote;
+var Remote    = require("stellar-lib").Remote;
 var testutils = require("./testutils");
 var config    = testutils.init_config();
 

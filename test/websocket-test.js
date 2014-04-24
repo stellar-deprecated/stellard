@@ -1,7 +1,7 @@
 var assert    = require('assert');
 var extend    = require("extend");
 var Server    = require("./server").Server;
-var Remote    = require("ripple-lib").Remote;
+var Remote    = require("stellar-lib").Remote;
 var testutils = require('./testutils');
 var config    = testutils.init_config();
 

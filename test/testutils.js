@@ -1,9 +1,9 @@
 var async       = require('async');
 var assert      = require('assert');
 var extend      = require('extend');
-var Amount      = require('ripple-lib').Amount;
-var Remote      = require('ripple-lib').Remote;
-var Transaction = require('ripple-lib').Transaction;
+var Amount      = require('stellar-lib').Amount;
+var Remote      = require('stellar-lib').Remote;
+var Transaction = require('stellar-lib').Transaction;
 var Server      = require('./server').Server;
 var server      = { };
 
@@ -20,7 +20,7 @@ function get_config() {
 };
 
 function init_config() {
-  return require('ripple-lib').config.load(get_config());
+  return require('stellar-lib').config.load(get_config());
 };
 
 function prepare_tests(tests, fn) {

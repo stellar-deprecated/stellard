@@ -1,10 +1,10 @@
 ////var assert      = require('assert');
 ////var async       = require("async");
 ////var extend      = require('extend');
-////var Amount      = require("ripple-lib").Amount;
-////var Remote      = require("ripple-lib").Remote;
-////var Transaction = require("ripple-lib").Transaction;
-////var RippleError = require("ripple-lib").RippleError;
+////var Amount      = require("stellar-lib").Amount;
+////var Remote      = require("stellar-lib").Remote;
+////var Transaction = require("stellar-lib").Transaction;
+////var RippleError = require("stellar-lib").RippleError;
 ////var Server      = require("./server").Server;
 ////var testutils   = require("./testutils");
 ////var config      = testutils.init_config();
@@ -186,9 +186,9 @@
 //var async       = require("async");
 //var buster      = require("buster");
 //
-//var Amount      = require("ripple-lib").Amount;
-//var Remote      = require("ripple-lib").Remote;
-//var Transaction = require("ripple-lib").Transaction;
+//var Amount      = require("stellar-lib").Amount;
+//var Remote      = require("stellar-lib").Remote;
+//var Transaction = require("stellar-lib").Transaction;
 //var Server      = require("./server").Server;
 //
 //var testutils   = require("./testutils");
