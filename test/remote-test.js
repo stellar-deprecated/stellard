@@ -41,7 +41,7 @@ suite('Remote functions', function() {
 
       var request = $.remote.request_ledger_entry('account_root')
       .ledger_hash(r.ledger_hash)
-      .account_root("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
+      .account_root("gHb9CJAWyB4gj91VRWn96DkukG4bwdtyTh");
 
       request.callback(function(err, r) {
         // console.log("account_root: %s", JSON.stringify(r));
