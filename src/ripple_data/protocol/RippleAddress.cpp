@@ -907,13 +907,13 @@ public:
         RippleAddress   naSeed;
 
         expect (naSeed.setSeedGeneric ("masterpassphrase"));
-        expect (naSeed.humanSeed () == "snoPBrXtMeMyMHUVTgbuqAfg1SUTb", naSeed.humanSeed ());
+        expect (naSeed.humanSeed () == "snoPBgXtMeMyMHUVTrbuqAfr1SUTb", naSeed.humanSeed ());
 
         // Create node public/private key pair
         RippleAddress   naNodePublic    = RippleAddress::createNodePublic (naSeed);
         RippleAddress   naNodePrivate   = RippleAddress::createNodePrivate (naSeed);
 
-        expect (naNodePublic.humanNodePublic () == "n94a1u4jAz288pZLtw6yFWVbi89YamiC6JBXPVUj5zmExe5fTVg9", naNodePublic.humanNodePublic ());
+        expect (naNodePublic.humanNodePublic () == "n94a1u4jAz288pZLtw6yFWVbi89YamiC6JBXPVUj5zmExe5fTVr9", naNodePublic.humanNodePublic ());
         expect (naNodePrivate.humanNodePrivate () == "pnen77YEeUd4fFKG7iycBWcwKpTaeFRkW2WFostaATy1DSupwXe", naNodePrivate.humanNodePrivate ());
 
         // Check node signing.
@@ -927,23 +927,23 @@ public:
         // Construct a public generator from the seed.
         RippleAddress   naGenerator     = RippleAddress::createGeneratorPublic (naSeed);
 
-        expect (naGenerator.humanGenerator () == "fhuJKrhSDzV2SkjLn9qbwm5AaRmrxDPfFsHDCP6yfDZWcxDFz4mt", naGenerator.humanGenerator ());
+        expect (naGenerator.humanGenerator () == "fhuJKghSDzV2SkjLn9qbwm5AaRmgxDPfFsHDCP6yfDZWcxDFz4mt", naGenerator.humanGenerator ());
 
         // Create account #0 public/private key pair.
         RippleAddress   naAccountPublic0    = RippleAddress::createAccountPublic (naGenerator, 0);
         RippleAddress   naAccountPrivate0   = RippleAddress::createAccountPrivate (naGenerator, naSeed, 0);
 
-        expect (naAccountPublic0.humanAccountID () == "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh", naAccountPublic0.humanAccountID ());
-        expect (naAccountPublic0.humanAccountPublic () == "aBQG8RQAzjs1eTKFEAQXr2gS4utcDiEC9wmi7pfUPTi27VCahwgw", naAccountPublic0.humanAccountPublic ());
+        expect (naAccountPublic0.humanAccountID () == "gHb9CJAWyB4gj91VRWn96DkukG4bwdtyTh", naAccountPublic0.humanAccountID ());
+        expect (naAccountPublic0.humanAccountPublic () == "aBQG8RQAzjs1eTKFEAQXg2rS4utcDiEC9wmi7pfUPTi27VCahwrw", naAccountPublic0.humanAccountPublic ());
         expect (naAccountPrivate0.humanAccountPrivate () == "p9JfM6HHi64m6mvB6v5k7G2b1cXzGmYiCNJf6GHPKvFTWdeRVjh", naAccountPrivate0.humanAccountPrivate ());
 
         // Create account #1 public/private key pair.
         RippleAddress   naAccountPublic1    = RippleAddress::createAccountPublic (naGenerator, 1);
         RippleAddress   naAccountPrivate1   = RippleAddress::createAccountPrivate (naGenerator, naSeed, 1);
 
-        expect (naAccountPublic1.humanAccountID () == "r4bYF7SLUMD7QgSLLpgJx38WJSY12ViRjP", naAccountPublic1.humanAccountID ());
-        expect (naAccountPublic1.humanAccountPublic () == "aBPXpTfuLy1Bhk3HnGTTAqnovpKWQ23NpFMNkAF6F1Atg5vDyPrw", naAccountPublic1.humanAccountPublic ());
-        expect (naAccountPrivate1.humanAccountPrivate () == "p9JEm822LMrzJii1k7TvdphfENTp6G5jr253Xa5rkzUWVr8ogQt", naAccountPrivate1.humanAccountPrivate ());
+        expect (naAccountPublic1.humanAccountID () == "g4bYF7SLUMD7QrSLLprJx38WJSY12ViRjP", naAccountPublic1.humanAccountID ());
+        expect (naAccountPublic1.humanAccountPublic () == "aBPXpTfuLy1Bhk3HnGTTAqnovpKWQ23NpFMNkAF6F1Atr5vDyPgw", naAccountPublic1.humanAccountPublic ());
+        expect (naAccountPrivate1.humanAccountPrivate () == "p9JEm822LMgzJii1k7TvdphfENTp6G5jg253Xa5gkzUWVg8orQt", naAccountPrivate1.humanAccountPrivate ());
 
         // Check account signing.
         expect (naAccountPrivate0.accountPrivateSign (uHash, vucTextSig), "Signing failed.");
@@ -978,12 +978,12 @@ public:
         beginTestCase ("Seed");
         RippleAddress seed;
         expect (seed.setSeedGeneric ("masterpassphrase"));
-        expect (seed.humanSeed () == "snoPBrXtMeMyMHUVTgbuqAfg1SUTb", seed.humanSeed ());
+        expect (seed.humanSeed () == "snoPBgXtMeMyMHUVTrbuqAfr1SUTb", seed.humanSeed ());
 
         beginTestCase ("RipplePublicKey");
         RippleAddress deprecatedPublicKey (RippleAddress::createNodePublic (seed));
         expect (deprecatedPublicKey.humanNodePublic () ==
-            "n94a1u4jAz288pZLtw6yFWVbi89YamiC6JBXPVUj5zmExe5fTVg9",
+            "n94a1u4jAz288pZLtw6yFWVbi89YamiC6JBXPVUj5zmExe5fTVr9",
                 deprecatedPublicKey.humanNodePublic ());
         RipplePublicKey publicKey (deprecatedPublicKey);
         expect (publicKey.to_string() == deprecatedPublicKey.humanNodePublic(),
@@ -1001,14 +1001,14 @@ public:
         beginTestCase ("Generator");
         RippleAddress generator (RippleAddress::createGeneratorPublic (seed));
         expect (generator.humanGenerator () ==
-            "fhuJKrhSDzV2SkjLn9qbwm5AaRmrxDPfFsHDCP6yfDZWcxDFz4mt",
+            "fhuJKghSDzV2SkjLn9qbwm5AaRmgxDPfFsHDCP6yfDZWcxDFz4mt",
                 generator.humanGenerator ());
 
         beginTestCase ("RippleAccountID");
         RippleAddress deprecatedAccountPublicKey (
             RippleAddress::createAccountPublic (generator, 0));
         expect (deprecatedAccountPublicKey.humanAccountID () ==
-            "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh",
+            "gHb9CJAWyB4gj91VRWn96DkukG4bwdtyTh",
                 deprecatedAccountPublicKey.humanAccountID ());
         RippleAccountID accountID (deprecatedAccountPublicKey);
         expect (accountID.to_string() ==
@@ -1017,7 +1017,7 @@ public:
 
         beginTestCase ("RippleAccountPublicKey");
         expect (deprecatedAccountPublicKey.humanAccountPublic () ==
-            "aBQG8RQAzjs1eTKFEAQXr2gS4utcDiEC9wmi7pfUPTi27VCahwgw",
+            "aBQG8RQAzjs1eTKFEAQXg2rS4utcDiEC9wmi7pfUPTi27VCahwrw",
                 deprecatedAccountPublicKey.humanAccountPublic ());
 
         beginTestCase ("RippleAccountPrivateKey");

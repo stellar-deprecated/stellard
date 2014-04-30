@@ -54,7 +54,7 @@ public:
         RippleAddress nSeed;
         nSeed.setSeed (seed1);
 
-        unexpected (nSeed.humanSeed () != "shHM53KPZ87Gwdqarm1bAmPeXg8Tn",
+        unexpected (nSeed.humanSeed () != "shHM53KPZ87Gwdqagm1bAmPeXr8Tn",
             "Incorrect human seed");
 
         unexpected (nSeed.humanSeed1751 () != "MAD BODY ACE MINT OKAY HUB WHAT DATA SACK FLAT DANA MATH",
