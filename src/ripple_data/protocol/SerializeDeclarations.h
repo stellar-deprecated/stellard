@@ -170,6 +170,7 @@ FIELD (Destination,          ACCOUNT, 3)
 FIELD (Issuer,               ACCOUNT, 4)
 FIELD (Target,               ACCOUNT, 7)
 FIELD (RegularKey,           ACCOUNT, 8)
+FIELD (InflationDest,        ACCOUNT, 9)
 
 // path set
 FIELD (Paths,                PATHSET, 1)

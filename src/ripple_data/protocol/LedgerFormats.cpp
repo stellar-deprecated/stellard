@@ -34,6 +34,7 @@ LedgerFormats::LedgerFormats ()
             << SOElement (sfMessageKey,          SOE_OPTIONAL)
             << SOElement (sfTransferRate,        SOE_OPTIONAL)
             << SOElement (sfDomain,              SOE_OPTIONAL)
+            << SOElement (sfInflationDest,       SOE_OPTIONAL)
             ;
 
     add ("Contract", ltCONTRACT)

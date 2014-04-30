@@ -15,6 +15,35 @@ suite('Account set', function() {
     testutils.build_teardown().call($, done);
   });
 
+  test('set InflationDest', function(done) {
+    var self = this;
+
+    var steps = [
+      function (callback) {
+        self.what = "Set InflationDest.";
+
+        $.remote.transaction()
+        .account_set("root")
+		.inflation_dest($.remote.account('root')._account_id)
+        .on('submitted', function (m) {
+          //console.log("proposed: %s", JSON.stringify(m));
+          if (m.engine_result === 'tesSUCCESS') {
+            callback(null);
+          } else {
+            callback(new Error(m.engine_result));
+          }
+        })
+        .submit();
+      }
+    ]
+
+    async.waterfall(steps,function (error) {
+      assert(!error, self.what);
+      done();
+    });
+  });
+
+  
   test('set RequireDestTag', function(done) {
     var self = this;
 

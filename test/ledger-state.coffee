@@ -11,7 +11,7 @@ assert      = require 'assert'
   Base
   Transaction
   sjcl
-}           = require 'ripple-lib'
+}           = require 'stellar-lib'
 {Server}    = require './server'
 testutils   = require './testutils'
 

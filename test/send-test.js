@@ -458,6 +458,82 @@ suite('Gateway', function() {
     testutils.build_teardown().call($, done);
   });
 
+  test("trust line", function (done) {
+    var self = this;
+
+    var steps = [
+      function (callback) {
+        self.what = "Create accounts.";
+        testutils.create_accounts($.remote, "root", "10000.0", ["alice", "bob", "mtgox", "bitstamp", "amazon"], callback);
+      },
+
+      function (callback) {
+        self.what = "Set credit limits.";
+
+        testutils.credit_limits($.remote, {
+		  "alice" : [ "100/BTC/amazon", "100/BTC/bitstamp", "100/BTC/mtgox", ] , 
+          "bob"   : "100/BTC/amazon",
+        },
+        callback);
+      },
+
+      function (callback) {
+        self.what = "Distribute funds.";
+
+        testutils.payments($.remote, {
+          "mtgox" 	 : [ "5/BTC/alice" ],
+		  "bitstamp" : [ "5/BTC/alice" ],
+		  "amazon" 	 : [ "5/BTC/alice" ],
+        },
+        callback);
+		
+      },
+
+      function (callback) {
+        self.what = "Verify balances.";
+
+        testutils.verify_balances($.remote, {
+          "alice"   : ["5/BTC/mtgox", "5/BTC/bitstamp", "5/BTC/amazon", ],
+          "amazon"  : "-5/BTC/alice",
+        },
+        callback);
+
+      },
+
+      function (callback) {
+        self.what = "Alice sends Bob 3 BTC";
+
+        $.remote.transaction()
+        .payment("alice", "bob", "3/BTC/bob")
+		.build_path(true)
+        .once('proposed', function (m) {
+          callback(m.engine_result !== 'tesSUCCESS');
+        })
+        .submit();
+		
+      },
+
+      function (callback) {
+        self.what = "Verify balances 2.";
+		
+        testutils.verify_balances($.remote, {
+          "alice"   : ["2/BTC/amazon", "5/BTC/mtgox", "5/BTC/bitstamp", ],
+          "bob"     : "3/BTC/amazon",
+          "amazon"   : ["-3/BTC/bob", "-2/BTC/alice"],
+        },
+        callback);
+		
+      },
+    ]
+
+    async.waterfall(steps, function(error) {
+      assert(!error, self.what);
+      done();
+    });
+  });
+  
+  
+  
   test("customer to customer with and without transfer fee", function (done) {
     var self = this;
 

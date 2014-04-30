@@ -276,6 +276,27 @@ TER AccountSetTransactor::doApply ()
         }
     }
 
+
+    //
+    // InflationDest
+    //
+
+    if ( mTxn.isFieldPresent(sfInflationDest) )
+    {
+        RippleAddress aInflationDest = mTxn.getFieldAccount(sfInflationDest);
+
+        if (!mEngine->getLedger()->hasAccount(aInflationDest))
+        {
+            WriteLog(lsINFO, AccountSetTransactor) << "AccountSet: Inflation destination account doesn't exist.";
+
+            return temDST_NEEDED;
+        }
+
+        mTxnAccount->setFieldAccount(sfInflationDest, aInflationDest);
+    }
+
+    
+
     //
     // TransferRate
     //

@@ -345,6 +345,7 @@ public:
         j.setSourceAccount (publicAcct);
         j.setSigningPubKey (publicAcct);
         j.setFieldVL (sfMessageKey, publicAcct.getAccountPublic ());
+        j.setFieldAccount(sfInflationDest, publicAcct); //vote for yourself
         j.sign (privateAcct);
 
         unexpected (!j.checkSign (), "Transaction fails signature test");
