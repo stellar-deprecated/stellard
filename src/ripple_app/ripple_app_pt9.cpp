@@ -28,5 +28,6 @@
 #include "transactors/PaymentTransactor.cpp"
 #include "transactors/RegularKeySetTransactor.cpp"
 #include "transactors/AccountSetTransactor.cpp"
+//#include "transactors/AccountDeleteTransactor.cpp" //TODO
 #include "transactors/WalletAddTransactor.cpp"
 #include "transactors/TrustSetTransactor.cpp"

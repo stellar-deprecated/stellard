@@ -31,6 +31,11 @@ TxFormats::TxFormats ()
             << SOElement (sfInflationDest,   SOE_OPTIONAL)
             ;
 
+    add("AccountDelete", ttACCOUNT_DELETE)
+            << SOElement (sfDestination,     SOE_REQUIRED)
+            // TODO
+            ;
+
     add ("TrustSet", ttTRUST_SET)
             << SOElement (sfLimitAmount,     SOE_OPTIONAL)
             << SOElement (sfQualityIn,       SOE_OPTIONAL)

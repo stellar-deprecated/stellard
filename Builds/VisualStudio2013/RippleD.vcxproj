@@ -2546,6 +2546,7 @@
     <ClInclude Include="..\..\src\ripple_app\shamap\SHAMapSyncFilters.h" />
     <ClInclude Include="..\..\src\ripple_app\shamap\RadixMapTest.h" />
     <ClInclude Include="..\..\src\ripple_app\shamap\SHAMapTreeNode.h" />
+    <ClInclude Include="..\..\src\ripple_app\transactors\AccountDeleteTransactor.h" />
     <ClInclude Include="..\..\src\ripple_app\transactors\AccountSetTransactor.h" />
     <ClInclude Include="..\..\src\ripple_app\transactors\ChangeTransactor.h" />
     <ClInclude Include="..\..\src\ripple_app\transactors\OfferCancelTransactor.h" />
