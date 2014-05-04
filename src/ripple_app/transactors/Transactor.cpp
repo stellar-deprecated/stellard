@@ -26,6 +26,7 @@
 #include "AccountSetTransactor.h"
 #include "TrustSetTransactor.h"
 #include "WalletAddTransactor.h"
+#include "InflationTransactor.h"
 
 namespace ripple {
 
@@ -39,6 +40,10 @@ std::unique_ptr<Transactor> Transactor::makeTransactor (
     case ttPAYMENT:
         return std::unique_ptr<Transactor> (
             new PaymentTransactor (txn, params, engine));
+
+	case ttINFLATION:
+		return std::unique_ptr<Transactor>(
+			new InflationTransactor(txn, params, engine));
 
     case ttACCOUNT_SET:
         return std::unique_ptr<Transactor> (

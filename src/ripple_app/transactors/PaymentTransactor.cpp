@@ -150,7 +150,7 @@ TER PaymentTransactor::doApply ()
         }
         else if (saDstAmount.getNValue () < mEngine->getLedger ()->getReserve (0)) // Reserve is not scaled by load.
         {
-            WriteLog (lsINFO, PaymentTransactor) << "Payment: Delay transaction: Destination account does not exist. Insufficent payment to create account.";
+            WriteLog (lsINFO, PaymentTransactor) << "Payment: Delay transaction: Destination account does not exist. Insufficient payment to create account.";
 
             // Another transaction could create the account and then this transaction would succeed.
             return tecNO_DST_INSUF_XRP;

@@ -1320,6 +1320,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\src\ripple_app\transactors\InflationTransactor.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\src\ripple_app\transactors\OfferCancelTransactor.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -2548,6 +2551,7 @@
     <ClInclude Include="..\..\src\ripple_app\shamap\SHAMapTreeNode.h" />
     <ClInclude Include="..\..\src\ripple_app\transactors\AccountSetTransactor.h" />
     <ClInclude Include="..\..\src\ripple_app\transactors\ChangeTransactor.h" />
+    <ClInclude Include="..\..\src\ripple_app\transactors\InflationTransactor.h" />
     <ClInclude Include="..\..\src\ripple_app\transactors\OfferCancelTransactor.h" />
     <ClInclude Include="..\..\src\ripple_app\transactors\OfferCreateTransactor.h" />
     <ClInclude Include="..\..\src\ripple_app\transactors\PaymentTransactor.h" />

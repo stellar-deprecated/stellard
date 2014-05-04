@@ -177,13 +177,28 @@ public:
     {
         return mAccountHash;
     }
+	uint64 getFeePool() const
+	{
+		return mFeePool;
+	}
     uint64 getTotalCoins () const
     {
         return mTotCoins;
     }
+	uint32 getInflationSeq() const
+	{
+		return mInflationSeq;
+	}
+	void incrementInflationSeq()
+	{
+		mInflationSeq++;
+	}
+	
+
     void destroyCoins (uint64 fee)
     {
         mTotCoins -= fee;
+		mFeePool += fee;
     }
     uint32 getCloseTimeNC () const
     {
@@ -216,10 +231,12 @@ public:
     boost::posix_time::ptime getCloseTime () const;
 
     // low level functions
+	// ????
     SHAMap::ref peekTransactionMap ()
     {
         return mTransactionMap;
     }
+	// ????
     SHAMap::ref peekAccountStateMap ()
     {
         return mAccountStateMap;
@@ -319,29 +336,7 @@ public:
 
     static uint256 getGeneratorIndex (const uint160 & uGeneratorID);
 
-    //
-    // Nickname functions
-    //
-
-    static uint256 getNicknameHash (const std::string & strNickname)
-    {
-        Serializer s (strNickname);
-        return s.getSHA256 ();
-    }
-
-    NicknameState::pointer getNicknameState (uint256 const & uNickname);
-    NicknameState::pointer getNicknameState (const std::string & strNickname)
-    {
-        return getNicknameState (getNicknameHash (strNickname));
-    }
-
-    SLE::pointer getNickname (uint256 const & uNickname);
-    SLE::pointer getNickname (const std::string & strNickname)
-    {
-        return getNickname (getNicknameHash (strNickname));
-    }
-
-    static uint256 getNicknameIndex (uint256 const & uNickname);
+    
 
     //
     // Order book functions
@@ -490,7 +485,9 @@ private:
     uint256     mTransHash;
     uint256     mAccountHash;
     uint64      mTotCoins;
+	uint64      mFeePool;		// JED: we might not need this depending on how we implement inflation
     uint32      mLedgerSeq;
+	uint32		mInflationSeq;	// the last inflation that was applied 
     uint32      mCloseTime;         // when this ledger closed
     uint32      mParentCloseTime;   // when the previous ledger closed
     int         mCloseResolution;   // the resolution for this ledger close time (2-120 seconds)

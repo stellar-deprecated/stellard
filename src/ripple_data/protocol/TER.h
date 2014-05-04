@@ -42,6 +42,8 @@ enum TER    // aka TransactionEngineResult
     telFAILED_PROCESSING,
     telINSUF_FEE_P,
     telNO_DST_PARTIAL,
+	telNOT_TIME,
+	
 
     // -299 .. -200: M Malformed (bad signature)
     // Causes:

@@ -314,6 +314,8 @@ public:
         mEngine.setLedger (mCurrentLedger.getMutable ());
     }
 
+	// JED: I think applies transactions to the open ledger as they come in.
+	// Not sure why we even need to keep an open ledger? I guess to respond a bit better to client requests.
     TER doTransaction (SerializedTransaction::ref txn, TransactionEngineParams params, bool& didApply)
     {
         Ledger::pointer ledger;

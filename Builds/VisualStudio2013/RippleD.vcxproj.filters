@@ -1494,6 +1494,9 @@
     <ClCompile Include="..\..\src\ripple\common\impl\RippleSSLContext.cpp">
       <Filter>[1] Ripple\common\impl</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\ripple_app\transactors\InflationTransactor.cpp">
+      <Filter>[2] Old Ripple\ripple_app\transactors</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\ripple_basics\containers\RangeSet.h">
@@ -3050,6 +3053,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\ripple\common\byte_view.h">
       <Filter>[1] Ripple\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\ripple_app\transactors\InflationTransactor.h">
+      <Filter>[2] Old Ripple\ripple_app\transactors</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
