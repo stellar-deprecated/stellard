@@ -44,6 +44,8 @@ enum TxType
 
     ttTRUST_SET         = 20,
 
+    ttACCOUNT_DELETE    = 30, 
+
     ttFEATURE           = 100,
     ttFEE               = 101,
 };

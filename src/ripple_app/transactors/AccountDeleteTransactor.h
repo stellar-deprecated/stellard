@@ -17,18 +17,19 @@
 */
 //==============================================================================
 
-#include "BeastConfig.h"
+#ifndef ACCOUNTDELETETRANSACTOR_H
+#define ACCOUNTDELETETRANSACTOR_H
 
-#include "ripple_app.h"
+namespace ripple {
 
-#include "transactors/Transactor.cpp"
-#include "transactors/ChangeTransactor.cpp"
-#include "transactors/OfferCancelTransactor.cpp"
-#include "transactors/OfferCreateTransactor.cpp"
-#include "transactors/PaymentTransactor.cpp"
-#include "transactors/RegularKeySetTransactor.cpp"
-#include "transactors/AccountSetTransactor.cpp"
-//#include "transactors/AccountDeleteTransactor.cpp" //TODO
-#include "transactors/WalletAddTransactor.cpp"
-#include "transactors/TrustSetTransactor.cpp"
-#include "transactors/InflationTransactor.cpp"
+class AccountDeleteTransactor : public Transactor
+{
+public:
+	AccountDeleteTransactor(const SerializedTransaction& txn, TransactionEngineParams params, TransactionEngine* engine) : Transactor(txn, params, engine) {}
+
+	TER doApply() { return tefINTERNAL; } // TODO
+};
+
+}
+
+#endif

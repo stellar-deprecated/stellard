@@ -24,6 +24,7 @@
 #include "PaymentTransactor.h"
 #include "RegularKeySetTransactor.h"
 #include "AccountSetTransactor.h"
+#include "AccountDeleteTransactor.h"
 #include "TrustSetTransactor.h"
 #include "WalletAddTransactor.h"
 #include "InflationTransactor.h"
@@ -48,6 +49,10 @@ std::unique_ptr<Transactor> Transactor::makeTransactor (
     case ttACCOUNT_SET:
         return std::unique_ptr<Transactor> (
             new AccountSetTransactor (txn, params, engine));
+
+    case ttACCOUNT_DELETE:
+        return std::unique_ptr<Transactor>(
+            new AccountDeleteTransactor (txn, params, engine));
 
     case ttREGULAR_KEY_SET:
         return std::unique_ptr<Transactor> (

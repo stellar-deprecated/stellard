@@ -3054,6 +3054,9 @@
     <ClInclude Include="..\..\src\ripple\common\byte_view.h">
       <Filter>[1] Ripple\common</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\ripple_app\transactors\AccountDeleteTransactor.h">
+      <Filter>[2] Old Ripple\ripple_app\transactors</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\ripple_app\transactors\InflationTransactor.h">
       <Filter>[2] Old Ripple\ripple_app\transactors</Filter>
     </ClInclude>
