@@ -340,22 +340,6 @@ AccountState::pointer Ledger::getAccountState (const RippleAddress& accountID)
     return boost::make_shared<AccountState> (sle, accountID);
 }
 
-NicknameState::pointer Ledger::getNicknameState (uint256 const& uNickname)
-{
-    SHAMapItem::pointer item = mAccountStateMap->peekItem (Ledger::getNicknameIndex (uNickname));
-
-    if (!item)
-    {
-        return NicknameState::pointer ();
-    }
-
-    SerializedLedgerEntry::pointer sle =
-        boost::make_shared<SerializedLedgerEntry> (item->peekSerializer (), item->getTag ());
-
-    if (sle->getType () != ltNICKNAME) return NicknameState::pointer ();
-
-    return boost::make_shared<NicknameState> (sle);
-}
 
 bool Ledger::addTransaction (uint256 const& txID, const Serializer& txn)
 {
@@ -1421,15 +1405,6 @@ SLE::pointer Ledger::getGenerator (const uint160& uGeneratorID)
 }
 
 //
-// Nickname
-//
-
-SLE::pointer Ledger::getNickname (uint256 const& uNickname)
-{
-    return getASNodeI (uNickname, ltNICKNAME);
-}
-
-//
 // Offer
 //
 
@@ -1713,18 +1688,6 @@ uint256 Ledger::getGeneratorIndex (const uint160& uGeneratorID)
     return s.getSHA512Half ();
 }
 
-// What is important:
-// --> uNickname: is a Sha256
-// <-- SHA512/2: for consistency and speed in generating indexes.
-uint256 Ledger::getNicknameIndex (uint256 const& uNickname)
-{
-    Serializer  s (34);
-
-    s.add16 (spaceNickname);    //  2
-    s.add256 (uNickname);       // 32
-
-    return s.getSHA512Half ();
-}
 
 uint256 Ledger::getOfferIndex (const uint160& uAccountID, uint32 uSequence)
 {

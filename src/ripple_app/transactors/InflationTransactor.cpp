@@ -22,7 +22,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define INFLATION_RATE				(1.01/12.0)    // 1% a year
 #define INFLATION_NUM_WINNERS		5
 #define INFLATION_WIN_MIN_PERCENT	.1
-
+#define MIN(x,y)  ((x)<(y) ? (x) : (y))
 /*
 What about when an account that wins a dole is now gone?
 */
@@ -48,14 +48,14 @@ namespace ripple {
 		uint32 seq = mTxn.getFieldU32(sfSequence);
 		
 
-		if (seq != mEngine->getLedger().getInflationSeq())
+		if (seq != mEngine->getLedger()->getInflationSeq())
 		{
 			WriteLog(lsINFO, InflationTransactor) << "doInflation: Invalid Seq number.";
 
 			return telNOT_TIME;
 		}
 
-		uint32 closeTime=mEngine->getLedger().getParentCloseTimeNC();
+		uint32 closeTime=mEngine->getLedger()->getParentCloseTimeNC();
 		if (closeTime > seq*INFLATION_FREQUENCY)
 		{
 			WriteLog(lsINFO, InflationTransactor) << "doInflation: Too early.";
@@ -66,19 +66,19 @@ namespace ripple {
 		// check previous ledger if this should be applied now
 		// loop through all accounts and tally votes
 		// dole out the inflation amount to the winners
-		uint256 parentHash=mEngine->getLedger().getParentHash();
+		uint256 parentHash=mEngine->getLedger()->getParentHash();
 		Ledger::pointer votingLedger=getApp().getLedgerMaster().getLedgerByHash(parentHash);
 		if (votingLedger)
 		{
 			std::map< uint160, uint64 > voteTally;
 			
 			// TODO: is there a better way to do this than walk every element in the ledger?
-			SHAMap votingLedgerItems = votingLedger->peekAccountStateMap();
-			SHAMapItem::pointer item = votingLedgerItems.peekFirstItem();
+			const SHAMap::pointer votingLedgerItems = votingLedger->peekAccountStateMap();
+			SHAMapItem::pointer item = votingLedgerItems->peekFirstItem();
 			while (item)
 			{
 				
-				SLE::pointer s=boost::make_shared<SLE>(item->peekSerializer(), node->getTag());
+				SLE::pointer s=boost::make_shared<SLE>(item->peekSerializer(), item->getTag());
 
 				if (s->getType() == ltACCOUNT_ROOT)
 				{
@@ -92,7 +92,7 @@ namespace ripple {
 					
 				}
 
-				item = votingLedgerItems.peekNextItem(item->getTag());
+				item = votingLedgerItems->peekNextItem(item->getTag());
 			}
 			// sort the votes
 			std::vector< std::pair<uint160, uint64> > sortedVotes;
@@ -100,9 +100,9 @@ namespace ripple {
 
 			sort(sortedVotes.begin(), sortedVotes.end(), voteSorter);
 
-			uint64 minBalance = mEngine->getLedger().getTotalCoins()*INFLATION_WIN_MIN_PERCENT;
+			uint64 minBalance = mEngine->getLedger()->getTotalCoins()*INFLATION_WIN_MIN_PERCENT;
 			uint64 totalVoted = 0;
-			int maxIndex = min(INFLATION_NUM_WINNERS, sortedVotes.size());
+			int maxIndex = MIN(INFLATION_NUM_WINNERS, sortedVotes.size());
 			for (int n = 0; n < maxIndex; n++)
 			{
 				if (sortedVotes[n].second > minBalance)
@@ -123,14 +123,14 @@ namespace ripple {
 				}
 			}
 
-			uint64 coinsToDole = mEngine->getLedger().getFeePool() + INFLATION_RATE*mEngine->getLedger().getTotalCoins();
+			uint64 coinsToDole = mEngine->getLedger()->getFeePool() + INFLATION_RATE*mEngine->getLedger()->getTotalCoins();
 			//uint64 coinsLeft = coinsToDole;
 			for (int n = 0; n < maxIndex; n++)
 			{
 				double share=sortedVotes[n].second/totalVoted;
 				uint64 coinsDoled = share*coinsToDole;
 				//coinsLeft -= coinsDoled;
-				SLE::pointer account=mEngine->getLedger().getAccountRoot(sortedVotes[n].first);
+				SLE::pointer account=mEngine->getLedger()->getAccountRoot(sortedVotes[n].first);
 				if (account)
 				{
 					mEngine->entryModify(account);
