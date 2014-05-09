@@ -160,7 +160,7 @@ static void autofill_fee (Json::Value& request,
 
 // VFALCO TODO This function should take a reference to the params, modify it
 //             as needed, and then there should be a separate function to
-//             submit the tranaction
+//             submit the transaction
 //
 Json::Value RPCHandler::transactionSign (Json::Value params,
     bool bSubmit, bool bFailHard, Application::ScopedLockType& mlh)
@@ -669,7 +669,7 @@ Json::Value RPCHandler::accountFromString (Ledger::ref lrLedger, RippleAddress& 
     else
     {
         // We allow the use of the seeds to access #0.
-        // This is poor practice and merely for debuging convenience.
+        // This is poor practice and merely for debugging convenience.
         RippleAddress       naRegular0Public;
         RippleAddress       naRegular0Private;
 
@@ -2110,6 +2110,44 @@ Json::Value RPCHandler::doFetchInfo (Json::Value jvParams, Resource::Charge& loa
     ret["info"] = mNetOps->getLedgerFetchInfo();
 
     return ret;
+}
+
+
+Json::Value RPCHandler::doInflate(Json::Value params, Resource::Charge& loadType, Application::ScopedLockType& masterLockHolder)
+{
+	masterLockHolder.unlock();
+
+	loadType = Resource::feeMediumBurdenRPC;
+
+	if (!params.isMember("tx_blob"))
+	{
+		bool bFailHard = params.isMember("fail_hard") && params["fail_hard"].asBool();
+		return transactionSign(params, true, bFailHard, masterLockHolder);
+	}
+
+	Json::Value                 jvResult;
+
+	std::pair<Blob, bool> ret(strUnHex(params["tx_blob"].asString()));
+
+	if (!ret.second || !ret.first.size())
+		return rpcError(rpcINVALID_PARAMS);
+
+	Serializer                  sTrans(ret.first);
+	SerializerIterator          sitTrans(sTrans);
+
+	SerializedTransaction::pointer stpTrans;
+
+	try
+	{
+		stpTrans = boost::make_shared<SerializedTransaction>(boost::ref(sitTrans));
+	}
+	catch (std::exception& e)
+	{
+		jvResult["error"] = "invalidTransaction";
+		jvResult["error_exception"] = e.what();
+
+		return jvResult;
+	}
 }
 
 Json::Value RPCHandler::doServerInfo (Json::Value, Resource::Charge& loadType, Application::ScopedLockType& masterLockHolder)

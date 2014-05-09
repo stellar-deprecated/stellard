@@ -1395,14 +1395,7 @@ SLE::pointer Ledger::getDirNode (uint256 const& uNodeIndex)
     return getASNodeI (uNodeIndex, ltDIR_NODE);
 }
 
-//
-// Generator Map
-//
 
-SLE::pointer Ledger::getGenerator (const uint160& uGeneratorID)
-{
-    return getASNodeI (getGeneratorIndex (uGeneratorID), ltGENERATOR_MAP);
-}
 
 //
 // Offer

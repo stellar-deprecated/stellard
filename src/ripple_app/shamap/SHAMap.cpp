@@ -967,6 +967,7 @@ SHAMapTreeNode* SHAMap::getNodeAsync (
 
     if (id.isRoot ())
     {
+		// JED: wtf?
         // It is legal to replace the root
         mTNByID.replace (id, ptr);
         root = ptr;

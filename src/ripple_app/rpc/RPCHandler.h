@@ -107,7 +107,8 @@ private:
     Json::Value doConsensusInfo         (Json::Value params, Resource::Charge& loadType, Application::ScopedLockType& mlh);
     Json::Value doFeature               (Json::Value params, Resource::Charge& loadType, Application::ScopedLockType& mlh);
     Json::Value doFetchInfo             (Json::Value params, Resource::Charge& loadType, Application::ScopedLockType& mlh);
-    Json::Value doGetCounts             (Json::Value params, Resource::Charge& loadType, Application::ScopedLockType& mlh);
+	Json::Value doGetCounts				(Json::Value params, Resource::Charge& loadType, Application::ScopedLockType& mlh);
+	Json::Value doInflate				(Json::Value params, Resource::Charge& loadType, Application::ScopedLockType& mlh);
     Json::Value doInternal              (Json::Value params, Resource::Charge& loadType, Application::ScopedLockType& mlh);
     Json::Value doLedger                (Json::Value params, Resource::Charge& loadType, Application::ScopedLockType& mlh);
     Json::Value doLedgerAccept          (Json::Value params, Resource::Charge& loadType, Application::ScopedLockType& mlh);
