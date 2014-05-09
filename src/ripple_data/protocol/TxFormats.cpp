@@ -33,7 +33,7 @@ TxFormats::TxFormats ()
 
     add("AccountDelete", ttACCOUNT_DELETE)
             << SOElement (sfDestination,     SOE_REQUIRED)
-            // TODO
+			<< SOElement (sfDestinationTag,  SOE_OPTIONAL)
             ;
 
     add ("TrustSet", ttTRUST_SET)

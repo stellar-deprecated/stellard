@@ -1497,6 +1497,9 @@
     <ClCompile Include="..\..\src\ripple_app\transactors\InflationTransactor.cpp">
       <Filter>[2] Old Ripple\ripple_app\transactors</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\ripple_app\transactors\AccountDeleteTransactor.cpp">
+      <Filter>[2] Old Ripple\ripple_app\transactors</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\ripple_basics\containers\RangeSet.h">
