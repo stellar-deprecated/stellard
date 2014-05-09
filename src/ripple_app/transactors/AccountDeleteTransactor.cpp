@@ -66,7 +66,7 @@ TER AccountDeleteTransactor::doApply ()
 	{
 		WriteLog(lsINFO, AccountDeleteTransactor) << "AccountDelete: Malformed transaction: Destination account doesn't exist.";
 
-		// TODO: allow sending to unexisting account? Should we crate new one?
+		// TODO: allow sending to nonexistent account? Should we crate new one?
 		return tecNO_DST;
 	}
 	
@@ -202,6 +202,11 @@ TER AccountDeleteTransactor::doApply ()
 	}
 
 	offersList.clear();
+
+
+	// Delete account itself
+
+	lesNodes.entryDelete(mTxnAccount);
 
 
     return tesSUCCESS;
