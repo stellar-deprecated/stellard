@@ -27,7 +27,7 @@ class AccountDeleteTransactor : public Transactor
 public:
 	AccountDeleteTransactor(const SerializedTransaction& txn, TransactionEngineParams params, TransactionEngine* engine) : Transactor(txn, params, engine) {}
 
-	TER doApply() { return tefINTERNAL; } // TODO
+	TER doApply();
 };
 
 }
