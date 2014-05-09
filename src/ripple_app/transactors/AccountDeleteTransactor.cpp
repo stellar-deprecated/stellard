@@ -66,7 +66,7 @@ TER AccountDeleteTransactor::doApply ()
 	{
 		WriteLog(lsINFO, AccountDeleteTransactor) << "AccountDelete: Malformed transaction: Destination account doesn't exist.";
 
-		// TODO: allow sending to nonexistent account? Should we crate new one?
+		// TODO: allow sending to nonexistent account? Should we create new one?
 		return tecNO_DST;
 	}
 	
@@ -84,7 +84,7 @@ TER AccountDeleteTransactor::doApply ()
 	auto pAccItem = AccountItem::pointer(new RippleState());
 	AccountItems stellarLines(mTxnAccountID, mEngine->getLedger(), pAccItem);
 	
-	// Don't delete account if if has outstanding IOUs
+	// Don't delete account if it has outstanding IOUs
 	BOOST_FOREACH(AccountItem::ref item, stellarLines.getItems())
 	{
 		RippleState* line = (RippleState*)item.get();

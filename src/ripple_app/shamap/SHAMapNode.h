@@ -121,10 +121,11 @@ protected:
     }
 
 private:
+	// JED: why?
     static uint256 smMasks[65]; // AND with hash to get node id
 
     uint256 mNodeID;
-    int     mDepth;
+    int     mDepth;   // JED: what is this?
     mutable size_t  mHash;
 
     void setMHash () const;

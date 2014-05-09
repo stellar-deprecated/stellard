@@ -432,7 +432,7 @@ Json::Value RPCHandler::transactionSign (Json::Value params,
     {
         stpTrans = boost::make_shared<SerializedTransaction> (*sopTrans);
     }
-    catch (std::exception& e)
+    catch (std::exception& )
     {
         return RPC::make_error (rpcINTERNAL,
             "Exception occurred during transaction");
@@ -460,7 +460,7 @@ Json::Value RPCHandler::transactionSign (Json::Value params,
     {
         tpTrans     = boost::make_shared<Transaction> (stpTrans, false);
     }
-    catch (std::exception& e)
+    catch (std::exception& )
     {
         return RPC::make_error (rpcINTERNAL,
             "Exception occurred during transaction");
@@ -478,7 +478,7 @@ Json::Value RPCHandler::transactionSign (Json::Value params,
                 "Unable to sterilize transaction.");
         }
     }
-    catch (std::exception& e)
+    catch (std::exception& )
     {
         return RPC::make_error (rpcINTERNAL,
             "Exception occurred during transaction submission.");
@@ -504,7 +504,7 @@ Json::Value RPCHandler::transactionSign (Json::Value params,
 
         return jvResult;
     }
-    catch (std::exception& e)
+    catch (std::exception& )
     {
         return RPC::make_error (rpcINTERNAL,
             "Exception occurred during JSON handling.");
@@ -2125,7 +2125,7 @@ Json::Value RPCHandler::doInflate(Json::Value params, Resource::Charge& loadType
 		return transactionSign(params, true, bFailHard, masterLockHolder);
 	}
 
-	Json::Value                 jvResult;
+	Json::Value retJSON(Json::objectValue);
 
 	std::pair<Blob, bool> ret(strUnHex(params["tx_blob"].asString()));
 
@@ -2143,11 +2143,11 @@ Json::Value RPCHandler::doInflate(Json::Value params, Resource::Charge& loadType
 	}
 	catch (std::exception& e)
 	{
-		jvResult["error"] = "invalidTransaction";
-		jvResult["error_exception"] = e.what();
-
-		return jvResult;
+		retJSON["error"] = "invalidTransaction";
+		retJSON["error_exception"] = e.what();
 	}
+
+	return(retJSON);
 }
 
 Json::Value RPCHandler::doServerInfo (Json::Value, Resource::Charge& loadType, Application::ScopedLockType& masterLockHolder)
@@ -3594,32 +3594,6 @@ Json::Value RPCHandler::doLedgerEntry (Json::Value params, Resource::Charge& loa
             {
                 jvResult["error"]   = "malformedRequest";
             }
-        }
-    }
-    else if (params.isMember ("generator"))
-    {
-        RippleAddress   naGeneratorID;
-
-        if (!params["generator"].isObject ())
-        {
-            uNodeIndex.SetHex (params["generator"].asString ());
-        }
-        else if (!params["generator"].isMember ("regular_seed"))
-        {
-            jvResult["error"]   = "malformedRequest";
-        }
-        else if (!naGeneratorID.setSeedGeneric (params["generator"]["regular_seed"].asString ()))
-        {
-            jvResult["error"]   = "malformedAddress";
-        }
-        else
-        {
-            RippleAddress       na0Public;      // To find the generator's index.
-            RippleAddress       naGenerator = RippleAddress::createGeneratorPublic (naGeneratorID);
-
-            na0Public.setAccountPublic (naGenerator, 0);
-
-            uNodeIndex  = Ledger::getGeneratorIndex (na0Public.getAccountID ());
         }
     }
     else if (params.isMember ("offer"))

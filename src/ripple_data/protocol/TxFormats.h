@@ -34,7 +34,7 @@ enum TxType
     ttINFLATION         = 1, 
     ttWALLET_ADD        = 2,
     ttACCOUNT_SET       = 3,
-    ttPASSWORD_FUND     = 4, // open
+	ttACCOUNT_DELETE	= 4,
     ttREGULAR_KEY_SET   = 5,
     ttNICKNAME_SET      = 6, // open
     ttOFFER_CREATE      = 7,
@@ -44,7 +44,6 @@ enum TxType
 
     ttTRUST_SET         = 20,
 
-    ttACCOUNT_DELETE    = 30, 
 
     ttFEATURE           = 100,
     ttFEE               = 101,

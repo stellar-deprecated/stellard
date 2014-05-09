@@ -1671,17 +1671,6 @@ uint256 Ledger::getDirNodeIndex (uint256 const& uDirRoot, const uint64 uNodeInde
     }
 }
 
-uint256 Ledger::getGeneratorIndex (const uint160& uGeneratorID)
-{
-    Serializer  s (22);
-
-    s.add16 (spaceGenerator);   //  2
-    s.add160 (uGeneratorID);    // 20
-
-    return s.getSHA512Half ();
-}
-
-
 uint256 Ledger::getOfferIndex (const uint160& uAccountID, uint32 uSequence)
 {
     Serializer  s (26);
