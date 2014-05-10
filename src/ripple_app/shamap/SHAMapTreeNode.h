@@ -175,11 +175,11 @@ private:
     friend class SHAMap;
 
     uint256             mHash;
-    uint256             mHashes[16];
+    uint256             mHashes[16];  // hashes of the nodes under this one
     SHAMapItem::pointer mItem;
     uint32              mSeq, mAccessSeq;
     TNType              mType;
-    int                 mIsBranch;
+    int                 mIsBranch;   // JED: why is this an int and not a bool? I think it is a bitfield that says if the branch at bit i is there or not
     bool                mFullBelow;
 
     bool updateHash ();

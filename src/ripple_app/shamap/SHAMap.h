@@ -23,6 +23,23 @@
 #include "../ripple/radmap/ripple_radmap.h"
 #include "../main/FullBelowCache.h"
 
+/*
+Used for:
+the Ledger
+the set of transaction in a ledger
+Figuring the delta between two transaction sets
+
+Looks like:
+We have a hash table of all Ledger entries mTNbyID
+We have a tree of entries: root
+The tree just has id's which we then have to look up in mTNbyID?
+
+there is some cache that we check when we are looking up items?
+
+What is the point of the tree?
+
+*/
+
 enum SHAMapState
 {
     smsModifying = 0,       // Objects can be added and removed (like an open ledger)
@@ -323,7 +340,7 @@ private:
     FullBelowCache& m_fullBelowCache;
     uint32 mSeq;
     uint32 mLedgerSeq; // sequence number of ledger this is part of
-    SyncUnorderedMapType< SHAMapNode, SHAMapTreeNode::pointer > mTNByID;
+    SyncUnorderedMapType< SHAMapNode, SHAMapTreeNode::pointer > mTNByID;  // Tree Node by ID. hash table of all the nodes
     boost::shared_ptr<NodeMap> mDirtyNodes;
     SHAMapTreeNode::pointer root;
     SHAMapState mState;
