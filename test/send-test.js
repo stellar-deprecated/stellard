@@ -17,7 +17,7 @@ suite('Sending', function() {
     testutils.build_teardown().call($, done);
   });
 
-  test("send XRP to non-existent account with insufficent fee", function (done) {
+  test("send XRP to non-existent account with insufficient fee", function (done) {
     var self    = this;
     var ledgers = 20;
     var got_proposed;

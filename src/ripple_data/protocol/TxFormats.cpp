@@ -65,11 +65,9 @@ TxFormats::TxFormats ()
             << SOElement (sfInvoiceID,       SOE_OPTIONAL)
             << SOElement (sfDestinationTag,  SOE_OPTIONAL)
             ;
-/*
-	add("Inflation", ttINFLATION)
-		<< SOElement(sfSequence, SOE_REQUIRED)
-		;
-	
+
+	add("Inflation", ttINFLATION);
+/*	
     add ("Contract", ttCONTRACT)
             << SOElement (sfExpiration,      SOE_REQUIRED)
             << SOElement (sfBondAmount,      SOE_REQUIRED)

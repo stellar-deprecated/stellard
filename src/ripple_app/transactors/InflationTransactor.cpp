@@ -137,8 +137,7 @@ namespace ripple {
 					account->setFieldAmount(sfBalance, account->getFieldAmount(sfBalance) + coinsDoled);
 				}
 			}
-			// TODO: how are we going to implement do we need to worry about the fees mEngine->get
-
+			
 		}
 		else
 		{
