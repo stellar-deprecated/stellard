@@ -1017,7 +1017,9 @@ SLE::pointer NetworkOPsImp::getGenerator (Ledger::ref lrLedger, const uint160& u
         return SLE::pointer ();
 
     //JED return lrLedger->getGenerator (uGeneratorID);
-	return SLE::pointer(); // JED
+	//return SLE::pointer(); // JED
+
+	return lrLedger->getGenerator(uGeneratorID);
 }
 
 //
