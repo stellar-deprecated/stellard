@@ -149,14 +149,14 @@ Server.prototype.verbose = function () {
 
 // Create a standalone server.
 // Prepare the working directory and spawn the server.
-Server.prototype.start = function () {
+Server.prototype.start = function (dontSpawn) {
   var self      = this;
 
   if (!this.quiet) console.log("server: start: %s: %s", this.name, JSON.stringify(this.config));
 
   this._makeBase(function (e) {
     if (e) throw e;
-    self._serverSpawnSync();
+    if(!dontSpawn) self._serverSpawnSync();
     self.emit('started');
   });
 

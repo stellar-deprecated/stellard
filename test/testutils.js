@@ -132,7 +132,7 @@ function build_setup(opts, host) {
         });
 
         server[host] = data.server;
-        data.server.start();
+        data.server.start(host.dontSpawn);
       },
 
       function connect_websocket(callback) {
