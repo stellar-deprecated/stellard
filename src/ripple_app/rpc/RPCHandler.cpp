@@ -2113,41 +2113,111 @@ Json::Value RPCHandler::doFetchInfo (Json::Value jvParams, Resource::Charge& loa
 }
 
 
+// create the inflate transaction
+// pull the inflate seq # from the ledger
 Json::Value RPCHandler::doInflate(Json::Value params, Resource::Charge& loadType, Application::ScopedLockType& masterLockHolder)
 {
 	masterLockHolder.unlock();
 
 	loadType = Resource::feeMediumBurdenRPC;
 
-	if (!params.isMember("tx_blob"))
+	uint32 inflationSeq= getApp().getLedgerMaster().getClosedLedger()->getInflationSeq();
+	params["tx_json"]["TransactionType"] = "Inflation";
+	params["tx_json"]["Sequence"] = inflationSeq;
+	params["tx_json"]["Account"] = "gHb9CJAWyB4gj91VRWn96DkukG4bwdtyTh";
+	params["tx_json"]["Fee"] = "0";
+	params["tx_json"]["SigningPubKey"] = "0";
+
+	Json::Value& tx_json(params["tx_json"]);
+
+	Json::Value jvResult;
+
+	std::unique_ptr<STObject> sopTrans;
+
 	{
-		bool bFailHard = params.isMember("fail_hard") && params["fail_hard"].asBool();
-		return transactionSign(params, true, bFailHard, masterLockHolder);
+		STParsedJSON parsed("tx_json", tx_json);
+		if (parsed.object.get() != nullptr)
+		{
+			sopTrans.reset(parsed.object.release());
+		}
+		else
+		{
+			jvResult["error"] = parsed.error["error"];
+			jvResult["error_code"] = parsed.error["error_code"];
+			jvResult["error_message"] = parsed.error["error_message"];
+			return jvResult;
+		}
 	}
-
-	Json::Value retJSON(Json::objectValue);
-
-	std::pair<Blob, bool> ret(strUnHex(params["tx_blob"].asString()));
-
-	if (!ret.second || !ret.first.size())
-		return rpcError(rpcINVALID_PARAMS);
-
-	Serializer                  sTrans(ret.first);
-	SerializerIterator          sitTrans(sTrans);
 
 	SerializedTransaction::pointer stpTrans;
 
 	try
 	{
-		stpTrans = boost::make_shared<SerializedTransaction>(boost::ref(sitTrans));
+		stpTrans = boost::make_shared<SerializedTransaction>(*sopTrans);
 	}
-	catch (std::exception& e)
+	catch (std::exception&)
 	{
-		retJSON["error"] = "invalidTransaction";
-		retJSON["error_exception"] = e.what();
+		return RPC::make_error(rpcINTERNAL,
+			"Exception occurred during transaction");
 	}
 
-	return(retJSON);
+	Transaction::pointer tpTrans;
+
+	try
+	{
+		tpTrans = boost::make_shared<Transaction>(stpTrans, false);
+	}
+	catch (std::exception&)
+	{
+		return RPC::make_error(rpcINTERNAL,
+			"Exception occurred during transaction");
+	}
+
+	try
+	{
+		// FIXME: For performance, should use asynch interface
+		tpTrans = mNetOps->submitTransactionSync(tpTrans, true, true, false, true);
+
+		if (!tpTrans)
+		{
+			return RPC::make_error(rpcINTERNAL,
+				"Unable to sterilize transaction.");
+		}
+	}
+	catch (std::exception&)
+	{
+		return RPC::make_error(rpcINTERNAL,
+			"Exception occurred during transaction submission.");
+	}
+
+	try
+	{
+		jvResult["tx_json"] = tpTrans->getJson(0);
+		jvResult["tx_blob"] = strHex(
+			tpTrans->getSTransaction()->getSerializer().peekData());
+
+		if (temUNCERTAIN != tpTrans->getResult())
+		{
+			std::string sToken;
+			std::string sHuman;
+
+			transResultInfo(tpTrans->getResult(), sToken, sHuman);
+
+			jvResult["engine_result"] = sToken;
+			jvResult["engine_result_code"] = tpTrans->getResult();
+			jvResult["engine_result_message"] = sHuman;
+		}
+
+		return jvResult;
+	}
+	catch (std::exception&)
+	{
+		return RPC::make_error(rpcINTERNAL,
+			"Exception occurred during JSON handling.");
+	}
+
+
+	return jvResult;
 }
 
 Json::Value RPCHandler::doServerInfo (Json::Value, Resource::Charge& loadType, Application::ScopedLockType& masterLockHolder)
@@ -4320,6 +4390,7 @@ Json::Value RPCHandler::doCommand (const Json::Value& params, int iRole, Resourc
         {   "connect",              &RPCHandler::doConnect,             true,   optNone     },
         {   "consensus_info",       &RPCHandler::doConsensusInfo,       true,   optNone     },
         {   "get_counts",           &RPCHandler::doGetCounts,           true,   optNone     },
+		{	"inflate",				&RPCHandler::doInflate,				false,	optNone		},
         {   "internal",             &RPCHandler::doInternal,            true,   optNone     },
         {   "feature",              &RPCHandler::doFeature,             true,   optNone     },
         {   "fetch_info",           &RPCHandler::doFetchInfo,           true,   optNone     },

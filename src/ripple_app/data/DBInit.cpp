@@ -75,6 +75,8 @@ const char* LedgerDBInit[] =
 		LedgerSeq		BIGINT UNSIGNED,			\
 		PrevHash		CHARACTER(64),				\
 		TotalCoins		BIGINT UNSIGNED,			\
+		InflateSeq		BIGINT UNSIGNED,			\
+		FeePool			BIGINT UNSIGNED,			\
 		ClosingTime		BIGINT UNSIGNED,			\
 		PrevClosingTime	BIGINT UNSIGNED,			\
 		CloseTimeRes	BIGINT UNSIGNED,			\

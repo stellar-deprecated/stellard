@@ -7,6 +7,8 @@ var testconfig  = require("./testconfig.js");
 
 exports.accounts = testconfig.accounts;
 
+//exports.no_server= true; // set to true if you want to connect to an already running server. (Note some tests will fail since this doesn't start with a clean server for every test)
+
 exports.server_default  = "alpha";
 
 exports.default_server_config = {
@@ -22,7 +24,6 @@ exports.default_server_config = {
 exports.servers = {
   // A local test server.
   "alpha" : {
-      'dontSpawn': false,  // set to true if you want to connect to an already running server. (Note many tests will fail since this doesn't start with a clean server for every test)
     'trusted' : true,
     // "peer_ip" : "0.0.0.0",
     // "peer_port" : 51235,

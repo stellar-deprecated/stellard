@@ -27,6 +27,8 @@ LedgerBase::LedgerBase ()
 Ledger::Ledger (const RippleAddress& masterID, uint64 startAmount)
     : mTotCoins (startAmount)
     , mLedgerSeq (1) // First Ledger
+	, mInflationSeq(1)
+	, mFeePool(0)
     , mCloseTime (0)
     , mParentCloseTime (0)
     , mCloseResolution (LEDGER_TIME_ACCURACY)
@@ -63,6 +65,8 @@ Ledger::Ledger (uint256 const& parentHash,
                 uint256 const& transHash,
                 uint256 const& accountHash,
                 uint64 totCoins,
+				uint32 inflateSeq, 
+				uint64 feePool,
                 uint32 closeTime,
                 uint32 parentCloseTime,
                 int closeFlags,
@@ -73,6 +77,8 @@ Ledger::Ledger (uint256 const& parentHash,
     , mTransHash (transHash)
     , mAccountHash (accountHash)
     , mTotCoins (totCoins)
+	, mInflationSeq(inflateSeq)
+	, mFeePool(feePool)
     , mLedgerSeq (ledgerSeq)
     , mCloseTime (closeTime)
     , mParentCloseTime (parentCloseTime)
@@ -115,6 +121,8 @@ Ledger::Ledger (Ledger& ledger,
     : mParentHash (ledger.mParentHash)
     , mTotCoins (ledger.mTotCoins)
     , mLedgerSeq (ledger.mLedgerSeq)
+	, mInflationSeq(ledger.mInflationSeq)
+	, mFeePool(ledger.mFeePool)
     , mCloseTime (ledger.mCloseTime)
     , mParentCloseTime (ledger.mParentCloseTime)
     , mCloseResolution (ledger.mCloseResolution)
@@ -136,6 +144,8 @@ Ledger::Ledger (bool /* dummy */,
                 Ledger& prevLedger)
     : mTotCoins (prevLedger.mTotCoins)
     , mLedgerSeq (prevLedger.mLedgerSeq + 1)
+	, mInflationSeq(prevLedger.mInflationSeq)
+	, mFeePool(prevLedger.mFeePool)
     , mParentCloseTime (prevLedger.mCloseTime)
     , mCloseResolution (prevLedger.mCloseResolution)
     , mCloseFlags (0)
@@ -544,8 +554,8 @@ bool Ledger::saveValidatedLedger (bool current)
     static boost::format
     updateTx ("UPDATE Transactions SET LedgerSeq = %u, Status = '%c', TxnMeta = %s WHERE TransID = '%s';");
     static boost::format addLedger ("INSERT OR REPLACE INTO Ledgers "
-                                    "(LedgerHash,LedgerSeq,PrevHash,TotalCoins,ClosingTime,PrevClosingTime,CloseTimeRes,CloseFlags,"
-                                    "AccountSetHash,TransSetHash) VALUES ('%s','%u','%s','%s','%u','%u','%d','%u','%s','%s');");
+                                    "(LedgerHash,LedgerSeq,PrevHash,TotalCoins,InflateSeq,FeePool,ClosingTime,PrevClosingTime,CloseTimeRes,CloseFlags,"
+                                    "AccountSetHash,TransSetHash) VALUES ('%s','%u','%s','%s','%u','%u','%u','%u','%d','%u','%s','%s');");
 
     if (!getAccountHash ().isNonZero ())
     {
@@ -651,7 +661,7 @@ bool Ledger::saveValidatedLedger (bool current)
 
         getApp().getLedgerDB ()->getDB ()->executeSQL (boost::str (addLedger %
                 getHash ().GetHex () % mLedgerSeq % mParentHash.GetHex () %
-                lexicalCastThrow <std::string> (mTotCoins) % mCloseTime % mParentCloseTime %
+                lexicalCastThrow <std::string> (mTotCoins) % mInflationSeq % mFeePool % mCloseTime % mParentCloseTime %
                 mCloseResolution % mCloseFlags % mAccountHash.GetHex () % mTransHash.GetHex ()));
     }
 
@@ -672,7 +682,8 @@ Ledger::pointer Ledger::loadByIndex (uint32 ledgerIndex)
         DeprecatedScopedLock sl (getApp().getLedgerDB ()->getDBLock ());
 
         SqliteStatement pSt (db->getSqliteDB (), "SELECT "
-                             "LedgerHash,PrevHash,AccountSetHash,TransSetHash,TotalCoins,"
+							"LedgerHash,PrevHash,AccountSetHash,TransSetHash,TotalCoins,"
+							"InflateSeq,FeePool,"
                              "ClosingTime,PrevClosingTime,CloseTimeRes,CloseFlags,LedgerSeq"
                              " from Ledgers WHERE LedgerSeq = ?;");
 
@@ -698,6 +709,7 @@ Ledger::pointer Ledger::loadByHash (uint256 const& ledgerHash)
 
         SqliteStatement pSt (db->getSqliteDB (), "SELECT "
                              "LedgerHash,PrevHash,AccountSetHash,TransSetHash,TotalCoins,"
+							 "InflateSeq,FeePool,"
                              "ClosingTime,PrevClosingTime,CloseTimeRes,CloseFlags,LedgerSeq"
                              " from Ledgers WHERE LedgerHash = ?;");
 
@@ -741,8 +753,8 @@ Ledger::pointer Ledger::getSQL (const std::string& sql)
 {
     // only used with sqlite3 prepared statements not used
     uint256 ledgerHash, prevHash, accountHash, transHash;
-    uint64 totCoins;
-    uint32 closingTime, prevClosingTime, ledgerSeq;
+    uint64 totCoins, feePool;
+    uint32 closingTime, prevClosingTime, ledgerSeq, inflateSeq;
     int closeResolution;
     unsigned closeFlags;
     std::string hash;
@@ -763,6 +775,8 @@ Ledger::pointer Ledger::getSQL (const std::string& sql)
         db->getStr ("TransSetHash", hash);
         transHash.SetHexExact (hash);
         totCoins = db->getBigInt ("TotalCoins");
+		feePool = db->getBigInt("FeePool");
+		inflateSeq = db->getBigInt("InflateSeq");
         closingTime = db->getBigInt ("ClosingTime");
         prevClosingTime = db->getBigInt ("PrevClosingTime");
         closeResolution = db->getBigInt ("CloseTimeRes");
@@ -773,7 +787,7 @@ Ledger::pointer Ledger::getSQL (const std::string& sql)
 
     // CAUTION: code below appears in two places
     bool loaded;
-    Ledger::pointer ret (new Ledger (prevHash, transHash, accountHash, totCoins,
+    Ledger::pointer ret (new Ledger (prevHash, transHash, accountHash, totCoins, inflateSeq, feePool,
                                      closingTime, prevClosingTime, closeFlags, closeResolution, ledgerSeq, loaded));
 
     if (!loaded)
@@ -819,8 +833,8 @@ Ledger::pointer Ledger::getSQL1 (SqliteStatement* stmt)
     }
 
     uint256 ledgerHash, prevHash, accountHash, transHash;
-    uint64 totCoins;
-    uint32 closingTime, prevClosingTime, ledgerSeq;
+    uint64 totCoins,feePool;
+    uint32 closingTime, prevClosingTime, ledgerSeq,inflateSeq;
     int closeResolution;
     unsigned closeFlags;
 
@@ -829,15 +843,17 @@ Ledger::pointer Ledger::getSQL1 (SqliteStatement* stmt)
     accountHash.SetHexExact (stmt->peekString (2));
     transHash.SetHexExact (stmt->peekString (3));
     totCoins = stmt->getInt64 (4);
-    closingTime = stmt->getUInt32 (5);
-    prevClosingTime = stmt->getUInt32 (6);
-    closeResolution = stmt->getUInt32 (7);
-    closeFlags = stmt->getUInt32 (8);
-    ledgerSeq = stmt->getUInt32 (9);
+	inflateSeq = stmt->getUInt32(5);
+	feePool = stmt->getInt64(6);
+    closingTime = stmt->getUInt32 (7);
+    prevClosingTime = stmt->getUInt32 (8);
+    closeResolution = stmt->getUInt32 (9);
+    closeFlags = stmt->getUInt32 (10);
+    ledgerSeq = stmt->getUInt32 (11);
 
     // CAUTION: code below appears in two places
     bool loaded;
-    Ledger::pointer ret (new Ledger (prevHash, transHash, accountHash, totCoins,
+    Ledger::pointer ret (new Ledger (prevHash, transHash, accountHash, totCoins, inflateSeq, feePool,
                                      closingTime, prevClosingTime, closeFlags, closeResolution, ledgerSeq, loaded));
 
     if (!loaded)
@@ -1013,14 +1029,13 @@ Json::Value Ledger::getJson (int options)
         if (mClosed)
             ledger["closed"] = true;
 
-        ledger["hash"]              = mHash.GetHex ();                              // DEPRECATED
-        ledger["totalCoins"]        = lexicalCastThrow <std::string> (mTotCoins); // DEPRECATED
-
         ledger["ledger_hash"]       = mHash.GetHex ();
         ledger["transaction_hash"]  = mTransHash.GetHex ();
         ledger["account_hash"]      = mAccountHash.GetHex ();
         ledger["accepted"]          = mAccepted;
         ledger["total_coins"]       = lexicalCastThrow <std::string> (mTotCoins);
+		ledger["inflate_seq"]		= lexicalCastThrow <std::string>(mInflationSeq);
+		ledger["fee_pool"]			= lexicalCastThrow <std::string>(mFeePool);
 
         if (mCloseTime != 0)
         {

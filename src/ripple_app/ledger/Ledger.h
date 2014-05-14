@@ -103,7 +103,7 @@ public:
     Ledger (const RippleAddress & masterID, uint64 startAmount); // used for the starting bootstrap ledger
 
     Ledger (uint256 const & parentHash, uint256 const & transHash, uint256 const & accountHash,
-            uint64 totCoins, uint32 closeTime, uint32 parentCloseTime, int closeFlags, int closeResolution,
+            uint64 totCoins, uint32 inflateSeq, uint64 feePool, uint32 closeTime, uint32 parentCloseTime, int closeFlags, int closeResolution,
             uint32 ledgerSeq, bool & loaded); // used for database ledgers
 
     Ledger (Blob const & rawLedger, bool hasPrefix);

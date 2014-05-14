@@ -156,7 +156,7 @@ Server.prototype.start = function (dontSpawn) {
 
   this._makeBase(function (e) {
     if (e) throw e;
-    if(!dontSpawn) self._serverSpawnSync();
+    self._serverSpawnSync();
     self.emit('started');
   });
 
