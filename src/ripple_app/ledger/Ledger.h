@@ -191,9 +191,14 @@ public:
 	}
 	void incrementInflationSeq()
 	{
+		mFeePool = 0;  
 		mInflationSeq++;
 	}
 	
+	void inflateCoins(uint64 newCoins)
+	{
+		mTotCoins += newCoins;
+	}
 
     void destroyCoins (uint64 fee)
     {
@@ -481,9 +486,10 @@ private:
     uint256     mTransHash;
     uint256     mAccountHash;
     uint64      mTotCoins;
-	uint64      mFeePool;		// JED: we might not need this depending on how we implement inflation
+	uint64      mFeePool;		// All the fees collected since last inflation spend
     uint32      mLedgerSeq;
 	uint32		mInflationSeq;	// the last inflation that was applied 
+	// Ripple times are seconds since 1/1/2000 00:00 UTC. You can add 946,684,800 to a Ripple time to convert it to a UNIX time
     uint32      mCloseTime;         // when this ledger closed
     uint32      mParentCloseTime;   // when the previous ledger closed
     int         mCloseResolution;   // the resolution for this ledger close time (2-120 seconds)
@@ -491,7 +497,7 @@ private:
     bool        mClosed, mValidated, mValidHash, mAccepted, mImmutable;
 
     uint32      mReferenceFeeUnits;                 // Fee units for the reference transaction
-    uint32      mReserveBase, mReserveIncrement;    // Reserve basse and increment in fee units
+    uint32      mReserveBase, mReserveIncrement;    // Reserve base and increment in fee units
     uint64      mBaseFee;                           // Ripple cost of the reference transaction
 
     SHAMap::pointer mTransactionMap;

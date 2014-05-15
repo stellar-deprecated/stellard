@@ -19,9 +19,10 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "InflationTransactor.h"
 
 #define INFLATION_FREQUENCY			(60*60*24*30)  // every 30 days
-#define INFLATION_RATE				(1.01/12.0)    // 1% a year
+#define INFLATION_RATE				(1.01/(INFLATION_FREQUENCY/365))    // 1% a year
 #define INFLATION_NUM_WINNERS		5
 #define INFLATION_WIN_MIN_PERCENT	.1
+#define INFLATION_START_TIME		(1397088000-946684800) // seconds since 1/1/2000
 #define MIN(x,y)  ((x)<(y) ? (x) : (y))
 /*
 What about when an account that wins a dole is now gone?
@@ -45,7 +46,7 @@ namespace ripple {
 		// make sure it is time to apply inflation
 		// make sure the seq number of this inflation transaction is correct
 
-		uint32 seq = mTxn.getFieldU32(sfSequence);
+		uint32 seq = mTxn.getFieldU32(sfInflateSeq);
 		
 
 		if (seq != mEngine->getLedger()->getInflationSeq())
@@ -56,7 +57,8 @@ namespace ripple {
 		}
 
 		uint32 closeTime=mEngine->getLedger()->getParentCloseTimeNC();
-		if (closeTime > seq*INFLATION_FREQUENCY)
+		uint32 nextTime = (INFLATION_START_TIME + seq*INFLATION_FREQUENCY);
+		if (closeTime < nextTime)
 		{
 			WriteLog(lsINFO, InflationTransactor) << "doInflation: Too early.";
 
@@ -123,20 +125,24 @@ namespace ripple {
 				}
 			}
 
-			uint64 coinsToDole = mEngine->getLedger()->getFeePool() + INFLATION_RATE*mEngine->getLedger()->getTotalCoins();
+			uint64 coinsToDole = INFLATION_RATE*(mEngine->getLedger()->getFeePool()+mEngine->getLedger()->getTotalCoins());
 			//uint64 coinsLeft = coinsToDole;
 			for (int n = 0; n < maxIndex; n++)
 			{
 				double share=sortedVotes[n].second/totalVoted;
 				uint64 coinsDoled = share*coinsToDole;
 				//coinsLeft -= coinsDoled;
-				SLE::pointer account=mEngine->getLedger()->getAccountRoot(sortedVotes[n].first);
+				SLE::pointer account = mEngine->entryCache(ltACCOUNT_ROOT, Ledger::getAccountRootIndex(sortedVotes[n].first));
+				
 				if (account)
 				{
 					mEngine->entryModify(account);
 					account->setFieldAmount(sfBalance, account->getFieldAmount(sfBalance) + coinsDoled);
+					mEngine->getLedger()->inflateCoins(coinsDoled);
 				}
 			}
+
+			mEngine->getLedger()->incrementInflationSeq();
 			
 		}
 		else

@@ -66,7 +66,8 @@ TxFormats::TxFormats ()
             << SOElement (sfDestinationTag,  SOE_OPTIONAL)
             ;
 
-	add("Inflation", ttINFLATION);
+	add("Inflation", ttINFLATION)
+		<< SOElement(sfInflateSeq, SOE_REQUIRED);
 /*	
     add ("Contract", ttCONTRACT)
             << SOElement (sfExpiration,      SOE_REQUIRED)

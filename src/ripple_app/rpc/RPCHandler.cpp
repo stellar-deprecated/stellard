@@ -2123,11 +2123,15 @@ Json::Value RPCHandler::doInflate(Json::Value params, Resource::Charge& loadType
 
 	uint32 inflationSeq= getApp().getLedgerMaster().getClosedLedger()->getInflationSeq();
 	params["tx_json"]["TransactionType"] = "Inflation";
-	params["tx_json"]["Sequence"] = inflationSeq;
+	params["tx_json"]["InflateSeq"] = inflationSeq;
 	params["tx_json"]["Account"] = "gHb9CJAWyB4gj91VRWn96DkukG4bwdtyTh";
 	params["tx_json"]["Fee"] = "0";
-	params["tx_json"]["SigningPubKey"] = "0";
+	//params["tx_json"]["SigningPubKey"] = "0";
+	params["secret"] = "snoPBgXtMeMyMHUVTrbuqAfr1SUTb";
 
+	return transactionSign(params, true, true, masterLockHolder);
+
+	/*
 	Json::Value& tx_json(params["tx_json"]);
 
 	Json::Value jvResult;
@@ -2160,6 +2164,8 @@ Json::Value RPCHandler::doInflate(Json::Value params, Resource::Charge& loadType
 		return RPC::make_error(rpcINTERNAL,
 			"Exception occurred during transaction");
 	}
+
+	stpTrans->sign(naAccountPrivate);
 
 	Transaction::pointer tpTrans;
 
@@ -2218,6 +2224,7 @@ Json::Value RPCHandler::doInflate(Json::Value params, Resource::Charge& loadType
 
 
 	return jvResult;
+	*/
 }
 
 Json::Value RPCHandler::doServerInfo (Json::Value, Resource::Charge& loadType, Application::ScopedLockType& masterLockHolder)
