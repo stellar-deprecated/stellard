@@ -23,7 +23,10 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define INFLATION_NUM_WINNERS		5
 #define INFLATION_WIN_MIN_PERCENT	.1
 #define INFLATION_START_TIME		(1397088000-946684800) // seconds since 1/1/2000
+#ifndef MIN
 #define MIN(x,y)  ((x)<(y) ? (x) : (y))
+#endif
+
 /*
 What about when an account that wins a dole is now gone?
 */

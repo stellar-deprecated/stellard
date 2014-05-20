@@ -1,7 +1,7 @@
 //------------------------------------------------------------------------------
 /*
-    This file is part of rippled: https://github.com/ripple/rippled
-    Copyright (c) 2012, 2013 Ripple Labs Inc.
+    This file is part of stellard: https://github.com/stellar/stellard
+    Copyright (c) 2014 Stellar Development Foundation Inc.
 
     Permission to use, copy, modify, and/or distribute this software for any
     purpose  with  or without fee is hereby granted, provided that the above
@@ -26,7 +26,7 @@ static void offerAdder(std::list<const uint256>& offersList, SLE::ref offer)
 {
 	if (offer->getType() == ltOFFER)
 	{
-		offersList.push_front(offer->getIndex());
+		//offersList.push_front(offer->getIndex());
 	}
 }
 
@@ -34,13 +34,13 @@ static void rippleStateAdder(std::list<const uint256>& stateList, SLE::ref rippl
 {
 	if (rippleState->getType() == ltRIPPLE_STATE)
 	{
-		stateList.push_front(rippleState->getIndex());
+		//stateList.push_front(rippleState->getIndex());
 	}
 }
 
 TER AccountDeleteTransactor::doApply ()
 {
-	
+	/*
     WriteLog (lsINFO, AccountDeleteTransactor) << "AccountDelete>";
 
 
@@ -214,7 +214,7 @@ TER AccountDeleteTransactor::doApply ()
 	// Delete account itself
 
 	mEngine->getNodes().entryDelete(mTxnAccount);
-
+	*/
 
     return tesSUCCESS;
 }
