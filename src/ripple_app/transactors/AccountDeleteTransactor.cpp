@@ -30,6 +30,13 @@ static void offerAdder(std::list<const uint256>& offersList, SLE::ref offer)
 	}
 }
 
+static void rippleStateAdder(std::list<const uint256>& stateList, SLE::ref rippleState)
+{
+	if (rippleState->getType() == ltRIPPLE_STATE)
+	{
+		stateList.push_front(rippleState->getIndex());
+	}
+}
 
 TER AccountDeleteTransactor::doApply ()
 {
@@ -78,41 +85,36 @@ TER AccountDeleteTransactor::doApply ()
 
 		return tefDST_TAG_NEEDED;
 	}
+
 	
 
 	/// Manage account IOUs
+
+	std::list<const uint256> rippleLinesList;
+	mEngine->getLedger()->visitAccountItems(mTxnAccountID, BIND_TYPE(&rippleStateAdder, boost::ref(rippleLinesList), P_1));
+
 	auto pAccItem = AccountItem::pointer(new RippleState());
-	AccountItems stellarLines(mTxnAccountID, mEngine->getLedger(), pAccItem);
-	
-	// Don't delete account if it has outstanding IOUs
-	BOOST_FOREACH(AccountItem::ref item, stellarLines.getItems())
+
+	// Transfer IOUs
+	BOOST_FOREACH(const uint256 itemIndex, rippleLinesList)
 	{
-		RippleState* line = (RippleState*)item.get();
+		SLE::pointer			sleLine		  = mEngine->entryCache(ltRIPPLE_STATE, itemIndex);
+		AccountItem*			pAi			  = pAccItem->makeItem(mTxnAccountID, sleLine).get();
+		RippleState*			line		  = (RippleState*)pAi;
+		const STAmount&			saLineBalance = line->getBalance();
 
-		const STAmount&     saBalance = line->getBalance();
 
-		if (saBalance.isNegative()){
+		if (saLineBalance.isNegative()){
 			WriteLog(lsINFO, AccountDeleteTransactor) << "AccountDelete: Invalid: Not authorized to delete account.";
 
 			return temBAD_AMOUNT;
 		}
 
-	}
-
-	auto lesNodes = mEngine->getNodes();
-
-	// Transfer IOUs
-	BOOST_FOREACH(AccountItem::ref item, stellarLines.getItems())
-	{
-		RippleState*	line		= (RippleState*)item.get();
-		SLE::pointer	sleLine		= line->getSLE();
-		const STAmount&	saBalance	= line->getBalance();
-
-		if (saBalance.isPositive())
+		if (saLineBalance.isPositive())
 		{
 			const uint160 iouIssuerId = line->getAccountIDPeer();
-			const uint160 uCurrencyId = saBalance.getCurrency();
-			const uint256 uTrustLineIndex = Ledger::getRippleStateIndex(mTxnAccountID, iouIssuerId, uCurrencyId);
+			const uint160 uCurrencyId = saLineBalance.getCurrency();
+			const uint256 uTrustLineIndex = Ledger::getRippleStateIndex(uDestinationID, iouIssuerId, uCurrencyId);
 
 
 			SLE::pointer    sleDestinationTrustLine = mEngine->entryCache(ltRIPPLE_STATE, uTrustLineIndex);
@@ -131,7 +133,14 @@ TER AccountDeleteTransactor::doApply ()
 
 				const STAmount& destBalance = sleDestinationTrustLine->getFieldAmount(sfBalance);
 
-				sleDestinationTrustLine->setFieldAmount(sfBalance, destBalance + saBalance);
+				auto finalBalance = destBalance + saLineBalance;
+				sleDestinationTrustLine->setFieldAmount(sfBalance, finalBalance);
+
+#if !NDEBUG
+				auto testBalance = sleDestinationTrustLine->getFieldAmount(sfBalance);
+				assert(finalBalance == testBalance);
+#endif
+
 				mEngine->entryModify(sleDestinationTrustLine);
 
 			}
@@ -141,37 +150,35 @@ TER AccountDeleteTransactor::doApply ()
 				const bool      bHigh = uDestinationID > iouIssuerId;
 				const STAmount	trustAmount{ uCurrencyId, uDestinationID, 0 }; // Don't set trust for (unassuming) destination
 
-				lesNodes.trustCreate(bHigh,
+				mEngine->getNodes().trustCreate(bHigh,
 					uDestinationID,
 					iouIssuerId,
 					uTrustLineIndex,
 					sleDst,
 					false,
 					false,
-					saBalance,
+					saLineBalance,
 					trustAmount);
 
 			}
 		}
 
-		uint160 uAccountID	   = sleLine->getFirstOwner().getAccountID();
+		uint160 uAccountID = sleLine->getFirstOwner().getAccountID();
 		uint160 uAccountPeerID = sleLine->getSecondOwner().getAccountID();
 
 		uint160& uHighAccountID = uAccountID > uAccountPeerID ? uAccountID : uAccountPeerID;
-		uint160& uLowAccountID  = uAccountID < uAccountPeerID ? uAccountID : uAccountPeerID;
+		uint160& uLowAccountID = uAccountID < uAccountPeerID ? uAccountID : uAccountPeerID;
 
 
-		TER terResult = lesNodes.trustDelete(sleLine, uLowAccountID, uHighAccountID);
+		TER terResult = mEngine->getNodes().trustDelete(sleLine, uLowAccountID, uHighAccountID);
 
 		if (terResult != tesSUCCESS){
 			WriteLog(lsINFO, AccountDeleteTransactor) << "AccountDelete: Deleting trust line failed: " << transHuman(terResult);
 		}
-	
+
 	}
 
-
 	mEngine->entryModify(sleDst);
-
 
 
 	// Transfer stellars
@@ -194,7 +201,7 @@ TER AccountDeleteTransactor::doApply ()
 
 	BOOST_FOREACH(const uint256 offerIndex, offersList)
 	{
-		auto terResult = lesNodes.offerDelete(offerIndex);
+		auto terResult = mEngine->getNodes().offerDelete(offerIndex);
 
 		if (terResult != tesSUCCESS){
 			WriteLog(lsINFO, AccountDeleteTransactor) << "AccountDelete: Deleting offer failed: " << transHuman(terResult);
@@ -206,7 +213,7 @@ TER AccountDeleteTransactor::doApply ()
 
 	// Delete account itself
 
-	lesNodes.entryDelete(mTxnAccount);
+	mEngine->getNodes().entryDelete(mTxnAccount);
 
 
     return tesSUCCESS;
