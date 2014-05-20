@@ -40,7 +40,7 @@ static void rippleStateAdder(std::list<const uint256>& stateList, SLE::ref rippl
 
 TER AccountDeleteTransactor::doApply ()
 {
-	
+	/*
     WriteLog (lsINFO, AccountDeleteTransactor) << "AccountDelete>";
 
 
@@ -214,7 +214,7 @@ TER AccountDeleteTransactor::doApply ()
 	// Delete account itself
 
 	mEngine->getNodes().entryDelete(mTxnAccount);
-
+	*/
 
     return tesSUCCESS;
 }
