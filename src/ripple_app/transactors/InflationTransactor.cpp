@@ -33,7 +33,7 @@ namespace ripple {
 
 	bool voteSorter(const std::pair<uint160, uint64>  &p1, const std::pair<uint160, uint64> &p2)
 	{
-		return p1.second < p2.second;
+		return p1.second > p2.second;
 	}
 
 	SETUP_LOG(InflationTransactor)
@@ -84,7 +84,7 @@ namespace ripple {
 
 				if (s->getType() == ltACCOUNT_ROOT)
 				{
-					if (s->peekAtPField(sfInflationDest))
+					if (s->isFieldPresent(sfInflationDest))
 					{
 						uint160 addr=s->getFieldAccount160(sfInflationDest);
 						STAmount balance = s->getFieldAmount(sfBalance);
