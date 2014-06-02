@@ -19,7 +19,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "InflationTransactor.h"
 
 #define INFLATION_FREQUENCY			(60*60*24*30)  // every 30 days
-#define INFLATION_RATE				(1.01/(INFLATION_FREQUENCY/365))    // 1% a year
+//inflation is 0.000817609695 per 30 days, or 1% a year
+#define INFLATION_RATE_TRILLIONTHS      817609695L
+#define TRILLION                    1000000000000L
 #define INFLATION_NUM_WINNERS		5
 #define INFLATION_WIN_MIN_PERCENT	.1
 #define INFLATION_START_TIME		(1397088000-946684800) // seconds since 1/1/2000
@@ -36,7 +38,13 @@ namespace ripple {
 
 	bool voteSorter(const std::pair<uint160, uint64>  &p1, const std::pair<uint160, uint64> &p2)
 	{
-		return p1.second < p2.second;
+		return p1.second > p2.second;
+	}
+
+	uint64 bigIntegerToUint64(beast::BigInteger& bigInt){
+		uint64 res = bigInt.getBitRangeAsInt(0, 32) + ( ((uint64)bigInt.getBitRangeAsInt(32, 32)) << 32 );
+
+		return res;
 	}
 
 	SETUP_LOG(InflationTransactor)
@@ -87,7 +95,7 @@ namespace ripple {
 
 				if (s->getType() == ltACCOUNT_ROOT)
 				{
-					if (s->peekAtPField(sfInflationDest))
+					if (s->isFieldPresent(sfInflationDest))
 					{
 						uint160 addr=s->getFieldAccount160(sfInflationDest);
 						STAmount balance = s->getFieldAmount(sfBalance);
@@ -115,7 +123,8 @@ namespace ripple {
 					totalVoted += sortedVotes[n].second;
 				}else 
 				{
-					maxIndex = n;
+					if (totalVoted)
+						maxIndex = n;
 					break;
 				}
 			}
@@ -128,13 +137,32 @@ namespace ripple {
 				}
 			}
 
-			uint64 coinsToDole = INFLATION_RATE*(mEngine->getLedger()->getFeePool()+mEngine->getLedger()->getTotalCoins());
-			//uint64 coinsLeft = coinsToDole;
+
+			// TODO: Is there better way to cast uint64 to signed int64? (There is no constructor using uint64)
+			beast::BigInteger biCoinsToDole      { (int64) mEngine->getLedger()->getTotalCoins() }; 
+			beast::BigInteger inflRateMultiplier { (int64) INFLATION_RATE_TRILLIONTHS };
+			beast::BigInteger inflRateDivider    { (int64) TRILLION };
+			beast::BigInteger poolFee            { (int64) mEngine->getLedger()->getFeePool() };
+
+			/// coinsToDole = totalCoins * INFLATION_RATE + feePool
+			biCoinsToDole *= inflRateMultiplier;
+			biCoinsToDole /= inflRateDivider;
+			biCoinsToDole += poolFee;
+
+
+			beast::BigInteger biTotalVoted { (int64)totalVoted };
+
+			
 			for (int n = 0; n < maxIndex; n++)
 			{
-				double share=sortedVotes[n].second/totalVoted;
-				uint64 coinsDoled = share*coinsToDole;
-				//coinsLeft -= coinsDoled;
+				/// coinsDoled = coinToDole * ( votes / totalVoted )
+				beast::BigInteger biCoinsDoled { (int64)sortedVotes[n].second }; 
+				biCoinsDoled *= biCoinsToDole;
+				biCoinsDoled /= biTotalVoted;
+
+				uint64 coinsDoled = bigIntegerToUint64(biCoinsDoled);
+
+
 				SLE::pointer account = mEngine->entryCache(ltACCOUNT_ROOT, Ledger::getAccountRootIndex(sortedVotes[n].first));
 				
 				if (account)
