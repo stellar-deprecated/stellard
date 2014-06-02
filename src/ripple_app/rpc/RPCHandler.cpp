@@ -169,11 +169,11 @@ Json::Value RPCHandler::transactionSign (Json::Value params,
 
     WriteLog (lsDEBUG, RPCHandler) << boost::str (boost::format ("transactionSign: %s") % params);
 
+	if (!params.isMember("tx_json"))
+		return RPC::missing_field_error("tx_json");
+
     if (! params.isMember ("secret"))
         return RPC::missing_field_error ("secret");
-
-    if (! params.isMember ("tx_json"))
-        return RPC::missing_field_error ("tx_json");
 
     RippleAddress naSeed;
 
