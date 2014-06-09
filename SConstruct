@@ -1,5 +1,5 @@
 #
-# Ripple - SConstruct
+# Stellar - SConstruct
 #
 
 import commands
@@ -327,8 +327,8 @@ for file in COMPILED_FILES:
 # Targets
 #
 
-rippled = env.Program('build/rippled', OBJECT_FILES)
+stellard = env.Program('build/rippled', OBJECT_FILES)
 
 tags    = env.CTags('tags', TAG_SRCS)
 
-Default(rippled, tags)
+Default(stellard, tags)
