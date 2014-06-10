@@ -327,7 +327,7 @@ for file in COMPILED_FILES:
 # Targets
 #
 
-stellard = env.Program('build/rippled', OBJECT_FILES)
+stellard = env.Program('build/stellard', OBJECT_FILES)
 
 tags    = env.CTags('tags', TAG_SRCS)
 
