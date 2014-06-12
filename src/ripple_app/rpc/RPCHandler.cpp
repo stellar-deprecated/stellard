@@ -4402,7 +4402,7 @@ Json::Value RPCHandler::doCommand (const Json::Value& params, int iRole, Resourc
         {   "feature",              &RPCHandler::doFeature,             true,   optNone     },
         {   "fetch_info",           &RPCHandler::doFetchInfo,           true,   optNone     },
         {   "ledger",               &RPCHandler::doLedger,              false,  optNetwork  },
-        {   "ledger_accept",        &RPCHandler::doLedgerAccept,        true,   optCurrent  },
+        {   "ledger_accept",        &RPCHandler::doLedgerAccept,        false,   optCurrent  },
         {   "ledger_cleaner",       &RPCHandler::doLedgerCleaner,       true,   optNetwork  },
         {   "ledger_closed",        &RPCHandler::doLedgerClosed,        false,  optClosed   },
         {   "ledger_current",       &RPCHandler::doLedgerCurrent,       false,  optCurrent  },

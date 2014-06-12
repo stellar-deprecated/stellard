@@ -18,12 +18,12 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //==============================================================================
 #include "InflationTransactor.h"
 
-#define INFLATION_FREQUENCY			(60*60*24*30)  // every 30 days
+#define INFLATION_FREQUENCY			(60*60*24*7)  // every 7 days
 //inflation is 0.000817609695 per 30 days, or 1% a year
-#define INFLATION_RATE_TRILLIONTHS      817609695L
+#define INFLATION_RATE_TRILLIONTHS      817630000L
 #define TRILLION                    1000000000000L
-#define INFLATION_NUM_WINNERS		5
-#define INFLATION_WIN_MIN_PERCENT	.1
+#define INFLATION_WIN_MIN_PERCENT	  15000000000L   // 1.5%
+#define INFLATION_NUM_WINNERS		50
 #define INFLATION_START_TIME		(1397088000-946684800) // seconds since 1/1/2000
 #ifndef MIN
 #define MIN(x,y)  ((x)<(y) ? (x) : (y))
@@ -53,6 +53,8 @@ namespace ripple {
 
 	TER InflationTransactor::doApply()
 	{
+		WriteLog(lsWARNING, InflationTransactor) << "InflationTransactor::doApply()";
+
 		TER terResult = tesSUCCESS;
 		// make sure it is time to apply inflation
 		// make sure the seq number of this inflation transaction is correct
@@ -113,12 +115,21 @@ namespace ripple {
 
 			sort(sortedVotes.begin(), sortedVotes.end(), voteSorter);
 
-			uint64 minBalance = mEngine->getLedger()->getTotalCoins()*INFLATION_WIN_MIN_PERCENT;
+			
+			beast::BigInteger minBalance{ (int64)mEngine->getLedger()->getTotalCoins() };
+			beast::BigInteger minWinMultiplier{ (int64)INFLATION_WIN_MIN_PERCENT };
+			beast::BigInteger inflRateDivider{ (int64)TRILLION };
+
+			minBalance *= minWinMultiplier;
+			minBalance /= inflRateDivider;
+
 			uint64 totalVoted = 0;
 			int maxIndex = MIN(INFLATION_NUM_WINNERS, sortedVotes.size());
 			for (int n = 0; n < maxIndex; n++)
 			{
-				if (sortedVotes[n].second > minBalance)
+				beast::BigInteger votesGotten{ (int64)sortedVotes[n].second };
+
+				if (votesGotten > minBalance)
 				{
 					totalVoted += sortedVotes[n].second;
 				}else 
@@ -133,6 +144,9 @@ namespace ripple {
 			{  // no one crossed the threshold so just take top N
 				for (int n = 0; n < maxIndex; n++)
 				{
+					RippleAddress tempAddr;
+					tempAddr.setAccountID(sortedVotes[n].first);
+					WriteLog(lsWARNING, InflationTransactor) << "votes: " << sortedVotes[n].second << " address: " << tempAddr.ToString();
 					totalVoted += sortedVotes[n].second;
 				}
 			}
@@ -141,7 +155,6 @@ namespace ripple {
 			// TODO: Is there better way to cast uint64 to signed int64? (There is no constructor using uint64)
 			beast::BigInteger biCoinsToDole      { (int64) mEngine->getLedger()->getTotalCoins() }; 
 			beast::BigInteger inflRateMultiplier { (int64) INFLATION_RATE_TRILLIONTHS };
-			beast::BigInteger inflRateDivider    { (int64) TRILLION };
 			beast::BigInteger poolFee            { (int64) mEngine->getLedger()->getFeePool() };
 
 			/// coinsToDole = totalCoins * INFLATION_RATE + feePool
@@ -151,6 +164,8 @@ namespace ripple {
 
 
 			beast::BigInteger biTotalVoted { (int64)totalVoted };
+
+			WriteLog(lsWARNING, InflationTransactor) << "totalVoted: " << totalVoted;
 
 			
 			for (int n = 0; n < maxIndex; n++)
@@ -162,6 +177,7 @@ namespace ripple {
 
 				uint64 coinsDoled = bigIntegerToUint64(biCoinsDoled);
 
+				WriteLog(lsWARNING, InflationTransactor) << "coinsDoled: " << coinsDoled;
 
 				SLE::pointer account = mEngine->entryCache(ltACCOUNT_ROOT, Ledger::getAccountRootIndex(sortedVotes[n].first));
 				

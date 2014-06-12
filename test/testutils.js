@@ -196,7 +196,7 @@ function create_accounts(remote, src, amount, accounts, callback) {
 
   async.forEach(accounts, function (account, callback) {
     // Cache the seq as 1.
-    // Otherwise, when other operations attempt to opperate async against the account they may get confused.
+    // Otherwise, when other operations attempt to operate async against the account they may get confused.
     remote.set_account_seq(account, 1);
 
     var tx = remote.transaction();
@@ -215,6 +215,36 @@ function create_accounts(remote, src, amount, accounts, callback) {
 
     tx.submit();
   }, callback);
+};
+
+// Account should be {name,balance}
+function createAccountsFromObjects(remote, src, accounts, callback) {
+    assert(arguments.length === 4);
+
+    remote.set_account_seq(src, 1);
+
+    async.eachSeries(accounts, function (account, callback) {
+        // Cache the seq as 1.
+        // Otherwise, when other operations attempt to operate async against the account they may get confused.
+        remote.set_account_seq(account.name, 1);
+
+        var tx = remote.transaction();
+
+        //console.log(account.balance);
+        tx.payment(src, account.name, account.balance);
+
+        tx.once('proposed', function (m) {
+            //console.log('proposed: %s', JSON.stringify(m));
+            callback(m.engine_result === 'tesSUCCESS' ? null : new Error());
+        });
+
+        tx.once('error', function (m) {
+            console.log('error: %s', JSON.stringify(m));
+            callback(m);
+        });
+
+        tx.submit();
+    }, callback);
 };
 
 function credit_limit(remote, src, amount, callback) {
@@ -509,6 +539,7 @@ exports.account_dump            = account_dump;
 exports.build_setup             = build_setup;
 exports.build_teardown          = build_teardown;
 exports.create_accounts         = create_accounts;
+exports.createAccountsFromObjects         = createAccountsFromObjects;
 exports.credit_limit            = credit_limit;
 exports.credit_limits           = credit_limits;
 exports.get_config              = get_config;

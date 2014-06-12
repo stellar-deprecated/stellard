@@ -6,14 +6,27 @@ var Server    = require("./server").Server;
 var testutils = require("./testutils");
 var config    = testutils.init_config();
 
+/*
+ Need to test:
+
+ Voting for deleted accounts
+ When no one gets over the min %
+ When there is no fee to distribute
+ A inflation transaction introduced out of seq
+ A inflation transaction introduced too soon
+ Two inflation transactions make it into the same ledger
+ Test load of a ledger with a million accounts all voting for different people. How much time does it add to ledger close
+ */
+
+
+
 suite('Inflation', function() {
     var $ = { };
-    var TOTAL_MONEY = 100000000000000000;
-    var INFLATION_RATE = 0.000817609695;
-    var INFLATION_ROUND = TOTAL_MONEY * INFLATION_RATE;
-/*  var INFLATION_UP_LIMIT = INFLATION_ROUND * 1.0001;
-    var INFLATION_DOWN_LIMIT = INFLATION_ROUND * 0.9999;
-*/
+    var DUST_MULTIPLIER= 1000000;
+    var TOTAL_COINS = 100000000000;
+    var INFLATION_RATE = 0.00081763;
+    var INFLATION_ROUND = DUST_MULTIPLIER * TOTAL_COINS * INFLATION_RATE;
+
     setup(function(done) {
         testutils.build_setup().call($, done);
     });
@@ -22,6 +35,239 @@ suite('Inflation', function() {
         testutils.build_teardown().call($, done);
     });
 
+    // Two guys get over 9%
+    test('Inflation #4 - two guys over 9%', function(done) {
+        var self = this;
+        var start_balance = 10000000000;
+        var tx_fee = 12; //TODO: get tx fee
+
+
+        var accountObjects=[];
+        for(var n=0; n<12; n++)
+        {
+            if(n<6)var next=0;
+            else if(n==6) var next=2;
+            else if(n==7) var next=3;
+            else var next=1;
+
+            accountObjects[n]={ name:''+n, targetBalance: (DUST_MULTIPLIER*1000*(n+1)), nextName:''+next};
+            accountObjects[n].balance=''+accountObjects[n].targetBalance;
+            accountObjects[n].targetBalance -= tx_fee;
+            accountObjects[n].votes=0;
+        }
+
+
+        for(var n=0; n<12; n++)
+        {
+            accountObjects[ accountObjects[n].nextName ].votes +=accountObjects[n].targetBalance;
+        }
+
+        var winBasis=  accountObjects[0].votes+accountObjects[1].votes;
+
+        var prizePool=INFLATION_ROUND+tx_fee*24;
+
+
+        console.log("v0: "+accountObjects[0].votes);
+        console.log("v1: "+accountObjects[1].votes);
+        accountObjects[0].targetBalance += (accountObjects[0].votes/winBasis)*prizePool;
+        accountObjects[11].targetBalance += (accountObjects[1].votes/winBasis)*prizePool;
+
+
+
+        var steps = [
+
+            function (callback) {
+                self.what = "Create accounts.";
+                testutils.createAccountsFromObjects($.remote, "root", accountObjects, callback);
+            },
+
+            function (wfCB) {
+                self.what = "Set InflationDests";
+
+                async.eachSeries(accountObjects, function (account, callback) {
+                    $.remote.transaction()
+                        .account_set(account.name)
+                        .inflation_dest($.remote.account(account.nextName)._account_id)
+                        .on('submitted', function (m) {
+                            if (m.engine_result === 'tesSUCCESS') {
+                                $.remote.ledger_accept();    // Move it along.
+                                callback(null);
+                            } else {
+                                console.log('',m);
+                                callback(new Error(m.engine_result));
+                            }
+                        })
+                        .submit();
+                }, wfCB);
+            },
+
+            function (callback) {
+                self.what = "Do inflation";
+
+                console.log('INFLATE');
+                $.remote.transaction()
+                    .inflation($.remote.account('root')._account_id, 1)
+                    .on('submitted', function (m) {
+                        if (m.engine_result === 'tesSUCCESS') {
+                            $.remote.ledger_accept();    // Move it along.
+                            callback(null);
+                        } else {
+                            callback(new Error(m.engine_result));
+                        }
+                    })
+                    .on('error', function (m) {
+                        console.log('error: %s', JSON.stringify(m));
+                        callback(m);
+                    })
+                    .submit();
+            },
+
+            function (wfCB) {
+                self.what = "Check all balances";
+
+                async.eachSeries(accountObjects, function (account, callback) {
+                    $.remote.requestAccountBalance($.remote.account(account.name)._account_id, 'current', null)
+                        .on('success', function (m) {
+
+
+                            console.log('target('+account.name+'): '+account.targetBalance+' vs '+m.node.Balance);
+
+                            // TODO: a bit lame but will be annoying to get the libraries to produce the exact same result
+                            assert( Math.abs((m.node.Balance - account.targetBalance)/account.targetBalance) <.0001 );
+                            callback();
+                        }).request();
+                },wfCB);
+            }
+        ]
+
+        async.waterfall(steps,function (error) {
+            assert(!error, self.what);
+            done();
+        });
+    });
+
+    // When no one gets over the min %
+    // so choose the top 6 guys
+    test('Inflation #3 - no one over min', function(done) {
+        var self = this;
+        var start_balance = 10000000000;
+        var tx_fee = 12; //TODO: get tx fee
+
+        var accountObjects=[];
+        for(var n=0; n<12; n++)
+        {
+            accountObjects[n]={ name:''+n, targetBalance: (DUST_MULTIPLIER*1000*(n+1)), nextName:''+(n+1)};
+            accountObjects[n].balance=''+accountObjects[n].targetBalance;
+            accountObjects[n].targetBalance -= tx_fee;
+        }
+
+        var prizePool=INFLATION_ROUND+tx_fee*24;
+        console.log("pp: "+prizePool);
+        var winBasis=accountObjects[6].targetBalance+accountObjects[11].targetBalance+accountObjects[10].targetBalance+
+            accountObjects[9].targetBalance+accountObjects[8].targetBalance+accountObjects[7].targetBalance+
+            accountObjects[5].targetBalance;
+/*
+        console.log("winBasis: "+winBasis);
+        var pp=(accountObjects[11].targetBalance/winBasis)*prizePool+(accountObjects[6].targetBalance/winBasis)*prizePool
+            +(accountObjects[7].targetBalance/winBasis)*prizePool+(accountObjects[8].targetBalance/winBasis)*prizePool
+            +(accountObjects[9].targetBalance/winBasis)*prizePool+(accountObjects[10].targetBalance/winBasis)*prizePool;
+
+        console.log("pp: "+pp);
+*/
+        accountObjects[0].targetBalance=accountObjects[0].targetBalance+(accountObjects[11].targetBalance/winBasis)*prizePool;
+        accountObjects[11].targetBalance=accountObjects[11].targetBalance+(accountObjects[10].targetBalance/winBasis)*prizePool;
+        accountObjects[10].targetBalance=accountObjects[10].targetBalance+(accountObjects[9].targetBalance/winBasis)*prizePool;
+        accountObjects[9].targetBalance=accountObjects[9].targetBalance+(accountObjects[8].targetBalance/winBasis)*prizePool;
+        accountObjects[8].targetBalance=accountObjects[8].targetBalance+(accountObjects[7].targetBalance/winBasis)*prizePool;
+        accountObjects[7].targetBalance=accountObjects[7].targetBalance+(accountObjects[6].targetBalance/winBasis)*prizePool;
+        accountObjects[6].targetBalance=accountObjects[6].targetBalance+(accountObjects[5].targetBalance/winBasis)*prizePool;
+/*
+        console.log("0: "+accountObjects[0].targetBalance);
+        console.log("7: "+accountObjects[7].targetBalance);
+        console.log("8: "+accountObjects[8].targetBalance);
+        console.log("9: "+accountObjects[9].targetBalance);
+        console.log("10: "+accountObjects[10].targetBalance);
+        console.log("11: "+accountObjects[11].targetBalance);
+
+
+
+        console.log("sum balance:"+(accountObjects[0].targetBalance+accountObjects[7].targetBalance+accountObjects[8].targetBalance+accountObjects[9].targetBalance+accountObjects[10].targetBalance+accountObjects[11].targetBalance));
+*/
+        accountObjects[11].nextName='0';
+
+        var steps = [
+
+            function (callback) {
+                self.what = "Create accounts.";
+                testutils.createAccountsFromObjects($.remote, "root", accountObjects, callback);
+            },
+
+            function (wfCB) {
+                self.what = "Set InflationDests";
+
+                async.eachSeries(accountObjects, function (account, callback) {
+                    $.remote.transaction()
+                        .account_set(account.name)
+                        .inflation_dest($.remote.account(account.nextName)._account_id)
+                        .on('submitted', function (m) {
+                            if (m.engine_result === 'tesSUCCESS') {
+                                $.remote.ledger_accept();    // Move it along.
+                                callback(null);
+                            } else {
+                                console.log('',m);
+                                callback(new Error(m.engine_result));
+                            }
+                        })
+                        .submit();
+                }, wfCB);
+            },
+
+            function (callback) {
+                self.what = "Do inflation";
+
+                console.log('INFLATE');
+                $.remote.transaction()
+                    .inflation($.remote.account('root')._account_id, 1)
+                    .on('submitted', function (m) {
+                        if (m.engine_result === 'tesSUCCESS') {
+                            $.remote.ledger_accept();    // Move it along.
+                            callback(null);
+                        } else {
+                            callback(new Error(m.engine_result));
+                        }
+                    })
+                    .on('error', function (m) {
+                        console.log('error: %s', JSON.stringify(m));
+                        callback(m);
+                    })
+                    .submit();
+            },
+
+            function (wfCB) {
+                self.what = "Check all balances";
+
+                async.eachSeries(accountObjects, function (account, callback) {
+                    $.remote.requestAccountBalance($.remote.account(account.name)._account_id, 'current', null)
+                        .on('success', function (m) {
+
+
+                            console.log('target('+account.name+'): '+account.targetBalance+' vs '+m.node.Balance);
+
+                            // TODO: a bit lame but will be annoying to get the libraries to produce the exact same result
+                            assert( Math.abs((m.node.Balance - account.targetBalance)/account.targetBalance) <.0001 );
+                            callback();
+                        }).request();
+                },wfCB);
+            }
+        ]
+
+        async.waterfall(steps,function (error) {
+            assert(!error, self.what);
+            done();
+        });
+    });
+
+/*
     test("Inflation to another account", function (done) {
         var self    = this;
         var ledgers = 20;
@@ -300,6 +546,8 @@ suite('Inflation', function() {
       done();
     });
   });
+
+*/
 
 });
 

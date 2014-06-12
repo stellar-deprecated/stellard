@@ -40,7 +40,7 @@ static void rippleStateAdder(std::list<const uint256>& stateList, SLE::ref rippl
 
 TER AccountDeleteTransactor::doApply ()
 {
-	/*
+	/* Disable Delete until further testing
     WriteLog (lsINFO, AccountDeleteTransactor) << "AccountDelete>";
 
 
