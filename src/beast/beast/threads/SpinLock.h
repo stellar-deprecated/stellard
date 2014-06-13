@@ -25,8 +25,9 @@
 #define BEAST_THREADS_SPINLOCK_H_INCLUDED
 
 #include "../Atomic.h"
-#include "LockGuard.h"
 #include "UnlockGuard.h"
+
+#include <mutex>
 
 namespace beast {
 
@@ -43,11 +44,11 @@ namespace beast {
 
     @see CriticalSection
 */
-class BEAST_API SpinLock : public Uncopyable
+class SpinLock : public Uncopyable
 {
 public:
     /** Provides the type of scoped lock to use for locking a SpinLock. */
-    typedef LockGuard <SpinLock>       ScopedLockType;
+    typedef std::lock_guard <SpinLock> ScopedLockType;
 
     /** Provides the type of scoped unlocker to use with a SpinLock. */
     typedef UnlockGuard <SpinLock>     ScopedUnlockType;

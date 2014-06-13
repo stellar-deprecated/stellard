@@ -23,7 +23,7 @@
     @ingroup ripple_net
 */
 
-#include "BeastConfig.h"
+#include "../../BeastConfig.h"
 
 #include "../beast/modules/beast_core/system/BeforeBoost.h"
 #include <boost/version.hpp>
@@ -34,7 +34,6 @@
 #include <boost/bind.hpp>
 #include <boost/array.hpp>
 #include <boost/foreach.hpp>
-#include <boost/unordered_map.hpp> // for unit test
 #include <boost/mpl/at.hpp>
 #include <boost/mpl/vector.hpp>
 
@@ -47,8 +46,8 @@
 //             still uses the unity style inclusion.
 //
 #include "../ripple_rpc/api/ErrorCodes.h"
+#include "../ripple/common/jsonrpc_fields.h"
 
-namespace ripple {
 #include "basics/HTTPRequest.cpp"
 #include "basics/HTTPClient.cpp"
 # include "basics/impl/RPCServerImp.h"
@@ -58,6 +57,5 @@ namespace ripple {
 #include "rpc/RPCSub.cpp"
 #include "rpc/RPCUtil.cpp"
 #include "rpc/InfoSub.cpp"
-}
 
 #include "basics/RPCDoor.cpp"

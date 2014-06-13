@@ -17,6 +17,10 @@
 */
 //==============================================================================
 
+#include "../../ripple_overlay/api/Overlay.h"
+
+namespace ripple {
+
 //SETUP_LOG (InboundLedger)
 template <> char const* LogPartition::getPartitionName <InboundLedger> () { return "InLedger"; }
 
@@ -32,7 +36,7 @@ enum
     ,ledgerBecomeAggressiveThreshold = 6
 };
 
-InboundLedger::InboundLedger (uint256 const& hash, uint32 seq, fcReason reason,
+InboundLedger::InboundLedger (uint256 const& hash, std::uint32_t seq, fcReason reason,
     clock_type& clock)
     : PeerSet (hash, ledgerAcquireTimeoutMillis, false, clock,
         LogPartition::getJournal <InboundLedger> ())
@@ -53,7 +57,7 @@ InboundLedger::InboundLedger (uint256 const& hash, uint32 seq, fcReason reason,
 
 bool InboundLedger::checkLocal ()
 {
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
 
     if (!isDone () && tryLocal())
     {
@@ -77,7 +81,7 @@ InboundLedger::~InboundLedger ()
 
 void InboundLedger::init (ScopedLockType& collectionLock)
 {
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
     collectionLock.unlock ();
 
     if (!tryLocal ())
@@ -88,7 +92,7 @@ void InboundLedger::init (ScopedLockType& collectionLock)
         // For historical nodes, wait a bit since a
         // fetch pack is probably coming
         if (mReason != fcHISTORY)
-            trigger (Peer::pointer ());
+            trigger (Peer::ptr ());
     }
     else if (!isFailed ())
     {
@@ -127,7 +131,7 @@ bool InboundLedger::tryLocal ()
                 "Ledger base found in fetch pack";
             mLedger = boost::make_shared<Ledger> (data, true);
             getApp().getNodeStore ().store (hotLEDGER,
-                mLedger->getLedgerSeq (), data, mHash);
+                mLedger->getLedgerSeq (), std::move (data), mHash);
         }
         else
         {
@@ -259,7 +263,7 @@ void InboundLedger::onTimer (bool wasProgress, ScopedLockType&)
             "No progress(" << pc << 
             ") for ledger " << mHash;
 
-        trigger (Peer::pointer ());
+        trigger (Peer::ptr ());
         if (pc < 4)
             addPeers ();
     }
@@ -268,7 +272,7 @@ void InboundLedger::onTimer (bool wasProgress, ScopedLockType&)
 /** Add more peers to the set, if possible */
 void InboundLedger::addPeers ()
 {
-    Peers::PeerSequence peerList = getApp().getPeers ().getActivePeers ();
+    Overlay::PeerSequence peerList = getApp().overlay ().getActivePeers ();
 
     int vSize = peerList.size ();
 
@@ -295,7 +299,7 @@ void InboundLedger::addPeers ()
     // First look for peers that are likely to have this ledger
     for (int i = 0; i < vSize; ++i)
     {
-        Peer::ref peer = peerList[ (i + firstPeer) % vSize];
+        Peer::ptr const& peer = peerList[ (i + firstPeer) % vSize];
 
         if (peer->hasLedger (getHash (), mSeq))
         {
@@ -320,7 +324,7 @@ void InboundLedger::addPeers ()
         {
             if (m_journal.debug) m_journal.debug <<
                 "Chose " << found << " peer(s) for ledger " <<
-                    getHash ().GetHex();
+                    to_string (getHash ());
         }
     }
     else if (mSeq != 0)
@@ -332,7 +336,7 @@ void InboundLedger::addPeers ()
     {
         if (m_journal.debug) m_journal.debug <<
             "Found " << found << " peer(s) with ledger " <<
-                getHash ().GetHex();
+                to_string (getHash ());
     }
 }
 
@@ -372,7 +376,7 @@ void InboundLedger::done ()
 
     std::vector< std::function<void (InboundLedger::pointer)> > triggers;
     {
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
         triggers.swap (mOnComplete);
     }
 
@@ -393,7 +397,7 @@ void InboundLedger::done ()
 bool InboundLedger::addOnComplete (
     std::function <void (InboundLedger::pointer)> triggerFunc)
 {
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
 
     if (isDone ())
         return false;
@@ -404,9 +408,9 @@ bool InboundLedger::addOnComplete (
 
 /** Request more nodes, perhaps from a specific peer
 */
-void InboundLedger::trigger (Peer::ref peer)
+void InboundLedger::trigger (Peer::ptr const& peer)
 {
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
 
     if (isDone ())
     {
@@ -482,16 +486,16 @@ void InboundLedger::trigger (Peer::ref peer)
                     }
                 }
 
-                PackedMessage::pointer packet (boost::make_shared <PackedMessage> (
+                Message::pointer packet (boost::make_shared <Message> (
                     tmBH, protocol::mtGET_OBJECTS));
                 {
-                    ScopedLockType sl (mLock, __FILE__, __LINE__);
+                    ScopedLockType sl (mLock);
 
                     for (PeerSetMap::iterator it = mPeers.begin (), end = mPeers.end ();
                             it != end; ++it)
                     {
-                        Peer::pointer iPeer (
-                            getApp().getPeers ().findPeerByShortID (it->first));
+                        Peer::ptr iPeer (
+                            getApp().overlay ().findPeerByShortID (it->first));
 
                         if (iPeer)
                         {
@@ -535,7 +539,11 @@ void InboundLedger::trigger (Peer::ref peer)
     {
         assert (mLedger);
 
-        if (mLedger->peekAccountStateMap ()->getHash ().isZero ())
+        if (!mLedger->peekAccountStateMap ()->isValid ())
+        {
+            mFailed = true;
+        }
+        else if (mLedger->peekAccountStateMap ()->getHash ().isZero ())
         {
             // we need the root node
             tmGL.set_itype (protocol::liAS_NODE);
@@ -610,7 +618,11 @@ void InboundLedger::trigger (Peer::ref peer)
     {
         assert (mLedger);
 
-        if (mLedger->peekTransactionMap ()->getHash ().isZero ())
+        if (!mLedger->peekTransactionMap ()->isValid ())
+        {
+            mFailed = true;
+        }
+        else if (mLedger->peekTransactionMap ()->getHash ().isZero ())
         {
             // we need the root node
             tmGL.set_itype (protocol::liTX_NODE);
@@ -786,7 +798,7 @@ bool InboundLedger::takeBase (const std::string& data)
     s.add32 (HashPrefix::ledgerMaster);
     s.addRaw (data);
     getApp().getNodeStore ().store (hotLEDGER,
-        mLedger->getLedgerSeq (), s.modData (), mHash);
+        mLedger->getLedgerSeq (), std::move (s.modData ()), mHash);
 
     progress ();
 
@@ -871,7 +883,7 @@ bool InboundLedger::takeAsNode (const std::list<SHAMapNode>& nodeIDs,
     if (nodeIDs.size () == 1 && m_journal.trace) m_journal.trace <<
         "got AS node: " << nodeIDs.front ();
 
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
 
     if (!mHaveBase)
     {
@@ -1030,7 +1042,7 @@ std::vector<InboundLedger::neededHash_t> InboundLedger::getNeededHashes ()
 bool InboundLedger::gotData (boost::weak_ptr<Peer> peer,
     boost::shared_ptr<protocol::TMLedgerData> data)
 {
-    ScopedLockType sl (mReceivedDataLock, __FILE__, __LINE__);
+    ScopedLockType sl (mReceivedDataLock);
 
     mReceivedData.push_back (PeerDataPairType (peer, data));
 
@@ -1052,7 +1064,7 @@ bool InboundLedger::gotData (boost::weak_ptr<Peer> peer,
 int InboundLedger::processData (boost::shared_ptr<Peer> peer,
     protocol::TMLedgerData& packet)
 {
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
 
     if (packet.type () == protocol::liBASE)
     {
@@ -1175,7 +1187,7 @@ void InboundLedger::runData ()
     {
         data.clear();
         {
-            ScopedLockType sl (mReceivedDataLock, __FILE__, __LINE__);
+            ScopedLockType sl (mReceivedDataLock);
 
             if (mReceivedData.empty ())
             {
@@ -1189,7 +1201,7 @@ void InboundLedger::runData ()
         // breaking ties in favor of the peer that responded first.
         BOOST_FOREACH (PeerDataPairType& entry, data)
         {
-            Peer::pointer peer = entry.first.lock();
+            Peer::ptr peer = entry.first.lock();
             if (peer)
             {
                 int count = processData (peer, *(entry.second));
@@ -1211,9 +1223,9 @@ Json::Value InboundLedger::getJson (int)
 {
     Json::Value ret (Json::objectValue);
 
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
 
-    ret["hash"] = mHash.GetHex ();
+    ret["hash"] = to_string (mHash);
 
     if (mComplete)
         ret["complete"] = true;
@@ -1240,12 +1252,13 @@ Json::Value InboundLedger::getJson (int)
     if (mHaveBase && !mHaveState)
     {
         Json::Value hv (Json::arrayValue);
+        
         // VFALCO Why 16?
-        std::vector<uint256> v = mLedger->getNeededAccountStateHashes (
-            16, NULL);
-        BOOST_FOREACH (uint256 const & h, v)
+        auto v = mLedger->getNeededAccountStateHashes (16, nullptr);
+        
+        for (auto const& h : v)
         {
-            hv.append (h.GetHex ());
+            hv.append (to_string (h));
         }
         ret["needed_state_hashes"] = hv;
     }
@@ -1254,14 +1267,16 @@ Json::Value InboundLedger::getJson (int)
     {
         Json::Value hv (Json::arrayValue);
         // VFALCO Why 16?
-        std::vector<uint256> v = mLedger->getNeededTransactionHashes (
-            16, NULL);
-        BOOST_FOREACH (uint256 const & h, v)
+        auto v = mLedger->getNeededTransactionHashes (16, nullptr);
+
+        for (auto const& h : v)
         {
-            hv.append (h.GetHex ());
+            hv.append (to_string (h));
         }
         ret["needed_transaction_hashes"] = hv;
     }
 
     return ret;
 }
+
+} // ripple

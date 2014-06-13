@@ -24,6 +24,9 @@
 #ifndef BEAST_DIRECTORYITERATOR_H_INCLUDED
 #define BEAST_DIRECTORYITERATOR_H_INCLUDED
 
+namespace beast
+{
+
 //==============================================================================
 /**
     Searches through a the files in a directory, returning each file that is found.
@@ -37,7 +40,7 @@
 
     It can also guess how far it's got using a wildly inaccurate algorithm.
 */
-class BEAST_API DirectoryIterator : LeakChecked <DirectoryIterator>, public Uncopyable
+class DirectoryIterator : LeakChecked <DirectoryIterator>, public Uncopyable
 {
 public:
     //==============================================================================
@@ -92,7 +95,7 @@ public:
     */
     bool next (bool* isDirectory,
                bool* isHidden,
-               int64* fileSize,
+               std::int64_t* fileSize,
                Time* modTime,
                Time* creationTime,
                bool* isReadOnly);
@@ -119,7 +122,7 @@ private:
         ~NativeIterator();
 
         bool next (String& filenameFound,
-                   bool* isDirectory, bool* isHidden, int64* fileSize,
+                   bool* isDirectory, bool* isHidden, std::int64_t* fileSize,
                    Time* modTime, Time* creationTime, bool* isReadOnly);
 
         class Pimpl;
@@ -142,5 +145,7 @@ private:
     ScopedPointer <DirectoryIterator> subIterator;
     File currentFile;
 };
+
+} // beast
 
 #endif   // BEAST_DIRECTORYITERATOR_H_INCLUDED

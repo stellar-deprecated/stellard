@@ -20,6 +20,8 @@
 #ifndef RIPPLE_LEDGERHOLDER_H
 #define RIPPLE_LEDGERHOLDER_H
 
+namespace ripple {
+
 // Can std::atomic<std::shared_ptr>> make this lock free?
 
 /** Hold a ledger in a thread-safe way.
@@ -28,7 +30,7 @@ class LedgerHolder
 {
 public:
     typedef RippleMutex LockType;
-    typedef LockType::ScopedLockType ScopedLockType;
+    typedef std::lock_guard <LockType> ScopedLockType;
 
     // Update the held ledger
     void set (Ledger::pointer ledger)
@@ -38,7 +40,7 @@ public:
            ledger = boost::make_shared <Ledger> (*ledger, false);
 
         {
-            ScopedLockType sl (m_lock, __FILE__, __LINE__);
+            ScopedLockType sl (m_lock);
 
             m_heldLedger = ledger;
         }
@@ -47,7 +49,7 @@ public:
     // Return the (immutable) held ledger
     Ledger::pointer get ()
     {
-        ScopedLockType sl (m_lock, __FILE__, __LINE__);
+        ScopedLockType sl (m_lock);
 
         return m_heldLedger;
     }
@@ -62,7 +64,7 @@ public:
 
     bool empty ()
     {
-        ScopedLockType sl (m_lock, __FILE__, __LINE__);
+        ScopedLockType sl (m_lock);
 
         return m_heldLedger == nullptr;
     }
@@ -73,5 +75,7 @@ private:
     Ledger::pointer m_heldLedger;
 
 };
+
+} // ripple
 
 #endif

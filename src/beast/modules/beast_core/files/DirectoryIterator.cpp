@@ -21,6 +21,9 @@
 */
 //==============================================================================
 
+namespace beast
+{
+
 static StringArray parseWildcards (const String& pattern)
 {
     StringArray s;
@@ -65,7 +68,7 @@ bool DirectoryIterator::next()
     return next (nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
-bool DirectoryIterator::next (bool* const isDirResult, bool* const isHiddenResult, int64* const fileSize,
+bool DirectoryIterator::next (bool* const isDirResult, bool* const isHiddenResult, std::int64_t* const fileSize,
                               Time* const modTime, Time* const creationTime, bool* const isReadOnly)
 {
     hasBeenAdvanced = true;
@@ -152,3 +155,5 @@ float DirectoryIterator::getEstimatedProgress() const
 
     return detailedIndex / totalNumFiles;
 }
+
+} // beast

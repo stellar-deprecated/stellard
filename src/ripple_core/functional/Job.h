@@ -68,6 +68,11 @@ enum JobType
     jtHO_READ       ,
     jtHO_WRITE      ,
     jtGENERIC       ,   // Used just to measure time
+
+    // Node store monitoring
+    jtNS_SYNC_READ  ,
+    jtNS_ASYNC_READ ,
+    jtNS_WRITE      ,
 };
 
 class Job
@@ -90,12 +95,12 @@ public:
 
     //Job (Job const& other);
 
-    Job (JobType type, uint64 index);
+    Job (JobType type, std::uint64_t index);
 
     // VFALCO TODO try to remove the dependency on LoadMonitor.
     Job (JobType type,
          std::string const& name,
-         uint64 index,
+         std::uint64_t index,
          LoadMonitor& lm,
          std::function <void (Job&)> const& job,
          CancelCallback cancelCallback);
@@ -126,7 +131,7 @@ public:
 private:
     CancelCallback m_cancelCallback;
     JobType                     mType;
-    uint64                      mJobIndex;
+    std::uint64_t               mJobIndex;
     std::function <void (Job&)> mJob;
     LoadEvent::pointer          m_loadEvent;
     std::string                 mName;

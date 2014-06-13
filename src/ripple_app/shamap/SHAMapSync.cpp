@@ -17,6 +17,10 @@
 */
 //==============================================================================
 
+#include "../../beast/beast/unit_test/suite.h"
+
+namespace ripple {
+
 // VFALCO TODO tidy up this global
 
 static const uint256 uZero;
@@ -212,7 +216,7 @@ void SHAMap::getMissingNodes (std::vector<SHAMapNode>& nodeIDs, std::vector<uint
             }
 
             if (stack.empty ())
-                node = NULL; // Finished processing the last node, we are done
+                node = nullptr; // Finished processing the last node, we are done
             else
             { // Pick up where we left off (above this node)
                 GMNEntry& next = stack.top ();
@@ -224,7 +228,7 @@ void SHAMap::getMissingNodes (std::vector<SHAMapNode>& nodeIDs, std::vector<uint
             }
 
         }
-        while ((node != NULL) && (deferredReads.size () <= maxDefer));
+        while ((node != nullptr) && (deferredReads.size () <= maxDefer));
 
         // If we didn't defer any reads, we're done
         if (deferredReads.empty ())
@@ -304,7 +308,7 @@ bool SHAMap::getNodeFat (const SHAMapNode& wanted, std::vector<SHAMapNode>& node
         if ((!fatRoot && node->isRoot ()) || node->isLeaf ()) // don't get a fat root, can't get a fat leaf
             return true;
 
-        SHAMapTreeNode* nextNode = NULL;
+        SHAMapTreeNode* nextNode = nullptr;
 
         count = 0;
         for (int i = 0; i < 16; ++i)
@@ -468,6 +472,13 @@ SHAMapAddNode SHAMap::addKnownNode (const SHAMapNode& node, Blob const& rawNode,
 
             canonicalize (iNode->getChildHash (branch), newNode);
 
+            if (!iNode->isInBounds ())
+            {
+                // Map is provably invalid
+                mState = smsInvalid;
+                return SHAMapAddNode::useful ();
+            }
+
             if (mTNByID.canonicalize(node, &newNode) && filter)
             {
                 Serializer s;
@@ -624,16 +635,13 @@ std::list<SHAMap::fetchPackEntry_t> SHAMap::getFetchPack (SHAMap* have, bool inc
 void SHAMap::getFetchPack (SHAMap* have, bool includeLeaves, int max,
                            std::function<void (const uint256&, const Blob&)> func)
 {
-    ScopedReadLockType ul1 (mLock);
-
-    std::unique_ptr <ScopedReadLockType> ul2;
+    ScopedReadLockType ul1 (mLock), ul2;
 
     if (have)
     {
-        // VFALCO NOTE This looks like a mess. A dynamically allocated scoped lock?
-        ul2.reset (new ScopedReadLockType (have->mLock, boost::try_to_lock));
+        ul2 = std::move (ScopedReadLockType (have->mLock, boost::try_to_lock));
 
-        if (! ul2->owns_lock ())
+        if (! ul2.owns_lock ())
         {
             WriteLog (lsINFO, SHAMap) << "Unable to create pack due to lock";
             return;
@@ -731,20 +739,16 @@ std::list<Blob > SHAMap::getTrustedPath (uint256 const& index)
 //#define SMS_DEBUG
 #endif
 
-class SHAMapSyncTests : public UnitTest
+class SHAMapSync_test : public beast::unit_test::suite
 {
 public:
-    SHAMapSyncTests () : UnitTest ("SHAMapSync", "ripple")
-    {
-    }
-
     static SHAMapItem::pointer makeRandomAS ()
     {
         Serializer s;
 
         for (int d = 0; d < 3; ++d) s.add32 (rand ());
 
-        return boost::make_shared<SHAMapItem> (s.getRIPEMD160 ().to256 (), s.peekData ());
+        return boost::make_shared<SHAMapItem> (to256 (s.getRIPEMD160 ()), s.peekData ());
     }
 
     bool confuseMap (SHAMap& map, int count)
@@ -762,7 +766,7 @@ public:
 
             if (!map.addItem (*item, false, false))
             {
-                journal().fatal <<
+                log <<
                     "Unable to add item to map";
                 return false;
             }
@@ -772,7 +776,7 @@ public:
         {
             if (!map.delItem (*it))
             {
-                journal().fatal <<
+                log <<
                     "Unable to remove item from map";
                 return false;
             }
@@ -780,7 +784,7 @@ public:
 
         if (beforeHash != map.getHash ())
         {
-            journal().fatal <<
+            log <<
                 "Hashes do not match";
             return false;
         }
@@ -788,7 +792,7 @@ public:
         return true;
     }
 
-    void runTest ()
+    void run ()
     {
         unsigned int seed;
 
@@ -805,8 +809,6 @@ public:
         int items = 10000;
         for (int i = 0; i < items; ++i)
             source.addItem (*makeRandomAS (), false, false);
-
-        beginTestCase ("add/remove");
 
         unexpected (!confuseMap (source, 500), "ConfuseMap");
 
@@ -829,7 +831,7 @@ public:
 
         unexpected (gotNodes.size () < 1, "NodeSize");
 
-        unexpected (!destination.addRootNode (*gotNodes.begin (), snfWIRE, NULL).isGood(), "AddRootNode");
+        unexpected (!destination.addRootNode (*gotNodes.begin (), snfWIRE, nullptr).isGood(), "AddRootNode");
 
         nodeIDs.clear ();
         gotNodes.clear ();
@@ -844,7 +846,7 @@ public:
             hashes.clear ();
 
             // get the list of nodes we know we need
-            destination.getMissingNodes (nodeIDs, hashes, 2048, NULL);
+            destination.getMissingNodes (nodeIDs, hashes, 2048, nullptr);
 
             if (nodeIDs.empty ()) break;
 
@@ -883,7 +885,7 @@ public:
                 bytes += rawNodeIterator->size ();
 #endif
 
-                if (!destination.addKnownNode (*nodeIDIterator, *rawNodeIterator, NULL).isGood ())
+                if (!destination.addKnownNode (*nodeIDIterator, *rawNodeIterator, nullptr).isGood ())
                 {
                     WriteLog (lsTRACE, SHAMap) << "AddKnownNode fails";
                     fail ("AddKnownNode");
@@ -922,4 +924,6 @@ public:
     }
 };
 
-static SHAMapSyncTests shaMapSyncTests;
+BEAST_DEFINE_TESTSUITE(SHAMapSync,ripple_app,ripple);
+
+} // ripple

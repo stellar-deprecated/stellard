@@ -27,7 +27,7 @@ namespace Resource {
 struct Key
 {
     Kind kind;
-    IP::Endpoint address;
+    beast::IP::Endpoint address;
     std::string name;
 
     struct hasher
@@ -51,8 +51,8 @@ struct Key
         }
 
     private:
-        std::hash <IP::Endpoint> m_addr_hash;
-        boost::hash <std::string> m_name_hash;
+        beast::uhash <> m_addr_hash;
+        beast::uhash <> m_name_hash;
     };
 
     struct key_equal

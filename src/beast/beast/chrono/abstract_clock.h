@@ -21,8 +21,7 @@
 #define BEAST_CHRONO_ABSTRACT_CLOCK_H_INCLUDED
 
 #include <chrono>
-
-#include "chrono_io.h"
+#include <string>
 
 namespace beast {
 
@@ -74,9 +73,10 @@ public:
     /** Returns the current time. */
     virtual time_point now () const = 0;
 
+#if 0
     /** Convert the specified time point to a string. */
     /** @{ */
-    virtual std::string to_string (time_point const& tp) const = 0;
+    //virtual std::string to_string (time_point const& tp) const = 0;
 
     template <class Duration2>
     std::string to_string (
@@ -86,6 +86,7 @@ public:
             std::chrono::time_point_cast <Duration> (tp));
     }
     /** @} */
+#endif
 
     /** Returning elapsed ticks since the epoch. */
     rep elapsed () const
@@ -122,6 +123,7 @@ struct abstract_clock_wrapper
     : public basic_abstract_clock_wrapper <TrivialClock, Duration>
 {
     // generic conversion displays the duration
+    /*
     std::string to_string (typename basic_abstract_clock_wrapper <
         TrivialClock, Duration>::time_point const& tp) const
     {
@@ -129,6 +131,7 @@ struct abstract_clock_wrapper
         ss << tp.time_since_epoch();
         return ss.str ();
     }
+    */
 };
 
 /*

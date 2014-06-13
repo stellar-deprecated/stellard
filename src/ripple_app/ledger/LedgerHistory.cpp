@@ -17,6 +17,8 @@
 */
 //==============================================================================
 
+namespace ripple {
+
 // VFALCO TODO replace macros
 
 #ifndef CACHED_LEDGER_NUM
@@ -37,22 +39,24 @@ LedgerHistory::LedgerHistory ()
 {
 }
 
-void LedgerHistory::addLedger (Ledger::pointer ledger, bool validated)
+bool LedgerHistory::addLedger (Ledger::pointer ledger, bool validated)
 {
     assert (ledger && ledger->isImmutable ());
     assert (ledger->peekAccountStateMap ()->getHash ().isNonZero ());
 
     LedgersByHash::ScopedLockType sl (m_ledgers_by_hash.peekMutex ());
 
-    m_ledgers_by_hash.canonicalize (ledger->getHash(), ledger, true);
+    const bool alreadyHad = m_ledgers_by_hash.canonicalize (ledger->getHash(), ledger, true);
     if (validated)
         mLedgersByIndex[ledger->getLedgerSeq()] = ledger->getHash();
+
+    return alreadyHad;
 }
 
-uint256 LedgerHistory::getLedgerHash (uint32 index)
+uint256 LedgerHistory::getLedgerHash (std::uint32_t index)
 {
     LedgersByHash::ScopedLockType sl (m_ledgers_by_hash.peekMutex ());
-    std::map<uint32, uint256>::iterator it (mLedgersByIndex.find (index));
+    std::map<std::uint32_t, uint256>::iterator it (mLedgersByIndex.find (index));
 
     if (it != mLedgersByIndex.end ())
         return it->second;
@@ -60,11 +64,11 @@ uint256 LedgerHistory::getLedgerHash (uint32 index)
     return uint256 ();
 }
 
-Ledger::pointer LedgerHistory::getLedgerBySeq (uint32 index)
+Ledger::pointer LedgerHistory::getLedgerBySeq (std::uint32_t index)
 {
     {
         LedgersByHash::ScopedLockType sl (m_ledgers_by_hash.peekMutex ());
-        std::map <uint32, uint256>::iterator it (mLedgersByIndex.find (index));
+        std::map <std::uint32_t, uint256>::iterator it (mLedgersByIndex.find (index));
 
         if (it != mLedgersByIndex.end ())
         {
@@ -82,6 +86,7 @@ Ledger::pointer LedgerHistory::getLedgerBySeq (uint32 index)
     assert (ret->getLedgerSeq () == index);
 
     {
+        // Add this ledger to the local tracking by index
         LedgersByHash::ScopedLockType sl (m_ledgers_by_hash.peekMutex ());
 
         assert (ret->isImmutable ());
@@ -123,7 +128,7 @@ void LedgerHistory::builtLedger (Ledger::ref ledger)
     ConsensusValidated::ScopedLockType sl (
         m_consensus_validated.peekMutex());
 
-    boost::shared_ptr< std::pair< LedgerHash, LedgerHash > > entry = boost::make_shared<std::pair< LedgerHash, LedgerHash >>();
+    auto entry = boost::make_shared<std::pair< LedgerHash, LedgerHash >>();
     m_consensus_validated.canonicalize(index, entry, false);
 
     if (entry->first != hash)
@@ -170,7 +175,7 @@ void LedgerHistory::validatedLedger (Ledger::ref ledger)
 bool LedgerHistory::fixIndex (LedgerIndex ledgerIndex, LedgerHash const& ledgerHash)
 {
     LedgersByHash::ScopedLockType sl (m_ledgers_by_hash.peekMutex ());
-    std::map<uint32, uint256>::iterator it (mLedgersByIndex.find (ledgerIndex));
+    std::map<std::uint32_t, uint256>::iterator it (mLedgersByIndex.find (ledgerIndex));
 
     if ((it != mLedgersByIndex.end ()) && (it->second != ledgerHash) )
     {
@@ -185,3 +190,5 @@ void LedgerHistory::tune (int size, int age)
     m_ledgers_by_hash.setTargetSize (size);
     m_ledgers_by_hash.setTargetAge (age);
 }
+
+} // ripple

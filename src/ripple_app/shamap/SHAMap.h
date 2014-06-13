@@ -23,6 +23,7 @@
 #include "../ripple/radmap/ripple_radmap.h"
 #include "../main/FullBelowCache.h"
 
+#include <unordered_map>
 /*
 Used for:
 the Ledger
@@ -48,8 +49,6 @@ enum SHAMapState
     smsFloating = 3,        // Map is free to change hash (like a synching open ledger)
     smsInvalid = 4,         // Map is known not to be valid (usually synching a corrupt ledger)
 };
-
-//------------------------------------------------------------------------------
 
 namespace std {
 
@@ -79,17 +78,48 @@ struct hash <ripple::SHAMapNode> : std::hash <ripple::SHAMapNode>
 
 namespace ripple {
 
+enum SHAMapState
+{
+    smsModifying = 0,       // Objects can be added and removed (like an open ledger)
+    smsImmutable = 1,       // Map cannot be changed (like a closed ledger)
+    smsSynching = 2,        // Map's hash is locked in, valid nodes can be added (like a peer's closing ledger)
+    smsFloating = 3,        // Map is free to change hash (like a synching open ledger)
+    smsInvalid = 4,         // Map is known not to be valid (usually synching a corrupt ledger)
+};
+
+/** A SHAMap is both a radix tree with a fan-out of 16 and a Merkle tree.
+
+    A radix tree is a tree with two properties:
+
+      1. The key for a node is represented by the node's position in the tree
+         (the "prefix property").
+      2. A node with only one child is merged with that child
+         (the "merge property")
+
+    These properties in a significantly smaller memory footprint for a radix tree.
+
+    And a fan-out of 16 means that each node in the tree has at most 16 children.
+    See https://en.wikipedia.org/wiki/Radix_tree
+
+    A Merkle tree is a tree where each non-leaf node is labelled with the hash
+    of the combined labels of its children nodes.
+
+    A key property of a Merkle tree is that testing for node inclusion is
+    O(log(N)) where N is the number of nodes in the tree.
+
+    See https://en.wikipedia.org/wiki/Merkle_tree
+ */
 class SHAMap
-    : public CountedObject <SHAMap>
+//     : public CountedObject <SHAMap>
 {
 private:
     /** Function object which handles missing nodes. */
-    typedef std::function <void (uint32 refNum)> MissingNodeHandler;
+    typedef std::function <void (std::uint32_t refNum)> MissingNodeHandler;
 
     /** Default handler which calls NetworkOPs. */
     struct DefaultMissingNodeHandler
     {
-        void operator() (uint32 refNUm);
+        void operator() (std::uint32_t refNUm);
     };
 
 public:
@@ -106,7 +136,8 @@ public:
     typedef std::pair<SHAMapItem::pointer, SHAMapItem::pointer> DeltaItem;
     typedef std::pair<SHAMapItem::ref, SHAMapItem::ref> DeltaRef;
     typedef std::map<uint256, DeltaItem> Delta;
-    typedef boost::unordered_map<SHAMapNode, SHAMapTreeNode::pointer> NodeMap;
+    typedef ripple::unordered_map<SHAMapNode, SHAMapTreeNode::pointer, SHAMapNode_hash> NodeMap;
+    typedef std::unordered_set<SHAMapNode, SHAMapNode_hash> DirtySet;
 
     typedef boost::shared_mutex LockType;
     typedef boost::shared_lock<LockType> ScopedReadLockType;
@@ -115,7 +146,7 @@ public:
 public:
     // build new map
     explicit SHAMap (SHAMapType t, FullBelowCache& fullBelowCache,
-        uint32 seq = 1, MissingNodeHandler missing_node_handler = DefaultMissingNodeHandler());
+        std::uint32_t seq = 1, MissingNodeHandler missing_node_handler = DefaultMissingNodeHandler());
 
     SHAMap (SHAMapType t, uint256 const& hash, FullBelowCache& fullBelowCache,
         MissingNodeHandler missing_node_handler = DefaultMissingNodeHandler());
@@ -133,7 +164,7 @@ public:
     // Remove nodes from memory
     void dropCache ();
 
-    void setLedgerSeq (uint32 lseq)
+    void setLedgerSeq (std::uint32_t lseq)
     {
         mLedgerSeq = lseq;
     }
@@ -224,15 +255,16 @@ public:
     bool compare (SHAMap::ref otherMap, Delta & differences, int maxCount);
 
     int armDirty ();
-    static int flushDirty (NodeMap & dirtyMap, int maxNodes, NodeObjectType t, uint32 seq);
-    boost::shared_ptr<NodeMap> disarmDirty ();
+    int flushDirty (DirtySet & dirtySet, int maxNodes, NodeObjectType t,
+                           std::uint32_t seq);
+    boost::shared_ptr<DirtySet> disarmDirty ();
 
-    void setSeq (uint32 seq)
+    void setSeq (std::uint32_t seq)
     {
         mSeq = seq;
         assert (seq != 0);
     }
-    uint32 getSeq ()
+    std::uint32_t getSeq ()
     {
         return mSeq;
     }
@@ -338,8 +370,8 @@ private:
     mutable LockType mLock;
 
     FullBelowCache& m_fullBelowCache;
-    uint32 mSeq;
-    uint32 mLedgerSeq; // sequence number of ledger this is part of
+    std::uint32_t mSeq;
+    std::uint32_t mLedgerSeq; // sequence number of ledger this is part of
     SyncUnorderedMapType< SHAMapNode, SHAMapTreeNode::pointer > mTNByID;  // Tree Node by ID. hash table of all the nodes
     boost::shared_ptr<NodeMap> mDirtyNodes;
     SHAMapTreeNode::pointer root;

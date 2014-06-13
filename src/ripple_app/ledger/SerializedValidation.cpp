@@ -17,6 +17,8 @@
 */
 //==============================================================================
 
+namespace ripple {
+
 SerializedValidation::SerializedValidation (SerializerIterator& sit, bool checkSignature)
     : STObject (getFormat (), sit, sfValidation)
     , mTrusted (false)
@@ -32,7 +34,7 @@ SerializedValidation::SerializedValidation (SerializerIterator& sit, bool checkS
 }
 
 SerializedValidation::SerializedValidation (
-    uint256 const& ledgerHash, uint32 signTime,
+    uint256 const& ledgerHash, std::uint32_t signTime,
     const RippleAddress& raPub, bool isFull)
     : STObject (getFormat (), sfValidation)
     , mTrusted (false)
@@ -57,6 +59,8 @@ void SerializedValidation::sign (const RippleAddress& raPriv)
 
 void SerializedValidation::sign (uint256& signingHash, const RippleAddress& raPriv)
 {
+    setFlag (vfFullyCanonicalSig);
+
     signingHash = getSigningHash ();
     Blob signature;
     raPriv.signNodePrivate (signingHash, signature);
@@ -73,12 +77,12 @@ uint256 SerializedValidation::getLedgerHash () const
     return getFieldH256 (sfLedgerHash);
 }
 
-uint32 SerializedValidation::getSignTime () const
+std::uint32_t SerializedValidation::getSignTime () const
 {
     return getFieldU32 (sfSigningTime);
 }
 
-uint32 SerializedValidation::getFlags () const
+std::uint32_t SerializedValidation::getFlags () const
 {
     return getFieldU32 (sfFlags);
 }
@@ -142,7 +146,7 @@ SOTemplate const& SerializedValidation::getFormat ()
             format.push_back (SOElement (sfLedgerSequence,  SOE_OPTIONAL));
             format.push_back (SOElement (sfCloseTime,       SOE_OPTIONAL));
             format.push_back (SOElement (sfLoadFee,         SOE_OPTIONAL));
-            format.push_back (SOElement (sfFeatures,        SOE_OPTIONAL));
+            format.push_back (SOElement (sfAmendments,      SOE_OPTIONAL));
             format.push_back (SOElement (sfBaseFee,         SOE_OPTIONAL));
             format.push_back (SOElement (sfReserveBase,     SOE_OPTIONAL));
             format.push_back (SOElement (sfReserveIncrement, SOE_OPTIONAL));
@@ -157,4 +161,4 @@ SOTemplate const& SerializedValidation::getFormat ()
     return holder.format;
 }
 
-// vim:ts=4
+} // ripple

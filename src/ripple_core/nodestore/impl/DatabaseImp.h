@@ -20,18 +20,21 @@
 #ifndef RIPPLE_NODESTORE_DATABASEIMP_H_INCLUDED
 #define RIPPLE_NODESTORE_DATABASEIMP_H_INCLUDED
 
+#include "../../beast/beast/threads/Thread.h"
+
 #include <thread>
 #include <condition_variable>
+#include <chrono>
 
 namespace ripple {
 namespace NodeStore {
 
 class DatabaseImp
     : public Database
-    , public LeakChecked <DatabaseImp>
+    , public beast::LeakChecked <DatabaseImp>
 {
 public:
-    Journal m_journal;
+    beast::Journal m_journal;
     Scheduler& m_scheduler;
     // Persistent key/value storage.
     std::unique_ptr <Backend> m_backend;
@@ -58,7 +61,7 @@ public:
                  int readThreads,
                  std::unique_ptr <Backend> backend,
                  std::unique_ptr <Backend> fastBackend,
-                 Journal journal)
+                 beast::Journal journal)
         : m_journal (journal)
         , m_scheduler (scheduler)
         , m_backend (std::move (backend))
@@ -83,15 +86,14 @@ public:
             m_readGenCondVar.notify_all ();
         }
 
-        BOOST_FOREACH (std::thread& th, m_readThreads)
-            th.join ();
+        for (auto& e : m_readThreads)
+            e.join();
     }
 
-    String getName () const
+    beast::String getName () const
     {
         return m_backend->getName ();
     }
-
 
     //------------------------------------------------------------------------------
 
@@ -118,7 +120,7 @@ public:
             std::unique_lock <std::mutex> lock (m_readLock);
 
             // Wake in two generations
-            uint64 const wakeGeneration = m_readGen + 2;
+            std::uint64_t const wakeGeneration = m_readGen + 2;
 
             while (!m_readShut && !m_readSet.empty () && (m_readGen < wakeGeneration))
                 m_readGenCondVar.wait (lock);
@@ -129,10 +131,35 @@ public:
     int getDesiredAsyncReadCount ()
     {
         // We prefer a client not fill our cache
-        return m_cache.getTargetSize() / 4;
+        // We don't want to push data out of the cache
+        // before it's retrieved
+        return m_cache.getTargetSize() / asyncDivider;
     }
 
-    NodeObject::Ptr fetch (uint256 const& hash)
+    NodeObject::Ptr fetch (uint256 const& hash) override
+    {
+        return doTimedFetch (hash, false);
+    }
+
+    /** Perform a fetch and report the time it took */
+    NodeObject::Ptr doTimedFetch (uint256 const& hash, bool isAsync)
+    {
+        FetchReport report;
+        report.isAsync = isAsync;
+        report.wentToDisk = false;
+
+        auto const before = std::chrono::steady_clock::now();
+        NodeObject::Ptr ret = doFetch (hash, report);
+        report.elapsed = std::chrono::duration_cast <std::chrono::milliseconds>
+            (std::chrono::steady_clock::now() - before);
+
+        report.wasFound = (ret != nullptr);
+        m_scheduler.onFetch (report);
+
+        return ret;
+    }
+
+    NodeObject::Ptr doFetch (uint256 const& hash, FetchReport &report)
     {
         // See if the object already exists in the cache
         //
@@ -147,6 +174,7 @@ public:
         // Check the database(s).
 
         bool foundInFastBackend = false;
+        report.wentToDisk = true;
 
         // Check the fast backend database if we have one
         //
@@ -188,14 +216,15 @@ public:
 
             if (! foundInFastBackend)
             {
-                 // If we have a fast back end, store it there for later.
+                // If we have a fast back end, store it there for later.
                 //
                 if (m_fastBackend != nullptr)
                     m_fastBackend->store (obj);
 
                 // Since this was a 'hard' fetch, we will log it.
                 //
-                WriteLog (lsTRACE, NodeObject) << "HOS: " << hash << " fetch: in db";
+                if (m_journal.trace) m_journal.trace <<
+                    "HOS: " << hash << " fetch: in db";
             }
         }
 
@@ -218,11 +247,13 @@ public:
         case dataCorrupt:
             // VFALCO TODO Deal with encountering corrupt data!
             //
-            WriteLog (lsFATAL, NodeObject) << "Corrupt NodeObject #" << hash;
+            if (m_journal.fatal) m_journal.fatal <<
+                "Corrupt NodeObject #" << hash;
             break;
 
         default:
-            WriteLog (lsWARNING, NodeObject) << "Unknown status=" << status;
+            if (m_journal.warning) m_journal.warning <<
+                "Unknown status=" << status;
             break;
         }
 
@@ -232,11 +263,11 @@ public:
     //------------------------------------------------------------------------------
 
     void store (NodeObjectType type,
-                uint32 index,
-                Blob& data,
+                std::uint32_t index,
+                Blob&& data,
                 uint256 const& hash)
     {
-        NodeObject::Ptr object = NodeObject::createObject (type, index, data, hash);
+        NodeObject::Ptr object = NodeObject::createObject(type, index, std::move(data), hash);
 
         #if RIPPLE_VERIFY_NODEOBJECT_KEYS
         assert (hash == Serializer::getSHA512Half (data));
@@ -283,7 +314,7 @@ public:
     // Entry point for async read threads
     void threadEntry ()
     {
-        Thread::setCurrentThreadName ("prefetch");
+        beast::Thread::setCurrentThreadName ("prefetch");
         while (1)
         {
             uint256 hash;
@@ -318,58 +349,36 @@ public:
             }
 
             // Perform the read
-            fetch (hash);
+            doTimedFetch (hash, true);
          }
      }
 
     //------------------------------------------------------------------------------
 
-
-    void visitAll (VisitCallback& callback)
+    void for_each (std::function <void(NodeObject::Ptr)> f)
     {
-        m_backend->visitAll (callback);
+        m_backend->for_each (f);
     }
 
-    void import (Database& sourceDatabase)
+    void import (Database& source)
     {
-        class ImportVisitCallback : public VisitCallback
+        Batch b;
+        b.reserve (batchWritePreallocationSize);
+
+        source.for_each ([&](NodeObject::Ptr object)
         {
-        public:
-            explicit ImportVisitCallback (Backend& backend)
-                : m_backend (backend)
+            if (b.size () >= batchWritePreallocationSize)
             {
-                m_objects.reserve (batchWritePreallocationSize);
+                this->m_backend->storeBatch (b);
+                b.clear ();
+                b.reserve (batchWritePreallocationSize);
             }
 
-            ~ImportVisitCallback ()
-            {
-                if (! m_objects.empty ())
-                    m_backend.storeBatch (m_objects);
-            }
+            b.push_back (object);
+        });
 
-            void visitObject (NodeObject::Ptr const& object)
-            {
-                if (m_objects.size () >= batchWritePreallocationSize)
-                {
-                    m_backend.storeBatch (m_objects);
-
-                    m_objects.clear ();
-                    m_objects.reserve (batchWritePreallocationSize);
-                }
-
-                m_objects.push_back (object);
-            }
-
-        private:
-            Backend& m_backend;
-            Batch m_objects;
-        };
-
-        //--------------------------------------------------------------------------
-
-        ImportVisitCallback callback (*m_backend);
-
-        sourceDatabase.visitAll (callback);
+        if (! b.empty ())
+            m_backend->storeBatch (b);
     }
 };
 

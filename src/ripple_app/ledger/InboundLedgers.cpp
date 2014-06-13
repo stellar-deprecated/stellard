@@ -17,11 +17,12 @@
 */
 //==============================================================================
 
+namespace ripple {
 
 class InboundLedgersImp
     : public InboundLedgers
-    , public Stoppable
-    , public LeakChecked <InboundLedgers>
+    , public beast::Stoppable
+    , public beast::LeakChecked <InboundLedgers>
 {
 public:
     typedef std::pair<uint256, InboundLedger::pointer> u256_acq_pair;    
@@ -29,10 +30,9 @@ public:
     static const int kReacquireIntervalSeconds = 300;
 
     InboundLedgersImp (clock_type& clock, Stoppable& parent,
-                       insight::Collector::ptr const& collector)
+                       beast::insight::Collector::ptr const& collector)
         : Stoppable ("InboundLedgers", parent)
         , m_clock (clock)
-        , mLock (this, "InboundLedger", __FILE__, __LINE__)
         , mRecentFailures ("LedgerAcquireRecentFailures",
             clock, 0, kReacquireIntervalSeconds)
         , mCounter(collector->make_counter("ledger_fetches"))
@@ -41,7 +41,7 @@ public:
 
     // VFALCO TODO Should this be called findOrAdd ?
     //
-    InboundLedger::pointer findCreate (uint256 const& hash, uint32 seq, InboundLedger::fcReason reason)
+    InboundLedger::pointer findCreate (uint256 const& hash, std::uint32_t seq, InboundLedger::fcReason reason)
     {
         assert (hash.isNonZero ());
         InboundLedger::pointer ret;
@@ -50,7 +50,7 @@ public:
         InboundLedger::pointer oldLedger;
 
         {
-            ScopedLockType sl (mLock, __FILE__, __LINE__);
+            ScopedLockType sl (mLock);
 
             if (! isStopping ())
             {
@@ -59,7 +59,7 @@ public:
                 {
 		    if (mConsensusLedger.isNonZero() && (mValidationLedger != mConsensusLedger) && (hash != mConsensusLedger))
 		    {
-			boost::unordered_map<uint256, InboundLedger::pointer>::iterator it = mLedgers.find (mConsensusLedger);
+			ripple::unordered_map<uint256, InboundLedger::pointer>::iterator it = mLedgers.find (mConsensusLedger);
 			if (it != mLedgers.end ())
 			{
 			    oldLedger = it->second;
@@ -72,7 +72,7 @@ public:
                 {
 		    if (mValidationLedger.isNonZero() && (mValidationLedger != mConsensusLedger) && (hash != mValidationLedger))
 		    {
-			boost::unordered_map<uint256, InboundLedger::pointer>::iterator it = mLedgers.find (mValidationLedger);
+			ripple::unordered_map<uint256, InboundLedger::pointer>::iterator it = mLedgers.find (mValidationLedger);
 			if (it != mLedgers.end ())
 			{
 			    oldLedger = it->second;
@@ -82,7 +82,7 @@ public:
 		    mValidationLedger = hash;
                 }
 
-                boost::unordered_map<uint256, InboundLedger::pointer>::iterator it = mLedgers.find (hash);
+                ripple::unordered_map<uint256, InboundLedger::pointer>::iterator it = mLedgers.find (hash);
                 if (it != mLedgers.end ())
                 {
                     ret = it->second;
@@ -109,9 +109,9 @@ public:
         InboundLedger::pointer ret;
 
         {
-            ScopedLockType sl (mLock, __FILE__, __LINE__);
+            ScopedLockType sl (mLock);
 
-            boost::unordered_map<uint256, InboundLedger::pointer>::iterator it = mLedgers.find (hash);
+            ripple::unordered_map<uint256, InboundLedger::pointer>::iterator it = mLedgers.find (hash);
             if (it != mLedgers.end ())
             {
                 ret = it->second;
@@ -125,7 +125,7 @@ public:
     {
         assert (hash.isNonZero ());
 
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
         return mLedgers.find (hash) != mLedgers.end ();
     }
 
@@ -133,7 +133,7 @@ public:
     {
         assert (hash.isNonZero ());
 
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
         mLedgers.erase (hash);
 
     }
@@ -193,16 +193,16 @@ public:
         std::vector<u256_acq_pair> inboundLedgers;
 
         {
-            ScopedLockType sl (mLock, __FILE__, __LINE__);
+            ScopedLockType sl (mLock);
 
             inboundLedgers.reserve(mLedgers.size());
-            BOOST_FOREACH (const u256_acq_pair & it, mLedgers)
+            for (auto const& it : mLedgers)
             {
                 inboundLedgers.push_back(it);
             }
         }
 
-        BOOST_FOREACH (const u256_acq_pair & it, inboundLedgers)
+        for (auto const& it : inboundLedgers)
         {
             if (it.second->isActive ())
             {
@@ -266,7 +266,7 @@ public:
 
     void clearFailures ()
     {
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
 
         mRecentFailures.clear();
         mLedgers.clear();
@@ -278,23 +278,23 @@ public:
 
         std::vector<u256_acq_pair> acquires;
         {
-            ScopedLockType sl (mLock, __FILE__, __LINE__);
+            ScopedLockType sl (mLock);
 
             acquires.reserve (mLedgers.size ());
-            BOOST_FOREACH (const u256_acq_pair & it, mLedgers)
+            for (auto const& it : mLedgers)
             {
                 assert (it.second);
                 acquires.push_back (it);
             }
         }
 
-        BOOST_FOREACH (const u256_acq_pair& it, acquires)
+        for (auto const& it : acquires)
         {
-            uint32 seq = it.second->getSeq();
+            std::uint32_t seq = it.second->getSeq();
             if (seq > 1)
-                ret[lexicalCastThrow <std::string>(seq)] = it.second->getJson(0);
+                ret[beast::lexicalCastThrow <std::string>(seq)] = it.second->getJson(0);
             else
-                ret[it.first.GetHex()] = it.second->getJson(0);
+                ret[to_string (it.first)] = it.second->getJson(0);
         }
 
     return ret;
@@ -304,17 +304,17 @@ public:
     {
         std::vector<InboundLedger::pointer> acquires;
         {
-            ScopedLockType sl (mLock, __FILE__, __LINE__);
+            ScopedLockType sl (mLock);
 
             acquires.reserve (mLedgers.size ());
-            BOOST_FOREACH (const u256_acq_pair & it, mLedgers)
+            for (auto const& it : mLedgers)
             {
                 assert (it.second);
                 acquires.push_back (it.second);
             }
         }
 
-        BOOST_FOREACH (const InboundLedger::pointer & acquire, acquires)
+        for (auto const& acquire : acquires)
         {
             acquire->checkLocal ();
         }
@@ -330,7 +330,7 @@ public:
         std::vector <MapType::mapped_type> stuffToSweep;
         std::size_t total;
         {
-            ScopedLockType sl (mLock, __FILE__, __LINE__);
+            ScopedLockType sl (mLock);
             MapType::iterator it (mLedgers.begin ());
             total = mLedgers.size ();
             stuffToSweep.reserve (total);
@@ -363,7 +363,7 @@ public:
 
     void onStop ()
     {
-        ScopedLockType lock (mLock, __FILE__, __LINE__);
+        ScopedLockType lock (mLock);
 
         mLedgers.clear();
         mRecentFailures.clear();
@@ -374,10 +374,10 @@ public:
 private:
     clock_type& m_clock;
 
-    typedef boost::unordered_map <uint256, InboundLedger::pointer> MapType;
+    typedef ripple::unordered_map <uint256, InboundLedger::pointer> MapType;
 
     typedef RippleRecursiveMutex LockType;
-    typedef LockType::ScopedLockType ScopedLockType;
+    typedef std::unique_lock <LockType> ScopedLockType;
     LockType mLock;
 
     MapType mLedgers;
@@ -395,29 +395,10 @@ InboundLedgers::~InboundLedgers()
 {
 }
 
-InboundLedgers* InboundLedgers::New (clock_type& clock, Stoppable& parent,
-                                     insight::Collector::ptr const& collector)
+InboundLedgers* InboundLedgers::New (clock_type& clock, beast::Stoppable& parent,
+                                     beast::insight::Collector::ptr const& collector)
 {
     return new InboundLedgersImp (clock, parent, collector);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+} // ripple

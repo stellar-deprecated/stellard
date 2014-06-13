@@ -17,6 +17,9 @@
 */
 //==============================================================================
 
+namespace beast
+{
+
 class DeadlineTimer::Manager
     : public LeakChecked <Manager>
     , protected Thread
@@ -47,7 +50,7 @@ public:
     {
         bassert (secondsRecurring >= 0);
 
-        LockType::ScopedLockType lock (m_mutex);
+        std::lock_guard <LockType> lock (m_mutex);
 
         if (timer.m_isActive)
         {
@@ -70,7 +73,7 @@ public:
     //
     void deactivate (DeadlineTimer& timer)
     {
-        LockType::ScopedLockType lock (m_mutex);
+        std::lock_guard <LockType> lock (m_mutex);
 
         if (timer.m_isActive)
         {
@@ -93,7 +96,7 @@ public:
             DeadlineTimer* timer (nullptr);
 
             {
-                LockType::ScopedLockType lock (m_mutex);
+                std::lock_guard <LockType> lock (m_mutex);
 
                 // See if a timer expired
                 if (! m_items.empty ())
@@ -241,3 +244,5 @@ void DeadlineTimer::setRecurringExpiration (double secondsUntilDeadline)
 
     m_manager->activate (*this, secondsUntilDeadline, when);
 }
+
+} // beast

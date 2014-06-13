@@ -25,46 +25,43 @@
 #ifndef RIPPLE_TYPES_BASE_UINT_H_INCLUDED
 #define RIPPLE_TYPES_BASE_UINT_H_INCLUDED
 
+#include "Blob.h"
+#include "strHex.h"
+#include "ByteOrder.h"
+    
+#include "../../beast/beast/container/hardened_hash.h"
+
 #include <functional>
 
 namespace ripple {
 
-class uint128;
-class uint160;
-class uint256;
-inline int Testuint256AdHoc (std::vector<std::string> vArg);
-
 // This class stores its values internally in big-endian form
 
-// We have to keep a separate base class without constructors
-// so the compiler will let us use it in a union
-//
-// VFALCO NOTE This class produces undefined behavior when
-//             BITS is not a multiple of 32!!!
-//
-template<unsigned int BITS>
+template <std::size_t Bits, class Tag = void>
 class base_uint
 {
+    static_assert ((Bits % 32) == 0,
+        "The length of a base_uint in bits must be a multiple of 32.");
+
+    static_assert (Bits >= 64,
+        "The length of a base_uint in bits must be at least 64.");
+
 protected:
-    enum { WIDTH = BITS / 32 };
+    enum { WIDTH = Bits / 32 };
 
     // This is really big-endian in byte order.
     // We sometimes use unsigned int for speed.
+
+    // NIKB TODO: migrate to std::array
     unsigned int pn[WIDTH];
 
 public:
-    /** Construct uninitialized.
-        Requirements:
-            std::is_trivially_constructible<base_uint>::value == true
-    */
-    base_uint () { }
-
     //--------------------------------------------------------------------------
     //
     // STL Container Interface
     //
 
-    static std::size_t const        bytes = (BITS/8);
+    static std::size_t const        bytes = Bits/8;
 
     typedef std::size_t             size_type;
     typedef std::ptrdiff_t          difference_type;
@@ -79,6 +76,8 @@ public:
         <iterator>                  reverse_iterator;
     typedef std::reverse_iterator
         <const_iterator>            const_reverse_iterator;
+
+    typedef Tag                     tag_type;
 
     pointer data() { return reinterpret_cast<pointer>(pn); }
     const_pointer data() const { return reinterpret_cast<const_pointer>(pn); }
@@ -100,24 +99,7 @@ public:
     /** Value hashing function.
         The seed prevents crafted inputs from causing degenarate parent containers.
     */
-    class hasher
-    {
-    public:
-        explicit hasher (std::size_t seedToUse = Random::getSystemRandom ().nextInt ())
-            : m_seed (seedToUse)
-        {
-        }
-
-        std::size_t operator() (base_uint const& value) const
-        {
-            std::size_t hash;
-            Murmur::Hash (value.cbegin (), (BITS / 8), m_seed, &hash);
-            return hash;
-        }
-
-    private:
-        std::size_t m_seed;
-    };
+    typedef beast::hardened_hash <base_uint> hasher;
 
     /** Container equality testing function. */
     class key_equal
@@ -127,26 +109,61 @@ public:
         {
             return lhs == rhs;
         }
-    };        
+    };
 
     //--------------------------------------------------------------------------
 
-protected:
-    // This is to disambiguate from other 1 parameter ctors
-    struct FromVoid { };
-
+private:
     /** Construct from a raw pointer.
-    
-        The buffer pointed to by `data` must be at least 32 bytes.
-    */
-    base_uint (void const* data, FromVoid)
-    {
-        // BITS must be a multiple of 32
-        static_bassert ((BITS % 32) == 0);
+        The buffer pointed to by `data` must be at least Bits/8 bytes.
 
-        memcpy (&pn [0], data, BITS / 8);
+        @note the structure is used to disambiguate this from the std::uint64_t
+              constructor: something like base_uint(0) is ambiguous.
+    */
+    // NIKB TODO Remove the need for this constructor.
+    struct VoidHelper {};
+
+    explicit base_uint (void const* data, VoidHelper)
+    {
+        memcpy (&pn [0], data, Bits / 8);
     }
+
 public:
+    base_uint () { zero (); }
+
+    explicit base_uint (Blob const& vch)
+    {
+        assert (vch.size () == size ());
+
+        if (vch.size () == size ())
+            memcpy (pn, &vch[0], size ());
+        else
+            zero ();
+    }
+
+    explicit base_uint (std::uint64_t b)
+    {
+        *this = b;
+    }
+
+    // NIKB TODO remove the need for this constructor - have a free function
+    //           to handle the hex string parsing.
+    explicit base_uint (std::string const& str)
+    {
+        SetHex (str);
+    }
+
+    base_uint (base_uint const& other) = default;
+    
+    /* Construct from a raw pointer.
+        The buffer pointed to by `data` must be at least Bits/8 bytes.
+    */
+    static base_uint
+    fromVoid (void const* data)
+    {
+        return base_uint (data, VoidHelper ());
+    }
+
     bool isZero () const
     {
         for (int i = 0; i < WIDTH; i++)
@@ -176,12 +193,20 @@ public:
         return ret;
     }
 
-    base_uint& operator= (uint64 uHost)
+    base_uint& operator= (const base_uint& b)
+    {
+        for (int i = 0; i < WIDTH; i++)
+            pn[i] = b.pn[i];
+
+        return *this;
+    }
+
+    base_uint& operator= (std::uint64_t uHost)
     {
         zero ();
 
         // Put in least significant bits.
-        ((uint64*) end ())[-1] = htobe64 (uHost);
+        ((std::uint64_t*) end ())[-1] = htobe64 (uHost);
 
         return *this;
     }
@@ -237,7 +262,7 @@ public:
     {
         for (int i = WIDTH - 1; i >= 0; --i)
         {
-            uint32 prev = pn[i];
+            std::uint32_t prev = pn[i];
             pn[i] = htobe32 (be32toh (pn[i]) - 1);
 
             if (prev != 0)
@@ -258,11 +283,11 @@ public:
 
     base_uint& operator+= (const base_uint& b)
     {
-        uint64 carry = 0;
+        std::uint64_t carry = 0;
 
         for (int i = WIDTH; i--;)
         {
-            uint64 n = carry + be32toh (pn[i]) + be32toh (b.pn[i]);
+            std::uint64_t n = carry + be32toh (pn[i]) + be32toh (b.pn[i]);
 
             pn[i] = htobe32 (n & 0xffffffff);
             carry = n >> 32;
@@ -271,64 +296,11 @@ public:
         return *this;
     }
 
-    std::size_t hash_combine (std::size_t& seed) const
+    template <class Hasher>
+    friend void hash_append(Hasher& h, base_uint const& a) noexcept
     {
-        for (int i = 0; i < WIDTH; ++i)
-            boost::hash_combine (seed, pn[i]);
-
-        return seed;
-    }
-
-    friend inline int compare (const base_uint& a, const base_uint& b)
-    {
-        const unsigned char* pA     = a.begin ();
-        const unsigned char* pAEnd  = a.end ();
-        const unsigned char* pB     = b.begin ();
-
-        while (*pA == *pB)
-        {
-            if (++pA == pAEnd)
-                return 0;
-
-            ++pB;
-        }
-
-        return (*pA < *pB) ? -1 : 1;
-    }
-
-    friend inline bool operator< (const base_uint& a, const base_uint& b)
-    {
-        return compare (a, b) < 0;
-    }
-
-    friend inline bool operator<= (const base_uint& a, const base_uint& b)
-    {
-        return compare (a, b) <= 0;
-    }
-
-    friend inline bool operator> (const base_uint& a, const base_uint& b)
-    {
-        return compare (a, b) > 0;
-    }
-
-    friend inline bool operator>= (const base_uint& a, const base_uint& b)
-    {
-        return compare (a, b) >= 0;
-    }
-
-    friend inline bool operator== (const base_uint& a, const base_uint& b)
-    {
-        return memcmp (a.pn, b.pn, sizeof (a.pn)) == 0;
-    }
-
-    friend inline bool operator!= (const base_uint& a, const base_uint& b)
-    {
-        return memcmp (a.pn, b.pn, sizeof (a.pn)) != 0;
-    }
-
-    std::string GetHex () const
-    {
-        return strHex (begin (), size ());
+        using beast::hash_append;
+        hash_append (h, a.pn);
     }
 
     void SetHexExact (const char* psz)
@@ -447,11 +419,6 @@ public:
         SetHexExact (str.c_str ());
     }
 
-    std::string ToString () const
-    {
-        return GetHex ();
-    }
-
     unsigned int size () const
     {
         return sizeof (pn);
@@ -461,105 +428,133 @@ public:
     {
         memset (&pn[0], 0, sizeof (pn));
     }
-
-    unsigned int GetSerializeSize (int nType = 0) const
-    {
-        return sizeof (pn);
-    }
-
-    template<typename Stream>
-    void Serialize (Stream& s, int nType = 0) const
-    {
-        s.write ((char*)pn, sizeof (pn));
-    }
-
-    template<typename Stream>
-    void Unserialize (Stream& s, int nType = 0)
-    {
-        s.read ((char*)pn, sizeof (pn));
-    }
-
-    friend class uint128;
-    friend class uint160;
-    friend class uint256;
-    friend inline int Testuint256AdHoc (std::vector<std::string> vArg);
 };
 
-typedef base_uint<128> base_uint128;
-typedef base_uint<160> base_uint160;
-typedef base_uint<256> base_uint256;
+typedef base_uint<128> uint128;
+typedef base_uint<160> uint160;
+typedef base_uint<256> uint256;
 
-template<unsigned int BITS>
-std::ostream& operator<< (std::ostream& out, const base_uint<BITS>& u)
+//------------------------------------------------------------------------------
+extern std::size_t hash_value (uint128 const&);
+extern std::size_t hash_value (uint160 const&);
+extern std::size_t hash_value (uint256 const&);
+
+//------------------------------------------------------------------------------
+template <std::size_t Bits, class Tag>
+int 
+compare (base_uint<Bits, Tag> const& a, base_uint<Bits, Tag> const& b)
 {
-    return out << u.GetHex ();
+    auto ret = std::mismatch (a.cbegin (), a.cend (), b.cbegin ());
+
+    if (ret.first == a.cend ())
+        return 0;
+
+    // a > b
+    if (*ret.first > *ret.second)
+        return 1;
+
+    // a < b
+    return -1;
 }
 
+template <std::size_t Bits, class Tag>
+bool
+operator< (base_uint<Bits, Tag> const& a, base_uint<Bits, Tag> const& b)
+{
+    return compare (a, b) < 0;
+}
+
+template <std::size_t Bits, class Tag>
+bool
+operator<= (base_uint<Bits, Tag> const& a, base_uint<Bits, Tag> const& b)
+{
+    return compare (a, b) <= 0;
+}
+
+template <std::size_t Bits, class Tag>
+bool
+operator> (base_uint<Bits, Tag> const& a, base_uint<Bits, Tag> const& b)
+{
+    return compare (a, b) > 0;
+}
+
+template <std::size_t Bits, class Tag>
+bool
+operator>= (base_uint<Bits, Tag> const& a, base_uint<Bits, Tag> const& b)
+{
+    return compare (a, b) >= 0;
+}
+
+template <std::size_t Bits, class Tag>
+bool
+operator== (base_uint<Bits, Tag> const& a, base_uint<Bits, Tag> const& b)
+{
+    return compare (a, b) == 0;
+}
+
+template <std::size_t Bits, class Tag>
+bool
+operator!= (base_uint<Bits, Tag> const& a, base_uint<Bits, Tag> const& b)
+{
+    return compare (a, b) != 0;
 }
 
 //------------------------------------------------------------------------------
-
-namespace std {
-
-/** Specialization for hash. */
-template <unsigned int BITS>
-struct hash <ripple::base_uint <BITS> >
+template <std::size_t Bits, class Tag = void>
+bool
+operator== (base_uint<Bits, Tag> const& a, std::uint64_t b)
 {
-public:
-    typedef ripple::base_uint <BITS> argument_type;
-    typedef std::size_t              result_type;
+    return a == base_uint<Bits, Tag>(b);
+}
 
-    hash ()
-    {
-        static typename argument_type::hasher s_hash;
-        m_hash = s_hash;
-    }
-
-    template <typename Arg>
-    explicit hash (Arg arg) : m_hash (arg)
-    {
-    }
-
-    result_type operator() (argument_type const& key) const
-    {
-        return m_hash (key);
-    }
-
-private:
-    typename argument_type::hasher m_hash;
-};
+template <std::size_t Bits, class Tag = void>
+bool
+operator!= (base_uint<Bits, Tag> const& a, std::uint64_t b)
+{
+    return !(a == b);
+}
 
 //------------------------------------------------------------------------------
-
-/** Specialization for equal_to. */
-template <unsigned int BITS>
-struct equal_to <ripple::base_uint <BITS> >
+template <std::size_t Bits, class Tag>
+const base_uint<Bits, Tag>
+operator^ (base_uint<Bits, Tag> const& a, base_uint<Bits, Tag> const& b)
 {
-public:
-    typedef bool                    result_type;
-    typedef ripple::base_uint<BITS> argument_type;
-    typedef argument_type           first_argument_type;
-    typedef argument_type           second_argument_type;
+    return base_uint<Bits, Tag> (a) ^= b;
+}
 
-    equal_to ()
-    {
-    }
+template <std::size_t Bits, class Tag>
+const base_uint<Bits, Tag>
+operator& (base_uint<Bits, Tag> const& a, base_uint<Bits, Tag> const& b)
+{
+    return base_uint<Bits, Tag> (a) &= b;
+}
 
-    template <typename Arg>
-    explicit equal_to (Arg arg)
-        : m_equal (arg)
-    {
-    }
+template <std::size_t Bits, class Tag>
+const base_uint<Bits, Tag>
+operator| (base_uint<Bits, Tag> const& a, base_uint<Bits, Tag> const& b)
+{
+    return base_uint<Bits, Tag> (a) |= b;
+}
 
-    result_type operator() (argument_type const& lhs,
-                            argument_type const& rhs) const
-    {
-        return m_equal (lhs, rhs);
-    }
+template <std::size_t Bits, class Tag>
+const base_uint<Bits, Tag>
+operator+ (base_uint<Bits, Tag> const& a, base_uint<Bits, Tag> const& b)
+{
+    return base_uint<Bits, Tag> (a) += b;
+}
 
-private:
-    typename argument_type::equal m_equal;
-};
+//------------------------------------------------------------------------------
+template <std::size_t Bits, class Tag>
+std::string to_string (base_uint<Bits, Tag> const& a)
+{
+    return strHex (a.begin (), a.size ());
+}
+
+template <std::size_t Bits, class Tag>
+std::ostream& operator<< (std::ostream& out, base_uint<Bits, Tag> const& u)
+{
+    return out << to_string (u);
+}
 
 }
 

@@ -20,6 +20,8 @@
 #ifndef RIPPLE_FIELDNAMES_H
 #define RIPPLE_FIELDNAMES_H
 
+namespace ripple {
+
 // VFALCO TODO lose the macro.
 #define FIELD_CODE(type, index) ((static_cast<int>(type) << 16) | index)
 
@@ -71,6 +73,11 @@ public:
     int                     fieldMeta;
     int                     fieldNum;
     bool                    signingField;
+    std::string             rawJsonName;
+    Json::StaticString      jsonName;
+
+    SField(SField const&) = delete;
+    SField& operator=(SField const&) = delete;
 
     SField (int fc, SerializedTypeID tid, int fv, const char* fn)
         : fieldCode (fc)
@@ -79,8 +86,10 @@ public:
         , fieldName (fn)
         , fieldMeta (sMD_Default)
         , signingField (true)
+        , rawJsonName (getName ())
+        , jsonName (rawJsonName.c_str ())
     {
-        StaticScopedLockType sl (getMutex (), __FILE__, __LINE__);
+        StaticScopedLockType sl (getMutex ());
 
         codeToField[fieldCode] = this;
 
@@ -94,8 +103,10 @@ public:
         , fieldName (fn)
         , fieldMeta (sMD_Default)
         , signingField (true)
+        , rawJsonName (getName ())
+        , jsonName (rawJsonName.c_str ())
     {
-        StaticScopedLockType sl (getMutex (), __FILE__, __LINE__);
+        StaticScopedLockType sl (getMutex ());
 
         codeToField[fieldCode] = this;
 
@@ -108,8 +119,10 @@ public:
         , fieldValue (0)
         , fieldMeta (sMD_Never)
         , signingField (true)
+        , rawJsonName (getName ())
+        , jsonName (rawJsonName.c_str ())
     {
-        StaticScopedLockType sl (getMutex (), __FILE__, __LINE__);
+        StaticScopedLockType sl (getMutex ());
         fieldNum = ++num;
     }
 
@@ -130,6 +143,11 @@ public:
     bool hasName () const
     {
         return !fieldName.empty ();
+    }
+
+    Json::StaticString const& getJsonName () const
+    {
+        return jsonName;
     }
 
     bool isGeneric () const
@@ -211,7 +229,7 @@ protected:
     static std::map<int, ptr>   codeToField;
 
     typedef RippleMutex StaticLockType;
-    typedef StaticLockType::ScopedLockType StaticScopedLockType;
+    typedef std::lock_guard <StaticLockType> StaticScopedLockType;
 
     static StaticLockType& getMutex ();
 
@@ -228,5 +246,7 @@ extern SField sfInvalid, sfGeneric, sfLedgerEntry, sfTransaction, sfValidation;
 #include "../protocol/SerializeDeclarations.h"
 #undef FIELD
 #undef TYPE
+
+} // ripple
 
 #endif

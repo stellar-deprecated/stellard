@@ -19,6 +19,8 @@
 
 #if RIPPLE_ROCKSDB_AVAILABLE
 
+#include "../../../beast/beast/threads/Thread.h"
+
 #include <atomic>
 
 namespace ripple {
@@ -43,8 +45,10 @@ public:
         void (*f)(void*);
         void* a;
     };
-
-    static void thread_entry (void* ptr)
+    
+    static
+    void
+    thread_entry (void* ptr)
     {
         ThreadParams* const p (reinterpret_cast <ThreadParams*> (ptr));
         void (*f)(void*) = p->f;
@@ -55,12 +59,13 @@ public:
         std::size_t const id (++n);
         std::stringstream ss;
         ss << "rocksdb #" << id;
-        Thread::setCurrentThreadName (ss.str());
+        beast::Thread::setCurrentThreadName (ss.str());
 
         (*f)(a);
     }
 
-    void StartThread (void (*f)(void*), void* a)
+    void
+    StartThread (void (*f)(void*), void* a)
     {
         ThreadParams* const p (new ThreadParams (f, a));
         EnvWrapper::StartThread (&RocksDBEnv::thread_entry, p);
@@ -72,10 +77,10 @@ public:
 class RocksDBBackend
     : public Backend
     , public BatchWriter::Callback
-    , public LeakChecked <RocksDBBackend>
+    , public beast::LeakChecked <RocksDBBackend>
 {
 public:
-    Journal m_journal;
+    beast::Journal m_journal;
     size_t const m_keyBytes;
     Scheduler& m_scheduler;
     BatchWriter m_batch;
@@ -83,7 +88,7 @@ public:
     std::unique_ptr <rocksdb::DB> m_db;
 
     RocksDBBackend (int keyBytes, Parameters const& keyValues,
-        Scheduler& scheduler, Journal journal, RocksDBEnv* env)
+        Scheduler& scheduler, beast::Journal journal, RocksDBEnv* env)
         : m_journal (journal)
         , m_keyBytes (keyBytes)
         , m_scheduler (scheduler)
@@ -91,10 +96,11 @@ public:
         , m_name (keyValues ["path"].toStdString ())
     {
         if (m_name.empty())
-            Throw (std::runtime_error ("Missing path in RocksDBFactory backend"));
+            throw std::runtime_error ("Missing path in RocksDBFactory backend");
 
         rocksdb::Options options;
         options.create_if_missing = true;
+        options.env = env;
 
         if (keyValues["cache_mb"].isEmpty())
         {
@@ -132,12 +138,35 @@ public:
             options.target_file_size_multiplier = keyValues["file_size_mult"].getIntValue();
         }
 
-        options.env = env;
+        if (! keyValues["bg_threads"].isEmpty())
+        {
+            options.env->SetBackgroundThreads
+                (keyValues["bg_threads"].getIntValue(), rocksdb::Env::LOW);
+        }
+
+        if (! keyValues["high_threads"].isEmpty())
+        {
+            auto const highThreads = keyValues["high_threads"].getIntValue();
+            options.env->SetBackgroundThreads (highThreads, rocksdb::Env::HIGH);
+
+            // If we have high-priority threads, presumably we want to
+            // use them for background flushes
+            if (highThreads > 0)
+                options.max_background_flushes = highThreads;
+        }
+
+        if (! keyValues["compression"].isEmpty ())
+        {
+            if (keyValues["compression"].getIntValue () == 0)
+            {
+                options.compression = rocksdb::kNoCompression;
+            }
+        }
 
         rocksdb::DB* db = nullptr;
         rocksdb::Status status = rocksdb::DB::Open (options, m_name, &db);
         if (!status.ok () || !db)
-            Throw (std::runtime_error (std::string("Unable to open/create RocksDB: ") + status.ToString()));
+            throw std::runtime_error (std::string("Unable to open/create RocksDB: ") + status.ToString());
 
         m_db.reset (db);
     }
@@ -146,14 +175,16 @@ public:
     {
     }
 
-    std::string getName()
+    std::string 
+    getName()
     {
         return m_name;
     }
 
     //--------------------------------------------------------------------------
 
-    Status fetch (void const* key, NodeObject::Ptr* pObject)
+    Status
+    fetch (void const* key, NodeObject::Ptr* pObject)
     {
         pObject->reset ();
 
@@ -202,20 +233,22 @@ public:
         return status;
     }
 
-    void store (NodeObject::ref object)
+    void
+    store (NodeObject::ref object)
     {
         m_batch.store (object);
     }
 
-    void storeBatch (Batch const& batch)
+    void
+    storeBatch (Batch const& batch)
     {
         rocksdb::WriteBatch wb;
 
         EncodedBlob encoded;
 
-        BOOST_FOREACH (NodeObject::ref object, batch)
+        for (auto const& e : batch)
         {
-            encoded.prepare (object);
+            encoded.prepare (e);
 
             wb.Put (
                 rocksdb::Slice (reinterpret_cast <char const*> (
@@ -229,7 +262,8 @@ public:
         m_db->Write (options, &wb).ok ();
     }
 
-    void visitAll (VisitCallback& callback)
+    void
+    for_each (std::function <void(NodeObject::Ptr)> f)
     {
         rocksdb::ReadOptions const options;
 
@@ -245,33 +279,35 @@ public:
 
                 if (decoded.wasOk ())
                 {
-                    NodeObject::Ptr object (decoded.createObject ());
-
-                    callback.visitObject (object);
+                    f (decoded.createObject ());
                 }
                 else
                 {
                     // Uh oh, corrupted data!
-                    WriteLog (lsFATAL, NodeObject) << "Corrupt NodeObject #" << uint256 (it->key ().data ());
+                    if (m_journal.fatal) m_journal.fatal <<
+                        "Corrupt NodeObject #" << uint256 (it->key ().data ());
                 }
             }
             else
             {
                 // VFALCO NOTE What does it mean to find an
                 //             incorrectly sized key? Corruption?
-                WriteLog (lsFATAL, NodeObject) << "Bad key size = " << it->key ().size ();
+                if (m_journal.fatal) m_journal.fatal <<
+                    "Bad key size = " << it->key ().size ();
             }
         }
     }
 
-    int getWriteLoad ()
+    int
+    getWriteLoad ()
     {
         return m_batch.getWriteLoad ();
     }
 
     //--------------------------------------------------------------------------
 
-    void writeBatch (Batch const& batch)
+    void
+    writeBatch (Batch const& batch)
     {
         storeBatch (batch);
     }
@@ -299,14 +335,18 @@ public:
     {
     }
 
-    String getName () const
+    beast::String
+    getName () const
     {
         return "RocksDB";
     }
 
-    std::unique_ptr <Backend> createInstance (
-        size_t keyBytes, Parameters const& keyValues,
-            Scheduler& scheduler, Journal journal)
+    std::unique_ptr <Backend> 
+    createInstance (
+        size_t keyBytes,
+        Parameters const& keyValues,
+        Scheduler& scheduler,
+        beast::Journal journal)
     {
         return std::make_unique <RocksDBBackend> (
             keyBytes, keyValues, scheduler, journal, &m_env);
@@ -315,7 +355,8 @@ public:
 
 //------------------------------------------------------------------------------
 
-std::unique_ptr <Factory> make_RocksDBFactory ()
+std::unique_ptr <Factory>
+make_RocksDBFactory ()
 {
     return std::make_unique <RocksDBFactory> ();
 }

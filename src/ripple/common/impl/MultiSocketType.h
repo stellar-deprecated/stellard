@@ -28,6 +28,8 @@
 
 #include "../../../beast/beast/cxx14/type_traits.h"
 
+#include <cassert>
+
 #ifndef RIPPLE_MULTISOCKET_NO_ALLOCATOR
 #define RIPPLE_MULTISOCKET_NO_ALLOCATOR 0
 #endif
@@ -56,8 +58,11 @@ private:
     State m_state;
     boost::asio::ssl::context& m_ssl_context;
     int m_verify_mode;
-    std::unique_ptr <beast::asio::abstract_socket> m_stream;
-    std::unique_ptr <beast::asio::abstract_socket> m_ssl_stream; // the ssl portion of our stream if it exists
+    std::unique_ptr <
+        beast::asio::abstract_socket> m_stream;
+    std::unique_ptr <
+        beast::asio::abstract_socket
+            > m_ssl_stream; // the ssl portion of our stream if it exists
     bool m_needsShutdown;
     StreamSocket m_next_layer;
     ProxyInfo m_proxyInfo;
@@ -73,7 +78,8 @@ public:
     typedef typename next_layer_type::lowest_layer_type lowest_layer_type;
 
     template <typename Arg>
-    MultiSocketType (Arg& arg, boost::asio::ssl::context& ssl_context, int flags)
+    MultiSocketType (Arg& arg,
+            boost::asio::ssl::context& ssl_context, int flags)
         : m_flags (flags)
         , m_state (stateNone)
         , m_ssl_context (ssl_context)
@@ -97,25 +103,28 @@ protected:
     //
     //--------------------------------------------------------------------------
 
-    Flag getFlags () override
+    Flag
+    getFlags () override
     {
         return m_origFlags;
     }
 
-    beast::IP::Endpoint local_endpoint() override
+    beast::IP::Endpoint
+    local_endpoint() override
     {
-        return IPAddressConversion::from_asio (
+        return beast::IPAddressConversion::from_asio (
             m_next_layer.local_endpoint());
     }
 
-    beast::IP::Endpoint remote_endpoint() override
+    beast::IP::Endpoint
+    remote_endpoint() override
     {
         if (m_proxyInfoSet)
         {
             if (m_proxyInfo.protocol == "TCP4")
             {
-                return IP::Endpoint (
-                    IP::AddressV4 (
+                return beast::IP::Endpoint (
+                    beast::IP::AddressV4 (
                         m_proxyInfo.destAddress.value [0],
                         m_proxyInfo.destAddress.value [1],
                         m_proxyInfo.destAddress.value [2],
@@ -125,26 +134,28 @@ protected:
 
             // VFALCO TODO IPv6 support
             bassertfalse;
-            return IP::Endpoint();
+            return beast::IP::Endpoint();
         }
 
         try 
         {
-            return IPAddressConversion::from_asio (
+            return beast::IPAddressConversion::from_asio (
                 m_next_layer.remote_endpoint());
         }
         catch (...)
         {
-            return IP::Endpoint ();
+            return beast::IP::Endpoint ();
         }
     }
 
-    ProxyInfo getProxyInfo () override
+    ProxyInfo
+    getProxyInfo () override
     {
         return m_proxyInfo;
     }
 
-    SSL* ssl_handle () override
+    SSL*
+    ssl_handle () override
     {
         return m_native_ssl_handle;
     }
@@ -177,7 +188,8 @@ protected:
     {
         char const* const name (typeid (next_layer_type).name ());
         if (strcmp (name, type_name) == 0)
-            return const_cast <void*> (static_cast <void const*> (&m_next_layer));
+            return const_cast <void*> (
+                static_cast <void const*> (&m_next_layer));
         return nullptr;
     }
 
@@ -220,7 +232,8 @@ protected:
         return m_next_layer.lowest_layer ().cancel (ec);
     }
 
-    error_code shutdown (abstract_socket::shutdown_type what, error_code& ec) override
+    error_code shutdown (abstract_socket::shutdown_type what,
+        error_code& ec) override
     {
         return m_next_layer.lowest_layer ().shutdown (what, ec);
     }
@@ -274,7 +287,8 @@ protected:
     {
         char const* const name (typeid (next_layer_type).name ());
         if (strcmp (name, type_name) == 0)
-            return const_cast <void*> (static_cast <void const*> (&m_next_layer));
+            return const_cast <void*> (
+                static_cast <void const*> (&m_next_layer));
         return nullptr;
 
     }
@@ -375,7 +389,8 @@ protected:
     static Flag cleaned_flags (Flag flags)
     {
         // Can't set both client and server
-        check_precondition (! flags.set (Flag::client_role | Flag::server_role));
+        assert (! flags.set (
+            Flag::client_role | Flag::server_role));
 
         if (flags.set (Flag::client_role))
         {
@@ -740,8 +755,8 @@ protected:
 
             case stateExpectPROXY:
                 {
-                    typedef beast::asio::HandshakeDetectorType <
-                        next_layer_type, beast::asio::HandshakeDetectLogicPROXY> op_type;
+                    typedef beast::asio::HandshakeDetectorType <next_layer_type,
+                        beast::asio::HandshakeDetectLogicPROXY> op_type;
 
                     op_type op;
 
@@ -775,8 +790,8 @@ protected:
 
             case stateDetectSSL:
                 {
-                    typedef beast::asio::HandshakeDetectorType <
-                        next_layer_type, beast::asio::HandshakeDetectLogicSSL3> op_type;
+                    typedef beast::asio::HandshakeDetectorType <next_layer_type,
+                        beast::asio::HandshakeDetectLogicSSL3> op_type;
 
                     op_type op;
 
@@ -790,7 +805,8 @@ protected:
                         if (op.getLogic ().success ())
                         {
                             // Convert the ssl flag to ssl_required
-                            m_flags = m_flags.with (Flag::ssl_required).without (Flag::ssl);
+                            m_flags = m_flags.with (
+                                Flag::ssl_required).without (Flag::ssl);
                         }
                         else
                         {
@@ -912,7 +928,7 @@ protected:
             // We can't use io_service::wrap because that calls dispatch
             // instead of post.
             //
-            m_owner.get_io_service().post (asio::wrap_handler (
+            m_owner.get_io_service().post (beast::asio::wrap_handler (
                 std::bind (&AsyncOp::on_final, this->shared_from_this(),
                     ec), m_handler));
         }
@@ -953,9 +969,10 @@ protected:
                         //
                         m_owner.m_state = stateReady;
                         m_owner.stream ().async_handshake (m_type,
-                            asio::wrap_handler (std::bind (&AsyncOp::on_complete,
-                            this->shared_from_this(), beast::asio::placeholders::error),
-                                m_handler, m_first_time));
+                            beast::asio::wrap_handler (std::bind (
+                                &AsyncOp::on_complete, this->shared_from_this(),
+                                    beast::asio::placeholders::error),
+                                        m_handler, m_first_time));
                     }
                     return;
 
@@ -965,14 +982,18 @@ protected:
                         {
                             if (m_proxy.getLogic ().success ())
                             {
-                                m_owner.m_proxyInfo = m_proxy.getLogic ().getInfo ();
+                                m_owner.m_proxyInfo =
+                                    m_proxy.getLogic ().getInfo ();
                                 m_owner.m_proxyInfoSet = true;
 
                                 // Strip off the PROXY flag.
-                                m_owner.m_flags = m_owner.m_flags.without (Flag::proxy);
+                                m_owner.m_flags = m_owner.m_flags.without (
+                                    Flag::proxy);
 
-                                // Update handshake state with the leftover bytes.
-                                ec = m_owner.initHandshake (m_type, m_buffer.data ());
+                                // Update handshake state with the
+                                // leftover bytes.
+                                ec = m_owner.initHandshake (m_type,
+                                    m_buffer.data ());
                                 break;
                             }
 
@@ -981,9 +1002,11 @@ protected:
                             break;
                         }
 
-                        m_proxy.async_detect (m_stream, m_buffer, asio::wrap_handler (
-                            std::bind (&AsyncOp::on_complete, this->shared_from_this(),
-                                beast::asio::placeholders::error), m_handler, m_first_time));
+                        m_proxy.async_detect (m_stream, m_buffer,
+                            beast::asio::wrap_handler (std::bind (
+                                &AsyncOp::on_complete, this->shared_from_this(),
+                                    beast::asio::placeholders::error),
+                                        m_handler, m_first_time));
                     }
                     return;
 
@@ -1001,17 +1024,21 @@ protected:
                             else
                             {
                                 // Not SSL, strip the ssl flag
-                                m_owner.m_flags = m_owner.m_flags.without (Flag::ssl);
+                                m_owner.m_flags = m_owner.m_flags.without (
+                                    Flag::ssl);
                             }
 
                             // Update handshake state with the leftover bytes.
-                            ec = m_owner.initHandshake (m_type, m_buffer.data ());
+                            ec = m_owner.initHandshake (m_type,
+                                m_buffer.data ());
                             break;
                         }
 
-                        m_ssl.async_detect (m_stream, m_buffer, asio::wrap_handler (
-                            std::bind (&AsyncOp::on_complete, this->shared_from_this(),
-                                beast::asio::placeholders::error), m_handler, m_first_time));
+                        m_ssl.async_detect (m_stream, m_buffer,
+                            beast::asio::wrap_handler (std::bind (
+                                &AsyncOp::on_complete, this->shared_from_this(),
+                                    beast::asio::placeholders::error),
+                                        m_handler, m_first_time));
                     }
                     return;
 
@@ -1024,7 +1051,8 @@ protected:
                 }
             }
 
-            bassert (ec || (m_owner.m_state == stateReady && m_owner.m_needsShutdown));
+            bassert (ec || (m_owner.m_state == stateReady &&
+                m_owner.m_needsShutdown));
 
             on_final (ec);
         }

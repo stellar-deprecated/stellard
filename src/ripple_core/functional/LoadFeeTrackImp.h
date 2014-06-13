@@ -20,12 +20,15 @@
 #ifndef RIPPLE_LOADFEETRACKIMP_H_INCLUDED
 #define RIPPLE_LOADFEETRACKIMP_H_INCLUDED
 
+#include "../../ripple/common/jsonrpc_fields.h"
+
+namespace ripple {
+
 class LoadFeeTrackImp : public LoadFeeTrack
 {
 public:
-    explicit LoadFeeTrackImp (Journal journal = Journal())
+    explicit LoadFeeTrackImp (beast::Journal journal = beast::Journal())
         : m_journal (journal)
-        , mLock (this, "LoadFeeTrackImp", __FILE__, __LINE__)
         , mLocalTxnLoadFee (lftNormalFee)
         , mRemoteTxnLoadFee (lftNormalFee)
         , mClusterTxnLoadFee (lftNormalFee)
@@ -34,9 +37,9 @@ public:
     }
 
     // Scale using load as well as base rate
-    uint64 scaleFeeLoad (uint64 fee, uint64 baseFee, uint32 referenceFeeUnits, bool bAdmin)
+    std::uint64_t scaleFeeLoad (std::uint64_t fee, std::uint64_t baseFee, std::uint32_t referenceFeeUnits, bool bAdmin)
     {
-        static uint64 midrange (0x00000000FFFFFFFF);
+        static std::uint64_t midrange (0x00000000FFFFFFFF);
 
         bool big = (fee > midrange);
 
@@ -45,15 +48,15 @@ public:
         else                    // normal fee, multiply first for accuracy
             fee *= referenceFeeUnits;
 
-        uint32 feeFactor = std::max (mLocalTxnLoadFee, mRemoteTxnLoadFee);
+        std::uint32_t feeFactor = std::max (mLocalTxnLoadFee, mRemoteTxnLoadFee);
 
         // Let admins pay the normal fee until the local load exceeds four times the remote
-        uint32 uRemFee = std::max(mRemoteTxnLoadFee, mClusterTxnLoadFee);
+        std::uint32_t uRemFee = std::max(mRemoteTxnLoadFee, mClusterTxnLoadFee);
         if (bAdmin && (feeFactor > uRemFee) && (feeFactor < (4 * uRemFee)))
             feeFactor = uRemFee;
 
         {
-            ScopedLockType sl (mLock, __FILE__, __LINE__);
+            ScopedLockType sl (mLock);
             fee = mulDiv (fee, feeFactor, lftNormalFee);
         }
 
@@ -66,43 +69,43 @@ public:
     }
 
     // Scale from fee units to millionths of a ripple
-    uint64 scaleFeeBase (uint64 fee, uint64 baseFee, uint32 referenceFeeUnits)
+    std::uint64_t scaleFeeBase (std::uint64_t fee, std::uint64_t baseFee, std::uint32_t referenceFeeUnits)
     {
         return mulDiv (fee, referenceFeeUnits, baseFee);
     }
 
-    uint32 getRemoteFee ()
+    std::uint32_t getRemoteFee ()
     {
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
         return mRemoteTxnLoadFee;
     }
 
-    uint32 getLocalFee ()
+    std::uint32_t getLocalFee ()
     {
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
         return mLocalTxnLoadFee;
     }
 
-    uint32 getLoadBase ()
+    std::uint32_t getLoadBase ()
     {
         return lftNormalFee;
     }
 
-    uint32 getLoadFactor ()
+    std::uint32_t getLoadFactor ()
     {
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
         return std::max(mClusterTxnLoadFee, std::max (mLocalTxnLoadFee, mRemoteTxnLoadFee));
     }
 
-    void setClusterFee (uint32 fee)
+    void setClusterFee (std::uint32_t fee)
     {
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
         mClusterTxnLoadFee = fee;
     }
 
-    uint32 getClusterFee ()
+    std::uint32_t getClusterFee ()
     {
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
         return mClusterTxnLoadFee;
     }
 
@@ -114,7 +117,7 @@ public:
         //        NOTE This applies to all the locking in this class.
         //
         //
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
         return (raiseCount != 0) || (mLocalTxnLoadFee != lftNormalFee);
     }
 
@@ -126,24 +129,24 @@ public:
         //        NOTE This applies to all the locking in this class.
         //
         //
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
         return (raiseCount != 0) || (mLocalTxnLoadFee != lftNormalFee) || (mClusterTxnLoadFee != lftNormalFee);
     }
 
-    void setRemoteFee (uint32 f)
+    void setRemoteFee (std::uint32_t f)
     {
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
         mRemoteTxnLoadFee = f;
     }
 
     bool raiseLocalFee ()
     {
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
 
         if (++raiseCount < 2)
             return false;
 
-        uint32 origFee = mLocalTxnLoadFee;
+        std::uint32_t origFee = mLocalTxnLoadFee;
 
         if (mLocalTxnLoadFee < mRemoteTxnLoadFee) // make sure this fee takes effect
             mLocalTxnLoadFee = mRemoteTxnLoadFee;
@@ -162,8 +165,8 @@ public:
 
     bool lowerLocalFee ()
     {
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
-        uint32 origFee = mLocalTxnLoadFee;
+        ScopedLockType sl (mLock);
+        std::uint32_t origFee = mLocalTxnLoadFee;
         raiseCount = 0;
 
         mLocalTxnLoadFee -= (mLocalTxnLoadFee / lftFeeDecFraction ); // reduce by 1/4
@@ -178,18 +181,18 @@ public:
         return true;
     }
 
-    Json::Value getJson (uint64 baseFee, uint32 referenceFeeUnits)
+    Json::Value getJson (std::uint64_t baseFee, std::uint32_t referenceFeeUnits)
     {
         Json::Value j (Json::objectValue);
 
         {
-            ScopedLockType sl (mLock, __FILE__, __LINE__);
+            ScopedLockType sl (mLock);
 
             // base_fee = The cost to send a "reference" transaction under no load, in millionths of a Ripple
-            j["base_fee"] = Json::Value::UInt (baseFee);
+            j[jss::base_fee] = Json::Value::UInt (baseFee);
 
             // load_fee = The cost to send a "reference" transaction now, in millionths of a Ripple
-            j["load_fee"] = Json::Value::UInt (
+            j[jss::load_fee] = Json::Value::UInt (
                                 mulDiv (baseFee, std::max (mLocalTxnLoadFee, mRemoteTxnLoadFee), lftNormalFee));
         }
 
@@ -199,11 +202,11 @@ public:
 private:
     // VFALCO TODO Move this function to some "math utilities" file
     // compute (value)*(mul)/(div) - avoid overflow but keep precision
-    uint64 mulDiv (uint64 value, uint32 mul, uint64 div)
+    std::uint64_t mulDiv (std::uint64_t value, std::uint32_t mul, std::uint64_t div)
     {
         // VFALCO TODO replace with beast::literal64bitUnsigned ()
         //
-        static uint64 boundary = (0x00000000FFFFFFFF);
+        static std::uint64_t boundary = (0x00000000FFFFFFFF);
 
         if (value > boundary)                           // Large value, avoid overflow
             return (value / div) * mul;
@@ -217,15 +220,17 @@ private:
     static const int lftFeeDecFraction = 4;     // decrease fee by 1/4
     static const int lftFeeMax = lftNormalFee * 1000000;
 
-    Journal m_journal;
+    beast::Journal m_journal;
     typedef RippleMutex LockType;
-    typedef LockType::ScopedLockType ScopedLockType;
+    typedef std::lock_guard <LockType> ScopedLockType;
     LockType mLock;
 
-    uint32 mLocalTxnLoadFee;        // Scale factor, lftNormalFee = normal fee
-    uint32 mRemoteTxnLoadFee;       // Scale factor, lftNormalFee = normal fee
-    uint32 mClusterTxnLoadFee;      // Scale factor, lftNormalFee = normal fee
+    std::uint32_t mLocalTxnLoadFee;        // Scale factor, lftNormalFee = normal fee
+    std::uint32_t mRemoteTxnLoadFee;       // Scale factor, lftNormalFee = normal fee
+    std::uint32_t mClusterTxnLoadFee;      // Scale factor, lftNormalFee = normal fee
     int raiseCount;
 };
+
+} // ripple
 
 #endif

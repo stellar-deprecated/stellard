@@ -20,6 +20,10 @@
 #ifndef BEAST_CORE_ATEXITHOOK_H_INCLUDED
 #define BEAST_CORE_ATEXITHOOK_H_INCLUDED
 
+#include "../../../beast/intrusive/List.h"
+
+namespace beast {
+
 /** Hook for performing activity on program exit.
 
     These hooks execute when objects with static storage duration are
@@ -84,5 +88,7 @@ private:
     Object* m_owner;
 };
 /** @} */
+
+} // beast
 
 #endif

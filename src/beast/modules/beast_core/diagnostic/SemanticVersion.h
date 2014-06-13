@@ -20,6 +20,9 @@
 #ifndef BEAST_SEMANTICVERSION_H_INCLUDED
 #define BEAST_SEMANTICVERSION_H_INCLUDED
 
+namespace beast
+{
+
 /** A Semantic Version number.
 
     Identifies the build of a particular version of software using
@@ -27,7 +30,7 @@
 
     http://semver.org/
 */
-class BEAST_API SemanticVersion
+class SemanticVersion
 {
 public:
     int majorVersion;
@@ -70,5 +73,7 @@ private:
     static bool chopIdentifier (String* value, bool allowLeadingZeroes, String& input);
     static bool chopIdentifiers (StringArray* value, bool preRelease, String& input);
 };
+
+} // beast
 
 #endif

@@ -20,13 +20,15 @@
 #ifndef RIPPLE_VALIDATORS_CHOSENLIST_H_INCLUDED
 #define RIPPLE_VALIDATORS_CHOSENLIST_H_INCLUDED
 
+#include "../../common/UnorderedContainers.h"
+
 namespace ripple {
 namespace Validators {
 
-class ChosenList : public SharedObject
+class ChosenList : public beast::SharedObject
 {
 public:
-    typedef SharedPtr <ChosenList> Ptr;
+    typedef beast::SharedPtr <ChosenList> Ptr;
 
     struct Info
     {
@@ -35,7 +37,8 @@ public:
         }
     };
 
-    typedef boost::unordered_map <RipplePublicKey, Info, RipplePublicKey::hasher> MapType;
+    typedef ripple::unordered_map <RipplePublicKey, Info,
+                                 beast::hardened_hash<RipplePublicKey>> MapType;
 
     ChosenList (std::size_t expectedSize = 0)
     {

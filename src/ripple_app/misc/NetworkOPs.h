@@ -20,6 +20,10 @@
 #ifndef RIPPLE_NETWORKOPS_H
 #define RIPPLE_NETWORKOPS_H
 
+#include <tuple>
+
+namespace ripple {
+
 // Operations that clients may wish to perform against the network
 // Master operational handler, server sequencer, network tracker
 
@@ -56,7 +60,7 @@ protected:
     explicit NetworkOPs (Stoppable& parent);
 
 public:
-    typedef abstract_clock <std::chrono::seconds> clock_type;
+    typedef beast::abstract_clock <std::chrono::seconds> clock_type;
 
     enum Fault
     {
@@ -77,13 +81,13 @@ public:
 
     // VFALCO TODO Fix OrderBookDB to not need this unrelated type.
     //
-    typedef boost::unordered_map <uint64, InfoSub::wptr> SubMapType;
+    typedef ripple::unordered_map <std::uint64_t, InfoSub::wptr> SubMapType;
 
 public:
     // VFALCO TODO Make LedgerMaster a SharedPtr or a reference.
     //
     static NetworkOPs* New (clock_type& clock, LedgerMaster& ledgerMaster,
-        Stoppable& parent, Journal journal);
+        Stoppable& parent, beast::Journal journal);
 
     virtual ~NetworkOPs () = 0;
 
@@ -93,15 +97,15 @@ public:
     //
 
     // Our best estimate of wall time in seconds from 1/1/2000
-    virtual uint32 getNetworkTimeNC () = 0;
+    virtual std::uint32_t getNetworkTimeNC () = 0;
     // Our best estimate of current ledger close time
-    virtual uint32 getCloseTimeNC () = 0;
+    virtual std::uint32_t getCloseTimeNC () = 0;
     // Use *only* to timestamp our own validation
-    virtual uint32 getValidationTimeNC () = 0;
+    virtual std::uint32_t getValidationTimeNC () = 0;
     virtual void closeTimeOffset (int) = 0;
     virtual boost::posix_time::ptime getNetworkTimePT () = 0;
-    virtual uint32 getLedgerID (uint256 const& hash) = 0;
-    virtual uint32 getCurrentLedgerID () = 0;
+    virtual std::uint32_t getLedgerID (uint256 const& hash) = 0;
+    virtual std::uint32_t getCurrentLedgerID () = 0;
 
     virtual OperatingMode getOperatingMode () = 0;
     virtual std::string strOperatingMode () = 0;
@@ -110,20 +114,20 @@ public:
     virtual Ledger::pointer getPublishedLedger () = 0;
     virtual Ledger::pointer getCurrentLedger () = 0;
     virtual Ledger::pointer getLedgerByHash (uint256 const& hash) = 0;
-    virtual Ledger::pointer getLedgerBySeq (const uint32 seq) = 0;
-    virtual void            missingNodeInLedger (const uint32 seq) = 0;
+    virtual Ledger::pointer getLedgerBySeq (const std::uint32_t seq) = 0;
+    virtual void            missingNodeInLedger (const std::uint32_t seq) = 0;
 
     virtual uint256         getClosedLedgerHash () = 0;
 
     // Do we have this inclusive range of ledgers in our database
-    virtual bool haveLedgerRange (uint32 from, uint32 to) = 0;
-    virtual bool haveLedger (uint32 seq) = 0;
-    virtual uint32 getValidatedSeq () = 0;
-    virtual bool isValidated (uint32 seq) = 0;
-    virtual bool isValidated (uint32 seq, uint256 const& hash) = 0;
+    virtual bool haveLedgerRange (std::uint32_t from, std::uint32_t to) = 0;
+    virtual bool haveLedger (std::uint32_t seq) = 0;
+    virtual std::uint32_t getValidatedSeq () = 0;
+    virtual bool isValidated (std::uint32_t seq) = 0;
+    virtual bool isValidated (std::uint32_t seq, uint256 const& hash) = 0;
     virtual bool isValidated (Ledger::ref l) = 0;
-    virtual bool getValidatedRange (uint32& minVal, uint32& maxVal) = 0;
-    virtual bool getFullValidatedRange (uint32& minVal, uint32& maxVal) = 0;
+    virtual bool getValidatedRange (std::uint32_t& minVal, std::uint32_t& maxVal) = 0;
+    virtual bool getFullValidatedRange (std::uint32_t& minVal, std::uint32_t& maxVal) = 0;
 
     virtual SerializedValidation::ref getLastValidation () = 0;
     virtual void setLastValidation (SerializedValidation::ref v) = 0;
@@ -149,8 +153,8 @@ public:
         bool bAdmin, bool bLocal, bool bFailHard) = 0;
     virtual Transaction::pointer findTransactionByID (uint256 const& transactionID) = 0;
     virtual int findTransactionsByDestination (std::list<Transaction::pointer>&,
-        const RippleAddress& destinationAccount, uint32 startLedgerSeq,
-            uint32 endLedgerSeq, int maxTransactions) = 0;
+        const RippleAddress& destinationAccount, std::uint32_t startLedgerSeq,
+            std::uint32_t endLedgerSeq, int maxTransactions) = 0;
 
     //--------------------------------------------------------------------------
     //
@@ -168,7 +172,8 @@ public:
     //
 
     virtual STVector256 getDirNodeInfo (Ledger::ref lrLedger,
-        uint256 const& uRootIndex, uint64& uNodePrevious, uint64& uNodeNext) = 0;
+        uint256 const& uRootIndex, std::uint64_t& uNodePrevious,
+                                   std::uint64_t& uNodeNext) = 0;
 
     //--------------------------------------------------------------------------
     //
@@ -223,10 +228,10 @@ public:
     // Fetch packs
     virtual void makeFetchPack (Job&, boost::weak_ptr<Peer> peer,
         boost::shared_ptr<protocol::TMGetObjectByHash> request,
-        Ledger::pointer wantLedger, Ledger::pointer haveLedger, uint32 uUptime) = 0;
+        uint256 wantLedger, std::uint32_t uUptime) = 0;
 
-    virtual bool shouldFetchPack (uint32 seq) = 0;
-    virtual void gotFetchPack (bool progress, uint32 seq) = 0;
+    virtual bool shouldFetchPack (std::uint32_t seq) = 0;
+    virtual void gotFetchPack (bool progress, std::uint32_t seq) = 0;
     virtual void addFetchPack (uint256 const& hash, boost::shared_ptr< Blob >& data) = 0;
     virtual bool getFetchPack (uint256 const& hash, Blob& data) = 0;
     virtual int getFetchSize () = 0;
@@ -246,21 +251,21 @@ public:
     virtual void setProposing (bool isProposing, bool isValidating) = 0;
     virtual bool isProposing () = 0;
     virtual bool isValidating () = 0;
-    virtual bool isFeatureBlocked () = 0;
-    virtual void setFeatureBlocked () = 0;
+    virtual bool isAmendmentBlocked () = 0;
+    virtual void setAmendmentBlocked () = 0;
     virtual void consensusViewChange () = 0;
     virtual int getPreviousProposers () = 0;
     virtual int getPreviousConvergeTime () = 0;
-    virtual uint32 getLastCloseTime () = 0;
-    virtual void setLastCloseTime (uint32 t) = 0;
+    virtual std::uint32_t getLastCloseTime () = 0;
+    virtual void setLastCloseTime (std::uint32_t t) = 0;
 
     virtual Json::Value getConsensusInfo () = 0;
     virtual Json::Value getServerInfo (bool human, bool admin) = 0;
     virtual void clearLedgerFetch () = 0;
     virtual Json::Value getLedgerFetchInfo () = 0;
-    virtual uint32 acceptLedger () = 0;
+    virtual std::uint32_t acceptLedger () = 0;
 
-    typedef boost::unordered_map <uint160, std::list<LedgerProposal::pointer> > Proposals;
+    typedef ripple::unordered_map <uint160, std::list<LedgerProposal::pointer> > Proposals;
     virtual Proposals& peekStoredProposals () = 0;
 
     virtual void storeProposal (LedgerProposal::ref proposal,
@@ -270,34 +275,38 @@ public:
     
     virtual void reportFeeChange () = 0;
 
+    virtual void updateLocalTx (Ledger::ref newValidLedger) = 0;
+    virtual void addLocalTx (Ledger::ref openLedger, SerializedTransaction::ref txn) = 0;
+    virtual std::size_t getLocalTxCount () = 0;
+
     //Helper function to generate SQL query to get transactions
     virtual std::string transactionsSQL (std::string selection,
-        const RippleAddress& account, int32 minLedger, int32 maxLedger,
-        bool descending, uint32 offset, int limit, bool binary,
+        const RippleAddress& account, std::int32_t minLedger, std::int32_t maxLedger,
+        bool descending, std::uint32_t offset, int limit, bool binary,
             bool count, bool bAdmin) = 0;
 
     // client information retrieval functions
     typedef std::vector< std::pair<Transaction::pointer, TransactionMetaSet::pointer> > AccountTxs;
     virtual AccountTxs getAccountTxs (const RippleAddress& account,
-        int32 minLedger, int32 maxLedger,  bool descending, uint32 offset,
+        std::int32_t minLedger, std::int32_t maxLedger,  bool descending, std::uint32_t offset,
             int limit, bool bAdmin) = 0;
 
     typedef std::vector< std::pair<Transaction::pointer, TransactionMetaSet::pointer> > TxsAccount;
     virtual TxsAccount getTxsAccount (const RippleAddress& account,
-        int32 minLedger, int32 maxLedger, bool forward, Json::Value& token,
+        std::int32_t minLedger, std::int32_t maxLedger, bool forward, Json::Value& token,
         int limit, bool bAdmin) = 0;
 
-    typedef boost::tuple<std::string, std::string, uint32> txnMetaLedgerType;
+    typedef std::tuple<std::string, std::string, std::uint32_t> txnMetaLedgerType;
     typedef std::vector<txnMetaLedgerType> MetaTxsList;
     virtual MetaTxsList getAccountTxsB (const RippleAddress& account,
-        int32 minLedger, int32 maxLedger,  bool descending,
-            uint32 offset, int limit, bool bAdmin) = 0;
+        std::int32_t minLedger, std::int32_t maxLedger,  bool descending,
+            std::uint32_t offset, int limit, bool bAdmin) = 0;
 
     virtual MetaTxsList getTxsAccountB (const RippleAddress& account,
-        int32 minLedger, int32 maxLedger,  bool forward,
+        std::int32_t minLedger, std::int32_t maxLedger,  bool forward,
         Json::Value& token, int limit, bool bAdmin) = 0;
 
-    virtual std::vector<RippleAddress> getLedgerAffectedAccounts (uint32 ledgerSeq) = 0;
+    virtual std::vector<RippleAddress> getLedgerAffectedAccounts (std::uint32_t ledgerSeq) = 0;
 
     //--------------------------------------------------------------------------
     //
@@ -307,5 +316,7 @@ public:
     virtual void pubProposedTransaction (Ledger::ref lpCurrent,
         SerializedTransaction::ref stTxn, TER terResult) = 0;
 };
+
+} // ripple
 
 #endif

@@ -20,8 +20,10 @@
 #ifndef RIPPLE_WSDOOR_H_INCLUDED
 #define RIPPLE_WSDOOR_H_INCLUDED
 
+namespace ripple {
+
 /** Handles accepting incoming WebSocket connections. */
-class WSDoor : public Stoppable
+class WSDoor : public beast::Stoppable
 {
 protected:
     explicit WSDoor (Stoppable& parent);
@@ -33,5 +35,7 @@ public:
         InfoSub::Source& source, std::string const& strIp,
             int iPort, bool bPublic, bool bProxy, boost::asio::ssl::context& ssl_context);
 };
+
+} // ripple
 
 #endif

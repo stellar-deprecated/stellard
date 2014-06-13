@@ -20,6 +20,13 @@
 #ifndef BEAST_SHAREDSINGLETON_H_INCLUDED
 #define BEAST_SHAREDSINGLETON_H_INCLUDED
 
+#include "../../../beast/threads/SpinLock.h"
+#include "../../../beast/smart_ptr/SharedPtr.h"
+#include "../time/AtExitHook.h"
+
+namespace beast
+{
+
 /** Thread-safe singleton which comes into existence on first use. Use this
     instead of creating objects with static storage duration. These singletons
     are automatically reference counted, so if you hold a pointer to it in every
@@ -35,7 +42,7 @@
     @ingroup beast_core
 */
 /** @{ */
-class BEAST_API SingletonLifetime
+class SingletonLifetime
 {
 public:
     // It would be nice if we didn't have to qualify the enumeration but
@@ -85,7 +92,7 @@ public:
         SharedSingleton* instance = staticData.instance;
         if (instance == nullptr)
         {
-            LockType::ScopedLockType lock (staticData.mutex);
+            std::lock_guard <LockType> lock (staticData.mutex);
             instance = staticData.instance;
             if (instance == nullptr)
             {
@@ -135,7 +142,7 @@ private:
         //
         {
             StaticData& staticData (getStaticData ());
-            LockType::ScopedLockType lock (staticData.mutex);
+            std::lock_guard <LockType> lock (staticData.mutex);
 
             if (this->getReferenceCount() != 0)
             {
@@ -177,7 +184,7 @@ private:
 
     static StaticData& getStaticData ()
     {
-        static uint8 storage [sizeof (StaticData)];
+        static std::uint8_t storage [sizeof (StaticData)];
         return *(reinterpret_cast <StaticData*> (&storage [0]));
     }
 
@@ -189,5 +196,7 @@ private:
 };
 
 //------------------------------------------------------------------------------
+
+} // beast
 
 #endif

@@ -17,6 +17,8 @@
 */
 //==============================================================================
 
+namespace ripple {
+
 AccountItems::AccountItems (uint160 const& accountID,
                             Ledger::ref ledger,
                             AccountItem::pointer ofType)
@@ -65,7 +67,7 @@ void AccountItems::fillItems (const uint160& accountID, Ledger::ref ledger)
             }
         }
 
-        uint64 uNodeNext    = ownerDir->getFieldU64 (sfIndexNext);
+        std::uint64_t uNodeNext    = ownerDir->getFieldU64 (sfIndexNext);
 
         // VFALCO TODO Rewrite to not return from the middle of the function
         if (!uNodeNext)
@@ -87,4 +89,5 @@ Json::Value AccountItems::getJson (int v)
     return ret;
 }
 
-// vim:ts=4
+} // ripple
+

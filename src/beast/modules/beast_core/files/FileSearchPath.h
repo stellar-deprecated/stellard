@@ -24,13 +24,16 @@
 #ifndef BEAST_FILESEARCHPATH_H_INCLUDED
 #define BEAST_FILESEARCHPATH_H_INCLUDED
 
+namespace beast
+{
+
 //==============================================================================
 /**
     Encapsulates a set of folders that make up a search path.
 
     @see File
 */
-class BEAST_API FileSearchPath : LeakChecked <FileSearchPath>
+class FileSearchPath : LeakChecked <FileSearchPath>
 {
 public:
     //==============================================================================
@@ -154,5 +157,7 @@ private:
 
     void init (const String& path);
 };
+
+} // beast
 
 #endif   // BEAST_FILESEARCHPATH_H_INCLUDED

@@ -24,6 +24,9 @@
 #ifndef BEAST_MEMORYOUTPUTSTREAM_H_INCLUDED
 #define BEAST_MEMORYOUTPUTSTREAM_H_INCLUDED
 
+namespace beast
+{
+
 //==============================================================================
 /**
     Writes data to an internal memory buffer, which grows as required.
@@ -38,7 +41,7 @@
     The data that was written into the stream can then be accessed later as
     a contiguous block of memory.
 */
-class BEAST_API  MemoryOutputStream
+class  MemoryOutputStream
     : public OutputStream
     , LeakChecked <MemoryOutputStream>
 {
@@ -118,10 +121,10 @@ public:
     void flush();
 
     bool write (const void*, size_t) override;
-    int64 getPosition() override                                 { return position; }
-    bool setPosition (int64) override;
-    int writeFromInputStream (InputStream&, int64 maxNumBytesToWrite) override;
-    bool writeRepeatedByte (uint8 byte, size_t numTimesToRepeat) override;
+    std::int64_t getPosition() override                                 { return position; }
+    bool setPosition (std::int64_t) override;
+    int writeFromInputStream (InputStream&, std::int64_t maxNumBytesToWrite) override;
+    bool writeRepeatedByte (std::uint8_t byte, size_t numTimesToRepeat) override;
 
 private:
     void trimExternalBlockSize();
@@ -135,6 +138,8 @@ private:
 };
 
 /** Copies all the data that has been written to a MemoryOutputStream into another stream. */
-OutputStream& BEAST_CALLTYPE operator<< (OutputStream& stream, const MemoryOutputStream& streamToRead);
+OutputStream& operator<< (OutputStream& stream, const MemoryOutputStream& streamToRead);
+
+} // beast
 
 #endif

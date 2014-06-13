@@ -17,11 +17,15 @@
 */
 //==============================================================================
 
-class IoServicePool::ServiceThread : private Thread
+#include "../../beast/beast/cxx14/memory.h" // <memory>
+
+namespace ripple {
+
+class IoServicePool::ServiceThread : private beast::Thread
 {
 public:
     explicit ServiceThread (
-        String const& name,
+        beast::String const& name,
         IoServicePool& owner,
         boost::asio::io_service& service)
         : Thread (name)
@@ -56,7 +60,8 @@ private:
 
 //------------------------------------------------------------------------------
 
-IoServicePool::IoServicePool (Stoppable& parent, String const& name, int numberOfThreads)
+IoServicePool::IoServicePool (Stoppable& parent, beast::String const& name,
+                              int numberOfThreads)
     : Stoppable (name.toStdString().c_str(), parent)
     , m_name (name)
     , m_service (numberOfThreads)
@@ -83,10 +88,11 @@ IoServicePool::operator boost::asio::io_service& ()
 
 void IoServicePool::onStart ()
 {
-    m_threads.ensureStorageAllocated (m_threadsDesired);
+    m_threads.reserve (m_threadsDesired);
     for (int i = 0; i < m_threadsDesired; ++i)
     {
-        m_threads.add (new ServiceThread (m_name, *this, m_service));
+        m_threads.emplace_back (std::move (std::make_unique <
+            ServiceThread> (m_name, *this, m_service)));
         ++m_threadsRunning;
         m_threads[i]->start ();
     }
@@ -125,3 +131,5 @@ void IoServicePool::onThreadExit()
         stopped ();
     }
 }
+
+} // ripple

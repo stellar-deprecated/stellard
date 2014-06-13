@@ -24,6 +24,9 @@
 #ifndef BEAST_INPUTSOURCE_H_INCLUDED
 #define BEAST_INPUTSOURCE_H_INCLUDED
 
+namespace beast
+{
+
 //==============================================================================
 /**
     A lightweight object that can create a stream to read some kind of resource.
@@ -33,7 +36,7 @@
 
     @see FileInputSource
 */
-class BEAST_API InputSource : LeakChecked <InputSource>
+class InputSource : LeakChecked <InputSource>
 {
 public:
     //==============================================================================
@@ -60,8 +63,9 @@ public:
 
     /** Returns a hash code that uniquely represents this item.
     */
-    virtual int64 hashCode() const = 0;
+    virtual std::int64_t hashCode() const = 0;
 };
 
+} // beast
 
 #endif   // BEAST_INPUTSOURCE_H_INCLUDED

@@ -17,12 +17,14 @@
 */
 //==============================================================================
 
+namespace ripple {
+
 SETUP_LOG (RPCServer)
 
 class RPCServerImp
     : public RPCServer
     , public boost::enable_shared_from_this <RPCServerImp>
-    , public LeakChecked <RPCServerImp>
+    , public beast::LeakChecked <RPCServerImp>
 {
 public:
     typedef boost::shared_ptr <RPCServerImp> pointer;
@@ -256,3 +258,5 @@ private:
 
     HTTPRequest mHTTPRequest;
 };
+
+} // ripple

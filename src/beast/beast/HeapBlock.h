@@ -119,7 +119,7 @@ namespace HeapBlockHelper
     then a failed allocation will just leave the heapblock with a null pointer (assuming
     that the system's malloc() function doesn't throw).
 
-    @see Array, OwnedArray, MemoryBlock
+    @see Array, MemoryBlock
 */
 template <class ElementType, bool throwOnFailure = false>
 class HeapBlock : public Uncopyable
@@ -294,7 +294,7 @@ public:
         The semantics of this method are the same as malloc() and calloc(), but it
         uses realloc() to keep as much of the existing data as possible.
     */
-    void realloc (const size_t newNumElements, const size_t elementSize = sizeof (ElementType))
+    void reallocate (const size_t newNumElements, const size_t elementSize = sizeof (ElementType))
     {
         data = static_cast <ElementType*> (data == nullptr ? std::malloc (newNumElements * elementSize)
                                                            : std::realloc (data, newNumElements * elementSize));
@@ -304,7 +304,7 @@ public:
     /** Frees any currently-allocated data.
         This will free the data and reset this object to be a null pointer.
     */
-    void free()
+    void free_up()
     {
         std::free (data);
         data = nullptr;
@@ -339,10 +339,6 @@ private:
     {
         HeapBlockHelper::ThrowOnFail<throwOnFailure>::check (data);
     }
-
-   #if ! (defined (BEAST_DLL) || defined (BEAST_DLL_BUILD))
-    BEAST_PREVENT_HEAP_ALLOCATION // Creating a 'new HeapBlock' would be missing the point!
-   #endif
 };
 
 }

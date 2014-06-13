@@ -49,7 +49,7 @@ public:
         This is used for diagnostics and may not reflect the actual path
         or paths used by the underlying backend.
     */
-    virtual String getName () const = 0;
+    virtual beast::String getName () const = 0;
 
     /** Fetch an object.
         If the object is known to be not in the database, isn't found in the
@@ -97,8 +97,8 @@ public:
         @return `true` if the object was stored?              
     */
     virtual void store (NodeObjectType type,
-                        uint32 ledgerIndex,
-                        Blob& data,
+                        std::uint32_t ledgerIndex,
+                        Blob&& data,
                         uint256 const& hash) = 0;
 
     /** Visit every object in the database
@@ -108,10 +108,10 @@ public:
                 or other methods.
         @see import
     */
-    virtual void visitAll (VisitCallback& callback) = 0;
+    virtual void for_each(std::function <void(NodeObject::Ptr)> f) = 0;
 
     /** Import objects from another database. */
-    virtual void import (Database& sourceDatabase) = 0;
+    virtual void import (Database& source) = 0;
 
     /** Retrieve the estimated number of pending write operations.
         This is used for diagnostics.

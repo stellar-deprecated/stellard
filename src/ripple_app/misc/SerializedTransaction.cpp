@@ -17,6 +17,10 @@
 */
 //==============================================================================
 
+#include "../../beast/beast/unit_test/suite.h"
+
+namespace ripple {
+
 SETUP_LOG (SerializedTransaction)
 
 SerializedTransaction::SerializedTransaction (TxType type)
@@ -90,7 +94,7 @@ SerializedTransaction::SerializedTransaction (SerializerIterator& sit) : STObjec
 std::string SerializedTransaction::getFullText () const
 {
     std::string ret = "\"";
-    ret += getTransactionID ().GetHex ();
+    ret += to_string (getTransactionID ());
     ret += "\" = {";
     ret += STObject::getFullText ();
     ret += "}";
@@ -110,7 +114,7 @@ std::vector<RippleAddress> SerializedTransaction::getMentionedAccounts () const
     {
         const STAccount* sa = dynamic_cast<const STAccount*> (&it);
 
-        if (sa != NULL)
+        if (sa != nullptr)
         {
             bool found = false;
             RippleAddress na = sa->getValueNCA ();
@@ -240,7 +244,7 @@ void SerializedTransaction::setSourceAccount (const RippleAddress& naSource)
 Json::Value SerializedTransaction::getJson (int) const
 {
     Json::Value ret = STObject::getJson (0);
-    ret["hash"] = getTransactionID ().GetHex ();
+    ret["hash"] = to_string (getTransactionID ());
     return ret;
 }
 
@@ -251,7 +255,7 @@ Json::Value SerializedTransaction::getJson (int options, bool binary) const
         Json::Value ret;
         Serializer s = STObject::getSerializer ();
         ret["tx"] = strHex (s.peekData ());
-        ret["hash"] = getTransactionID ().GetHex ();
+        ret["hash"] = to_string (getTransactionID ());
         return ret;
     }
     return getJson(options);
@@ -272,42 +276,46 @@ std::string SerializedTransaction::getMetaSQLInsertReplaceHeader ()
     return "INSERT OR REPLACE INTO Transactions " + getMetaSQLValueHeader () + " VALUES ";
 }
 
-std::string SerializedTransaction::getSQL (uint32 inLedger, char status) const
+std::string SerializedTransaction::getSQL (std::uint32_t inLedger, char status) const
 {
     Serializer s;
     add (s);
     return getSQL (s, inLedger, status);
 }
 
-std::string SerializedTransaction::getMetaSQL (uint32 inLedger, const std::string& escapedMetaData) const
+std::string SerializedTransaction::getMetaSQL (std::uint32_t inLedger,
+                                               const std::string& escapedMetaData) const
 {
     Serializer s;
     add (s);
     return getMetaSQL (s, inLedger, TXN_SQL_VALIDATED, escapedMetaData);
 }
 
-std::string SerializedTransaction::getSQL (Serializer rawTxn, uint32 inLedger, char status) const
+std::string SerializedTransaction::getSQL (Serializer rawTxn, std::uint32_t inLedger, char status) const
 {
     static boost::format bfTrans ("('%s', '%s', '%s', '%d', '%d', '%c', %s)");
     std::string rTxn    = sqlEscape (rawTxn.peekData ());
 
     return str (boost::format (bfTrans)
-                % getTransactionID ().GetHex () % getTransactionType () % getSourceAccount ().humanAccountID ()
+                % to_string (getTransactionID ()) % getTransactionType ()
+                % getSourceAccount ().humanAccountID ()
                 % getSequence () % inLedger % status % rTxn);
 }
 
-std::string SerializedTransaction::getMetaSQL (Serializer rawTxn, uint32 inLedger, char status,
+std::string SerializedTransaction::getMetaSQL (Serializer rawTxn, std::uint32_t inLedger, char status,
         const std::string& escapedMetaData) const
 {
     static boost::format bfTrans ("('%s', '%s', '%s', '%d', '%d', '%c', %s, %s)");
     std::string rTxn    = sqlEscape (rawTxn.peekData ());
 
     return str (boost::format (bfTrans)
-                % getTransactionID ().GetHex () % getTransactionType () % getSourceAccount ().humanAccountID ()
+                % to_string (getTransactionID ()) % getTransactionType ()
+                % getSourceAccount ().humanAccountID ()
                 % getSequence () % inLedger % status % rTxn % escapedMetaData);
 }
 
 //------------------------------------------------------------------------------
+
 bool isMemoOkay (STObject const& st)
 {
     if (!st.isFieldPresent (sfMemos))
@@ -322,19 +330,49 @@ bool isMemoOkay (STObject const& st)
     return true;
 }
 
-//------------------------------------------------------------------------------
-
-class SerializedTransactionTests : public UnitTest
+// Ensure all account fields are 160-bits
+bool isAccountFieldOkay (STObject const& st)
 {
-public:
-    SerializedTransactionTests () : UnitTest ("SerializedTransaction", "ripple")
+    for (int i = 0; i < st.getCount(); ++i)
     {
+        const STAccount* t = dynamic_cast<STAccount const*>(st.peekAtPIndex (i));
+        if (t&& !t->isValueH160 ())
+            return false;
     }
 
-    void runTest ()
-    {
-        beginTestCase ("tx");
+    return true;
+}
 
+bool passesLocalChecks (STObject const& st, std::string& reason)
+{
+    if (!isMemoOkay (st))
+    {
+        reason = "The memo exceeds the maximum allowed size.";
+        return false;
+    }
+    if (!isAccountFieldOkay (st))
+    {
+        reason = "An account field is invalid.";
+        return false;
+    }
+
+    return true;
+}
+
+bool passesLocalChecks (STObject const& st)
+{
+    std::string reason;
+    return passesLocalChecks (st, reason);
+}
+
+
+//------------------------------------------------------------------------------
+
+class SerializedTransaction_test : public beast::unit_test::suite
+{
+public:
+    void run()
+    {
         RippleAddress seed;
         seed.setSeedRandom ();
         RippleAddress generator = RippleAddress::createGeneratorPublic (seed);
@@ -357,8 +395,8 @@ public:
 
         if (copy != j)
         {
-            Log (lsFATAL) << j.getJson (0);
-            Log (lsFATAL) << copy.getJson (0);
+            log << j.getJson (0);
+            log << copy.getJson (0);
             fail ("Transaction fails serialize/deserialize test");
         }
         else
@@ -374,8 +412,8 @@ public:
 
         if (STObject (j) != *new_obj)
         {
-            Log (lsINFO) << "ORIG: " << j.getJson (0);
-            Log (lsINFO) << "BUILT " << new_obj->getJson (0);
+            log << "ORIG: " << j.getJson (0);
+            log << "BUILT " << new_obj->getJson (0);
             fail ("Built a different transaction");
         }
         else
@@ -385,4 +423,6 @@ public:
     }
 };
 
-static SerializedTransactionTests serializedTransactionTests;
+BEAST_DEFINE_TESTSUITE(SerializedTransaction,ripple_app,ripple);
+
+} // ripple

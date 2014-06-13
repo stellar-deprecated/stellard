@@ -17,8 +17,16 @@
 */
 //==============================================================================
 
-#include "../IPAddressV4.h"
+#if BEAST_INCLUDE_BEASTCONFIG
+#include "../../BeastConfig.h"
+#endif
 
+#include "../IPAddressV4.h"
+#include "../detail/Parse.h"
+
+#include <sstream>
+#include <stdexcept>
+    
 namespace beast {
 namespace IP {
 
@@ -27,12 +35,12 @@ AddressV4::AddressV4 ()
 {
 }
 
-AddressV4::AddressV4 (uint32 value_)
+AddressV4::AddressV4 (std::uint32_t value_)
     : value (value_)
 {
 }
 
-AddressV4::AddressV4 (uint8 a, uint8 b, uint8 c, uint8 d)
+AddressV4::AddressV4 (std::uint8_t a, std::uint8_t b, std::uint8_t c, std::uint8_t d)
     : value ((a<<24)|(b<<16)|(c<<8)|d)
 {
 }
@@ -88,7 +96,7 @@ AddressV4::Proxy <true> AddressV4::operator[] (std::size_t index) const
     switch (index)
     {
     default:
-        bassertfalse;
+        throw std::out_of_range ("bad array index");
     case 0: return Proxy <true> (24, &value);
     case 1: return Proxy <true> (16, &value);
     case 2: return Proxy <true> ( 8, &value);
@@ -101,7 +109,7 @@ AddressV4::Proxy <false> AddressV4::operator[] (std::size_t index)
     switch (index)
     {
     default:
-        bassertfalse;
+        throw std::out_of_range ("bad array index");
     case 0: return Proxy <false> (24, &value);
     case 1: return Proxy <false> (16, &value);
     case 2: return Proxy <false> ( 8, &value);
@@ -159,7 +167,7 @@ std::string to_string (AddressV4 const& addr)
 
 std::istream& operator>> (std::istream& is, AddressV4& addr)
 {
-    uint8 octet [4];
+    std::uint8_t octet [4];
     is >> IP::detail::integer (octet [0]);
     for (int i = 1; i < 4; ++i)
     {

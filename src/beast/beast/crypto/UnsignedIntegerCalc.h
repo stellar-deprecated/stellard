@@ -20,7 +20,13 @@
 #ifndef BEAST_CRYPTO_UNSIGNEDINTEGERCALC_H_INCLUDED
 #define BEAST_CRYPTO_UNSIGNEDINTEGERCALC_H_INCLUDED
 
+#include "../ByteOrder.h"
+
+#include <algorithm>
+#include <cassert>
 #include <cstdint>
+#include <cstring>
+#include <utility>
 
 namespace beast {
 
@@ -60,7 +66,7 @@ struct DoubleWidthUInt <std::uint32_t>
     which return results by value cannot be included in the interface.
 */
 template <typename UInt>
-class UnsignedIntegerCalc : public SafeBool <UnsignedIntegerCalc <UInt> >
+class UnsignedIntegerCalc
 {
 public:
     typedef typename detail::DoubleWidthUInt <UInt>::type UIntBig;
@@ -110,7 +116,7 @@ public:
         if (swizzle)
         {
             // Zero fill the possibly uninitialized pad bytes
-            memset (buffer, 0,
+            std::memset (buffer, 0,
                 ((sizeof(UInt)-(bytes&(sizeof(UInt)-1)))&(sizeof(UInt)-1)));
             // Swap and swizzle
             UInt* lo (values);
@@ -155,7 +161,7 @@ public:
     */
     UnsignedIntegerCalc& operator= (UnsignedIntegerCalc const& other)
     {
-        bassert (other.size() <= size());
+        assert (other.size() <= size());
         size_type n (size());
         UInt* dest (m_values + size());
         for (; n-- > other.size();)
@@ -182,7 +188,8 @@ public:
     }
 
     /** Safe conversion to `bool`, `true` means a non-zero value. */
-    bool asBoolean () const
+    explicit
+    operator bool() const
     {
         return isNotZero ();
     }
@@ -334,7 +341,7 @@ public:
             }
             *lhs++ = UInt (part);
         }
-        bassert (carry == 0); // overflow
+        assert (carry == 0); // overflow
         return *this;
     }
 
@@ -358,7 +365,7 @@ public:
             carry = part >> numBits;
             *lhs = UInt (part & maxUInt);
         }
-        bassert (carry == 0); // overflow
+        assert (carry == 0); // overflow
         return *this;
     }
 

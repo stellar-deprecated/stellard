@@ -24,11 +24,14 @@
 #ifndef BEAST_SYSTEMSTATS_H_INCLUDED
 #define BEAST_SYSTEMSTATS_H_INCLUDED
 
+namespace beast
+{
+
 //==============================================================================
 /**
     Contains methods for finding out about the current hardware and OS configuration.
 */
-class BEAST_API SystemStats : public Uncopyable
+class SystemStats : public Uncopyable
 {
 public:
     //==============================================================================
@@ -177,5 +180,6 @@ private:
     SystemStats();
 };
 
+} // beast
 
 #endif   // BEAST_SYSTEMSTATS_H_INCLUDED

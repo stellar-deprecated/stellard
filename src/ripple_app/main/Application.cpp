@@ -19,13 +19,16 @@
 
 #include "../ripple/common/seconds_clock.h"
 #include "../ripple_rpc/api/Manager.h"
+#include "../ripple_overlay/api/make_Overlay.h"
 
 #include "Tuning.h"
 
 namespace ripple {
-
+    
 // VFALCO TODO Clean this global up
 static bool volatile doShutdown = false;
+
+static int const MAJORITY_FRACTION (204);
 
 //------------------------------------------------------------------------------
 //
@@ -56,6 +59,8 @@ class PathRequestLog;
 template <> char const* LogPartition::getPartitionName <PathRequestLog> () { return "PathRequest"; }
 class RPCManagerLog;
 template <> char const* LogPartition::getPartitionName <RPCManagerLog> () { return "RPCManager"; }
+class AmendmentTableLog;
+template <> char const* LogPartition::getPartitionName <AmendmentTableLog>() { return "AmendmentTable"; }
 
 template <> char const* LogPartition::getPartitionName <CollectorManager> () { return "Collector"; }
 
@@ -97,12 +102,76 @@ Application* ApplicationImpBase::s_instance;
 // VFALCO TODO Move the function definitions into the class declaration
 class ApplicationImp
     : public ApplicationImpBase
-    , public RootStoppable
-    , public DeadlineTimer::Listener
-    , public LeakChecked <ApplicationImp>
+    , public beast::RootStoppable
+    , public beast::DeadlineTimer::Listener
+    , public beast::LeakChecked <ApplicationImp>
 {
+private:
+    class io_latency_sampler
+    {
+    private:
+        std::mutex mutable m_mutex;
+        beast::insight::Event m_event;
+        beast::Journal m_journal;
+        beast::io_latency_probe <std::chrono::steady_clock> m_probe;
+        std::chrono::milliseconds m_lastSample;
+
+    public:
+        io_latency_sampler (
+            beast::insight::Event ev,
+            beast::Journal journal,
+            std::chrono::milliseconds interval,
+            boost::asio::io_service& ios)
+            : m_event (ev)
+            , m_journal (journal)
+            , m_probe (interval, ios)
+        {
+        }
+
+        void
+        start()
+        {
+            m_probe.sample (std::ref(*this));
+        }
+
+        template <class Duration>
+        void operator() (Duration const& elapsed)
+        {
+            auto const ms (ceil <std::chrono::milliseconds> (elapsed));
+
+            {
+                std::unique_lock <std::mutex> lock (m_mutex);
+                m_lastSample = ms;
+            }
+
+            if (ms.count() >= 10)
+                m_event.notify (ms);
+            if (ms.count() >= 500)
+                m_journal.warning <<
+                    "io_service latency = " << ms;
+        }
+
+        std::chrono::milliseconds
+        get () const
+        {
+            std::unique_lock <std::mutex> lock (m_mutex);
+            return m_lastSample;
+        }
+
+        void
+        cancel ()
+        {
+            m_probe.cancel ();
+        }
+
+        void cancel_async ()
+        {
+            m_probe.cancel_async ();
+        }
+    };
+
 public:
-    Journal m_journal;
+    beast::Journal m_journal;
     Application::LockType m_masterMutex;
 
     // These are not Stoppable-derived
@@ -136,14 +205,13 @@ public:
     std::unique_ptr <SNTPClient> m_sntpClient;
     std::unique_ptr <TxQueue> m_txQueue;
     std::unique_ptr <Validators::Manager> m_validators;
-    std::unique_ptr <IFeatures> mFeatures;
-    std::unique_ptr <IFeeVote> mFeeVote;
+    std::unique_ptr <AmendmentTable> m_amendmentTable;
     std::unique_ptr <LoadFeeTrack> mFeeTrack;
     std::unique_ptr <IHashRouter> mHashRouter;
     std::unique_ptr <Validations> mValidations;
     std::unique_ptr <ProofOfWorkFactory> mProofOfWorkFactory;
     std::unique_ptr <LoadManager> m_loadManager;
-    DeadlineTimer m_sweepTimer;
+    beast::DeadlineTimer m_sweepTimer;
     bool volatile mShutdown;
 
     std::unique_ptr <DatabaseCon> mRpcDB;
@@ -153,44 +221,19 @@ public:
 
     std::unique_ptr <beast::asio::SSLContext> m_peerSSLContext;
     std::unique_ptr <beast::asio::SSLContext> m_wsSSLContext;
-    std::unique_ptr <Peers> m_peers;
+    std::unique_ptr <Overlay> m_peers;
     std::unique_ptr <RPCDoor>  m_rpcDoor;
     std::unique_ptr <WSDoor> m_wsPublicDoor;
     std::unique_ptr <WSDoor> m_wsPrivateDoor;
     std::unique_ptr <WSDoor> m_wsProxyDoor;
 
-    WaitableEvent m_stop;
+    beast::WaitableEvent m_stop;
 
     std::unique_ptr <ResolverAsio> m_resolver;
 
-    io_latency_probe <std::chrono::steady_clock> m_probe;
+    io_latency_sampler m_io_latency_sampler;
 
     //--------------------------------------------------------------------------
-
-    class sample_io_service_latency
-    {
-    public:
-        insight::Event latency;
-        Journal journal;
-
-        sample_io_service_latency (insight::Event latency_,
-            Journal journal_)
-            : latency (latency_)
-            , journal (journal_)
-        {
-        }
-
-        template <class Duration>
-        void operator() (Duration const& elapsed) const
-        {
-            auto ms (ceil <std::chrono::milliseconds> (elapsed));
-            if (ms.count() >= 10)
-                latency.notify (ms);
-            if (ms.count() >= 500)
-                journal.warning <<
-                    "io_service latency = " << ms;
-        }
-    };
 
     static std::vector <std::unique_ptr <NodeStore::Factory>> make_Factories ()
     {
@@ -292,9 +335,8 @@ public:
             getConfig ().getModuleDatabasePath (),
             LogPartition::getJournal <ValidatorsLog> ())))
 
-        , mFeatures (IFeatures::New (2 * 7 * 24 * 60 * 60, 200)) // two weeks, 200/256
-
-        , mFeeVote (IFeeVote::New (10, 20 * SYSTEM_CURRENCY_PARTS, 5 * SYSTEM_CURRENCY_PARTS))
+        , m_amendmentTable (make_AmendmentTable (weeks(2), MAJORITY_FRACTION, // 204/256 about 80%
+            LogPartition::getJournal <AmendmentTableLog> ()))
 
         , mFeeTrack (LoadFeeTrack::New (LogPartition::getJournal <LoadManagerLog> ()))
 
@@ -310,9 +352,11 @@ public:
 
         , mShutdown (false)
 
-        , m_resolver (ResolverAsio::New (m_mainIoPool.getService (), Journal ()))
+        , m_resolver (ResolverAsio::New (m_mainIoPool.getService (), beast::Journal ()))
 
-        , m_probe (std::chrono::milliseconds (100), m_mainIoPool.getService())
+        , m_io_latency_sampler (m_collectorManager->collector()->make_event ("ios_latency"),
+            LogPartition::getJournal <ApplicationLog> (),
+                std::chrono::milliseconds (100), m_mainIoPool.getService())
     {
         add (m_resourceManager.get ());
 
@@ -382,6 +426,13 @@ public:
         return m_mainIoPool;
     }
 
+    std::chrono::milliseconds getIOLatency ()
+    {
+        std::unique_lock <std::mutex> m_IOLatencyLock;
+
+        return m_io_latency_sampler.get ();
+    }
+
     LedgerMaster& getLedgerMaster ()
     {
         return *m_ledgerMaster;
@@ -447,19 +498,14 @@ public:
         return *m_validators;
     }
 
-    IFeatures& getFeatureTable ()
+    AmendmentTable& getAmendmentTable()
     {
-        return *mFeatures;
+        return *m_amendmentTable;
     }
 
     LoadFeeTrack& getFeeTrack ()
     {
         return *mFeeTrack;
-    }
-
-    IFeeVote& getFeeVote ()
-    {
-        return *mFeeVote;
     }
 
     IHashRouter& getHashRouter ()
@@ -482,7 +528,7 @@ public:
         return *mProofOfWorkFactory;
     }
 
-    Peers& getPeers ()
+    Overlay& overlay ()
     {
         return *m_peers;
     }
@@ -490,7 +536,7 @@ public:
     // VFALCO TODO Move these to the .cpp
     bool running ()
     {
-        return mTxnDB != NULL;    // VFALCO TODO replace with nullptr when beast is available
+        return mTxnDB != nullptr;
     }
     bool getSystemTimeOffset (int& offset)
     {
@@ -573,13 +619,13 @@ public:
             struct sigaction sa;
             memset (&sa, 0, sizeof (sa));
             sa.sa_handler = &ApplicationImp::sigIntHandler;
-            sigaction (SIGINT, &sa, NULL);
+            sigaction (SIGINT, &sa, nullptr);
         }
 
     #endif
     #endif
 
-        assert (mTxnDB == NULL);
+        assert (mTxnDB == nullptr);
 
         if (!getConfig ().DEBUG_LOGFILE.empty ())
         {
@@ -611,7 +657,7 @@ public:
         if (!getConfig ().RUN_STANDALONE)
             updateTables ();
 
-        mFeatures->addInitialFeatures ();
+        m_amendmentTable->addInitial();
         Pathfinder::initPathTable ();
 
         m_ledgerMaster->setMinValidations (getConfig ().VALIDATION_QUORUM);
@@ -682,13 +728,15 @@ public:
         }
 
         // VFALCO NOTE Unfortunately, in stand-alone mode some code still
-        //             foolishly calls getPeers(). When this is fixed we can
+        //             foolishly calls overlay(). When this is fixed we can
         //             move the instantiation inside a conditional:
         //
         //             if (!getConfig ().RUN_STANDALONE)
-        m_peers.reset (add (Peers::New (m_mainIoPool, *m_resourceManager, 
+        m_peers = make_Overlay (m_mainIoPool, *m_resourceManager, 
             *m_siteFiles, getConfig ().getModuleDatabasePath (),
-            *m_resolver, m_mainIoPool, m_peerSSLContext->get ())));
+            *m_resolver, m_mainIoPool, m_peerSSLContext->get ());
+        // add to Stoppable
+        add (*m_peers);
 
         // SSL context used for WebSocket connections.
         if (getConfig ().WEBSOCKET_SECURE)
@@ -714,7 +762,7 @@ public:
 
             if (m_wsPrivateDoor == nullptr)
             {
-                FatalError ("Could not open the WebSocket private interface.",
+                beast::FatalError ("Could not open the WebSocket private interface.",
                     __FILE__, __LINE__);
             }
         }
@@ -734,7 +782,7 @@ public:
 
             if (m_wsPublicDoor == nullptr)
             {
-                FatalError ("Could not open the WebSocket public interface.",
+                beast::FatalError ("Could not open the WebSocket public interface.",
                     __FILE__, __LINE__);
             }
         }
@@ -751,7 +799,7 @@ public:
 
             if (m_wsProxyDoor == nullptr)
             {
-                FatalError ("Could not open the WebSocket public interface.",
+                beast::FatalError ("Could not open the WebSocket public interface.",
                     __FILE__, __LINE__);
             }
         }
@@ -825,7 +873,7 @@ public:
 #endif
 
 #if 1
-        if (getConfig().getValidatorsFile() != File::nonexistent ())
+        if (getConfig().getValidatorsFile() != beast::File::nonexistent ())
         {
             m_validators->addFile (getConfig().getValidatorsFile());
         }
@@ -848,9 +896,7 @@ public:
 
         m_sweepTimer.setExpiration (10);
 
-        m_probe.sample (sample_io_service_latency (
-            m_collectorManager->collector()->make_event (
-                "ios_latency"), LogPartition::getJournal <ApplicationLog> ()));
+        m_io_latency_sampler.start();
 
         m_resolver->start ();
     }
@@ -860,7 +906,7 @@ public:
     {
         m_journal.debug << "Application stopping";
 
-        m_probe.cancel_async ();
+        m_io_latency_sampler.cancel_async ();
 
         // VFALCO Enormous hack, we have to force the probe to cancel
         //        before we stop the io_service queue or else it never
@@ -868,7 +914,7 @@ public:
         //        io_objects gracefully handle exit so that we can
         //        naturally return from io_service::run() instead of
         //        forcing a call to io_service::stop()
-        m_probe.cancel ();
+        m_io_latency_sampler.cancel ();
 
         m_resolver->stop_async ();
 
@@ -893,7 +939,7 @@ public:
     // PropertyStream
     //
 
-    void onWrite (PropertyStream::Map& stream)
+    void onWrite (beast::PropertyStream::Map& stream)
     {
     }
 
@@ -980,7 +1026,7 @@ public:
         m_stop.signal();
     }
 
-    void onDeadlineTimer (DeadlineTimer& timer)
+    void onDeadlineTimer (beast::DeadlineTimer& timer)
     {
         if (timer == m_sweepTimer)
         {
@@ -1069,7 +1115,7 @@ void ApplicationImp::startNewLedger ()
     {
         Ledger::pointer firstLedger = boost::make_shared<Ledger> (rootAddress, SYSTEM_CURRENCY_START);
         assert (!!firstLedger->getAccountState (rootAddress));
-        // WRITEME: Add any default features
+        // WRITEME: Add any default amendments
         // WRITEME: Set default fee/reserve
         firstLedger->updateHash ();
         firstLedger->setClosed ();
@@ -1101,7 +1147,7 @@ bool ApplicationImp::loadOldLedger (const std::string& l, bool bReplay)
             loadLedger = Ledger::loadByHash (hash);
         }
         else // assume by sequence
-            loadLedger = Ledger::loadByIndex (lexicalCastThrow <uint32> (l));
+            loadLedger = Ledger::loadByIndex (beast::lexicalCastThrow <std::uint32_t> (l));
 
         if (!loadLedger)
         {
@@ -1215,7 +1261,7 @@ bool serverOkay (std::string& reason)
         return false;
     }
 
-    if (getApp().getOPs ().isFeatureBlocked ())
+    if (getApp().getOPs ().isAmendmentBlocked ())
     {
         reason = "Server version too old";
         return false;
@@ -1314,12 +1360,11 @@ static void addTxnSeqField ()
     Log (lsINFO) << "Altering table";
     db->executeSQL ("ALTER TABLE AccountTransactions ADD COLUMN TxnSeq INTEGER;");
 
-    typedef std::pair<uint256, int> u256_int_pair_t;
     boost::format fmt ("UPDATE AccountTransactions SET TxnSeq = %d WHERE TransID = '%s';");
     i = 0;
-    BOOST_FOREACH (u256_int_pair_t & t, txIDs)
+    for (auto& t : txIDs)
     {
-        db->executeSQL (boost::str (fmt % t.second % t.first.GetHex ()));
+        db->executeSQL (boost::str (fmt % t.second % to_string (t.first)));
 
         if ((++i % 1000) == 0)
             Log (lsINFO) << i << " transactions updated";
@@ -1375,7 +1420,7 @@ void ApplicationImp::onAnnounceAddress ()
 //------------------------------------------------------------------------------
 
 Application::Application ()
-    : PropertyStream::Source ("app")
+    : beast::PropertyStream::Source ("app")
 {
 }
 

@@ -20,6 +20,8 @@
 #ifndef RIPPLE_SHAMAPTREENODE_H
 #define RIPPLE_SHAMAPTREENODE_H
 
+namespace ripple {
+
 class SHAMap;
 
 enum SHANodeFormat
@@ -28,8 +30,6 @@ enum SHANodeFormat
     snfWIRE     = 2, // Compressed form used on the wire
     snfHASH     = 3, // just the hash
 };
-
-namespace ripple {
 
 class SHAMapTreeNode
     : public SHAMapNode
@@ -51,12 +51,13 @@ public:
     };
 
 public:
-    SHAMapTreeNode (uint32 seq, const SHAMapNode & nodeID); // empty node
-    SHAMapTreeNode (const SHAMapTreeNode & node, uint32 seq); // copy node from older tree
-    SHAMapTreeNode (const SHAMapNode & nodeID, SHAMapItem::ref item, TNType type, uint32 seq);
+    SHAMapTreeNode (std::uint32_t seq, const SHAMapNode & nodeID); // empty node
+    SHAMapTreeNode (const SHAMapTreeNode & node, std::uint32_t seq); // copy node from older tree
+    SHAMapTreeNode (const SHAMapNode & nodeID, SHAMapItem::ref item, TNType type,
+                    std::uint32_t seq);
 
     // raw node functions
-    SHAMapTreeNode (const SHAMapNode & id, Blob const & data, uint32 seq,
+    SHAMapTreeNode (const SHAMapNode & id, Blob const & data, std::uint32_t seq,
                     SHANodeFormat format, uint256 const & hash, bool hashValid);
     void addRaw (Serializer&, SHANodeFormat format);
 
@@ -66,15 +67,15 @@ public:
     }
 
     // node functions
-    uint32 getSeq () const
+    std::uint32_t getSeq () const
     {
         return mSeq;
     }
-    void setSeq (uint32 s)
+    void setSeq (std::uint32_t s)
     {
         mAccessSeq = mSeq = s;
     }
-    void touch (uint32 s)
+    void touch (std::uint32_t s)
     {
         if (mSeq != 0)
             mAccessSeq = s;
@@ -97,6 +98,11 @@ public:
     bool isInner () const
     {
         return mType == tnINNER;
+    }
+    bool isInBounds () const
+    {
+        // Nodes at depth 64 must be leaves
+        return (!isInner() || (getDepth() < 64));
     }
     bool isValid () const
     {
@@ -177,7 +183,7 @@ private:
     uint256             mHash;
     uint256             mHashes[16];  // hashes of the nodes under this one
     SHAMapItem::pointer mItem;
-    uint32              mSeq, mAccessSeq;
+    std::uint32_t       mSeq, mAccessSeq;
     TNType              mType;
     int                 mIsBranch;   // JED: why is this an int and not a bool? I think it is a bitfield that says if the branch at bit i is there or not
     bool                mFullBelow;
@@ -185,6 +191,6 @@ private:
     bool updateHash ();
 };
 
-}
+} // ripple
 
 #endif

@@ -17,6 +17,9 @@
 */
 //==============================================================================
 
+#ifndef RIPPLE_RPC_PRINT_H_INCLUDED
+#define RIPPLE_RPC_PRINT_H_INCLUDED
+
 namespace ripple {
 namespace RPC {
 
@@ -44,3 +47,5 @@ public:
 
 }
 }
+
+#endif

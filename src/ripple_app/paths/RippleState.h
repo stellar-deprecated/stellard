@@ -20,6 +20,8 @@
 #ifndef RIPPLE_RIPPLESTATE_H
 #define RIPPLE_RIPPLESTATE_H
 
+namespace ripple {
+
 //
 // A ripple line's state.
 // - Isolate ledger entry format.
@@ -57,22 +59,22 @@ public:
     // True, Provided auth to peer.
     bool getAuth () const
     {
-        return isSetBit (mFlags,  mViewLowest ? lsfLowAuth : lsfHighAuth);
+        return is_bit_set (mFlags,  mViewLowest ? lsfLowAuth : lsfHighAuth);
     }
 
     bool getAuthPeer () const
     {
-        return isSetBit (mFlags, !mViewLowest ? lsfLowAuth : lsfHighAuth);
+        return is_bit_set (mFlags, !mViewLowest ? lsfLowAuth : lsfHighAuth);
     }
 
     bool getNoRipple () const
     {
-        return isSetBit (mFlags, mViewLowest ? lsfLowNoRipple : lsfHighNoRipple);
+        return is_bit_set (mFlags, mViewLowest ? lsfLowNoRipple : lsfHighNoRipple);
     }
 
     bool getNoRipplePeer () const
     {
-        return isSetBit (mFlags, !mViewLowest ? lsfLowNoRipple : lsfHighNoRipple);
+        return is_bit_set (mFlags, !mViewLowest ? lsfLowNoRipple : lsfHighNoRipple);
     }
 
     const STAmount& getBalance () const
@@ -90,14 +92,14 @@ public:
         return !mViewLowest ? mLowLimit : mHighLimit;
     }
 
-    uint32 getQualityIn () const
+    std::uint32_t getQualityIn () const
     {
-        return ((uint32) (mViewLowest ? mLowQualityIn : mHighQualityIn));
+        return ((std::uint32_t) (mViewLowest ? mLowQualityIn : mHighQualityIn));
     }
     
-    uint32 getQualityOut () const
+    std::uint32_t getQualityOut () const
     {
-        return ((uint32) (mViewLowest ? mLowQualityOut : mHighQualityOut));
+        return ((std::uint32_t) (mViewLowest ? mLowQualityOut : mHighQualityOut));
     }
 
     SerializedLedgerEntry::pointer getSLE ()
@@ -126,7 +128,7 @@ private:
     bool                            mValid;
     bool                            mViewLowest;
 
-    uint32                          mFlags;
+    std::uint32_t                   mFlags;
 
     STAmount                        mLowLimit;
     STAmount                        mHighLimit;
@@ -134,12 +136,14 @@ private:
     uint160                         mLowID;
     uint160                         mHighID;
 
-    uint64                          mLowQualityIn;
-    uint64                          mLowQualityOut;
-    uint64                          mHighQualityIn;
-    uint64                          mHighQualityOut;
+    std::uint64_t                   mLowQualityIn;
+    std::uint64_t                   mLowQualityOut;
+    std::uint64_t                   mHighQualityIn;
+    std::uint64_t                   mHighQualityOut;
 
     STAmount                        mBalance;
 };
+
+} // ripple
+
 #endif
-// vim:ts=4

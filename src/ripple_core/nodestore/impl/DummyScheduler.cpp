@@ -28,13 +28,25 @@ DummyScheduler::~DummyScheduler ()
 {
 }
 
-void DummyScheduler::scheduleTask (Task& task)
+void
+DummyScheduler::scheduleTask (Task& task)
 {
     // Invoke the task synchronously.
     task.performScheduledTask();
 }
 
-void DummyScheduler::scheduledTasksStopped ()
+void
+DummyScheduler::scheduledTasksStopped ()
+{
+}
+
+void
+DummyScheduler::onFetch (const FetchReport& report)
+{
+}
+
+void
+DummyScheduler::onBatchWrite (const BatchWriteReport& report)
 {
 }
 

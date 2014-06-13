@@ -20,34 +20,35 @@
 #ifndef RIPPLE_RANGESET_H_INCLUDED
 #define RIPPLE_RANGESET_H_INCLUDED
 
-/** A sparse set of integers.
-*/
+namespace ripple {
+
+/** A sparse set of integers. */
 // VFALCO TODO Replace with juce::SparseSet
 class RangeSet
 {
 public:
-    static const uint32 absent = static_cast <uint32> (-1);
+    static const std::uint32_t absent = static_cast <std::uint32_t> (-1);
 
 public:
     RangeSet () { }
 
-    bool hasValue (uint32) const;
+    bool hasValue (std::uint32_t) const;
 
-    uint32 getFirst () const;
-    uint32 getNext (uint32) const;
-    uint32 getLast () const;
-    uint32 getPrev (uint32) const;
+    std::uint32_t getFirst () const;
+    std::uint32_t getNext (std::uint32_t) const;
+    std::uint32_t getLast () const;
+    std::uint32_t getPrev (std::uint32_t) const;
 
     // largest number not in the set that is less than the given number
-    uint32 prevMissing (uint32) const;
+    std::uint32_t prevMissing (std::uint32_t) const;
 
     // Add an item to the set
-    void setValue (uint32);
+    void setValue (std::uint32_t);
 
     // Add the closed interval to the set
-    void setRange (uint32, uint32);
+    void setRange (std::uint32_t, std::uint32_t);
 
-    void clearValue (uint32);
+    void clearValue (std::uint32_t);
 
     std::string toString () const;
 
@@ -61,14 +62,14 @@ private:
     void simplify ();
 
 private:
-    typedef std::map <uint32, uint32> Map;
+    typedef std::map <std::uint32_t, std::uint32_t> Map;
 
     typedef Map::const_iterator            const_iterator;
     typedef Map::const_reverse_iterator    const_reverse_iterator;
     typedef Map::value_type                value_type;
     typedef Map::iterator                  iterator;
 
-    static bool contains (value_type const& it, uint32 v)
+    static bool contains (value_type const& it, std::uint32_t v)
     {
         return (it.first <= v) && (it.second >= v);
     }
@@ -76,5 +77,7 @@ private:
     // First is lowest value in range, last is highest value in range
     Map mRanges;
 };
+
+} // ripple
 
 #endif

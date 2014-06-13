@@ -20,14 +20,13 @@
 #ifndef RIPPLE_STRINGUTILITIES_H
 #define RIPPLE_STRINGUTILITIES_H
 
-/** String utility functions.
-*/
+namespace ripple {
 
-//------------------------------------------------------------------------------
+// String utility functions.
 
 // Ripple specific constant used for parsing qualities and other things
 //
-// NIKB TODO Why is this here instead of somewhere more sensible? What 
+// NIKB TODO Why is this here instead of somewhere more sensible? What
 // "other things" is this being used for?
 #define QUALITY_ONE         1000000000  // 10e9
 
@@ -63,7 +62,7 @@ inline std::string strHex (Blob const& vucData)
     return strHex (vucData.begin (), vucData.size ());
 }
 
-inline std::string strHex (const uint64 uiHost)
+inline std::string strHex (const std::uint64_t uiHost)
 {
     uint64_t    uBig    = htobe64 (uiHost);
 
@@ -112,14 +111,15 @@ Blob strCopy (const std::string& strSrc);
 std::string strCopy (Blob const& vucSrc);
 
 bool parseIpPort (const std::string& strSource, std::string& strIP, int& iPort);
-bool parseQuality (const std::string& strSource, uint32& uQuality);
+bool parseQuality (const std::string& strSource, std::uint32_t& uQuality);
 
 inline std::string strGetEnv (const std::string& strKey)
 {
     return getenv (strKey.c_str ()) ? getenv (strKey.c_str ()) : "";
 }
 
-bool parseUrl (const std::string& strUrl, std::string& strScheme, std::string& strDomain, int& iPort, std::string& strPath);
+bool parseUrl (const std::string& strUrl, std::string& strScheme,
+               std::string& strDomain, int& iPort, std::string& strPath);
 
 #define ADDRESS(p) strHex(uint64( ((char*) p) - ((char*) 0)))
 
@@ -129,6 +129,92 @@ bool parseUrl (const std::string& strUrl, std::string& strScheme, std::string& s
 
     <key>=<value>['|'<key>=<value>]
 */
-extern StringPairArray parseDelimitedKeyValueString (String s, beast_wchar delimiter='|');
+extern beast::StringPairArray
+parseDelimitedKeyValueString (
+    beast::String s, beast::beast_wchar delimiter='|');
+
+/** toString() generalizes std::to_string to handle bools, chars, and strings.
+
+    It's also possible to provide implementation of toString for a class
+    which needs a string implementation.
+ */
+
+template <class T>
+typename std::enable_if<std::is_arithmetic<T>::value,
+                        std::string>::type
+toString(T t)
+{
+    return std::to_string(t);
+}
+
+inline std::string toString(bool b)
+{
+    return b ? "true" : "false";
+}
+
+inline std::string toString(char c)
+{
+    return std::string(1, c);
+}
+
+inline std::string toString(std::string s)
+{
+    return s;
+}
+
+inline std::string toString(char const* s)
+{
+    return s;
+}
+
+namespace detail {
+
+// ConcatArg is used to represent arguments to stringConcat.
+
+struct ConcatArg {
+    ConcatArg(std::string const& s) : data_(s.data()), size_(s.size())
+    {
+    }
+
+    ConcatArg(char const* s) : data_(s), size_(strlen(s))
+    {
+    }
+
+    template <typename T>
+    ConcatArg(T t) : string_(toString(t)),
+                     data_(string_.data()),
+                     size_(string_.size())
+    {
+    }
+
+    std::string string_;
+    char const* data_;
+    std::size_t size_;
+};
+
+} // namespace detail
+
+/** Concatenate strings, numbers, bools and chars into one string in O(n) time.
+
+    Usage:
+      stringConcat({"hello ", 23, 'x', true});
+
+    Returns:
+      "hello 23xtrue"
+ */
+inline std::string stringConcat(std::vector<detail::ConcatArg> args)
+{
+    int capacity = 0;
+    for (auto const& a: args)
+        capacity += a.size_;
+
+    std::string result;
+    result.reserve(capacity);
+    for (auto const& a: args)
+        result.append(a.data_, a.data_ + a.size_);
+    return result;
+}
+
+} // ripple
 
 #endif

@@ -20,6 +20,8 @@
 #ifndef RIPPLE_BASICS_LOGFILE_H_INCLUDED
 #define RIPPLE_BASICS_LOGFILE_H_INCLUDED
 
+namespace ripple {
+
 /** Manages a system file containing logged output.
 
     The system file remains open during program execution. Interfaces
@@ -30,7 +32,7 @@
 
     @note None of the listed interfaces are thread-safe.
 */
-class LogFile : public Uncopyable
+class LogFile : public beast::Uncopyable
 {
 public:
     /** Construct with no associated system file.
@@ -99,8 +101,10 @@ public:
     inline void writeln (std::string const& str) { writeln (str.c_str ()); }
 
 private:
-    ScopedPointer <std::ofstream> m_stream;
+    std::unique_ptr <std::ofstream> m_stream;
     boost::filesystem::path m_path;
 };
+
+} // ripple
 
 #endif

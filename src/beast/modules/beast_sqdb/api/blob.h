@@ -60,8 +60,8 @@
 #ifndef BEAST_SQDB_BLOB_H_INCLUDED
 #define BEAST_SQDB_BLOB_H_INCLUDED
 
-namespace sqdb
-{
+namespace beast {
+namespace sqdb {
 
 // BLOB interface
 class blob
@@ -76,9 +76,9 @@ public:
                  rowid id,
                  bool readAndWrite = false) noexcept;
 
-    std::size_t get_len();
-    Error read(std::size_t offset, void* buf, std::size_t toRead);
-    Error write(std::size_t offset, void const* buf, std::size_t toWrite);
+    int get_len();
+    Error read(int offset, void* buf, int toRead);
+    Error write(int offset, void const* buf, int toWrite);
     void close();
 
 private:
@@ -86,6 +86,7 @@ private:
     sqlite3_blob* m_blob;
 };
 
-}
+} // sqdb
+} // beast
 
 #endif

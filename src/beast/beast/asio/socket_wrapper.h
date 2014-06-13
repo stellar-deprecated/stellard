@@ -23,6 +23,8 @@
 #include "abstract_socket.h"
 #include "bind_handler.h"
 
+#include "../utility/noexcept.h"
+
 namespace beast {
 namespace asio {
 
@@ -225,14 +227,9 @@ private:
 
     boost::asio::io_service& get_io_service () override
     {
-#if 0
-        // Apparently has_get_io_service always results in false
         return get_io_service (
             Enabled <has_get_io_service <this_layer_type,
                 boost::asio::io_service&()> > ());
-#else
-        return get_io_service (std::true_type ());
-#endif
     }
 
     boost::asio::io_service& get_io_service (

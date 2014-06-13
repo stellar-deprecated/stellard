@@ -17,7 +17,7 @@
 */
 //==============================================================================
 
-#include "BeastConfig.h"
+#include "../../BeastConfig.h"
 
 #include "ripple_basics.h"
 
@@ -43,9 +43,8 @@
 
 //------------------------------------------------------------------------------
 
-namespace ripple {
-
 #include "containers/RangeSet.cpp"
+#include "system/CheckLibraryVersions.cpp"
 
 #include "log/Log.cpp"
 #include "log/LogFile.cpp"
@@ -59,5 +58,3 @@ namespace ripple {
 #include "utility/ThreadName.cpp"
 #include "utility/Time.cpp"
 #include "utility/UptimeTimer.cpp"
-
-}

@@ -17,17 +17,8 @@
 */
 //==============================================================================
 
-#include "BeastConfig.h"
+#include "../../BeastConfig.h"
 
 #include "ripple_testoverlay.h"
 
-#include <boost/ref.hpp>
-#include <boost/make_shared.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/unordered_map.hpp>
-
-namespace ripple {
-
 #include "impl/TestOverlay.cpp"
-
-}

@@ -17,18 +17,20 @@
 */
 //==============================================================================
 
+namespace ripple {
+
 SETUP_LOG (PathRequest)
 
 PathRequest::PathRequest (
 const boost::shared_ptr<InfoSub>& subscriber, int id, PathRequests& owner,
-    Journal journal)
+    beast::Journal journal)
     : m_journal (journal)
-    , mLock (this, "PathRequest", __FILE__, __LINE__)
     , mOwner (owner)
     , wpSubscriber (subscriber)
     , jvStatus (Json::objectValue)
     , bValid (false)
-    , iLastIndex (0)
+    , mLastIndex (0)
+    , mInProgress (false)
     , iLastLevel (0)
     , bLastSuccess (false)
     , iIdentifier (id)
@@ -40,7 +42,7 @@ const boost::shared_ptr<InfoSub>& subscriber, int id, PathRequests& owner,
 
 static std::string const get_milli_diff (boost::posix_time::ptime const& after, boost::posix_time::ptime const& before)
 {
-    return lexicalCastThrow <std::string> (static_cast <unsigned> ((after - before).total_milliseconds()));
+    return beast::lexicalCastThrow <std::string> (static_cast <unsigned> ((after - before).total_milliseconds()));
 }
 
 static std::string const get_milli_diff (boost::posix_time::ptime const& before)
@@ -70,50 +72,55 @@ PathRequest::~PathRequest()
 
 bool PathRequest::isValid ()
 {
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
     return bValid;
 }
 
 bool PathRequest::isNew ()
 {
-     // does this path request still need its first full path
-     return iLastIndex.load() == 0;
+    ScopedLockType sl (mIndexLock);
+
+    // does this path request still need its first full path
+    return mLastIndex == 0;
 }
 
 bool PathRequest::needsUpdate (bool newOnly, LedgerIndex index)
 {
-    LedgerIndex lastIndex = iLastIndex.load();
-    for (;;)
+    ScopedLockType sl (mIndexLock);
+
+    if (mInProgress)
     {
-        if (newOnly)
-        {
-            // Is this request new
-            if (lastIndex != 0)
-                return false;
-
-            // This thread marks this request handled
-            if (iLastIndex.compare_exchange_weak (lastIndex, 1,
-                    std::memory_order_release, std::memory_order_relaxed))
-                return true;
-        }
-        else
-        {
-            // Has the request already been handled?
-            if (lastIndex >= index)
-                return false;
-
-            // This thread marks this request handled
-            if (iLastIndex.compare_exchange_weak (lastIndex, index,
-                    std::memory_order_release, std::memory_order_relaxed))
-                return true;
-        }
+        // Another thread is handling this
+        return false;
     }
+
+    if (newOnly && (mLastIndex != 0))
+    {
+        // Only handling new requests, this isn't new
+        return false;
+    }
+
+    if (mLastIndex >= index)
+    {
+        return false;
+    }
+
+    mInProgress = true;
+    return true;
+}
+
+void PathRequest::updateComplete ()
+{
+    ScopedLockType sl (mIndexLock);
+
+    assert (mInProgress);
+    mInProgress = false;
 }
 
 bool PathRequest::isValid (RippleLineCache::ref crCache)
 {
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
-    bValid = raSrcAccount.isSet () && raDstAccount.isSet () && saDstAmount.isPositive ();
+    ScopedLockType sl (mLock);
+    bValid = raSrcAccount.isSet () && raDstAccount.isSet () && saDstAmount > zero;
     Ledger::pointer lrLedger = crCache->getLedger ();
 
     if (bValid)
@@ -152,7 +159,7 @@ bool PathRequest::isValid (RippleLineCache::ref crCache)
             }
             else
             {
-                bool includeXRP = !isSetBit (asDst->peekSLE ().getFlags(), lsfDisallowXRP);
+                bool includeXRP = !is_bit_set (asDst->peekSLE ().getFlags(), lsfDisallowXRP);
                 boost::unordered_set<uint160> usDestCurrID =
                     usAccountDestCurrencies (raDstAccount, crCache, includeXRP);
 
@@ -166,7 +173,7 @@ bool PathRequest::isValid (RippleLineCache::ref crCache)
 
     if (bValid)
     {
-        jvStatus["ledger_hash"] = lrLedger->getHash ().GetHex ();
+        jvStatus["ledger_hash"] = to_string (lrLedger->getHash ());
         jvStatus["ledger_index"] = lrLedger->getLedgerSeq ();
     }
     return bValid;
@@ -197,7 +204,7 @@ Json::Value PathRequest::doCreate (Ledger::ref lrLedger, RippleLineCache::ref& c
     {
         if (bValid)
         {
-            m_journal.debug << iIdentifier << " valid: " << raSrcAccount.humanAccountID () <<
+            m_journal.debug << iIdentifier << " valid: " << raSrcAccount.humanAccountID ();
             m_journal.debug << iIdentifier << " Deliver: " << saDstAmount.getFullText ();
         }
         else
@@ -245,7 +252,7 @@ int PathRequest::parseJson (const Json::Value& jvParams, bool complete)
         if (!saDstAmount.bSetJson (jvParams["destination_amount"]) ||
                 (saDstAmount.getCurrency ().isZero () && saDstAmount.getIssuer ().isNonZero ()) ||
                 (saDstAmount.getCurrency () == CURRENCY_BAD) ||
-                !saDstAmount.isPositive ())
+                saDstAmount <= zero)
         {
             jvStatus = rpcError (rpcDST_AMT_MALFORMED);
             return PFR_PJ_INVALID;
@@ -303,13 +310,13 @@ int PathRequest::parseJson (const Json::Value& jvParams, bool complete)
 Json::Value PathRequest::doClose (const Json::Value&)
 {
     m_journal.debug << iIdentifier << " closed";
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
     return jvStatus;
 }
 
 Json::Value PathRequest::doStatus (const Json::Value&)
 {
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
     return jvStatus;
 }
 
@@ -323,7 +330,7 @@ Json::Value PathRequest::doUpdate (RippleLineCache::ref cache, bool fast)
 {
     m_journal.debug << iIdentifier << " update " << (fast ? "fast" : "normal");
 
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
 
     if (!isValid (cache))
         return jvStatus;
@@ -475,3 +482,4 @@ InfoSub::pointer PathRequest::getSubscriber ()
     return wpSubscriber.lock ();
 }
 
+} // ripple

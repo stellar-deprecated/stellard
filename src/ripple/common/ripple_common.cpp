@@ -17,11 +17,8 @@
 */
 //==============================================================================
 
-#include "BeastConfig.h"
+#include "../../BeastConfig.h"
 
-#include "../../beast/modules/beast_core/beast_core.h" // for UnitTest
-
-#include "impl/counted_bind.cpp"
 #include "impl/KeyCache.cpp"
 #include "impl/TaggedCache.cpp"
 #include "impl/ResolverAsio.cpp"

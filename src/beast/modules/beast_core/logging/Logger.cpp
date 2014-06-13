@@ -21,6 +21,9 @@
 */
 //==============================================================================
 
+namespace beast
+{
+
 Logger::Logger() {}
 
 Logger::~Logger()
@@ -44,7 +47,7 @@ void Logger::writeToLog (const String& message)
 }
 
 #if BEAST_LOG_ASSERTIONS || BEAST_DEBUG
-void logAssertion (const char* const filename, const int lineNum) noexcept
+void logAssertion (const char* const filename, const int lineNum)
 {
     String m ("BEAST Assertion failure in ");
     m << File::createFileWithoutCheckingPath (filename).getFileName() << ':' << lineNum;
@@ -56,3 +59,5 @@ void logAssertion (const char* const filename, const int lineNum) noexcept
    #endif
 }
 #endif
+
+} // beast

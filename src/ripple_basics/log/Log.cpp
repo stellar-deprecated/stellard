@@ -17,6 +17,10 @@
 */
 //==============================================================================
 
+#include <boost/algorithm/string.hpp>
+
+namespace ripple {
+
 Log::Log (LogSeverity s)
     : m_level (s)
     , m_partition (nullptr)
@@ -125,3 +129,4 @@ LogSeverity Log::stringToSeverity (const std::string& s)
     return lsINVALID;
 }
 
+} // ripple

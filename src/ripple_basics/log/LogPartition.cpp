@@ -17,7 +17,11 @@
 */
 //==============================================================================
 
-void LogPartition::write (Journal::Severity level, std::string const& text)
+#include <boost/algorithm/string.hpp>
+
+namespace ripple {
+
+void LogPartition::write (beast::Journal::Severity level, std::string const& text)
 {
     std::string output;
     LogSeverity const logSeverity (convertSeverity (level));
@@ -33,7 +37,7 @@ LogPartition::LogPartition (std::string const& name)
     : mNextLog (headLog)
     , mName (canonicalFileName (name.c_str()))
 {
-    severity (Journal::kWarning);
+    severity (beast::Journal::kWarning);
     // VFALCO TODO Use an intrusive list.
     headLog = this;
 }
@@ -135,8 +139,9 @@ LogPartition::Severities LogPartition::getSeverities ()
 
 //------------------------------------------------------------------------------
 
-LogSeverity LogPartition::convertSeverity (Journal::Severity level)
+LogSeverity LogPartition::convertSeverity (beast::Journal::Severity level)
 {
+    using beast::Journal;
     switch (level)
     {
     case Journal::kTrace:   return lsTRACE;
@@ -154,8 +159,9 @@ LogSeverity LogPartition::convertSeverity (Journal::Severity level)
     return lsFATAL;
 }
 
-Journal::Severity LogPartition::convertLogSeverity (LogSeverity level)
+beast::Journal::Severity LogPartition::convertLogSeverity (LogSeverity level)
 {
+    using beast::Journal;
     switch (level)
     {
     case lsTRACE:   return Journal::kTrace;
@@ -171,3 +177,5 @@ Journal::Severity LogPartition::convertLogSeverity (LogSeverity level)
 
     return Journal::kFatal;
 }
+
+} // ripple

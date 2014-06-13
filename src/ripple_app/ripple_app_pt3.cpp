@@ -17,12 +17,9 @@
 */
 //==============================================================================
 
-#include "BeastConfig.h"
+#include "../../BeastConfig.h"
 
 #include "ripple_app.h"
-
-namespace ripple
-{
 
 #include "ledger/Ledger.cpp"
 #include "shamap/SHAMapDelta.cpp"
@@ -34,5 +31,3 @@ namespace ripple
 #include "contracts/Operation.cpp"
 #include "contracts/ScriptData.cpp"
 #include "contracts/Interpreter.cpp"
-
-}

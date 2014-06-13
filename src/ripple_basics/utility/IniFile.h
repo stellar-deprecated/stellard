@@ -20,6 +20,10 @@
 #ifndef RIPPLE_INIFILE_H_INCLUDED
 #define RIPPLE_INIFILE_H_INCLUDED
 
+#include "../../beast/modules/beast_core/text/StringPairArray.h"
+
+namespace ripple {
+
 // VFALCO TODO Rename to IniFile and clean up
 typedef std::map <const std::string, std::vector<std::string> > Section;
 
@@ -38,6 +42,9 @@ Section::mapped_type* SectionEntries (Section& secSource, const std::string& str
     Each line is in the form <key>=<value>.
     Spaces are considered part of the key and value.
 */
-StringPairArray parseKeyValueSection (Section& secSource, String const& strSection);
+beast::StringPairArray
+parseKeyValueSection (Section& secSource, beast::String const& strSection);
+
+} // ripple
 
 #endif

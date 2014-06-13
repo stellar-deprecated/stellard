@@ -20,6 +20,8 @@
 #ifndef RIPPLE_INBOUNDLEDGER_H
 #define RIPPLE_INBOUNDLEDGER_H
 
+namespace ripple {
+
 // VFALCO TODO Rename to InboundLedger
 // A ledger we are trying to acquire
 class InboundLedger
@@ -44,7 +46,7 @@ public:
     };
 
 public:
-    InboundLedger (uint256 const& hash, uint32 seq, fcReason reason, clock_type& clock);
+    InboundLedger (uint256 const& hash, std::uint32_t seq, fcReason reason, clock_type& clock);
 
     ~InboundLedger ();
 
@@ -72,7 +74,7 @@ public:
     {
         mAborted = true;
     }
-    uint32 getSeq ()
+    std::uint32_t getSeq ()
     {
         return mSeq;
     }
@@ -80,7 +82,7 @@ public:
     // VFALCO TODO Make this the Listener / Observer pattern
     bool addOnComplete (std::function<void (InboundLedger::pointer)>);
 
-    void trigger (Peer::ref);
+    void trigger (Peer::ptr const&);
     bool tryLocal ();
     void addPeers ();
     bool checkLocal ();
@@ -104,7 +106,7 @@ private:
 
     void onTimer (bool progress, ScopedLockType& peerSetLock);
 
-    void newPeer (Peer::ref peer)
+    void newPeer (Peer::ptr const& peer)
     {
         trigger (peer);
     }
@@ -134,7 +136,7 @@ private:
     bool               mAborted;
     bool               mSignaled;
     bool               mByHash;
-    uint32             mSeq;
+    std::uint32_t      mSeq;
     fcReason           mReason;
 
     std::set <SHAMapNode> mRecentTXNodes;
@@ -148,5 +150,7 @@ private:
 
     std::vector <std::function <void (InboundLedger::pointer)> > mOnComplete;
 };
+
+} // ripple
 
 #endif

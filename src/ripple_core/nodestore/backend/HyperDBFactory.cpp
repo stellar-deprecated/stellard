@@ -25,10 +25,10 @@ namespace NodeStore {
 class HyperDBBackend
     : public Backend
     , public BatchWriter::Callback
-    , public LeakChecked <HyperDBBackend>
+    , public beast::LeakChecked <HyperDBBackend>
 {
 public:
-    Journal m_journal;
+    beast::Journal m_journal;
     size_t const m_keyBytes;
     Scheduler& m_scheduler;
     BatchWriter m_batch;
@@ -36,7 +36,7 @@ public:
     std::unique_ptr <hyperleveldb::DB> m_db;
 
     HyperDBBackend (size_t keyBytes, Parameters const& keyValues,
-        Scheduler& scheduler, Journal journal)
+        Scheduler& scheduler, beast::Journal journal)
         : m_journal (journal)
         , m_keyBytes (keyBytes)
         , m_scheduler (scheduler)
@@ -44,7 +44,7 @@ public:
         , m_name (keyValues ["path"].toStdString ())
     {
         if (m_name.empty ())
-            Throw (std::runtime_error ("Missing path in LevelDBFactory backend"));
+            throw std::runtime_error ("Missing path in LevelDBFactory backend");
 
         hyperleveldb::Options options;
         options.create_if_missing = true;
@@ -76,8 +76,8 @@ public:
         hyperleveldb::DB* db = nullptr;
         hyperleveldb::Status status = hyperleveldb::DB::Open (options, m_name, &db);
         if (!status.ok () || !db)
-            Throw (std::runtime_error (std::string (
-                "Unable to open/create hyperleveldb: ") + status.ToString()));
+            throw std::runtime_error (std::string (
+                "Unable to open/create hyperleveldb: ") + status.ToString());
 
         m_db.reset (db);
     }
@@ -86,14 +86,16 @@ public:
     {
     }
 
-    std::string getName()
+    std::string
+    getName()
     {
         return m_name;
     }
 
     //--------------------------------------------------------------------------
 
-    Status fetch (void const* key, NodeObject::Ptr* pObject)
+    Status
+    fetch (void const* key, NodeObject::Ptr* pObject)
     {
         pObject->reset ();
 
@@ -140,21 +142,22 @@ public:
         return status;
     }
 
-    void store (NodeObject::ref object)
+    void
+    store (NodeObject::ref object)
     {
         m_batch.store (object);
     }
 
-    void storeBatch (Batch const& batch)
+    void
+    storeBatch (Batch const& batch)
     {
         hyperleveldb::WriteBatch wb;
 
         EncodedBlob encoded;
 
-        // VFALCO Use range based for
-        BOOST_FOREACH (NodeObject::ref object, batch)
+        for (auto const& e : batch)
         {
-            encoded.prepare (object);
+            encoded.prepare (e);
 
             wb.Put (
                 hyperleveldb::Slice (reinterpret_cast <char const*> (
@@ -168,7 +171,8 @@ public:
         m_db->Write (options, &wb).ok ();
     }
 
-    void visitAll (VisitCallback& callback)
+    void
+    for_each (std::function <void (NodeObject::Ptr)> f)
     {
         hyperleveldb::ReadOptions const options;
 
@@ -183,9 +187,7 @@ public:
 
                 if (decoded.wasOk ())
                 {
-                    NodeObject::Ptr object (decoded.createObject ());
-
-                    callback.visitObject (object);
+                    f (decoded.createObject ());
                 }
                 else
                 {
@@ -204,14 +206,16 @@ public:
         }
     }
 
-    int getWriteLoad ()
+    int
+    getWriteLoad ()
     {
         return m_batch.getWriteLoad ();
     }
 
     //--------------------------------------------------------------------------
 
-    void writeBatch (Batch const& batch)
+    void
+    writeBatch (Batch const& batch)
     {
         storeBatch (batch);
     }
@@ -222,13 +226,18 @@ public:
 class HyperDBFactory : public NodeStore::Factory
 {
 public:
-    String getName () const
+    beast::String
+    getName () const
     {
         return "HyperLevelDB";
     }
 
-    std::unique_ptr <Backend> createInstance (size_t keyBytes,
-        Parameters const& keyValues, Scheduler& scheduler, Journal journal)
+    std::unique_ptr <Backend>
+    createInstance (
+        size_t keyBytes,
+        Parameters const& keyValues,
+        Scheduler& scheduler,
+        beast::Journal journal)
     {
         return std::make_unique <HyperDBBackend> (
             keyBytes, keyValues, scheduler, journal);
@@ -237,7 +246,8 @@ public:
 
 //------------------------------------------------------------------------------
 
-std::unique_ptr <Factory> make_HyperDBFactory ()
+std::unique_ptr <Factory>
+make_HyperDBFactory ()
 {
     return std::make_unique <HyperDBFactory> ();
 }

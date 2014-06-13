@@ -20,6 +20,8 @@
 #ifndef RIPPLE_FATALERRORREPORTER_H_INCLUDED
 #define RIPPLE_FATALERRORREPORTER_H_INCLUDED
 
+namespace ripple {
+
 /** FatalError reporter.
 
     This writes the details to standard error and the log. The reporter is
@@ -31,16 +33,18 @@
     constructors that can report a fatal error. Also, the Log would need
     to be guaranteed to be set up for this handler to work.
 */
-class FatalErrorReporter : public FatalError::Reporter
+class FatalErrorReporter : public beast::FatalError::Reporter
 {
 public:
     FatalErrorReporter ();
     ~FatalErrorReporter ();
 
-    void reportMessage (String& formattedMessage);
+    void reportMessage (beast::String& formattedMessage);
 
 private:
-    FatalError::Reporter* m_savedReporter;
+    beast::FatalError::Reporter* m_savedReporter;
 };
+
+} // ripple
 
 #endif

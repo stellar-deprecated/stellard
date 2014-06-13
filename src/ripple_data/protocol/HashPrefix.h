@@ -20,6 +20,8 @@
 #ifndef RIPPLE_HASHPREFIX_H
 #define RIPPLE_HASHPREFIX_H
 
+namespace ripple {
+
 /** Prefix for hashing functions.
 
     These prefixes are inserted before the source material used to generate
@@ -38,7 +40,7 @@
 class HashPrefix
 {
 private:
-    uint32 m_prefix;
+    std::uint32_t m_prefix;
 
 public:
     HashPrefix (char a, char b, char c)
@@ -51,7 +53,7 @@ public:
     }
 
     /** Returns the hash prefix associated with this object */
-    operator uint32 () const
+    operator std::uint32_t () const
     {
         return m_prefix;
     }
@@ -83,5 +85,7 @@ public:
     /** proposal for signing */
     static HashPrefix const proposal;
 };
+
+} // ripple
 
 #endif

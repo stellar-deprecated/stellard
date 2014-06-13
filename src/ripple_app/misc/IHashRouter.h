@@ -20,6 +20,8 @@
 #ifndef RIPPLE_HASHROUTER_H_INCLUDED
 #define RIPPLE_HASHROUTER_H_INCLUDED
 
+namespace ripple {
+
 // VFALCO NOTE Are these the flags?? Why aren't we using a packed struct?
 // VFALCO TODO convert these macros to int constants
 #define SF_RELAYED      0x01    // Has already been relayed to other nodes
@@ -40,7 +42,7 @@ class IHashRouter
 {
 public:
     // The type here *MUST* match the type of Peer::ShortId
-    typedef uint32 PeerShortID;
+    typedef std::uint32_t PeerShortID;
 
     // VFALCO NOTE this preferred alternative to default parameters makes
     //         behavior clear.
@@ -80,5 +82,6 @@ public:
 //    virtual Entry getEntry (uint256 const&) = 0;
 };
 
+} // ripple
 
 #endif

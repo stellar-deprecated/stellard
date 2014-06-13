@@ -24,9 +24,6 @@
 #include <sys/resource.h>
 #endif
 
-
-//------------------------------------------------------------------------------
-
 // VFALCO TODO Reduce these boost dependencies. Make more interfaces
 //             purely abstract and move implementation into .cpp files.
 //
@@ -36,7 +33,6 @@
 #include <boost/array.hpp>
 #include <boost/asio/read_until.hpp>
 #include <boost/asio/streambuf.hpp>
-//#include <boost/iostreams/concepts.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <boost/mem_fn.hpp>
 #include <boost/pointer_cast.hpp>
@@ -56,7 +52,7 @@
 
 #include "../ripple/common/ResolverAsio.h"
 
-//#include "../beast/modules/beast_sqdb/beast_sqdb.h"
+// VFALCO TODO Remove this include
 #include "../beast/modules/beast_sqlite/beast_sqlite.h"
 
 // Order matters here. If you get compile errors,
@@ -65,26 +61,17 @@
 #include "../../ripple/common/KeyCache.h"
 #include "../../ripple/common/TaggedCache.h"
 
-#include "../../ripple_overlay/ripple_overlay.h"
-
-namespace ripple {
 #include "data/Database.h"
 #include "data/DatabaseCon.h"
 #include "data/SqliteDatabase.h"
 #include "data/DBInit.h"
 #include "shamap/SHAMapItem.h"
-}
-
-// VFALCO NOTE Have to step outside the ripple namespace to
-//             get the specialization for std::hash, et. al.
 #include "shamap/SHAMapNode.h"
 #include "shamap/SHAMapTreeNode.h"
 #include "shamap/SHAMapMissingNode.h"
 #include "shamap/SHAMapSyncFilter.h"
 #include "shamap/SHAMapAddNode.h"
 #include "shamap/SHAMap.h"
-
-namespace ripple {
 #include "misc/SerializedTransaction.h"
 #include "misc/SerializedLedger.h"
 #include "tx/TransactionMeta.h"
@@ -96,8 +83,8 @@ namespace ripple {
 #include "main/LoadManager.h"
 #include "misc/OrderBook.h"
 #include "shamap/SHAMapSyncFilters.h"
-#include "misc/IFeatures.h"
-#include "misc/IFeeVote.h"
+#include "misc/AmendmentTable.h"
+#include "misc/FeeVote.h"
 #include "misc/IHashRouter.h"
 #include "peers/ClusterNodeStatus.h"
 #include "peers/UniqueNodeList.h"
@@ -122,11 +109,10 @@ namespace ripple {
 #include "misc/NetworkOPs.h"
 #include "tx/TransactionMaster.h"
 #include "main/LocalCredentials.h"
-} // escape the namespace
 #include "main/Application.h"
-namespace ripple {
 #include "ledger/OrderBookDB.h"
 #include "tx/TransactionAcquire.h"
+#include "tx/LocalTxs.h"
 #include "consensus/DisputedTx.h"
 #include "consensus/LedgerConsensus.h"
 #include "ledger/LedgerTiming.h"
@@ -145,6 +131,5 @@ namespace ripple {
 #include "contracts/Contract.h"
 #include "contracts/Interpreter.h"
 #include "contracts/Operation.h"
-}
 
 #endif

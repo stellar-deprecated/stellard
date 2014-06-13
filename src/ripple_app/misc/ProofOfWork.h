@@ -24,7 +24,7 @@
 
 namespace ripple {
 
-class ProofOfWork : LeakChecked <ProofOfWork>
+class ProofOfWork : beast::LeakChecked <ProofOfWork>
 {
 public:
     enum
@@ -55,13 +55,13 @@ public:
         return mChallenge;
     }
 
-    uint64 getDifficulty () const
+    std::uint64_t getDifficulty () const
     {
         return getDifficulty (mTarget, mIterations);
     }
 
     // approximate number of hashes needed to solve
-    static uint64 getDifficulty (uint256 const& target, int iterations);
+    static std::uint64_t getDifficulty (uint256 const& target, int iterations);
 
     static bool validateToken (const std::string& strToken);
 

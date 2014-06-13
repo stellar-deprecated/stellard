@@ -20,6 +20,8 @@
 #ifndef RIPPLE_RFC1751_H
 #define RIPPLE_RFC1751_H
 
+namespace ripple {
+
 class RFC1751
 {
 public:
@@ -34,7 +36,7 @@ public:
         it to turn the pubkey_node into an easily remembered and identified
         4 character string.
     */
-    static String getWordFromBlob (void const* data, size_t bytes);
+    static beast::String getWordFromBlob (void const* data, size_t bytes);
 
 private:
     static unsigned long extract (char* s, int start, int length);
@@ -46,5 +48,7 @@ private:
 
     static char const* s_dictionary [];
 };
+
+} // ripple
 
 #endif

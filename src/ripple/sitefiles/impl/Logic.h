@@ -20,6 +20,8 @@
 #ifndef RIPPLE_SITEFILES_LOGIC_H_INCLUDED
 #define RIPPLE_SITEFILES_LOGIC_H_INCLUDED
 
+#include "../../common/UnorderedContainers.h"
+
 #include <memory>
 
 namespace ripple {
@@ -30,7 +32,7 @@ Config file format:
 
     Syntactically a series of lines, where line has this format:
         [ <vertical whitespace> ] <anything> ( <vertical-whitespace> OR <end-of-file> )
-        
+
     Semantically a series of of zero or more sections, where each section
     has a name and optional data. Specifically, the format:
         ( <start-of-file> OR <header> ) <data>
@@ -60,7 +62,7 @@ class Logic
 {
 public:
     typedef std::set <Listener*> Listeners;
-    typedef boost::unordered_map <URL, SiteFile> SiteFiles;
+    typedef ripple::unordered_map <beast::URL, SiteFile> SiteFiles;
 
     struct State
     {
@@ -72,13 +74,13 @@ public:
         SiteFiles files;
     };
 
-    typedef SharedData <State> SharedState;
+    typedef beast::SharedData <State> SharedState;
 
     SharedState m_state;
-    Journal m_journal;
+    beast::Journal m_journal;
     std::unique_ptr <beast::asio::HTTPClientBase> m_client;
 
-    explicit Logic (Journal journal)
+    explicit Logic (beast::Journal journal)
         : m_journal (journal)
         , m_client (beast::asio::HTTPClientBase::New (journal))
     {
@@ -116,8 +118,8 @@ public:
 
     void addURL (std::string const& urlstr)
     {
-        ParsedURL const p (urlstr);
-        
+        beast::ParsedURL const p (urlstr);
+
         if (p.error())
         {
             m_journal.error <<
@@ -125,7 +127,7 @@ public:
             return;
         }
 
-        URL const& url (p.url());
+        beast::URL const& url (p.url());
 
         auto const result (m_client->get (url));
 
@@ -141,7 +143,7 @@ public:
             return;
         }
 
-        HTTPResponse const& response (*result.second);
+        beast::HTTPResponse const& response (*result.second);
 
         processResponse (url, response);
     }
@@ -152,7 +154,7 @@ public:
     //
     //--------------------------------------------------------------------------
 
-    void processResponse (URL const& url, HTTPResponse const& response)
+    void processResponse (beast::URL const& url, beast::HTTPResponse const& response)
     {
         SharedState::Access state (m_state);
 
@@ -286,7 +288,7 @@ public:
         }
     }
 
-    void parse (SiteFile& siteFile, HTTPResponse const& response)
+    void parse (SiteFile& siteFile, beast::HTTPResponse const& response)
     {
         std::string const s (response.body().to_string());
         parse (siteFile, s.begin(), s.end());

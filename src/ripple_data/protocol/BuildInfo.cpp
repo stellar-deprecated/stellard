@@ -17,6 +17,12 @@
 */
 //==============================================================================
 
+#include "../../beast/beast/unit_test/suite.h"
+#include "../../beast/modules/beast_core/diagnostic/FatalError.h"
+#include "../../beast/modules/beast_core/diagnostic/SemanticVersion.h"
+
+namespace ripple {
+
 char const* BuildInfo::getRawVersionString ()
 {
     static char const* const rawText =
@@ -25,7 +31,7 @@ char const* BuildInfo::getRawVersionString ()
     //
     //  The build version number (edit this for each release)
     //
-        "0.23.0"
+        "0.25.1"
     //
     //  Must follow the format described here:
     //
@@ -77,23 +83,23 @@ BuildInfo::Protocol const& BuildInfo::getMinimumProtocol ()
 //
 //------------------------------------------------------------------------------
 
-String const& BuildInfo::getVersionString ()
+beast::String const& BuildInfo::getVersionString ()
 {
     struct SanityChecker
     {
         SanityChecker ()
         {
-            SemanticVersion v;
+            beast::SemanticVersion v;
 
             char const* const rawText = getRawVersionString ();
 
             if (! v.parse (rawText) || v.print () != rawText)
-                FatalError ("Bad server version string", __FILE__, __LINE__);
+                beast::FatalError ("Bad server version string", __FILE__, __LINE__);
 
             versionString = rawText;
         }
 
-        String versionString;
+        beast::String versionString;
     };
 
     static SanityChecker value;
@@ -107,7 +113,7 @@ char const* BuildInfo::getFullVersionString ()
     {
         PrettyPrinter ()
         {
-            String s;
+            beast::String s;
             
             s << "Ripple-" << getVersionString ();
 
@@ -149,27 +155,23 @@ BuildInfo::Protocol::PackedFormat BuildInfo::Protocol::toPacked () const noexcep
 
 std::string BuildInfo::Protocol::toStdString () const noexcept
 {
-    String s;
+    beast::String s;
 
-    s << String (vmajor) << "." << String (vminor);
+    s << beast::String (vmajor) << "." << beast::String (vminor);
 
     return s.toStdString ();
 }
 
 //------------------------------------------------------------------------------
 
-class BuildInfoTests : public UnitTest
+class BuildInfo_test : public beast::unit_test::suite
 {
 public:
-    BuildInfoTests () : UnitTest ("BuildInfo", "ripple", runStartup)
-    {
-    }
-
     void testVersion ()
     {
-        beginTestCase ("version");
+        testcase ("version");
 
-        SemanticVersion v;
+        beast::SemanticVersion v;
 
         expect (v.parse (BuildInfo::getRawVersionString ()));
     }
@@ -185,7 +187,7 @@ public:
     {
         typedef BuildInfo::Protocol P;
 
-        beginTestCase ("protocol");
+        testcase ("protocol");
 
         expect (P (0, 0).toPacked () == 0);
         expect (P (0, 1).toPacked () == 1);
@@ -202,7 +204,7 @@ public:
 
     void testValues ()
     {
-        beginTestCase ("comparison");
+        testcase ("comparison");
 
         typedef BuildInfo::Protocol P;
 
@@ -217,14 +219,18 @@ public:
         expect (BuildInfo::getCurrentProtocol () >= BuildInfo::getMinimumProtocol ());
     }
 
-    void runTest ()
+    void run ()
     {
         testVersion ();
         testProtocol ();
         testValues ();
 
-        logMessage ("Ripple version: " + BuildInfo::getVersionString());
+        log <<
+            "  Ripple version: " <<
+            BuildInfo::getVersionString().toStdString();
     }
 };
 
-static BuildInfoTests buildInfoTests;
+BEAST_DEFINE_TESTSUITE(BuildInfo,ripple_data,ripple);
+
+} // ripple

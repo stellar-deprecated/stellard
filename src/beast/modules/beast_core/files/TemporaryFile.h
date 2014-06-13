@@ -24,6 +24,9 @@
 #ifndef BEAST_TEMPORARYFILE_H_INCLUDED
 #define BEAST_TEMPORARYFILE_H_INCLUDED
 
+namespace beast
+{
+
 //==============================================================================
 /**
     Manages a temporary file, which will be deleted when this object is deleted.
@@ -62,7 +65,7 @@
 
     @see File, FileOutputStream
 */
-class BEAST_API TemporaryFile : LeakChecked <TemporaryFile>, public Uncopyable
+class TemporaryFile : LeakChecked <TemporaryFile>, public Uncopyable
 {
 public:
     //==============================================================================
@@ -157,5 +160,7 @@ private:
     //==============================================================================
     const File temporaryFile, targetFile;
 };
+
+} // beast
 
 #endif   // BEAST_TEMPORARYFILE_H_INCLUDED

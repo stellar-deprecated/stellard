@@ -24,6 +24,9 @@
 #ifndef BEAST_WIN32_COMSMARTPTR_H_INCLUDED
 #define BEAST_WIN32_COMSMARTPTR_H_INCLUDED
 
+namespace beast
+{
+
 #ifndef _MSC_VER
 template<typename Type> struct UUIDGetter { static CLSID get() { bassertfalse; return CLSID(); } };
 #define __uuidof(x)  UUIDGetter<x>::get()
@@ -42,8 +45,8 @@ inline GUID uuidFromString (const char* const s) noexcept
         (s, "%08lX-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
               &p0, &p1, &p2, &p3, &p4, &p5, &p6, &p7, &p8, &p9, &p10);
 
-    GUID g = { p0, (uint16) p1, (uint16) p2, { (uint8) p3, (uint8) p4, (uint8) p5, (uint8) p6,
-                                               (uint8) p7, (uint8) p8, (uint8) p9, (uint8) p10 }};
+    GUID g = { p0, (std::uint16_t) p1, (std::uint16_t) p2, { (std::uint8_t) p3, (std::uint8_t) p4, (std::uint8_t) p5, (std::uint8_t) p6,
+                                               (std::uint8_t) p7, (std::uint8_t) p8, (std::uint8_t) p9, (std::uint8_t) p10 }};
     return g;
 }
 
@@ -161,5 +164,7 @@ public:
         return ComBaseClassHelperBase <ComClass>::QueryInterface (refId, result);
     }
 };
+
+} // beast
 
 #endif   // BEAST_WIN32_COMSMARTPTR_H_INCLUDED

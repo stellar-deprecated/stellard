@@ -20,12 +20,16 @@
 #ifndef RIPPLE_SYNC_UNORDERED_MAP_H
 #define RIPPLE_SYNC_UNORDERED_MAP_H
 
+#include "../../ripple/common/UnorderedContainers.h"
+
+namespace ripple {
+
 // Common base
 class SyncUnorderedMap
 {
 public:
     typedef RippleRecursiveMutex LockType;
-    typedef LockType::ScopedLockType ScopedLockType;
+    typedef std::lock_guard <LockType> ScopedLockType;
 };
 
 /** This is a synchronized unordered map.
@@ -33,13 +37,13 @@ public:
     or a subset of an unchanging data set.
 */
 
-template <typename c_Key, typename c_Data>
+template <typename c_Key, typename c_Data, typename c_Hash = beast::uhash<>>
 class SyncUnorderedMapType : public SyncUnorderedMap
 {
 public:
-    typedef c_Key                               key_type;
-    typedef c_Data                              data_type;
-    typedef boost::unordered_map<c_Key, c_Data> map_type;
+    typedef c_Key                                        key_type;
+    typedef c_Data                                       data_type;
+    typedef ripple::unordered_map<c_Key, c_Data, c_Hash> map_type;
 
     class iterator
     {
@@ -59,7 +63,7 @@ public:
 
     SyncUnorderedMapType (const SyncUnorderedMapType& m)
     {
-        ScopedLockType sl (m.mLock, __FILE__, __LINE__);
+        ScopedLockType sl (m.mLock);
         mMap = m.mMap;
     }
 
@@ -72,7 +76,7 @@ public:
 
     void operator= (const SyncUnorderedMapType& m)
     {
-        ScopedLockType sl (m.mLock, __FILE__, __LINE__);
+        ScopedLockType sl (m.mLock);
         mMap = m.mMap;
     }
 
@@ -110,7 +114,7 @@ public:
 
     std::size_t size () const
     {
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
         return mMap.size ();
     }
 
@@ -119,7 +123,7 @@ public:
     // Returns 'true' if the value was added to the map
     bool canonicalize (key_type const& key, data_type* value)
     {
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
 
         typename std::pair < typename map_type::iterator, bool > it =
             mMap.insert (typename map_type::value_type (key, *value));
@@ -136,7 +140,7 @@ public:
     {
         data_type ret;
         {
-            ScopedLockType sl (mLock, __FILE__, __LINE__);
+            ScopedLockType sl (mLock);
             typename map_type::iterator it = mMap.find (key);
             if (it != mMap.end ())
                ret = it->second;
@@ -149,18 +153,6 @@ private:
     mutable LockType mLock;
 };
 
+} // ripple
 
-namespace detail
-{
-
-template <typename Key, typename Value>
-struct Destroyer <SyncUnorderedMapType <Key, Value> >
-{
-    static void destroy (SyncUnorderedMapType <Key, Value>& v)
-    {
-        v.clear ();
-    }
-};
-
-}
 #endif

@@ -17,11 +17,13 @@
 */
 //==============================================================================
 
+namespace ripple {
+
 // VFALCO TODO rename class to TransactionMeta
 
 SETUP_LOG (TransactionMetaSet)
 
-TransactionMetaSet::TransactionMetaSet (uint256 const& txid, uint32 ledger, Blob const& vec) :
+TransactionMetaSet::TransactionMetaSet (uint256 const& txid, std::uint32_t ledger, Blob const& vec) :
     mTransactionID (txid), mLedger (ledger), mNodes (sfAffectedNodes, 32)
 {
     Serializer s (vec);
@@ -51,7 +53,8 @@ bool TransactionMetaSet::isNodeAffected (uint256 const& node) const
     return false;
 }
 
-void TransactionMetaSet::setAffectedNode (uint256 const& node, SField::ref type, uint16 nodeType)
+void TransactionMetaSet::setAffectedNode (uint256 const& node, SField::ref type,
+                                          std::uint16_t nodeType)
 {
     // make sure the node exists and force its type
     BOOST_FOREACH (STObject & it, mNodes)
@@ -110,7 +113,7 @@ std::vector<RippleAddress> TransactionMetaSet::getAffectedAccounts ()
                     {
                         const STAmount* lim = dynamic_cast<const STAmount*> (&field);
 
-                        if (lim != NULL)
+                        if (lim != nullptr)
                         {
                             uint160 issuer = lim->getIssuer ();
 
@@ -175,7 +178,7 @@ const STObject& TransactionMetaSet::peekAffectedNode (uint256 const& node) const
     throw std::runtime_error ("Affected node not found");
 }
 
-void TransactionMetaSet::init (uint256 const& id, uint32 ledger)
+void TransactionMetaSet::init (uint256 const& id, std::uint32_t ledger)
 {
     mTransactionID = id;
     mLedger = ledger;
@@ -189,7 +192,7 @@ void TransactionMetaSet::swap (TransactionMetaSet& s)
     mNodes.swap (s.mNodes);
 }
 
-bool TransactionMetaSet::thread (STObject& node, uint256 const& prevTxID, uint32 prevLgrID)
+bool TransactionMetaSet::thread (STObject& node, uint256 const& prevTxID, std::uint32_t prevLgrID)
 {
     if (node.getFieldIndex (sfPreviousTxnID) == -1)
     {
@@ -221,7 +224,7 @@ STObject TransactionMetaSet::getAsObject () const
     return metaData;
 }
 
-void TransactionMetaSet::addRaw (Serializer& s, TER result, uint32 index)
+void TransactionMetaSet::addRaw (Serializer& s, TER result, std::uint32_t index)
 {
     mResult = static_cast<int> (result);
     mIndex = index;
@@ -232,4 +235,4 @@ void TransactionMetaSet::addRaw (Serializer& s, TER result, uint32 index)
     getAsObject ().add (s);
 }
 
-// vim:ts=4
+} // ripple

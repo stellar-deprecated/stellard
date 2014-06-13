@@ -17,10 +17,11 @@
 */
 //==============================================================================
 
-#include "BeastConfig.h"
+#include "../../BeastConfig.h"
 
 #include "ripple_app.h"
 #include "../ripple_net/ripple_net.h"
+#include "../ripple/common/jsonrpc_fields.h"
 
 #include "../ripple/common/seconds_clock.h"
 #include "../ripple/peerfinder/ripple_peerfinder.h"
@@ -32,11 +33,8 @@
 
 #include "misc/ProofOfWork.h"
 
-namespace ripple {
-
 #include "ledger/LedgerTiming.cpp"
 #include "ledger/AcceptedLedgerTx.cpp"
 #include "main/LocalCredentials.cpp"
 #include "misc/Validations.cpp"
-#include "misc/FeeVote.cpp"
-}
+#include "misc/FeeVoteImpl.cpp"

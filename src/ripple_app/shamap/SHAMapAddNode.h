@@ -20,6 +20,8 @@
 #ifndef RIPPLE_SHAMAPADDNODE_H
 #define RIPPLE_SHAMAPADDNODE_H
 
+#include "../../beast/modules/beast_core/text/LexicalCast.h"
+
 namespace ripple {
 
 // results of adding nodes
@@ -105,21 +107,21 @@ public:
         if (mGood > 0)
         {
             ret.append("good:");
-            ret.append(lexicalCastThrow<std::string>(mGood));
+            ret.append(beast::lexicalCastThrow<std::string>(mGood));
         }
         if (mBad > 0)
         {
             if (!ret.empty())
                 ret.append(" ");
 	     ret.append("bad:");
-	     ret.append(lexicalCastThrow<std::string>(mBad));
+	     ret.append(beast::lexicalCastThrow<std::string>(mBad));
         }
         if (mDuplicate > 0)
         {
             if (!ret.empty())
                 ret.append(" ");
 	     ret.append("dupe:");
-	     ret.append(lexicalCastThrow<std::string>(mDuplicate));
+	     ret.append(beast::lexicalCastThrow<std::string>(mDuplicate));
         }
         if (ret.empty ())
             ret = "no nodes processed";

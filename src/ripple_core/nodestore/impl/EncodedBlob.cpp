@@ -20,7 +20,8 @@
 namespace ripple {
 namespace NodeStore {
 
-void EncodedBlob::prepare (NodeObject::Ptr const& object)
+void
+EncodedBlob::prepare (NodeObject::Ptr const& object)
 {
     m_key = object->getHash ().begin ();
 
@@ -30,13 +31,13 @@ void EncodedBlob::prepare (NodeObject::Ptr const& object)
     m_data.ensureSize (m_size);
 
     // These sizes must be the same!
-    static_bassert (sizeof (uint32) == sizeof (object->getIndex ()));
+    static_bassert (sizeof (std::uint32_t) == sizeof (object->getIndex ()));
 
     {
-        uint32* buf = static_cast <uint32*> (m_data.getData ());
+        std::uint32_t* buf = static_cast <std::uint32_t*> (m_data.getData ());
 
-        buf [0] = ByteOrder::swapIfLittleEndian (object->getIndex ());
-        buf [1] = ByteOrder::swapIfLittleEndian (object->getIndex ());
+        buf [0] = beast::ByteOrder::swapIfLittleEndian (object->getIndex ());
+        buf [1] = beast::ByteOrder::swapIfLittleEndian (object->getIndex ());
     }
 
     {

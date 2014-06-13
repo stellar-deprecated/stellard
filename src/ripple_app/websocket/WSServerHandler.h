@@ -20,6 +20,8 @@
 #ifndef RIPPLE_WSSERVERHANDLER_H_INCLUDED
 #define RIPPLE_WSSERVERHANDLER_H_INCLUDED
 
+namespace ripple {
+
 extern bool serverOkay (std::string& reason);
 
 template <typename endpoint_type>
@@ -30,7 +32,7 @@ class WSConnectionType;
 struct WSServerHandlerLog;
 
 // This tag helps with mutex tracking
-struct WSServerHandlerBase : public Uncopyable
+struct WSServerHandlerBase : public beast::Uncopyable
 {
 };
 
@@ -41,7 +43,7 @@ template <typename endpoint_type>
 class WSServerHandler
     : public WSServerHandlerBase
     , public endpoint_type::handler
-    , public LeakChecked <WSServerHandler <endpoint_type> >
+    , public beast::LeakChecked <WSServerHandler <endpoint_type> >
 {
 public:
     typedef typename endpoint_type::handler::connection_ptr     connection_ptr;
@@ -61,7 +63,7 @@ private:
 protected:
     // VFALCO TODO Make this private.
     typedef RippleMutex LockType;
-    typedef LockType::ScopedLockType ScopedLockType;
+    typedef std::lock_guard <LockType> ScopedLockType;
     LockType mLock;
 
 private:
@@ -69,7 +71,7 @@ private:
 
 protected:
     // For each connection maintain an associated object to track subscriptions.
-    typedef boost::unordered_map <connection_ptr,
+    typedef ripple::unordered_map <connection_ptr,
         boost::shared_ptr <WSConnectionType <endpoint_type> > > MapType;
     MapType mMap;
     bool const mPublic;
@@ -80,7 +82,6 @@ public:
         InfoSub::Source& source, boost::asio::ssl::context& ssl_context, bool bPublic, bool bProxy)
         : m_resourceManager (resourceManager)
         , m_source (source)
-        , mLock (static_cast <WSServerHandlerBase*> (this), "WSServerHandler", __FILE__, __LINE__)
         , m_ssl_context (ssl_context)
         , mPublic (bPublic)
         , mProxy (bProxy)
@@ -143,8 +144,8 @@ public:
     {
         wsc_ptr ptr;
         {
-            ScopedLockType sl (mLock, __FILE__, __LINE__);
-            typename boost::unordered_map<connection_ptr, wsc_ptr>::iterator it = mMap.find (cpClient);
+            ScopedLockType sl (mLock);
+            typename ripple::unordered_map<connection_ptr, wsc_ptr>::iterator it = mMap.find (cpClient);
 
             if (it == mMap.end ())
                 return;
@@ -173,8 +174,8 @@ public:
     {
         wsc_ptr ptr;
         {
-            ScopedLockType sl (mLock, __FILE__, __LINE__);
-            typename boost::unordered_map<connection_ptr, wsc_ptr>::iterator it = mMap.find (cpClient);
+            ScopedLockType sl (mLock);
+            typename ripple::unordered_map<connection_ptr, wsc_ptr>::iterator it = mMap.find (cpClient);
 
             if (it == mMap.end ())
                 return;
@@ -187,7 +188,7 @@ public:
 
     void on_open (connection_ptr cpClient)
     {
-        ScopedLockType   sl (mLock, __FILE__, __LINE__);
+        ScopedLockType   sl (mLock);
 
         try
         {
@@ -195,7 +196,7 @@ public:
                 mMap.emplace (cpClient,
                     boost::make_shared < WSConnectionType <endpoint_type> > (boost::ref(m_resourceManager),
                     boost::ref (m_source), boost::ref(*this), boost::cref(cpClient))));
-            check_postcondition (result.second);
+            assert (result.second);
             WriteLog (lsDEBUG, WSServerHandlerLog) <<
                 "Ws:: on_open(" << cpClient->get_socket ().remote_endpoint ().to_string () << ")";
         }
@@ -208,8 +209,8 @@ public:
     {
         wsc_ptr ptr;
         {
-            ScopedLockType   sl (mLock, __FILE__, __LINE__);
-            typename boost::unordered_map<connection_ptr, wsc_ptr>::iterator it = mMap.find (cpClient);
+            ScopedLockType   sl (mLock);
+            typename ripple::unordered_map<connection_ptr, wsc_ptr>::iterator it = mMap.find (cpClient);
 
             if (it == mMap.end ())
                 return;
@@ -242,8 +243,8 @@ public:
         // we cannot destroy the connection while holding the map lock or we deadlock with pubLedger
         wsc_ptr ptr;
         {
-            ScopedLockType   sl (mLock, __FILE__, __LINE__);
-            typename boost::unordered_map<connection_ptr, wsc_ptr>::iterator it = mMap.find (cpClient);
+            ScopedLockType   sl (mLock);
+            typename ripple::unordered_map<connection_ptr, wsc_ptr>::iterator it = mMap.find (cpClient);
 
             if (it == mMap.end ())
             {
@@ -282,8 +283,8 @@ public:
     {
         wsc_ptr ptr;
         {
-            ScopedLockType   sl (mLock, __FILE__, __LINE__);
-            typename boost::unordered_map<connection_ptr, wsc_ptr>::iterator it = mMap.find (cpClient);
+            ScopedLockType   sl (mLock);
+            typename ripple::unordered_map<connection_ptr, wsc_ptr>::iterator it = mMap.find (cpClient);
 
             if (it == mMap.end ())
                 return;
@@ -316,8 +317,8 @@ public:
     {
         wsc_ptr ptr;
         {
-            ScopedLockType   sl (mLock, __FILE__, __LINE__);
-            typename boost::unordered_map<connection_ptr, wsc_ptr>::iterator it = mMap.find (cpClient);
+            ScopedLockType   sl (mLock);
+            typename ripple::unordered_map<connection_ptr, wsc_ptr>::iterator it = mMap.find (cpClient);
 
             if (it == mMap.end ())
                 return;
@@ -367,8 +368,8 @@ public:
         {
             Json::Value jvResult (Json::objectValue);
 
-            jvResult["type"]    = "error";
-            jvResult["error"]   = "wsTextRequired"; // We only accept text messages.
+            jvResult[jss::type]    = jss::error;
+            jvResult[jss::error]   = "wsTextRequired"; // We only accept text messages.
 
             send (cpClient, jvResult, false);
         }
@@ -376,17 +377,17 @@ public:
         {
             Json::Value jvResult (Json::objectValue);
 
-            jvResult["type"]    = "error";
-            jvResult["error"]   = "jsonInvalid";    // Received invalid json.
-            jvResult["value"]   = mpMessage->get_payload ();
+            jvResult[jss::type]    = jss::error;
+            jvResult[jss::error]   = "jsonInvalid";    // Received invalid json.
+            jvResult[jss::value]   = mpMessage->get_payload ();
 
             send (cpClient, jvResult, false);
         }
         else
         {
-            if (jvRequest.isMember ("command"))
+            if (jvRequest.isMember (jss::command))
             {
-                Json::Value& jCmd = jvRequest["command"];
+                Json::Value& jCmd = jvRequest[jss::command];
                 if (jCmd.isString())
                     job.rename (std::string ("WSClient::") + jCmd.asString());
             }
@@ -423,5 +424,7 @@ public:
         return true;
     }
 };
+
+} // ripple
 
 #endif

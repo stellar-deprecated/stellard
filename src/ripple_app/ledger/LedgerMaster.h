@@ -20,6 +20,8 @@
 #ifndef RIPPLE_LEDGERMASTER_H_INCLUDED
 #define RIPPLE_LEDGERMASTER_H_INCLUDED
 
+namespace ripple {
+
 // Tracks the current ledger and any ledgers in the process of closing
 // Tracks ledger history
 // Tracks held transactions
@@ -28,7 +30,7 @@
 //        It sounds like this holds all the ledgers...
 //
 class LedgerMaster
-    : public Stoppable
+    : public beast::Stoppable
 {
 protected:
     explicit LedgerMaster (Stoppable& parent);
@@ -38,14 +40,15 @@ public:
 
 public:
     typedef RippleRecursiveMutex LockType;
-    typedef LockType::ScopedLockType ScopedLockType;
-    typedef LockType::ScopedUnlockType ScopedUnlockType;
+    typedef std::unique_lock <LockType> ScopedLockType;
+    typedef beast::GenericScopedUnlock <LockType> ScopedUnlockType;
 
-    static LedgerMaster* New (Stoppable& parent, Journal journal);
+    static LedgerMaster* New (Stoppable& parent, beast::Journal journal);
 
     virtual ~LedgerMaster () = 0;
 
-    virtual uint32 getCurrentLedgerIndex () = 0;
+    virtual LedgerIndex getCurrentLedgerIndex () = 0;
+    virtual LedgerIndex getValidLedgerIndex () = 0;
 
     virtual LockType& peekMutex () = 0;
 
@@ -73,50 +76,50 @@ public:
 
     virtual void setMinValidations (int v) = 0;
 
-    virtual uint32 getEarliestFetch () = 0;
+    virtual std::uint32_t getEarliestFetch () = 0;
 
     virtual void pushLedger (Ledger::pointer newLedger) = 0;
     virtual void pushLedger (Ledger::pointer newLCL, Ledger::pointer newOL) = 0;
-    virtual void storeLedger (Ledger::pointer) = 0;
+    virtual bool storeLedger (Ledger::pointer) = 0;
     virtual void forceValid (Ledger::pointer) = 0;
 
     virtual void setFullLedger (Ledger::pointer ledger, bool isSynchronous, bool isCurrent) = 0;
 
     virtual void switchLedgers (Ledger::pointer lastClosed, Ledger::pointer newCurrent) = 0;
 
-    virtual void failedSave(uint32 seq, uint256 const& hash) = 0;
+    virtual void failedSave(std::uint32_t seq, uint256 const& hash) = 0;
 
     virtual std::string getCompleteLedgers () = 0;
 
-    virtual void closeLedger (bool recoverHeldTransactions) = 0;
+    virtual void applyHeldTransactions () = 0;
 
     /** Get a ledger's hash by sequence number using the cache
     */
-    virtual uint256 getHashBySeq (uint32 index) = 0;
+    virtual uint256 getHashBySeq (std::uint32_t index) = 0;
 
     /** Walk to a ledger's hash using the skip list
     */
-    virtual uint256 walkHashBySeq (uint32 index) = 0;
-    virtual uint256 walkHashBySeq (uint32 index, Ledger::ref referenceLedger) = 0;
+    virtual uint256 walkHashBySeq (std::uint32_t index) = 0;
+    virtual uint256 walkHashBySeq (std::uint32_t index, Ledger::ref referenceLedger) = 0;
 
-    virtual Ledger::pointer findAcquireLedger (uint32 index, uint256 const& hash) = 0;
+    virtual Ledger::pointer findAcquireLedger (std::uint32_t index, uint256 const& hash) = 0;
 
-    virtual Ledger::pointer getLedgerBySeq (uint32 index) = 0;
+    virtual Ledger::pointer getLedgerBySeq (std::uint32_t index) = 0;
 
     virtual Ledger::pointer getLedgerByHash (uint256 const& hash) = 0;
 
-    virtual void setLedgerRangePresent (uint32 minV, uint32 maxV) = 0;
+    virtual void setLedgerRangePresent (std::uint32_t minV, std::uint32_t maxV) = 0;
 
-    virtual uint256 getLedgerHash(uint32 desiredSeq, Ledger::ref knownGoodLedger) = 0;
+    virtual uint256 getLedgerHash(std::uint32_t desiredSeq, Ledger::ref knownGoodLedger) = 0;
 
     virtual void addHeldTransaction (Transaction::ref trans) = 0;
     virtual void fixMismatch (Ledger::ref ledger) = 0;
 
-    virtual bool haveLedgerRange (uint32 from, uint32 to) = 0;
-    virtual bool haveLedger (uint32 seq) = 0;
-    virtual void clearLedger (uint32 seq) = 0;
-    virtual bool getValidatedRange (uint32& minVal, uint32& maxVal) = 0;
-    virtual bool getFullValidatedRange (uint32& minVal, uint32& maxVal) = 0;
+    virtual bool haveLedgerRange (std::uint32_t from, std::uint32_t to) = 0;
+    virtual bool haveLedger (std::uint32_t seq) = 0;
+    virtual void clearLedger (std::uint32_t seq) = 0;
+    virtual bool getValidatedRange (std::uint32_t& minVal, std::uint32_t& maxVal) = 0;
+    virtual bool getFullValidatedRange (std::uint32_t& minVal, std::uint32_t& maxVal) = 0;
 
     virtual void tune (int size, int age) = 0;
     virtual void sweep () = 0;
@@ -124,7 +127,11 @@ public:
     virtual void addValidateCallback (callback& c) = 0;
 
     virtual void checkAccept (Ledger::ref ledger) = 0;
-    virtual void checkAccept (uint256 const& hash, uint32 seq) = 0;
+    virtual void checkAccept (uint256 const& hash, std::uint32_t seq) = 0;
+    virtual void consensusBuilt (Ledger::ref ledger) = 0;
+
+    virtual LedgerIndex getBuildingLedger () = 0;
+    virtual void setBuildingLedger (LedgerIndex index) = 0;
 
     virtual void tryAdvance () = 0;
     virtual void newPathRequest () = 0;
@@ -134,9 +141,12 @@ public:
     virtual bool fixIndex (LedgerIndex ledgerIndex, LedgerHash const& ledgerHash) = 0;
     virtual void doLedgerCleaner(const Json::Value& parameters) = 0;
 
-    virtual PropertyStream::Source& getPropertySource () = 0;
+    virtual beast::PropertyStream::Source& getPropertySource () = 0;
 
-    static bool shouldAcquire (uint32 currentLedgerID, uint32 ledgerHistory, uint32 targetLedger);
+    static bool shouldAcquire (std::uint32_t currentLedgerID,
+                               std::uint32_t ledgerHistory, std::uint32_t targetLedger);
 };
+
+} // ripple
 
 #endif

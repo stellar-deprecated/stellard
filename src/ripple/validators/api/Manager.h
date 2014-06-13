@@ -20,6 +20,9 @@
 #ifndef RIPPLE_VALIDATORS_MANAGER_H_INCLUDED
 #define RIPPLE_VALIDATORS_MANAGER_H_INCLUDED
 
+#include "../../beast/beast/threads/Stoppable.h"
+#include "../../beast/modules/beast_core/files/File.h"
+
 namespace ripple {
 namespace Validators {
 
@@ -28,7 +31,7 @@ namespace Validators {
     the list of chosen validators is critical to the health of the network.
     All operations are performed asynchronously on an internal thread.
 */
-class Manager : public PropertyStream::Source
+class Manager : public beast::PropertyStream::Source
 {
 protected:
     Manager();
@@ -40,9 +43,9 @@ public:
         @param journal Where to send log output.
     */
     static Manager* New (
-        Stoppable& stoppableParent, 
-        File const& pathToDbFileOrDirectory,
-        Journal journal);
+        beast::Stoppable& stoppableParent, 
+        beast::File const& pathToDbFileOrDirectory,
+        beast::Journal journal);
 
     /** Destroy the object.
         Any pending source fetch operations are aborted. This will block
@@ -61,11 +64,11 @@ public:
             Can be called from any thread.
     */
     /** @{ */
-    virtual void addStrings (String name,
+    virtual void addStrings (beast::String name,
                              std::vector <std::string> const& strings) = 0;
-    virtual void addStrings (String name,
-                             StringArray const& stringArray) = 0;
-    virtual void addFile (File const& file) = 0;
+    virtual void addStrings (beast::String name,
+                             beast::StringArray const& stringArray) = 0;
+    virtual void addFile (beast::File const& file) = 0;
     virtual void addStaticSource (Validators::Source* source) = 0;
     /** @} */
 
@@ -75,7 +78,7 @@ public:
         Thread safety:
             Can be called from any thread.
     */
-    virtual void addURL (URL const& url) = 0;
+    virtual void addURL (beast::URL const& url) = 0;
 
     /** Add a live source of validators.
         The caller loses ownership of the object. The fetch is performed

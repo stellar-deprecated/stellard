@@ -20,32 +20,54 @@
 #ifndef RIPPLE_RIPPLECALC_H
 #define RIPPLE_RIPPLECALC_H
 
+namespace ripple {
+
 /** Calculate the quality of a payment path.
 
     The quality is a synonym for price. Specifically, the amount of
     input required to produce a given output along a specified path.
 */
-// VFALCO TODO What's the difference between a RippleState versus PathState?
+
+// TODO(vfalco) What's the difference between a RippleState versus PathState?
 //
 class RippleCalc
 {
-public:
-    // First time working in reverse a funding source was mentioned.  Source may only be used there.
-    curIssuerNode                   mumSource;          // Map of currency, issuer to node index.
+  private:
+    // First time working in reverse a funding source was mentioned.  Source may
+    // only be used there.
+    //
+    // Map of currency, issuer to node index.
+    curIssuerNode mumSource;
 
-    // If the transaction fails to meet some constraint, still need to delete unfunded offers.
-    boost::unordered_set<uint256>   musUnfundedFound;   // Offers that were found unfunded.
+    // If the transaction fails to meet some constraint, still need to delete
+    // unfunded offers.
+    //
+    // Offers that were found unfunded.
+    unordered_set<uint256> mUnfundedOffers;
 
-    void                pathNext (PathState::ref psrCur, const bool bMultiQuality, const LedgerEntrySet& lesCheckpoint, LedgerEntrySet& lesCurrent);
-    TER                 calcNode (const unsigned int uNode, PathState& psCur, const bool bMultiQuality);
-    TER                 calcNodeRev (const unsigned int uNode, PathState& psCur, const bool bMultiQuality);
-    TER                 calcNodeFwd (const unsigned int uNode, PathState& psCur, const bool bMultiQuality);
-    TER                 calcNodeOfferRev (const unsigned int uNode, PathState& psCur, const bool bMultiQuality);
-    TER                 calcNodeOfferFwd (const unsigned int uNode, PathState& psCur, const bool bMultiQuality);
-    TER                 calcNodeAccountRev (const unsigned int uNode, PathState& psCur, const bool bMultiQuality);
-    TER                 calcNodeAccountFwd (const unsigned int uNode, PathState& psCur, const bool bMultiQuality);
-    TER                 calcNodeAdvance (const unsigned int uNode, PathState& psCur, const bool bMultiQuality, const bool bReverse);
-    TER                 calcNodeDeliverRev (
+    void pathNext (
+        PathState::ref psrCur, const bool bMultiQuality,
+        const LedgerEntrySet& lesCheckpoint, LedgerEntrySet& lesCurrent);
+
+    TER calcNode (
+        const unsigned int uNode, PathState& psCur, const bool bMultiQuality);
+    TER calcNodeRev (
+        const unsigned int uNode, PathState& psCur, const bool bMultiQuality);
+    TER calcNodeFwd (
+        const unsigned int uNode, PathState& psCur, const bool bMultiQuality);
+    TER calcNodeOfferRev (
+        const unsigned int uNode, PathState& psCur, const bool bMultiQuality);
+    TER calcNodeOfferFwd (
+        const unsigned int uNode, PathState& psCur, const bool bMultiQuality);
+    TER calcNodeAccountRev (
+        const unsigned int uNode, PathState& psCur, const bool bMultiQuality);
+    TER calcNodeAccountFwd (
+        const unsigned int uNode, PathState& psCur, const bool bMultiQuality);
+    TER calcNodeAdvance (
+        const unsigned int uNode, PathState& psCur, const bool bMultiQuality,
+        const bool bReverse);
+
+    TER calcNodeDeliverRev (
         const unsigned int          uNode,
         PathState&                  psCur,
         const bool                  bMultiQuality,
@@ -53,7 +75,7 @@ public:
         const STAmount&             saOutReq,
         STAmount&                   saOutAct);
 
-    TER                 calcNodeDeliverFwd (
+    TER calcNodeDeliverFwd (
         const unsigned int          uNode,
         PathState&                  psCur,
         const bool                  bMultiQuality,
@@ -62,40 +84,45 @@ public:
         STAmount&                   saInAct,
         STAmount&                   saInFees);
 
-    void                calcNodeRipple (const uint32 uQualityIn, const uint32 uQualityOut,
-                                        const STAmount& saPrvReq, const STAmount& saCurReq,
-                                        STAmount& saPrvAct, STAmount& saCurAct,
-                                        uint64& uRateMax);
+    void calcNodeRipple (
+        const std::uint32_t uQualityIn, const std::uint32_t uQualityOut,
+        const STAmount& saPrvReq, const STAmount& saCurReq,
+        STAmount& saPrvAct, STAmount& saCurAct, std::uint64_t& uRateMax);
 
-    RippleCalc (LedgerEntrySet& lesNodes, const bool bOpenLedger)
-        : lesActive (lesNodes), mOpenLedger (bOpenLedger)
+    RippleCalc (LedgerEntrySet& activeLedger, const bool bOpenLedger)
+        : mActiveLedger (activeLedger), mOpenLedger (bOpenLedger)
     {
-        ;
     }
 
+public:
     static TER rippleCalc (
-        LedgerEntrySet&                 lesActive,
-        STAmount&                 saMaxAmountAct,
-        STAmount&                 saDstAmountAct,
+        LedgerEntrySet&                   lesActive,
+        STAmount&                         saMaxAmountAct,
+        STAmount&                         saDstAmountAct,
         std::vector<PathState::pointer>&  vpsExpanded,
-        const STAmount&                 saDstAmountReq,
-        const STAmount&                 saMaxAmountReq,
-        const uint160&                  uDstAccountID,
-        const uint160&                  uSrcAccountID,
-        const STPathSet&                spsPaths,
-        const bool                      bPartialPayment,
-        const bool                      bLimitQuality,
-        const bool                      bNoRippleDirect,
-        const bool                      bStandAlone,        // --> True, not to affect accounts.
-        const bool                      bOpenLedger = true  // --> What kind of errors to return.
+        const STAmount&                   saDstAmountReq,
+        const STAmount&                   saMaxAmountReq,
+        const uint160&                    uDstAccountID,
+        const uint160&                    uSrcAccountID,
+        const STPathSet&                  spsPaths,
+        const bool                        bPartialPayment,
+        const bool                        bLimitQuality,
+        const bool                        bNoRippleDirect,
+        // --> True, not to affect accounts.
+        const bool                        bStandAlone,
+        // --> What kind of errors to return.
+        const bool                        bOpenLedger = true
     );
 
-    static void setCanonical (STPathSet& spsDst, const std::vector<PathState::pointer>& vpsExpanded, bool bKeepDefault);
+    static void setCanonical (
+        STPathSet& spsDst, const std::vector<PathState::pointer>& vpsExpanded,
+        bool bKeepDefault);
 
-protected:
-    LedgerEntrySet&                 lesActive;
-    bool                            mOpenLedger;
+private:
+    LedgerEntrySet& mActiveLedger;
+    bool mOpenLedger;
 };
 
+} // ripple
+
 #endif
-// vim:ts=4

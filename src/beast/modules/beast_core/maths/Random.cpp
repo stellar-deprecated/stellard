@@ -21,7 +21,11 @@
 */
 //==============================================================================
 
-Random::Random (const int64 seedValue) noexcept
+#include "../../../beast/unit_test/suite.h"
+
+namespace beast {
+
+Random::Random (const std::int64_t seedValue) noexcept
     : seed (seedValue)
 {
     nextInt (); // fixes a bug where the first int is always 0
@@ -37,23 +41,23 @@ Random::~Random() noexcept
 {
 }
 
-void Random::setSeed (const int64 newSeed) noexcept
+void Random::setSeed (const std::int64_t newSeed) noexcept
 {
     seed = newSeed;
 
     nextInt (); // fixes a bug where the first int is always 0
 }
 
-void Random::combineSeed (const int64 seedValue) noexcept
+void Random::combineSeed (const std::int64_t seedValue) noexcept
 {
     seed ^= nextInt64() ^ seedValue;
 }
 
 void Random::setSeedRandomly()
 {
-    static int64 globalSeed = 0;
+    static std::int64_t globalSeed = 0;
 
-    combineSeed (globalSeed ^ (int64) (pointer_sized_int) this);
+    combineSeed (globalSeed ^ (std::int64_t) (std::intptr_t) this);
     combineSeed (Time::getMillisecondCounter());
     combineSeed (Time::getHighResolutionTicks());
     combineSeed (Time::getHighResolutionTicksPerSecond());
@@ -72,7 +76,7 @@ Random& Random::getSystemRandom() noexcept
 //==============================================================================
 int Random::nextInt() noexcept
 {
-    seed = (seed * literal64bit (0x5deece66d) + 11) & literal64bit (0xffffffffffff);
+    seed = (seed * 0x5deece66dLL + 11) & 0xffffffffffffULL;
 
     return (int) (seed >> 16);
 }
@@ -80,12 +84,12 @@ int Random::nextInt() noexcept
 int Random::nextInt (const int maxValue) noexcept
 {
     bassert (maxValue > 0);
-    return (int) ((((unsigned int) nextInt()) * (uint64) maxValue) >> 32);
+    return (int) ((((unsigned int) nextInt()) * (std::uint64_t) maxValue) >> 32);
 }
 
-int64 Random::nextInt64() noexcept
+std::int64_t Random::nextInt64() noexcept
 {
-    return (((int64) nextInt()) << 32) | (int64) (uint64) (uint32) nextInt();
+    return (((std::int64_t) nextInt()) << 32) | (std::int64_t) (std::uint64_t) (std::uint32_t) nextInt();
 }
 
 bool Random::nextBool() noexcept
@@ -95,25 +99,12 @@ bool Random::nextBool() noexcept
 
 float Random::nextFloat() noexcept
 {
-    return static_cast <uint32> (nextInt()) / (float) 0xffffffff;
+    return static_cast <std::uint32_t> (nextInt()) / (float) 0xffffffff;
 }
 
 double Random::nextDouble() noexcept
 {
-    return static_cast <uint32> (nextInt()) / (double) 0xffffffff;
-}
-
-BigInteger Random::nextLargeNumber (const BigInteger& maximumValue)
-{
-    BigInteger n;
-
-    do
-    {
-        fillBitsRandomly (n, 0, maximumValue.getHighestBit() + 1);
-    }
-    while (n >= maximumValue);
-
-    return n;
+    return static_cast <std::uint32_t> (nextInt()) / (double) 0xffffffff;
 }
 
 void Random::fillBitsRandomly (void* const buffer, size_t bytes)
@@ -130,38 +121,13 @@ void Random::fillBitsRandomly (void* const buffer, size_t bytes)
     }
 }
 
-void Random::fillBitsRandomly (BigInteger& arrayToChange, int startBit, int numBits)
-{
-    arrayToChange.setBit (startBit + numBits - 1, true);  // to force the array to pre-allocate space
-
-    while ((startBit & 31) != 0 && numBits > 0)
-    {
-        arrayToChange.setBit (startBit++, nextBool());
-        --numBits;
-    }
-
-    while (numBits >= 32)
-    {
-        arrayToChange.setBitRangeAsInt (startBit, 32, (unsigned int) nextInt());
-        startBit += 32;
-        numBits -= 32;
-    }
-
-    while (--numBits >= 0)
-        arrayToChange.setBit (startBit + numBits, nextBool());
-}
-
 //==============================================================================
 
-class RandomTests  : public UnitTest
+class Random_test  : public unit_test::suite
 {
 public:
-    RandomTests() : UnitTest ("Random", "beast") {}
-
-    void runTest()
+    void run()
     {
-        beginTestCase ("Random");
-
         for (int j = 10; --j >= 0;)
         {
             Random r;
@@ -184,4 +150,6 @@ public:
     }
 };
 
-static RandomTests randomTests;
+BEAST_DEFINE_TESTSUITE(Random,beast_core,beast);
+
+} // beast

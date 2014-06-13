@@ -17,6 +17,8 @@
 */
 //==============================================================================
 
+namespace ripple {
+
 LedgerFormats::LedgerFormats ()
 {
     add ("AccountRoot", ltACCOUNT_ROOT)
@@ -106,8 +108,8 @@ LedgerFormats::LedgerFormats ()
             << SOElement (sfHashes,              SOE_REQUIRED)
             ;
 
-    add ("EnabledFeatures", ltFEATURES)
-            << SOElement (sfFeatures, SOE_REQUIRED)
+    add ("EnabledAmendments", ltAMENDMENTS)
+            << SOElement (sfAmendments, SOE_REQUIRED)
             ;
 
     add ("FeeSettings", ltFEE_SETTINGS)
@@ -129,5 +131,7 @@ void LedgerFormats::addCommonFields (Item& item)
 
 LedgerFormats* LedgerFormats::getInstance ()
 {
-    return SharedSingleton <LedgerFormats>::getInstance ();
+    return beast::SharedSingleton <LedgerFormats>::getInstance ();
 }
+
+} // ripple

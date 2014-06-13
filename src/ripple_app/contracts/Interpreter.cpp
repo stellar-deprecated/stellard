@@ -17,18 +17,15 @@
 */
 //==============================================================================
 
-/*
-We also need to charge for each op
-
-*/
+namespace ripple {
 
 namespace Script
 {
 
 Interpreter::Interpreter ()
 {
-    mContract = NULL;
-    mCode = NULL;
+    mContract = nullptr;
+    mCode = nullptr;
     mInstructionPointer = 0;
     mTotalFee = 0;
 
@@ -226,7 +223,6 @@ bool Interpreter::canSign (const uint160& signer)
     return (true);
 }
 
+}
 
-
-
-} // end namespace
+} // ripple

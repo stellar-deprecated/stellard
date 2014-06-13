@@ -17,11 +17,12 @@
 */
 //==============================================================================
 
+namespace ripple {
+
 SETUP_LOG (OrderBookDB)
 
 OrderBookDB::OrderBookDB (Stoppable& parent)
     : Stoppable ("OrderBookDB", parent)
-    , mLock (this, "OrderBookDB", __FILE__, __LINE__)
     , mSeq (0)
 {
 
@@ -29,14 +30,14 @@ OrderBookDB::OrderBookDB (Stoppable& parent)
 
 void OrderBookDB::invalidate ()
 {
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
     mSeq = 0;
 }
 
 void OrderBookDB::setup (Ledger::ref ledger)
 {
     {
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
 
         // Do a full update every 256 ledgers
         if (mSeq != 0)
@@ -63,8 +64,8 @@ void OrderBookDB::setup (Ledger::ref ledger)
 
 static void updateHelper (SLE::ref entry,
     boost::unordered_set< uint256 >& seen,
-    boost::unordered_map< RippleAsset, std::vector<OrderBook::pointer> >& destMap,
-    boost::unordered_map< RippleAsset, std::vector<OrderBook::pointer> >& sourceMap,
+    ripple::unordered_map< RippleAsset, std::vector<OrderBook::pointer> >& destMap,
+    ripple::unordered_map< RippleAsset, std::vector<OrderBook::pointer> >& sourceMap,
     boost::unordered_set< RippleAsset >& XRPBooks,
     int& books)
 {
@@ -96,8 +97,8 @@ static void updateHelper (SLE::ref entry,
 void OrderBookDB::update (Ledger::pointer ledger)
 {
     boost::unordered_set< uint256 > seen;
-    boost::unordered_map< RippleAsset, std::vector<OrderBook::pointer> > destMap;
-    boost::unordered_map< RippleAsset, std::vector<OrderBook::pointer> > sourceMap;
+    ripple::unordered_map< RippleAsset, std::vector<OrderBook::pointer> > destMap;
+    ripple::unordered_map< RippleAsset, std::vector<OrderBook::pointer> > sourceMap;
     boost::unordered_set< RippleAsset > XRPBooks;
 
     WriteLog (lsDEBUG, OrderBookDB) << "OrderBookDB::update>";
@@ -113,14 +114,14 @@ void OrderBookDB::update (Ledger::pointer ledger)
     catch (const SHAMapMissingNode&)
     {
         WriteLog (lsINFO, OrderBookDB) << "OrderBookDB::update encountered a missing node";
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
         mSeq = 0;
         return;
     }
 
     WriteLog (lsDEBUG, OrderBookDB) << "OrderBookDB::update< " << books << " books found";
     {
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
 
         mXRPBooks.swap(XRPBooks);
         mSourceMap.swap(sourceMap);
@@ -133,7 +134,7 @@ void OrderBookDB::addOrderBook(const uint160& ci, const uint160& co,
     const uint160& ii, const uint160& io)
 {
     bool toXRP = co.isZero();
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
 
     if (toXRP)
     { // We don't want to search through all the to-XRP or from-XRP order books!
@@ -166,8 +167,8 @@ void OrderBookDB::addOrderBook(const uint160& ci, const uint160& co,
 void OrderBookDB::getBooksByTakerPays (RippleIssuer const& issuerID, RippleCurrency const& currencyID,
                                        std::vector<OrderBook::pointer>& bookRet)
 {
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
-    boost::unordered_map< RippleAsset, std::vector<OrderBook::pointer> >::const_iterator
+    ScopedLockType sl (mLock);
+    ripple::unordered_map< RippleAsset, std::vector<OrderBook::pointer> >::const_iterator
     it = mSourceMap.find (RippleAssetRef (currencyID, issuerID));
 
     if (it != mSourceMap.end ())
@@ -178,7 +179,7 @@ void OrderBookDB::getBooksByTakerPays (RippleIssuer const& issuerID, RippleCurre
 
 bool OrderBookDB::isBookToXRP(RippleIssuer const& issuerID, RippleCurrency const& currencyID)
 {
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
 
     return mXRPBooks.count(RippleAssetRef(currencyID, issuerID)) > 0;
 }
@@ -187,8 +188,8 @@ bool OrderBookDB::isBookToXRP(RippleIssuer const& issuerID, RippleCurrency const
 void OrderBookDB::getBooksByTakerGets (RippleIssuer const& issuerID, RippleCurrency const& currencyID,
                                        std::vector<OrderBook::pointer>& bookRet)
 {
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
-    boost::unordered_map< RippleAsset, std::vector<OrderBook::pointer> >::const_iterator
+    ScopedLockType sl (mLock);
+    ripple::unordered_map< RippleAsset, std::vector<OrderBook::pointer> >::const_iterator
     it = mDestMap.find (RippleAssetRef (currencyID, issuerID));
 
     if (it != mDestMap.end ())
@@ -200,7 +201,7 @@ void OrderBookDB::getBooksByTakerGets (RippleIssuer const& issuerID, RippleCurre
 BookListeners::pointer OrderBookDB::makeBookListeners (RippleCurrency const& currencyPays, RippleCurrency const& currencyGets,
         RippleIssuer const& issuerPays, RippleIssuer const& issuerGets)
 {
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
     BookListeners::pointer ret = getBookListeners (currencyPays, currencyGets, issuerPays, issuerGets);
 
     if (!ret)
@@ -220,7 +221,7 @@ BookListeners::pointer OrderBookDB::getBookListeners (RippleCurrency const& curr
         RippleIssuer const& issuerPays, RippleIssuer const& issuerGets)
 {
     BookListeners::pointer ret;
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
 
     MapType::iterator it0 (mListeners.find (RippleBookRef (
         RippleAssetRef (currencyPays, issuerPays),
@@ -236,7 +237,7 @@ BookListeners::pointer OrderBookDB::getBookListeners (RippleCurrency const& curr
 // We need to determine which streams a given meta effects
 void OrderBookDB::processTxn (Ledger::ref ledger, const AcceptedLedgerTx& alTx, Json::Value const& jvObj)
 {
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
 
     if (alTx.getResult () == tesSUCCESS)
     {
@@ -248,7 +249,7 @@ void OrderBookDB::processTxn (Ledger::ref ledger, const AcceptedLedgerTx& alTx, 
             {
                 if (node.getFieldU16 (sfLedgerEntryType) == ltOFFER)
                 {
-                    SField* field = NULL;
+                    SField* field = nullptr;
 
                     // We need a field that contains the TakerGets and TakerPays parameters
                     if (node.getFName () == sfModifiedNode)
@@ -299,19 +300,18 @@ void OrderBookDB::processTxn (Ledger::ref ledger, const AcceptedLedgerTx& alTx, 
 //------------------------------------------------------------------------------
 
 BookListeners::BookListeners ()
-    : mLock (this, "BookListeners", __FILE__, __LINE__)
 {
 }
 
 void BookListeners::addSubscriber (InfoSub::ref sub)
 {
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
     mListeners[sub->getSeq ()] = sub;
 }
 
-void BookListeners::removeSubscriber (uint64 seq)
+void BookListeners::removeSubscriber (std::uint64_t seq)
 {
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
     mListeners.erase (seq);
 }
 
@@ -320,7 +320,7 @@ void BookListeners::publish (Json::Value const& jvObj)
     Json::FastWriter jfwWriter;
     std::string sObj = jfwWriter.write (jvObj);
 
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
     NetworkOPs::SubMapType::const_iterator it = mListeners.begin ();
 
     while (it != mListeners.end ())
@@ -337,4 +337,4 @@ void BookListeners::publish (Json::Value const& jvObj)
     }
 }
 
-// vim:ts=4
+} // ripple

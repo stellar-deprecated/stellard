@@ -20,7 +20,18 @@
 #ifndef RIPPLE_RIPPLEADDRESS_H
 #define RIPPLE_RIPPLEADDRESS_H
 
+#include "../crypto/Base58Data.h"
+
+#include "../ripple/types/api/UInt160.h"
+#include "../ripple/types/api/RippleAccountID.h"
+#include "../ripple/types/api/RippleAccountPrivateKey.h"
+#include "../ripple/types/api/RippleAccountPublicKey.h"
+#include "../ripple/types/api/RipplePrivateKey.h"
+#include "../ripple/types/api/RipplePublicKey.h"
+#include "../ripple/types/api/RipplePublicKeyHash.h"
 #include "../ripple/sslutil/api/ECDSACanonical.h"
+
+namespace ripple {
 
 //
 // Used to hold addresses and parse and produce human formats.
@@ -96,7 +107,7 @@ public:
 
     std::string humanAccountID () const;
 
-    bool setAccountID (const std::string& strAccountID, Base58::Alphabet const& alphabet = Base58::getCurrentAlphabet ());
+    bool setAccountID (const std::string& strAccountID, Base58::Alphabet const& alphabet = Base58::getRippleAlphabet());
     void setAccountID (const uint160& hash160In);
 
     static RippleAddress createAccountID (const std::string& strAccountID)
@@ -161,7 +172,6 @@ public:
     void setAccountPrivate (const RippleAddress& naGenerator, const RippleAddress& naSeed, int seq);
 
     bool accountPrivateSign (uint256 const& uHash, Blob& vucSig) const;
-    // bool accountPrivateVerify(uint256 const& uHash, Blob const& vucSig) const;
 
     // Encrypt a message.
     Blob accountPrivateEncrypt (const RippleAddress& naPublicTo, Blob const& vucPlainText) const;
@@ -189,7 +199,6 @@ public:
     // Generators
     // Use to generate a master or regular family.
     //
-    BIGNUM* getGeneratorBN () const; // DEPRECATED
     Blob const& getGenerator () const;
 
     std::string humanGenerator () const;
@@ -286,5 +295,7 @@ struct RippleAccountPrivateKeyTraits::assign <RippleAddress>
         construct (ui.begin(), ui.end(), value);
     }
 };
+
+} // ripple
 
 #endif

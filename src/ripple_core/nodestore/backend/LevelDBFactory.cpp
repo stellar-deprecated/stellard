@@ -23,19 +23,18 @@ namespace NodeStore {
 class LevelDBBackend
     : public Backend
     , public BatchWriter::Callback
-    , public LeakChecked <LevelDBBackend>
+    , public beast::LeakChecked <LevelDBBackend>
 {
 public:
-    Journal m_journal;
+    beast::Journal m_journal;
     size_t const m_keyBytes;
     Scheduler& m_scheduler;
     BatchWriter m_batch;
-    StringPool m_stringPool;
     std::string m_name;
     std::unique_ptr <leveldb::DB> m_db;
 
     LevelDBBackend (int keyBytes, Parameters const& keyValues,
-        Scheduler& scheduler, Journal journal)
+        Scheduler& scheduler, beast::Journal journal)
         : m_journal (journal)
         , m_keyBytes (keyBytes)
         , m_scheduler (scheduler)
@@ -43,7 +42,7 @@ public:
         , m_name (keyValues ["path"].toStdString ())
     {
         if (m_name.empty())
-            Throw (std::runtime_error ("Missing path in LevelDBFactory backend"));
+            throw std::runtime_error ("Missing path in LevelDBFactory backend");
 
         leveldb::Options options;
         options.create_if_missing = true;
@@ -72,22 +71,32 @@ public:
             options.max_open_files = keyValues["open_files"].getIntValue();
         }
 
+        if (! keyValues["compression"].isEmpty ())
+        {
+            if (keyValues["compression"].getIntValue () == 0)
+            {
+                options.compression = leveldb::kNoCompression;
+            }
+        }
+
         leveldb::DB* db = nullptr;
         leveldb::Status status = leveldb::DB::Open (options, m_name, &db);
         if (!status.ok () || !db)
-            Throw (std::runtime_error (std::string("Unable to open/create leveldb: ") + status.ToString()));
+            throw std::runtime_error (std::string("Unable to open/create leveldb: ") + status.ToString());
 
         m_db.reset (db);
     }
 
-    std::string getName()
+    std::string
+    getName()
     {
         return m_name;
     }
 
     //--------------------------------------------------------------------------
 
-    Status fetch (void const* key, NodeObject::Ptr* pObject)
+    Status
+    fetch (void const* key, NodeObject::Ptr* pObject)
     {
         pObject->reset ();
 
@@ -133,20 +142,22 @@ public:
         return status;
     }
 
-    void store (NodeObject::ref object)
+    void
+    store (NodeObject::ref object)
     {
         m_batch.store (object);
     }
 
-    void storeBatch (Batch const& batch)
+    void
+    storeBatch (Batch const& batch)
     {
         leveldb::WriteBatch wb;
 
         EncodedBlob encoded;
 
-        BOOST_FOREACH (NodeObject::ref object, batch)
+        for (auto const& e : batch)
         {
-            encoded.prepare (object);
+            encoded.prepare (e);
 
             wb.Put (
                 leveldb::Slice (reinterpret_cast <char const*> (
@@ -160,7 +171,8 @@ public:
         m_db->Write (options, &wb).ok ();
     }
 
-    void visitAll (VisitCallback& callback)
+    void
+    for_each (std::function <void(NodeObject::Ptr)> f)
     {
         leveldb::ReadOptions const options;
 
@@ -176,33 +188,35 @@ public:
 
                 if (decoded.wasOk ())
                 {
-                    NodeObject::Ptr object (decoded.createObject ());
-
-                    callback.visitObject (object);
+                    f (decoded.createObject ());
                 }
                 else
                 {
                     // Uh oh, corrupted data!
-                    WriteLog (lsFATAL, NodeObject) << "Corrupt NodeObject #" << uint256 (it->key ().data ());
+                    if (m_journal.fatal) m_journal.fatal <<
+                        "Corrupt NodeObject #" << uint256(it->key ().data ());
                 }
             }
             else
             {
                 // VFALCO NOTE What does it mean to find an
                 //             incorrectly sized key? Corruption?
-                WriteLog (lsFATAL, NodeObject) << "Bad key size = " << it->key ().size ();
+                if (m_journal.fatal) m_journal.fatal <<
+                    "Bad key size = " << it->key().size();
             }
         }
     }
 
-    int getWriteLoad ()
+    int
+    getWriteLoad ()
     {
         return m_batch.getWriteLoad ();
     }
 
     //--------------------------------------------------------------------------
 
-    void writeBatch (Batch const& batch)
+    void
+    writeBatch (Batch const& batch)
     {
         storeBatch (batch);
     }
@@ -227,16 +241,22 @@ public:
         m_lruCache.reset (options.block_cache);
     }
 
-    String getName () const
+    ~LevelDBFactory()
+    {
+    }
+
+    beast::String
+    getName () const
     {
         return "LevelDB";
     }
 
-    std::unique_ptr <Backend> createInstance (
+    std::unique_ptr <Backend>    
+    createInstance(
         size_t keyBytes,
         Parameters const& keyValues,
         Scheduler& scheduler,
-        Journal journal)
+        beast::Journal journal)
     {
         return std::make_unique <LevelDBBackend> (
             keyBytes, keyValues, scheduler, journal);
@@ -245,7 +265,8 @@ public:
 
 //------------------------------------------------------------------------------
 
-std::unique_ptr <Factory> make_LevelDBFactory ()
+std::unique_ptr <Factory>
+make_LevelDBFactory ()
 {
     return std::make_unique <LevelDBFactory> ();
 }

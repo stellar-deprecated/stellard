@@ -20,8 +20,9 @@
 #ifndef RIPPLE_TYPES_CRYPTOIDENTIFIER_H_INCLUDED
 #define RIPPLE_TYPES_CRYPTOIDENTIFIER_H_INCLUDED
 
-#include "../../beast/beast/FixedArray.h"
+#include "../../beast/beast/ByteOrder.h"
 #include "../../beast/beast/crypto/Sha256.h"
+#include <array>
 
 #include "Base58.h"
 
@@ -41,7 +42,7 @@ namespace ripple {
                     representation includes an appended a four byte checksum on
                     the data including the Token.
 */
-template <std::size_t Size, uint8 Token, bool Checked>
+template <std::size_t Size, std::uint8_t Token, bool Checked>
 class CryptoIdentifier
 {
 public:
@@ -52,7 +53,7 @@ public:
     static size_type const      size = Size;
     // 4 checksum bytes (optional)
     static std::size_t const    post_size = (Checked ? 4 : 0);
-    static uint8 const          token = Token;
+    static std::uint8_t const   token = Token;
     static bool const           checked = Checked;
 
     // This is what the wrapper creates, it includes the padding.
@@ -64,7 +65,7 @@ public:
 
     /** Initialize from an input sequence. */
     static void construct (
-        uint8 const* begin, uint8 const* end,
+        std::uint8_t const* begin, std::uint8_t const* end,
             value_type& value)
     {
         value.storage()[0] = Token;
@@ -72,9 +73,11 @@ public:
         std::copy (begin, end, value.begin());
         if (Checked)
         {
-            Sha256::digest_type digest;
-            Sha256::hash (Sha256::hash (value.storage().cbegin(),
-                value.storage().cend() - post_size), digest);
+            beast::Sha256::digest_type digest;
+            auto const& vs = value.storage();
+            beast::Sha256::hash (beast::Sha256::hash (vs.data(),
+                                                      vs.data() + (vs.size() - post_size)),
+                                 digest);
             // We use the first 4 bytes as a checksum
             std::copy (digest.begin(), digest.begin() + 4,
                 value.end());
@@ -89,12 +92,12 @@ public:
         static value_type createFromInteger (UnsignedIntegralType i)
         {
             static_bassert (size >= sizeof (UnsignedIntegralType));
-            FixedArray <uint8, size> data;
+            std::array <std::uint8_t, size> data;
             data.fill (0);
-            i = toNetworkByteOrder <UnsignedIntegralType> (i);
-            std::memcpy (data.end () - sizeof (i), &i, std::min (size, sizeof (i)));
+            i = beast::toNetworkByteOrder <UnsignedIntegralType> (i);
+            std::memcpy (data.data () + (data.size() - sizeof (i)), &i, std::min (size, sizeof (i)));
             value_type value;
-            construct (data.begin(), data.end(), value);
+            construct (data.data(), data.data() + data.size(), value);
             return value;
         }
     };
@@ -104,11 +107,11 @@ public:
     {
         typename value_type::storage_type const& storage (value.storage());
         // We will convert to little endian with an extra pad byte
-        FixedArray <uint8, value_type::storage_size + 1> le;
+        std::array <std::uint8_t, value_type::storage_size + 1> le;
         std::reverse_copy (storage.begin(), storage.end(), le.begin());
         // Set pad byte zero to make BIGNUM always positive
         le.back() = 0;
-        return Base58::raw_encode (le.begin(), le.end(),
+        return Base58::raw_encode (le.data(), le.data() + le.size(),
             Base58::getRippleAlphabet(), Checked);
     }
 
@@ -118,7 +121,7 @@ public:
         value_type value;
         bool success (! s.empty());
         if (success && !Base58::raw_decode (&s.front(), &s.back()+1,
-            value.storage().begin(), value_type::storage_size, Checked,
+            value.storage().data(), value_type::storage_size, Checked,
                 Base58::getRippleAlphabet()))
             success = false;
         if (success && value.storage()[0] != Token)
@@ -127,7 +130,7 @@ public:
     }
 };
 
-template <std::size_t Size, uint8 Token, bool Checked> 
+template <std::size_t Size, std::uint8_t Token, bool Checked> 
     typename CryptoIdentifier <Size, Token, Checked>::size_type
     const CryptoIdentifier <Size, Token, Checked>::size;
 }

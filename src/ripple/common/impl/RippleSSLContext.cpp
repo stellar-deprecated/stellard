@@ -19,9 +19,8 @@
 
 #include "../RippleSSLContext.h"
 
-#include "../../beast/modules/beast_core/beast_core.h"
-
 #include <cstdint>
+#include <sstream>
 
 namespace ripple {
 
@@ -44,6 +43,18 @@ public:
     static DH* tmp_dh_handler (SSL*, int, int key_length)
     {
         return DHparams_dup (getDH (key_length));
+    }
+
+    // Pretty prints an error message
+    std::string error_message (std::string const& what,
+        boost::system::error_code const& ec)
+    {
+        std::stringstream ss;
+        ss <<
+            what << ": " <<
+            ec.message() <<
+            " (" << ec.value() << ")";
+        return ss.str();
     }
 
     //--------------------------------------------------------------------------
@@ -123,14 +134,15 @@ public:
 
         if (! cert_file.empty ())
         {
-            boost::system::error_code error;
+            boost::system::error_code ec;
             
             m_context.use_certificate_file (
-                cert_file, boost::asio::ssl::context::pem, error);
+                cert_file, boost::asio::ssl::context::pem, ec);
 
-            if (error)
+            if (ec)
             {
-                beast::FatalError ("Problem with SSL certificate file.",
+                beast::FatalError (error_message (
+                    "Problem with SSL certificate file.", ec).c_str(),
                     __FILE__, __LINE__);
             }
 
@@ -144,7 +156,9 @@ public:
 
             if (!f)
             {
-                beast::FatalError ("Problem opening SSL chain file.",
+                beast::FatalError (error_message (
+                    "Problem opening SSL chain file.", boost::system::error_code (errno,
+                    boost::system::generic_category())).c_str(),
                     __FILE__, __LINE__);
             }
 
@@ -152,7 +166,7 @@ public:
             {
                 for (;;)
                 {
-                    X509* const x = PEM_read_X509 (f, NULL, NULL, NULL);
+                    X509* const x = PEM_read_X509 (f, nullptr, nullptr, nullptr);
 
                     if (x == nullptr)
                         break;
@@ -185,14 +199,15 @@ public:
 
         if (! key_file.empty ())
         {
-            boost::system::error_code error;
+            boost::system::error_code ec;
 
             m_context.use_private_key_file (key_file,
-                boost::asio::ssl::context::pem, error);
+                boost::asio::ssl::context::pem, ec);
 
-            if (error)
+            if (ec)
             {
-                beast::FatalError ("Problem using the SSL private key file.",
+                beast::FatalError (error_message (
+                    "Problem using the SSL private key file.", ec).c_str(),
                     __FILE__, __LINE__);
             }
         }
@@ -278,25 +293,20 @@ RippleSSLContext::RippleSSLContext (ContextType& context)
 RippleSSLContext* RippleSSLContext::createBare ()
 {
     std::unique_ptr <RippleSSLContextImp> context (new RippleSSLContextImp ());
-
     return context.release ();
 }
 
 RippleSSLContext* RippleSSLContext::createWebSocket ()
 {
     std::unique_ptr <RippleSSLContextImp> context (new RippleSSLContextImp ());
-
     context->initCommon ();
-
     return context.release ();
 }
 
 RippleSSLContext* RippleSSLContext::createAnonymous (std::string const& cipherList)
 {
     std::unique_ptr <RippleSSLContextImp> context (new RippleSSLContextImp ());
-
     context->initAnonymous (cipherList);
-
     return context.release ();
 }
 
@@ -304,9 +314,7 @@ RippleSSLContext* RippleSSLContext::createAuthenticated (
     std::string key_file, std::string cert_file, std::string chain_file)
 {
     std::unique_ptr <RippleSSLContextImp> context (new RippleSSLContextImp ());
-
     context->initAuthenticated (key_file, cert_file, chain_file);
-
     return context.release ();
 }
 

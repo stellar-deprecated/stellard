@@ -17,11 +17,10 @@
 */
 //==============================================================================
 
-#include "BeastConfig.h"
+#include "../../BeastConfig.h"
 
 #include "ripple_sitefiles.h"
 
-#include "../beast/modules/beast_core/beast_core.h" // for DeadlineTimer, remove ASAP
 #include "../beast/modules/beast_asio/beast_asio.h" // HTTPClientBase
 
 #include "../beast/modules/beast_core/system/BeforeBoost.h"

@@ -20,10 +20,15 @@
 #ifndef BEAST_CRYPTO_UNSIGNEDINTEGER_H_INCLUDED
 #define BEAST_CRYPTO_UNSIGNEDINTEGER_H_INCLUDED
 
-#include "../SafeBool.h"
 #include "UnsignedIntegerCalc.h"
 #include "MurmurHash.h"
 
+#include "../ByteOrder.h"
+#include "../container/hardened_hash.h"
+
+#include "../utility/noexcept.h"
+#include <algorithm>
+#include <cassert>
 #include <cstdint>
 #include <memory>
 
@@ -38,7 +43,7 @@ namespace beast {
     may not be aligned.
 */
 template <std::size_t Bytes>
-class UnsignedInteger : public SafeBool <UnsignedInteger <Bytes> > 
+class UnsignedInteger
 {
 public:
     /** Constant for determining the number of bytes. */
@@ -60,30 +65,7 @@ public:
         attackers from exploiting crafted inputs to produce degenerate
         containers.
     */
-    class hasher
-    {
-    public:
-        /** Construct a hash function
-            If a seed is specified it will be used, else a random seed
-            will be generated from the system
-            @param seedToUse An optional seed to use.
-        */
-        explicit hasher (std::size_t seedToUse = Random::getSystemRandom ().nextInt ())
-            : m_seed (seedToUse)
-        {
-        }
-
-        /** Generates a simple hash from an UnsignedInteger. */
-        std::size_t operator() (UnsignedInteger const& key) const
-        {
-            std::size_t hash;
-            Murmur::Hash (key.cbegin (), key.size, m_seed, &hash);
-            return hash;
-        }
-
-    private:
-        std::size_t m_seed;
-    };
+    typedef hardened_hash <UnsignedInteger> hasher;
 
     /** Determins if two UnsignedInteger objects are equal. */
     class equal
@@ -125,7 +107,7 @@ public:
     UnsignedInteger (InputIt first, InputIt last)
     {
         m_values [0] = 0; // clear any pad bytes
-        check_precondition (std::distance (first, last) == size);
+        assert (std::distance (first, last) == size);
         std::copy (first, last, begin());
     }
     /** @} */
@@ -149,7 +131,8 @@ public:
         UnsignedInteger <Bytes> result;
         value = toNetworkByteOrder <UnsignedIntegralType> (value);
         result.clear ();
-        std::memcpy (result.end () - sizeof (value), &value, bmin (Bytes, sizeof (value)));
+        std::memcpy (result.end () - sizeof (value), &value,
+            std::min (Bytes, sizeof (value)));
         return result;
     }
 
@@ -201,9 +184,9 @@ public:
 
     /** Support conversion to `bool`.
         @return `true` if any bit is non-zero.
-        @see SafeBool
     */
-    bool asBoolean () const
+    explicit
+    operator bool() const
     {
         return isNotZero ();
     }

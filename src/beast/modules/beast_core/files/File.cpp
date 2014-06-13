@@ -21,6 +21,10 @@
 */
 //==============================================================================
 
+#include "../../../beast/unit_test/suite.h"
+
+namespace beast {
+
 // We need to make a shared singleton or else there are
 // issues with the leak detector and order of detruction.
 //
@@ -350,7 +354,7 @@ bool File::isAChildOf (const File& potentialParent) const
 }
 
 int   File::hashCode() const    { return fullPath.hashCode(); }
-int64 File::hashCode64() const  { return fullPath.hashCode64(); }
+std::int64_t File::hashCode64() const  { return fullPath.hashCode64(); }
 
 //==============================================================================
 bool File::isAbsolutePath (const String& path)
@@ -418,7 +422,7 @@ File File::getSiblingFile (const String& fileName) const
 }
 
 //==============================================================================
-String File::descriptionOfSizeInBytes (const int64 bytes)
+String File::descriptionOfSizeInBytes (const std::int64_t bytes)
 {
     const char* suffix;
     double divisor = 0;
@@ -473,9 +477,9 @@ Result File::createDirectory() const
 }
 
 //==============================================================================
-Time File::getLastModificationTime() const           { int64 m, a, c; getFileTimesInternal (m, a, c); return Time (m); }
-Time File::getLastAccessTime() const                 { int64 m, a, c; getFileTimesInternal (m, a, c); return Time (a); }
-Time File::getCreationTime() const                   { int64 m, a, c; getFileTimesInternal (m, a, c); return Time (c); }
+Time File::getLastModificationTime() const           { std::int64_t m, a, c; getFileTimesInternal (m, a, c); return Time (m); }
+Time File::getLastAccessTime() const                 { std::int64_t m, a, c; getFileTimesInternal (m, a, c); return Time (a); }
+Time File::getCreationTime() const                   { std::int64_t m, a, c; getFileTimesInternal (m, a, c); return Time (c); }
 
 bool File::setLastModificationTime (Time t) const    { return setFileTimesInternal (t.toMilliseconds(), 0, 0); }
 bool File::setLastAccessTime (Time t) const          { return setFileTimesInternal (0, t.toMilliseconds(), 0); }
@@ -690,7 +694,7 @@ FileOutputStream* File::createOutputStream (const size_t bufferSize) const
 bool File::appendData (const void* const dataToAppend,
                        const size_t numberOfBytes) const
 {
-    bassert (((ssize_t) numberOfBytes) >= 0);
+    bassert (((std::ptrdiff_t) numberOfBytes) >= 0);
 
     if (numberOfBytes == 0)
         return true;
@@ -900,28 +904,20 @@ File File::createTempFile (const String& fileNameEnding)
 }
 
 //==============================================================================
-MemoryMappedFile::MemoryMappedFile (const File& file, MemoryMappedFile::AccessMode mode)
-    : address (nullptr), range (0, file.getSize()), fileHandle (0)
-{
-    openInternal (file, mode);
-}
 
-MemoryMappedFile::MemoryMappedFile (const File& file, const Range<int64>& fileRange, AccessMode mode)
-    : address (nullptr), range (fileRange.getIntersectionWith (Range<int64> (0, file.getSize()))), fileHandle (0)
-{
-    openInternal (file, mode);
-}
-
-//==============================================================================
-
-class FileTests : public UnitTest
+class File_test : public unit_test::suite
 {
 public:
-    FileTests() : UnitTest ("File", "beast") {}
-
-    void runTest()
+    template <class T1, class T2>
+    bool
+    expectEquals (T1 const& t1, T2 const& t2)
     {
-        beginTestCase ("Reading");
+        return expect (t1 == t2);
+    }
+
+    void run()
+    {
+        testcase ("Reading");
 
         const File home (File::getSpecialLocation (File::userHomeDirectory));
         const File temp (File::getSpecialLocation (File::tempDirectory));
@@ -960,7 +956,7 @@ public:
             expect (numRootsExisting > 0);
         }
 
-        beginTestCase ("Writing");
+        testcase ("Writing");
 
         File demoFolder (temp.getChildFile ("Beast UnitTests Temp Folder.folder"));
         expect (demoFolder.deleteRecursively());
@@ -1001,7 +997,7 @@ public:
         expect (tempFile.exists());
         expect (tempFile.getSize() == 10);
         expect (std::abs ((int) (tempFile.getLastModificationTime().toMilliseconds() - Time::getCurrentTime().toMilliseconds())) < 3000);
-        expectEquals (tempFile.loadFileAsString(), String ("0123456789"));
+        expect (tempFile.loadFileAsString() == String ("0123456789"));
         expect (! demoFolder.containsSubDirectories());
 
         expectEquals (tempFile.getRelativePathFrom (demoFolder.getParentDirectory()), demoFolder.getFileName() + File::separatorString + tempFile.getFileName());
@@ -1046,38 +1042,7 @@ public:
             expect (tempFile.getSize() == 10);
         }
 
-        beginTestCase ("Memory-mapped files");
-
-        {
-            MemoryMappedFile mmf (tempFile, MemoryMappedFile::readOnly);
-            expect (mmf.getSize() == 10);
-            expect (mmf.getData() != nullptr);
-            expect (memcmp (mmf.getData(), "0123456789", 10) == 0);
-        }
-
-        {
-            const File tempFile2 (tempFile.getNonexistentSibling (false));
-            expect (tempFile2.create());
-            expect (tempFile2.appendData ("xxxxxxxxxx", 10));
-
-            {
-                MemoryMappedFile mmf (tempFile2, MemoryMappedFile::readWrite);
-                expect (mmf.getSize() == 10);
-                expect (mmf.getData() != nullptr);
-                memcpy (mmf.getData(), "abcdefghij", 10);
-            }
-
-            {
-                MemoryMappedFile mmf (tempFile2, MemoryMappedFile::readWrite);
-                expect (mmf.getSize() == 10);
-                expect (mmf.getData() != nullptr);
-                expect (memcmp (mmf.getData(), "abcdefghij", 10) == 0);
-            }
-
-            expect (tempFile2.deleteFile());
-        }
-
-        beginTestCase ("More writing");
+        testcase ("More writing");
 
         expect (tempFile.appendData ("abcdefghij", 10));
         expect (tempFile.getSize() == 20);
@@ -1099,5 +1064,6 @@ public:
     }
 };
 
-static FileTests fileTests;
+BEAST_DEFINE_TESTSUITE (File,beast_core,beast);
 
+} // beast

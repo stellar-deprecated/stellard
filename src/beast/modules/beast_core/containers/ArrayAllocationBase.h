@@ -24,6 +24,10 @@
 #ifndef BEAST_ARRAYALLOCATIONBASE_H_INCLUDED
 #define BEAST_ARRAYALLOCATIONBASE_H_INCLUDED
 
+#include "../../../beast/HeapBlock.h"
+
+namespace beast {
+
 //==============================================================================
 /**
     Implements some basic array storage allocation functions.
@@ -34,7 +38,7 @@
     It inherits from a critical section class to allow the arrays to use
     the "empty base class optimisation" pattern to reduce their footprint.
 
-    @see Array, OwnedArray, SharedObjectArray
+    @see Array, SharedObjectArray
 */
 template <class ElementType, class TypeOfCriticalSectionToUse>
 class ArrayAllocationBase
@@ -81,9 +85,9 @@ public:
         if (numAllocated != numElements)
         {
             if (numElements > 0)
-                elements.realloc ((size_t) numElements);
+                elements.reallocate ((size_t) numElements);
             else
-                elements.free();
+                elements.free_up();
 
             numAllocated = numElements;
         }
@@ -125,5 +129,7 @@ public:
     HeapBlock <ElementType> elements;
     int numAllocated;
 };
+
+} // beast
 
 #endif   // BEAST_ARRAYALLOCATIONBASE_H_INCLUDED

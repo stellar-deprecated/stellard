@@ -20,7 +20,7 @@
 #ifndef RIPPLE_SERIALIZEDOBJECTTEMPLATE_H
 #define RIPPLE_SERIALIZEDOBJECTTEMPLATE_H
 
-//------------------------------------------------------------------------------
+namespace ripple {
 
 /** Flags for elements in a SerializedObjectTemplate.
 */
@@ -40,7 +40,7 @@ enum SOE_Flags
 class SOElement
 {
 public:
-    SField::ref const e_field;
+    SField::ref       e_field;
     SOE_Flags const   flags;
 
     SOElement (SField::ref fieldName, SOE_Flags flags)
@@ -88,5 +88,7 @@ private:
 
     std::vector <int> mIndex;       // field num -> index
 };
+
+} // ripple
 
 #endif

@@ -61,14 +61,6 @@ public:
         keyBytes = 32,
     };
 
-    /** The type used to hold the hash.
-
-        The hahes are fixed size, SHA256.
-
-        @note The key size can be retrieved with `Hash::sizeInBytes`
-    */
-    typedef UnsignedInteger <32> Hash;
-
     // Please use this one. For a reference use Ptr const&
     typedef boost::shared_ptr <NodeObject> Ptr;
 
@@ -85,7 +77,7 @@ public:
     // This constructor is private, use createObject instead.
     NodeObject (NodeObjectType type,
                 LedgerIndex ledgerIndex,
-                Blob& data,
+                Blob&& data,
                 uint256 const& hash,
                 PrivateAccess);
 
@@ -102,7 +94,7 @@ public:
     */
     static Ptr createObject (NodeObjectType type,
                              LedgerIndex ledgerIndex,
-                             Blob& data,
+                             Blob&& data,
                              uint256 const& hash);
 
     /** Retrieve the type of this object.

@@ -17,6 +17,8 @@
 */
 //==============================================================================
 
+namespace ripple {
+
 // This is the primary interface into the "client" portion of the program.
 // Code that wants to do normal operations on the network such as
 // creating and monitoring accounts, creating transactions, and so on
@@ -38,11 +40,10 @@ InfoSub::Source::Source (char const* name, Stoppable& parent)
 //------------------------------------------------------------------------------
 
 InfoSub::InfoSub (Source& source, Consumer consumer)
-    : mLock (this, "InfoSub", __FILE__, __LINE__)
-    , m_consumer (consumer)
+    : m_consumer (consumer)
     , m_source (source)
 {
-    static Atomic <int> s_seq_id;
+    static beast::Atomic <int> s_seq_id;
     mSeq = ++s_seq_id;
 }
 
@@ -66,7 +67,7 @@ void InfoSub::send (const Json::Value& jvObj, const std::string& sObj, bool broa
     send (jvObj, broadcast);
 }
 
-uint64 InfoSub::getSeq ()
+std::uint64_t InfoSub::getSeq ()
 {
     return mSeq;
 }
@@ -75,9 +76,9 @@ void InfoSub::onSendEmpty ()
 {
 }
 
-void InfoSub::insertSubAccountInfo (RippleAddress addr, uint32 uLedgerIndex)
+void InfoSub::insertSubAccountInfo (RippleAddress addr, std::uint32_t uLedgerIndex)
 {
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
 
     mSubAccountInfo.insert (addr);
 }
@@ -96,3 +97,5 @@ const boost::shared_ptr<PathRequest>& InfoSub::getPathRequest ()
 {
     return mPathRequest;
 }
+
+} // ripple

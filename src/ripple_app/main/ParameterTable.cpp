@@ -17,6 +17,10 @@
 */
 //==============================================================================
 
+#include "../../ripple/common/jsonrpc_fields.h"
+
+namespace ripple {
+
 bool ParameterNode::setValue (const std::string& name, const Json::Value& value, Json::Value& error)
 {
     if (name.empty ()) // this node
@@ -31,8 +35,8 @@ bool ParameterNode::setValue (const std::string& name, const Json::Value& value,
         if (it == mChildren.end ())
         {
             error = Json::objectValue;
-            error["error"] = "Name not found";
-            error["name"] = name;
+            error[jss::error] = "Name not found";
+            error[jss::name] = name;
             return false;
         }
 
@@ -44,8 +48,8 @@ bool ParameterNode::setValue (const std::string& name, const Json::Value& value,
     if (it == mChildren.end ())
     {
         error = Json::objectValue;
-        error["error"] = "Name not found";
-        error["name"] = name;
+        error[jss::error] = "Name not found";
+        error[jss::name] = name;
         return false;
     }
 
@@ -54,8 +58,8 @@ bool ParameterNode::setValue (const std::string& name, const Json::Value& value,
     if (!n)
     {
         error = Json::objectValue;
-        error["error"] = "Node has no children";
-        error["name"] = it->second->getName ();
+        error[jss::error] = "Node has no children";
+        error[jss::name] = it->second->getName ();
         return false;
     }
 
@@ -117,7 +121,7 @@ Json::Value ParameterNode::getValue (int i) const
 bool ParameterNode::setValue (const Json::Value& value, Json::Value& error)
 {
     error = Json::objectValue;
-    error["error"] = "Cannot end on an inner node";
+    error[jss::error] = "Cannot end on an inner node";
 
     Json::Value nodes (Json::arrayValue);
     typedef std::map<std::string, Parameter::pointer>::value_type string_ref_pair;
@@ -145,8 +149,8 @@ bool ParameterString::setValue (const Json::Value& value, Json::Value& error)
     if (!value.isConvertibleTo (Json::stringValue))
     {
         error = Json::objectValue;
-        error["error"] = "Cannot convert to string";
-        error["value"] = value;
+        error[jss::error] = "Cannot convert to string";
+        error[jss::value] = value;
         return false;
     }
 
@@ -177,7 +181,7 @@ bool ParameterInt::setValue (const Json::Value& value, Json::Value& error)
     {
         try
         {
-            mValue = lexicalCastThrow <int> (value.asString ());
+            mValue = beast::lexicalCastThrow <int> (value.asString ());
         }
         catch (...)
         {
@@ -185,7 +189,9 @@ bool ParameterInt::setValue (const Json::Value& value, Json::Value& error)
     }
 
     error = Json::objectValue;
-    error["error"] = "Cannot convert to integer";
-    error["value"] = value;
+    error[jss::error] = "Cannot convert to integer";
+    error[jss::value] = value;
     return false;
 }
+
+} // ripple

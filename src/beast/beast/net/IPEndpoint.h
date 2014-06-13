@@ -20,16 +20,17 @@
 #ifndef BEAST_NET_IPENDPOINT_H_INCLUDED
 #define BEAST_NET_IPENDPOINT_H_INCLUDED
 
-#include <string>
-#include <ios>
-
-#include "../CStdInt.h"
 #include "IPAddress.h"
+#include "../container/hash_append.h"
+
+#include <cstdint>
+#include <ios>
+#include <string>
 
 namespace beast {
 namespace IP {
 
-typedef uint16 Port;
+typedef std::uint16_t Port;
 
 /** A version-independent IP address and port combination. */
 class Endpoint
@@ -90,6 +91,15 @@ public:
     friend bool operator>= (Endpoint const& lhs, Endpoint const& rhs)
         { return ! (rhs > lhs); }
     /** @} */
+
+    template <class Hasher>
+    friend
+    void
+    hash_append (Hasher& h, Endpoint const& endpoint)
+    {
+        using beast::hash_append;
+        hash_append(h, endpoint.m_addr, endpoint.m_port);
+    }
 
 private:
     Address m_addr;

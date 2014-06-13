@@ -20,9 +20,7 @@
 #ifndef CONTRACT_H
 #define CONTRACT_H
 
-/*
-    Encapsulates the SLE for a Contract
-*/
+namespace ripple {
 
 class Contract
 {
@@ -32,8 +30,8 @@ public:
     uint160& getIssuer ();
     uint160& getOwner ();
     STAmount& getRippleEscrow ();
-    uint32 getEscrow ();
-    uint32 getBond ();
+    std::uint32_t getEscrow ();
+    std::uint32_t getBond ();
 
     Script::Data getData (int index);
 
@@ -43,6 +41,6 @@ public:
     void executeAccept ();
 };
 
-#endif
+} // ripple
 
-// vim:ts=4
+#endif

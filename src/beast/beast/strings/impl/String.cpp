@@ -21,7 +21,9 @@
 */
 //==============================================================================
 
-#include <stdarg.h>
+#if BEAST_INCLUDE_BEASTCONFIG
+#include "../../BeastConfig.h"
+#endif
 
 #include "../String.h"
 #include "../NewLine.h"
@@ -32,7 +34,7 @@
 #include "../../Arithmetic.h"
 #include "../../HeapBlock.h"
 
-#include "../../../modules/beast_core/beast_core.h" // for UnitTest
+#include <stdarg.h>
 
 namespace beast {
 
@@ -379,8 +381,10 @@ String::String (const int number)            : text (NumberToStringConverters::c
 String::String (const unsigned int number)   : text (NumberToStringConverters::createFromInteger (number)) {}
 String::String (const short number)          : text (NumberToStringConverters::createFromInteger ((int) number)) {}
 String::String (const unsigned short number) : text (NumberToStringConverters::createFromInteger ((unsigned int) number)) {}
-String::String (const int64 number)          : text (NumberToStringConverters::createFromInteger (number)) {}
-String::String (const uint64 number)         : text (NumberToStringConverters::createFromInteger (number)) {}
+String::String (const long number)           : text (NumberToStringConverters::createFromInteger (number)) {}
+String::String (const unsigned long number)  : text (NumberToStringConverters::createFromInteger (number)) {}
+String::String (const long long number)      : text (NumberToStringConverters::createFromInteger (number)) {}
+String::String (const unsigned long long number) : text (NumberToStringConverters::createFromInteger (number)) {}
 
 String::String (const float number)          : text (NumberToStringConverters::createFromDouble ((double) number, 0)) {}
 String::String (const double number)         : text (NumberToStringConverters::createFromDouble (number, 0)) {}
@@ -432,9 +436,9 @@ int String::hashCode() const noexcept
     return detail::HashGenerator<int> ::calculate (text);
 }
 
-int64 String::hashCode64() const noexcept
+std::int64_t String::hashCode64() const noexcept
 {
-    return detail::HashGenerator<int64> ::calculate (text);
+    return detail::HashGenerator<std::int64_t> ::calculate (text);
 }
 
 std::size_t String::hash() const noexcept
@@ -443,22 +447,22 @@ std::size_t String::hash() const noexcept
 }
 
 //==============================================================================
-BEAST_API bool BEAST_CALLTYPE operator== (const String& s1, const String& s2) noexcept            { return s1.compare (s2) == 0; }
-BEAST_API bool BEAST_CALLTYPE operator== (const String& s1, const char* const s2) noexcept        { return s1.compare (s2) == 0; }
-BEAST_API bool BEAST_CALLTYPE operator== (const String& s1, const wchar_t* const s2) noexcept     { return s1.compare (s2) == 0; }
-BEAST_API bool BEAST_CALLTYPE operator== (const String& s1, const CharPointer_UTF8 s2) noexcept   { return s1.getCharPointer().compare (s2) == 0; }
-BEAST_API bool BEAST_CALLTYPE operator== (const String& s1, const CharPointer_UTF16 s2) noexcept  { return s1.getCharPointer().compare (s2) == 0; }
-BEAST_API bool BEAST_CALLTYPE operator== (const String& s1, const CharPointer_UTF32 s2) noexcept  { return s1.getCharPointer().compare (s2) == 0; }
-BEAST_API bool BEAST_CALLTYPE operator!= (const String& s1, const String& s2) noexcept            { return s1.compare (s2) != 0; }
-BEAST_API bool BEAST_CALLTYPE operator!= (const String& s1, const char* const s2) noexcept        { return s1.compare (s2) != 0; }
-BEAST_API bool BEAST_CALLTYPE operator!= (const String& s1, const wchar_t* const s2) noexcept     { return s1.compare (s2) != 0; }
-BEAST_API bool BEAST_CALLTYPE operator!= (const String& s1, const CharPointer_UTF8 s2) noexcept   { return s1.getCharPointer().compare (s2) != 0; }
-BEAST_API bool BEAST_CALLTYPE operator!= (const String& s1, const CharPointer_UTF16 s2) noexcept  { return s1.getCharPointer().compare (s2) != 0; }
-BEAST_API bool BEAST_CALLTYPE operator!= (const String& s1, const CharPointer_UTF32 s2) noexcept  { return s1.getCharPointer().compare (s2) != 0; }
-BEAST_API bool BEAST_CALLTYPE operator>  (const String& s1, const String& s2) noexcept            { return s1.compare (s2) > 0; }
-BEAST_API bool BEAST_CALLTYPE operator<  (const String& s1, const String& s2) noexcept            { return s1.compare (s2) < 0; }
-BEAST_API bool BEAST_CALLTYPE operator>= (const String& s1, const String& s2) noexcept            { return s1.compare (s2) >= 0; }
-BEAST_API bool BEAST_CALLTYPE operator<= (const String& s1, const String& s2) noexcept            { return s1.compare (s2) <= 0; }
+bool operator== (const String& s1, const String& s2) noexcept            { return s1.compare (s2) == 0; }
+bool operator== (const String& s1, const char* const s2) noexcept        { return s1.compare (s2) == 0; }
+bool operator== (const String& s1, const wchar_t* const s2) noexcept     { return s1.compare (s2) == 0; }
+bool operator== (const String& s1, const CharPointer_UTF8 s2) noexcept   { return s1.getCharPointer().compare (s2) == 0; }
+bool operator== (const String& s1, const CharPointer_UTF16 s2) noexcept  { return s1.getCharPointer().compare (s2) == 0; }
+bool operator== (const String& s1, const CharPointer_UTF32 s2) noexcept  { return s1.getCharPointer().compare (s2) == 0; }
+bool operator!= (const String& s1, const String& s2) noexcept            { return s1.compare (s2) != 0; }
+bool operator!= (const String& s1, const char* const s2) noexcept        { return s1.compare (s2) != 0; }
+bool operator!= (const String& s1, const wchar_t* const s2) noexcept     { return s1.compare (s2) != 0; }
+bool operator!= (const String& s1, const CharPointer_UTF8 s2) noexcept   { return s1.getCharPointer().compare (s2) != 0; }
+bool operator!= (const String& s1, const CharPointer_UTF16 s2) noexcept  { return s1.getCharPointer().compare (s2) != 0; }
+bool operator!= (const String& s1, const CharPointer_UTF32 s2) noexcept  { return s1.getCharPointer().compare (s2) != 0; }
+bool operator>  (const String& s1, const String& s2) noexcept            { return s1.compare (s2) > 0; }
+bool operator<  (const String& s1, const String& s2) noexcept            { return s1.compare (s2) < 0; }
+bool operator>= (const String& s1, const String& s2) noexcept            { return s1.compare (s2) >= 0; }
+bool operator<= (const String& s1, const String& s2) noexcept            { return s1.compare (s2) <= 0; }
 
 bool String::equalsIgnoreCase (const wchar_t* const t) const noexcept
 {
@@ -610,52 +614,52 @@ String& String::operator+= (const int number)
 }
 
 //==============================================================================
-BEAST_API String BEAST_CALLTYPE operator+ (const char* const string1, const String& string2)
+String operator+ (const char* const string1, const String& string2)
 {
     String s (string1);
     return s += string2;
 }
 
-BEAST_API String BEAST_CALLTYPE operator+ (const wchar_t* const string1, const String& string2)
+String operator+ (const wchar_t* const string1, const String& string2)
 {
     String s (string1);
     return s += string2;
 }
 
-BEAST_API String BEAST_CALLTYPE operator+ (const char s1, const String& s2)       { return String::charToString ((beast_wchar) (uint8) s1) + s2; }
-BEAST_API String BEAST_CALLTYPE operator+ (const wchar_t s1, const String& s2)    { return String::charToString (s1) + s2; }
+String operator+ (const char s1, const String& s2)       { return String::charToString ((beast_wchar) (std::uint8_t) s1) + s2; }
+String operator+ (const wchar_t s1, const String& s2)    { return String::charToString (s1) + s2; }
 #if ! BEAST_NATIVE_WCHAR_IS_UTF32
-BEAST_API String BEAST_CALLTYPE operator+ (const beast_wchar s1, const String& s2) { return String::charToString (s1) + s2; }
+String operator+ (const beast_wchar s1, const String& s2) { return String::charToString (s1) + s2; }
 #endif
 
-BEAST_API String BEAST_CALLTYPE operator+ (String s1, const String& s2)       { return s1 += s2; }
-BEAST_API String BEAST_CALLTYPE operator+ (String s1, const char* const s2)   { return s1 += s2; }
-BEAST_API String BEAST_CALLTYPE operator+ (String s1, const wchar_t* s2)      { return s1 += s2; }
+String operator+ (String s1, const String& s2)       { return s1 += s2; }
+String operator+ (String s1, const char* const s2)   { return s1 += s2; }
+String operator+ (String s1, const wchar_t* s2)      { return s1 += s2; }
 
-BEAST_API String BEAST_CALLTYPE operator+ (String s1, const char s2)          { return s1 += s2; }
-BEAST_API String BEAST_CALLTYPE operator+ (String s1, const wchar_t s2)       { return s1 += s2; }
+String operator+ (String s1, const char s2)          { return s1 += s2; }
+String operator+ (String s1, const wchar_t s2)       { return s1 += s2; }
 #if ! BEAST_NATIVE_WCHAR_IS_UTF32
-BEAST_API String BEAST_CALLTYPE operator+ (String s1, const beast_wchar s2)    { return s1 += s2; }
+String operator+ (String s1, const beast_wchar s2)    { return s1 += s2; }
 #endif
 
-BEAST_API String& BEAST_CALLTYPE operator<< (String& s1, const char s2)             { return s1 += s2; }
-BEAST_API String& BEAST_CALLTYPE operator<< (String& s1, const wchar_t s2)          { return s1 += s2; }
+String& operator<< (String& s1, const char s2)             { return s1 += s2; }
+String& operator<< (String& s1, const wchar_t s2)          { return s1 += s2; }
 #if ! BEAST_NATIVE_WCHAR_IS_UTF32
-BEAST_API String& BEAST_CALLTYPE operator<< (String& s1, const beast_wchar s2)       { return s1 += s2; }
+String& operator<< (String& s1, const beast_wchar s2)       { return s1 += s2; }
 #endif
 
-BEAST_API String& BEAST_CALLTYPE operator<< (String& s1, const char* const s2)      { return s1 += s2; }
-BEAST_API String& BEAST_CALLTYPE operator<< (String& s1, const wchar_t* const s2)   { return s1 += s2; }
-BEAST_API String& BEAST_CALLTYPE operator<< (String& s1, const String& s2)          { return s1 += s2; }
+String& operator<< (String& s1, const char* const s2)      { return s1 += s2; }
+String& operator<< (String& s1, const wchar_t* const s2)   { return s1 += s2; }
+String& operator<< (String& s1, const String& s2)          { return s1 += s2; }
 
-BEAST_API String& BEAST_CALLTYPE operator<< (String& s1, const short number)        { return s1 += (int) number; }
-BEAST_API String& BEAST_CALLTYPE operator<< (String& s1, const int number)          { return s1 += number; }
-BEAST_API String& BEAST_CALLTYPE operator<< (String& s1, const long number)         { return s1 += (int) number; }
-BEAST_API String& BEAST_CALLTYPE operator<< (String& s1, const int64 number)        { return s1 << String (number); }
-BEAST_API String& BEAST_CALLTYPE operator<< (String& s1, const float number)        { return s1 += String (number); }
-BEAST_API String& BEAST_CALLTYPE operator<< (String& s1, const double number)       { return s1 += String (number); }
+String& operator<< (String& s1, const short number)        { return s1 += (int) number; }
+String& operator<< (String& s1, const int number)          { return s1 += number; }
+String& operator<< (String& s1, const long number)         { return s1 += (int) number; }
+String& operator<< (String& s1, const long long number)    { return s1 << String (number); }
+String& operator<< (String& s1, const float number)        { return s1 += String (number); }
+String& operator<< (String& s1, const double number)       { return s1 += String (number); }
 
-BEAST_API String& BEAST_CALLTYPE operator<< (String& string1, const NewLine&)
+String& operator<< (String& string1, const NewLine&)
 {
     return string1 += NewLine::getDefault();
 }
@@ -1709,7 +1713,7 @@ int String::getTrailingIntValue() const noexcept
     return n;
 }
 
-int64 String::getLargeIntValue() const noexcept
+std::int64_t String::getLargeIntValue() const noexcept
 {
     return text.getIntValue64();
 }
@@ -1767,9 +1771,9 @@ String String::toHexString (const int number)
     return HexConverter <unsigned int>::hexToString ((unsigned int) number);
 }
 
-String String::toHexString (const int64 number)
+String String::toHexString (const std::int64_t number)
 {
-    return HexConverter <uint64>::hexToString ((uint64) number);
+    return HexConverter <std::uint64_t>::hexToString ((std::uint64_t) number);
 }
 
 String String::toHexString (const short number)
@@ -1806,12 +1810,12 @@ String String::toHexString (const void* const d, const int size, const int group
 }
 
 int   String::getHexValue32() const noexcept    { return HexConverter<int>  ::stringToHex (text); }
-int64 String::getHexValue64() const noexcept    { return HexConverter<int64>::stringToHex (text); }
+std::int64_t String::getHexValue64() const noexcept    { return HexConverter<std::int64_t>::stringToHex (text); }
 
 //==============================================================================
 String String::createStringFromData (const void* const unknownData, const int size)
 {
-    const uint8* const data = static_cast<const uint8*> (unknownData);
+    const std::uint8_t* const data = static_cast<const std::uint8_t*> (unknownData);
 
     if (size <= 0 || data == nullptr)
         return empty;
@@ -1826,7 +1830,7 @@ String String::createStringFromData (const void* const unknownData, const int si
 
         StringCreationHelper builder ((size_t) numChars);
 
-        const uint16* const src = (const uint16*) (data + 2);
+        const std::uint16_t* const src = (const std::uint16_t*) (data + 2);
 
         if (CharPointer_UTF16::isByteOrderMarkBigEndian (data))
         {
@@ -1843,7 +1847,7 @@ String String::createStringFromData (const void* const unknownData, const int si
         return builder.result;
     }
 
-    const uint8* start = data;
+    const std::uint8_t* start = data;
 
     if (size >= 3 && CharPointer_UTF8::isByteOrderMark (data))
         start += 3;
@@ -1930,7 +1934,7 @@ struct StringCopier
 {
     static size_t copyToBuffer (const CharPointerType_Src source, typename CharPointerType_Dest::CharType* const buffer, const size_t maxBufferSizeBytes)
     {
-        bassert (((ssize_t) maxBufferSizeBytes) >= 0); // keep this value positive!
+        bassert (((std::ptrdiff_t) maxBufferSizeBytes) >= 0); // keep this value positive!
 
         if (buffer == nullptr)
             return CharPointerType_Dest::getBytesRequiredFor (source) + sizeof (typename CharPointerType_Dest::CharType);
@@ -1974,366 +1978,6 @@ String String::fromUTF8 (const char* const buffer, int bufferSizeBytes)
 
 #if BEAST_MSVC
  #pragma warning (pop)
-#endif
-
-//==============================================================================
-//==============================================================================
-
-#ifdef BEAST_UNITTEST_H_INCLUDED
-
-class StringTests  : public UnitTest
-{
-public:
-    StringTests() : UnitTest ("String", "beast")
-    {
-    }
-
-    template <class CharPointerType>
-    struct TestUTFConversion
-    {
-        static void test (UnitTest& test)
-        {
-            String s (createRandomWideCharString());
-
-            typename CharPointerType::CharType buffer [300];
-
-            memset (buffer, 0xff, sizeof (buffer));
-            CharPointerType (buffer).writeAll (s.toUTF32());
-            test.expectEquals (String (CharPointerType (buffer)), s);
-
-            memset (buffer, 0xff, sizeof (buffer));
-            CharPointerType (buffer).writeAll (s.toUTF16());
-            test.expectEquals (String (CharPointerType (buffer)), s);
-
-            memset (buffer, 0xff, sizeof (buffer));
-            CharPointerType (buffer).writeAll (s.toUTF8());
-            test.expectEquals (String (CharPointerType (buffer)), s);
-
-            test.expect (CharPointerType::isValidString (buffer, (int) strlen ((const char*) buffer)));
-        }
-    };
-
-    static String createRandomWideCharString()
-    {
-        beast_wchar buffer[50] = { 0 };
-        Random r;
-
-        for (int i = 0; i < numElementsInArray (buffer) - 1; ++i)
-        {
-            if (r.nextBool())
-            {
-                do
-                {
-                    buffer[i] = (beast_wchar) (1 + r.nextInt (0x10ffff - 1));
-                }
-                while (! CharPointer_UTF16::canRepresent (buffer[i]));
-            }
-            else
-                buffer[i] = (beast_wchar) (1 + r.nextInt (0xff));
-        }
-
-        return CharPointer_UTF32 (buffer);
-    }
-
-    void runTest()
-    {
-        {
-            beginTestCase ("Basics");
-
-            expect (String().length() == 0);
-            expect (String() == String::empty);
-            String s1, s2 ("abcd");
-            expect (s1.isEmpty() && ! s1.isNotEmpty());
-            expect (s2.isNotEmpty() && ! s2.isEmpty());
-            expect (s2.length() == 4);
-            s1 = "abcd";
-            expect (s2 == s1 && s1 == s2);
-            expect (s1 == "abcd" && s1 == L"abcd");
-            expect (String ("abcd") == String (L"abcd"));
-            expect (String ("abcdefg", 4) == L"abcd");
-            expect (String ("abcdefg", 4) == String (L"abcdefg", 4));
-            expect (String::charToString ('x') == "x");
-            expect (String::charToString (0) == String::empty);
-            expect (s2 + "e" == "abcde" && s2 + 'e' == "abcde");
-            expect (s2 + L'e' == "abcde" && s2 + L"e" == "abcde");
-            expect (s1.equalsIgnoreCase ("abcD") && s1 < "abce" && s1 > "abbb");
-            expect (s1.startsWith ("ab") && s1.startsWith ("abcd") && ! s1.startsWith ("abcde"));
-            expect (s1.startsWithIgnoreCase ("aB") && s1.endsWithIgnoreCase ("CD"));
-            expect (s1.endsWith ("bcd") && ! s1.endsWith ("aabcd"));
-            expectEquals (s1.indexOf (String::empty), 0);
-            expectEquals (s1.indexOfIgnoreCase (String::empty), 0);
-            expect (s1.startsWith (String::empty) && s1.endsWith (String::empty) && s1.contains (String::empty));
-            expect (s1.contains ("cd") && s1.contains ("ab") && s1.contains ("abcd"));
-            expect (s1.containsChar ('a'));
-            expect (! s1.containsChar ('x'));
-            expect (! s1.containsChar (0));
-            expect (String ("abc foo bar").containsWholeWord ("abc") && String ("abc foo bar").containsWholeWord ("abc"));
-        }
-
-        {
-            beginTestCase ("Operations");
-
-            String s ("012345678");
-            expect (s.hashCode() != 0);
-            expect (s.hashCode64() != 0);
-            expect (s.hashCode() != (s + s).hashCode());
-            expect (s.hashCode64() != (s + s).hashCode64());
-            expect (s.compare (String ("012345678")) == 0);
-            expect (s.compare (String ("012345679")) < 0);
-            expect (s.compare (String ("012345676")) > 0);
-            expect (s.substring (2, 3) == String::charToString (s[2]));
-            expect (s.substring (0, 1) == String::charToString (s[0]));
-            expect (s.getLastCharacter() == s [s.length() - 1]);
-            expect (String::charToString (s.getLastCharacter()) == s.getLastCharacters (1));
-            expect (s.substring (0, 3) == L"012");
-            expect (s.substring (0, 100) == s);
-            expect (s.substring (-1, 100) == s);
-            expect (s.substring (3) == "345678");
-            expect (s.indexOf (L"45") == 4);
-            expect (String ("444445").indexOf ("45") == 4);
-            expect (String ("444445").lastIndexOfChar ('4') == 4);
-            expect (String ("45454545x").lastIndexOf (L"45") == 6);
-            expect (String ("45454545x").lastIndexOfAnyOf ("456") == 7);
-            expect (String ("45454545x").lastIndexOfAnyOf (L"456x") == 8);
-            expect (String ("abABaBaBa").lastIndexOfIgnoreCase ("aB") == 6);
-            expect (s.indexOfChar (L'4') == 4);
-            expect (s + s == "012345678012345678");
-            expect (s.startsWith (s));
-            expect (s.startsWith (s.substring (0, 4)));
-            expect (s.startsWith (s.dropLastCharacters (4)));
-            expect (s.endsWith (s.substring (5)));
-            expect (s.endsWith (s));
-            expect (s.contains (s.substring (3, 6)));
-            expect (s.contains (s.substring (3)));
-            expect (s.startsWithChar (s[0]));
-            expect (s.endsWithChar (s.getLastCharacter()));
-            expect (s [s.length()] == 0);
-            expect (String ("abcdEFGH").toLowerCase() == String ("abcdefgh"));
-            expect (String ("abcdEFGH").toUpperCase() == String ("ABCDEFGH"));
-
-            String s2 ("123");
-            s2 << ((int) 4) << ((short) 5) << "678" << L"9" << '0';
-            s2 += "xyz";
-            expect (s2 == "1234567890xyz");
-
-            beginTestCase ("Numeric conversions");
-            expect (String::empty.getIntValue() == 0);
-            expect (String::empty.getDoubleValue() == 0.0);
-            expect (String::empty.getFloatValue() == 0.0f);
-            expect (s.getIntValue() == 12345678);
-            expect (s.getLargeIntValue() == (int64) 12345678);
-            expect (s.getDoubleValue() == 12345678.0);
-            expect (s.getFloatValue() == 12345678.0f);
-            expect (String (-1234).getIntValue() == -1234);
-            expect (String ((int64) -1234).getLargeIntValue() == -1234);
-            expect (String (-1234.56).getDoubleValue() == -1234.56);
-            expect (String (-1234.56f).getFloatValue() == -1234.56f);
-            expect (String (std::numeric_limits<int>::max()).getIntValue() == std::numeric_limits<int>::max());
-            expect (String (std::numeric_limits<int>::min()).getIntValue() == std::numeric_limits<int>::min());
-            expect (String (std::numeric_limits<int64>::max()).getLargeIntValue() == std::numeric_limits<int64>::max());
-            expect (String (std::numeric_limits<int64>::min()).getLargeIntValue() == std::numeric_limits<int64>::min());
-            expect (("xyz" + s).getTrailingIntValue() == s.getIntValue());
-            expect (s.getHexValue32() == 0x12345678);
-            expect (s.getHexValue64() == (int64) 0x12345678);
-            expect (String::toHexString (0x1234abcd).equalsIgnoreCase ("1234abcd"));
-            expect (String::toHexString ((int64) 0x1234abcd).equalsIgnoreCase ("1234abcd"));
-            expect (String::toHexString ((short) 0x12ab).equalsIgnoreCase ("12ab"));
-
-            expectEquals (String (int (0)), "0");
-            expectEquals (String (short (0)), "0");
-            expectEquals (String (int64 (0)), "0");
-            expectEquals (String ((unsigned int) 0), "0");
-            expectEquals (String ((unsigned short) 0), "0");
-            expectEquals (String (uint64 (0)), "0");
-
-            expectEquals (String (int (-1)), "-1");
-            expectEquals (String (short (-1)), "-1");
-            expectEquals (String (int64 (-1)), "-1");
-
-            expectEquals (String (int (1)), "1");
-            expectEquals (String (short (1)), "1");
-            expectEquals (String (int64 (1)), "1");
-            expectEquals (String ((unsigned int) 1), "1");
-            expectEquals (String ((unsigned short) 1), "1");
-            expectEquals (String (uint64 (1)), "1");
-
-            unsigned char data[] = { 1, 2, 3, 4, 0xa, 0xb, 0xc, 0xd };
-            expect (String::toHexString (data, 8, 0).equalsIgnoreCase ("010203040a0b0c0d"));
-            expect (String::toHexString (data, 8, 1).equalsIgnoreCase ("01 02 03 04 0a 0b 0c 0d"));
-            expect (String::toHexString (data, 8, 2).equalsIgnoreCase ("0102 0304 0a0b 0c0d"));
-
-            beginTestCase ("Subsections");
-            String s3;
-            s3 = "abcdeFGHIJ";
-            expect (s3.equalsIgnoreCase ("ABCdeFGhiJ"));
-            expect (s3.compareIgnoreCase (L"ABCdeFGhiJ") == 0);
-            expect (s3.containsIgnoreCase (s3.substring (3)));
-            expect (s3.indexOfAnyOf ("xyzf", 2, true) == 5);
-            expect (s3.indexOfAnyOf (L"xyzf", 2, false) == -1);
-            expect (s3.indexOfAnyOf ("xyzF", 2, false) == 5);
-            expect (s3.containsAnyOf (L"zzzFs"));
-            expect (s3.startsWith ("abcd"));
-            expect (s3.startsWithIgnoreCase (L"abCD"));
-            expect (s3.startsWith (String::empty));
-            expect (s3.startsWithChar ('a'));
-            expect (s3.endsWith (String ("HIJ")));
-            expect (s3.endsWithIgnoreCase (L"Hij"));
-            expect (s3.endsWith (String::empty));
-            expect (s3.endsWithChar (L'J'));
-            expect (s3.indexOf ("HIJ") == 7);
-            expect (s3.indexOf (L"HIJK") == -1);
-            expect (s3.indexOfIgnoreCase ("hij") == 7);
-            expect (s3.indexOfIgnoreCase (L"hijk") == -1);
-            expect (s3.toStdString() == s3.toRawUTF8());
-
-            String s4 (s3);
-            s4.append (String ("xyz123"), 3);
-            expect (s4 == s3 + "xyz");
-
-            expect (String (1234) < String (1235));
-            expect (String (1235) > String (1234));
-            expect (String (1234) >= String (1234));
-            expect (String (1234) <= String (1234));
-            expect (String (1235) >= String (1234));
-            expect (String (1234) <= String (1235));
-
-            String s5 ("word word2 word3");
-            expect (s5.containsWholeWord (String ("word2")));
-            expect (s5.indexOfWholeWord ("word2") == 5);
-            expect (s5.containsWholeWord (L"word"));
-            expect (s5.containsWholeWord ("word3"));
-            expect (s5.containsWholeWord (s5));
-            expect (s5.containsWholeWordIgnoreCase (L"Word2"));
-            expect (s5.indexOfWholeWordIgnoreCase ("Word2") == 5);
-            expect (s5.containsWholeWordIgnoreCase (L"Word"));
-            expect (s5.containsWholeWordIgnoreCase ("Word3"));
-            expect (! s5.containsWholeWordIgnoreCase (L"Wordx"));
-            expect (! s5.containsWholeWordIgnoreCase ("xWord2"));
-            expect (s5.containsNonWhitespaceChars());
-            expect (s5.containsOnly ("ordw23 "));
-            expect (! String (" \n\r\t").containsNonWhitespaceChars());
-
-            expect (s5.matchesWildcard (L"wor*", false));
-            expect (s5.matchesWildcard ("wOr*", true));
-            expect (s5.matchesWildcard (L"*word3", true));
-            expect (s5.matchesWildcard ("*word?", true));
-            expect (s5.matchesWildcard (L"Word*3", true));
-            expect (! s5.matchesWildcard (L"*34", true));
-            expect (String ("xx**y").matchesWildcard ("*y", true));
-            expect (String ("xx**y").matchesWildcard ("x*y", true));
-            expect (String ("xx**y").matchesWildcard ("xx*y", true));
-            expect (String ("xx**y").matchesWildcard ("xx*", true));
-            expect (String ("xx?y").matchesWildcard ("x??y", true));
-            expect (String ("xx?y").matchesWildcard ("xx?y", true));
-            expect (! String ("xx?y").matchesWildcard ("xx?y?", true));
-            expect (String ("xx?y").matchesWildcard ("xx??", true));
-
-            expectEquals (s5.fromFirstOccurrenceOf (String::empty, true, false), s5);
-            expectEquals (s5.fromFirstOccurrenceOf ("xword2", true, false), s5.substring (100));
-            expectEquals (s5.fromFirstOccurrenceOf (L"word2", true, false), s5.substring (5));
-            expectEquals (s5.fromFirstOccurrenceOf ("Word2", true, true), s5.substring (5));
-            expectEquals (s5.fromFirstOccurrenceOf ("word2", false, false), s5.getLastCharacters (6));
-            expectEquals (s5.fromFirstOccurrenceOf (L"Word2", false, true), s5.getLastCharacters (6));
-
-            expectEquals (s5.fromLastOccurrenceOf (String::empty, true, false), s5);
-            expectEquals (s5.fromLastOccurrenceOf (L"wordx", true, false), s5);
-            expectEquals (s5.fromLastOccurrenceOf ("word", true, false), s5.getLastCharacters (5));
-            expectEquals (s5.fromLastOccurrenceOf (L"worD", true, true), s5.getLastCharacters (5));
-            expectEquals (s5.fromLastOccurrenceOf ("word", false, false), s5.getLastCharacters (1));
-            expectEquals (s5.fromLastOccurrenceOf (L"worD", false, true), s5.getLastCharacters (1));
-
-            expect (s5.upToFirstOccurrenceOf (String::empty, true, false).isEmpty());
-            expectEquals (s5.upToFirstOccurrenceOf ("word4", true, false), s5);
-            expectEquals (s5.upToFirstOccurrenceOf (L"word2", true, false), s5.substring (0, 10));
-            expectEquals (s5.upToFirstOccurrenceOf ("Word2", true, true), s5.substring (0, 10));
-            expectEquals (s5.upToFirstOccurrenceOf (L"word2", false, false), s5.substring (0, 5));
-            expectEquals (s5.upToFirstOccurrenceOf ("Word2", false, true), s5.substring (0, 5));
-
-            expectEquals (s5.upToLastOccurrenceOf (String::empty, true, false), s5);
-            expectEquals (s5.upToLastOccurrenceOf ("zword", true, false), s5);
-            expectEquals (s5.upToLastOccurrenceOf ("word", true, false), s5.dropLastCharacters (1));
-            expectEquals (s5.dropLastCharacters(1).upToLastOccurrenceOf ("word", true, false), s5.dropLastCharacters (1));
-            expectEquals (s5.upToLastOccurrenceOf ("Word", true, true), s5.dropLastCharacters (1));
-            expectEquals (s5.upToLastOccurrenceOf ("word", false, false), s5.dropLastCharacters (5));
-            expectEquals (s5.upToLastOccurrenceOf ("Word", false, true), s5.dropLastCharacters (5));
-
-            expectEquals (s5.replace ("word", L"xyz", false), String ("xyz xyz2 xyz3"));
-            expect (s5.replace (L"Word", "xyz", true) == "xyz xyz2 xyz3");
-            expect (s5.dropLastCharacters (1).replace ("Word", String ("xyz"), true) == L"xyz xyz2 xyz");
-            expect (s5.replace ("Word", "", true) == " 2 3");
-            expectEquals (s5.replace ("Word2", L"xyz", true), String ("word xyz word3"));
-            expect (s5.replaceCharacter (L'w', 'x') != s5);
-            expectEquals (s5.replaceCharacter ('w', L'x').replaceCharacter ('x', 'w'), s5);
-            expect (s5.replaceCharacters ("wo", "xy") != s5);
-            expectEquals (s5.replaceCharacters ("wo", "xy").replaceCharacters ("xy", L"wo"), s5);
-            expectEquals (s5.retainCharacters ("1wordxya"), String ("wordwordword"));
-            expect (s5.retainCharacters (String::empty).isEmpty());
-            expect (s5.removeCharacters ("1wordxya") == " 2 3");
-            expectEquals (s5.removeCharacters (String::empty), s5);
-            expect (s5.initialSectionContainingOnly ("word") == L"word");
-            expect (String ("word").initialSectionContainingOnly ("word") == L"word");
-            expectEquals (s5.initialSectionNotContaining (String ("xyz ")), String ("word"));
-            expectEquals (s5.initialSectionNotContaining (String (";[:'/")), s5);
-            expect (! s5.isQuotedString());
-            expect (s5.quoted().isQuotedString());
-            expect (! s5.quoted().unquoted().isQuotedString());
-            expect (! String ("x'").isQuotedString());
-            expect (String ("'x").isQuotedString());
-
-            String s6 (" \t xyz  \t\r\n");
-            expectEquals (s6.trim(), String ("xyz"));
-            expect (s6.trim().trim() == "xyz");
-            expectEquals (s5.trim(), s5);
-            expectEquals (s6.trimStart().trimEnd(), s6.trim());
-            expectEquals (s6.trimStart().trimEnd(), s6.trimEnd().trimStart());
-            expectEquals (s6.trimStart().trimStart().trimEnd().trimEnd(), s6.trimEnd().trimStart());
-            expect (s6.trimStart() != s6.trimEnd());
-            expectEquals (("\t\r\n " + s6 + "\t\n \r").trim(), s6.trim());
-            expect (String::repeatedString ("xyz", 3) == L"xyzxyzxyz");
-        }
-
-        {
-            beginTestCase ("UTF conversions");
-
-            TestUTFConversion <CharPointer_UTF32>::test (*this);
-            TestUTFConversion <CharPointer_UTF8>::test (*this);
-            TestUTFConversion <CharPointer_UTF16>::test (*this);
-        }
-
-        {
-            beginTestCase ("StringArray");
-
-            StringArray s;
-            s.addTokens ("4,3,2,1,0", ";,", "x");
-            expectEquals (s.size(), 5);
-
-            expectEquals (s.joinIntoString ("-"), String ("4-3-2-1-0"));
-            s.remove (2);
-            expectEquals (s.joinIntoString ("--"), String ("4--3--1--0"));
-            expectEquals (s.joinIntoString (String::empty), String ("4310"));
-            s.clear();
-            expectEquals (s.joinIntoString ("x"), String::empty);
-
-            StringArray toks;
-            toks.addTokens ("x,,", ";,", "");
-            expectEquals (toks.size(), 3);
-            expectEquals (toks.joinIntoString ("-"), String ("x--"));
-            toks.clear();
-
-            toks.addTokens (",x,", ";,", "");
-            expectEquals (toks.size(), 3);
-            expectEquals (toks.joinIntoString ("-"), String ("-x-"));
-            toks.clear();
-
-            toks.addTokens ("x,'y,z',", ";,", "'");
-            expectEquals (toks.size(), 3);
-            expectEquals (toks.joinIntoString ("-"), String ("x-'y,z'-"));
-        }
-    }
-};
-
-static StringTests stringUnitTests;
-
 #endif
 
 }

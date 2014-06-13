@@ -20,6 +20,8 @@
 #ifndef RIPPLE_CONFIGSECTIONS_H_INCLUDED
 #define RIPPLE_CONFIGSECTIONS_H_INCLUDED
 
+namespace ripple {
+
 // VFALCO NOTE
 //
 //      Please use this style for all new sections
@@ -28,9 +30,9 @@
 //
 struct ConfigSection
 {
-    static String nodeDatabase ()                 { return "node_db"; }
-    static String tempNodeDatabase ()             { return "temp_db"; }
-    static String importNodeDatabase ()           { return "import_db"; }
+    static beast::String nodeDatabase ()                 { return "node_db"; }
+    static beast::String tempNodeDatabase ()             { return "temp_db"; }
+    static beast::String importNodeDatabase ()           { return "import_db"; }
 };
 
 // VFALCO TODO Rename and replace these macros with variables.
@@ -107,5 +109,7 @@ struct ConfigSection
 #define SECTION_WEBSOCKET_SSL_KEY       "websocket_ssl_key"
 #define SECTION_VALIDATORS              "validators"
 #define SECTION_VALIDATORS_SITE         "validators_site"
+
+} // ripple
 
 #endif

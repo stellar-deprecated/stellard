@@ -20,6 +20,8 @@
 #ifndef RIPPLE_PATHREQUEST_H
 #define RIPPLE_PATHREQUEST_H
 
+namespace ripple {
+
 // A pathfinding request submitted by a client
 // The request issuer must maintain a strong pointer
 
@@ -47,7 +49,7 @@ public:
 public:
     // VFALCO TODO Break the cyclic dependency on InfoSub
     PathRequest (boost::shared_ptr <InfoSub> const& subscriber,
-        int id, PathRequests&, Journal journal);
+        int id, PathRequests&, beast::Journal journal);
     
     ~PathRequest ();
 
@@ -55,6 +57,7 @@ public:
     bool        isValid ();
     bool        isNew ();
     bool        needsUpdate (bool newOnly, LedgerIndex index);
+    void        updateComplete ();
     Json::Value getStatus ();
 
     Json::Value doCreate (const boost::shared_ptr<Ledger>&, const RippleLineCache::pointer&,
@@ -69,10 +72,10 @@ private:
     void resetLevel (int level);
     int parseJson (const Json::Value&, bool complete);
 
-    Journal m_journal;
+    beast::Journal m_journal;
 
     typedef RippleRecursiveMutex LockType;
-    typedef LockType::ScopedLockType ScopedLockType;
+    typedef std::lock_guard <LockType> ScopedLockType;
     LockType mLock;
 
     PathRequests&                   mOwner;
@@ -91,7 +94,9 @@ private:
 
     bool                            bValid;
 
-    std::atomic<LedgerIndex>        iLastIndex;
+    LockType                        mIndexLock;
+    LedgerIndex                     mLastIndex;
+    bool                            mInProgress;
 
     int                             iLastLevel;
     bool                            bLastSuccess;
@@ -103,5 +108,7 @@ private:
     boost::posix_time::ptime        ptFullReply;
 
 };
+
+} // ripple
 
 #endif

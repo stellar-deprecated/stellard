@@ -20,12 +20,17 @@
 #ifndef RIPPLE_TAGGEDCACHE_H_INCLUDED
 #define RIPPLE_TAGGEDCACHE_H_INCLUDED
 
+#include "../../beast/beast/chrono/abstract_clock.h"
+#include "../../beast/beast/chrono/chrono_io.h"
 #include "../../beast/beast/Insight.h"
+#include "../../beast/beast/container/hardened_hash.h"
 
 #include <boost/smart_ptr.hpp>
 
+#include <functional>
 #include <mutex>
 #include <unordered_map>
+#include <vector>
 
 namespace ripple {
 
@@ -48,7 +53,7 @@ struct TaggedCacheLog;
 template <
     class Key,
     class T,
-    class Hash = std::hash <Key>,
+    class Hash = beast::hardened_hash <Key>,
     class KeyEqual = std::equal_to <Key>,
     //class Allocator = std::allocator <std::pair <Key const, Entry>>,
     class Mutex = std::recursive_mutex
@@ -65,13 +70,13 @@ public:
     // VFALCO TODO Use std::shared_ptr, std::weak_ptr
     typedef boost::weak_ptr <mapped_type> weak_mapped_ptr;
     typedef boost::shared_ptr <mapped_type> mapped_ptr;
-    typedef abstract_clock <std::chrono::seconds> clock_type;
+    typedef beast::abstract_clock <std::chrono::seconds> clock_type;
 
 public:
     // VFALCO TODO Change expiration_seconds to clock_type::duration
     TaggedCache (std::string const& name, int size,
-        clock_type::rep expiration_seconds, clock_type& clock, Journal journal,
-            insight::Collector::ptr const& collector = insight::NullCollector::New ())
+        clock_type::rep expiration_seconds, clock_type& clock, beast::Journal journal,
+            beast::insight::Collector::ptr const& collector = beast::insight::NullCollector::New ())
         : m_journal (journal)
         , m_clock (clock)
         , m_stats (name,
@@ -389,7 +394,8 @@ public:
     */
     bool insert (key_type const& key, T const& value)
     {
-        mapped_ptr p (boost::make_shared <T> (boost::cref (value)));
+        mapped_ptr p (boost::make_shared <T> (
+            std::cref (value)));
         return canonicalize (key, p);
     }
 
@@ -473,7 +479,7 @@ private:
         m_stats.size.set (getCacheSize ());
 
         {
-            insight::Gauge::value_type hit_rate (0);
+            beast::insight::Gauge::value_type hit_rate (0);
             {
                 lock_guard lock (m_mutex);
                 auto const total (m_hits + m_misses);
@@ -489,15 +495,15 @@ private:
     {
         template <class Handler>
         Stats (std::string const& prefix, Handler const& handler,
-            insight::Collector::ptr const& collector)
+            beast::insight::Collector::ptr const& collector)
             : hook (collector->make_hook (handler))
             , size (collector->make_gauge (prefix, "size"))
             , hit_rate (collector->make_gauge (prefix, "hit_rate"))
             { }
 
-        insight::Hook hook;
-        insight::Gauge size;
-        insight::Gauge hit_rate;
+        beast::insight::Hook hook;
+        beast::insight::Gauge size;
+        beast::insight::Gauge hit_rate;
     };
 
     class Entry
@@ -523,10 +529,10 @@ private:
     };
 
     typedef std::pair <key_type, Entry> cache_pair;
-    typedef std::unordered_map <key_type, Entry, Hash, KeyEqual> cache_type;
+    typedef ripple::unordered_map <key_type, Entry, Hash, KeyEqual> cache_type;
     typedef typename cache_type::iterator cache_iterator;
 
-    Journal m_journal;
+    beast::Journal m_journal;
     clock_type& m_clock;
     Stats m_stats;
 
@@ -544,8 +550,8 @@ private:
     // Number of items cached
     int m_cache_count;
     cache_type m_cache;  // Hold strong reference to recent objects
-    uint64 m_hits;
-    uint64 m_misses;
+    std::uint64_t m_hits;
+    std::uint64_t m_misses;
 };
 
 }

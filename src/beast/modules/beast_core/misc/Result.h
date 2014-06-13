@@ -24,6 +24,9 @@
 #ifndef BEAST_RESULT_H_INCLUDED
 #define BEAST_RESULT_H_INCLUDED
 
+namespace beast
+{
+
 /** Represents the 'success' or 'failure' of an operation, and holds an associated
     error message to describe the error when there's a failure.
 
@@ -50,7 +53,7 @@
     }
     @endcode
 */
-class BEAST_API  Result
+class  Result
 {
 public:
     //==============================================================================
@@ -112,6 +115,8 @@ private:
     operator int() const;
     operator void*() const;
 };
+
+} // beast
 
 #endif
 

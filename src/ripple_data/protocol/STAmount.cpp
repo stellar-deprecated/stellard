@@ -17,9 +17,13 @@
 */
 //==============================================================================
 
+#include "../../beast/beast/cxx14/iterator.h"
+
+namespace ripple {
+
 SETUP_LOG (STAmount)
 
-uint64  STAmount::uRateOne  = STAmount::getRate (STAmount (1), STAmount (1));
+std::uint64_t STAmount::uRateOne  = STAmount::getRate (STAmount (1), STAmount (1));
 
 bool STAmount::issuerFromString (uint160& uDstIssuer, const std::string& sIssuer)
 {
@@ -103,10 +107,7 @@ bool STAmount::bSetJson (const Json::Value& jvSource)
     }
     catch (const std::exception& e)
     {
-        WriteLog (lsINFO, STAmount)
-                << boost::str (boost::format ("bSetJson(): caught: %s")
-                               % e.what ());
-
+        WriteLog (lsINFO, STAmount) << "bSetJson(): caught: " << e.what ();
         return false;
     }
 }
@@ -118,15 +119,15 @@ STAmount::STAmount (SField::ref n, const Json::Value& v)
 
     if (v.isObject ())
     {
-        WriteLog (lsTRACE, STAmount)
-                << boost::str (boost::format ("value='%s', currency='%s', issuer='%s'")
-                               % v["value"].asString ()
-                               % v["currency"].asString ()
-                               % v["issuer"].asString ());
+        WriteLog (lsTRACE, STAmount) <<
+            "value='" << v["value"].asString () <<
+            "', currency='" << v["currency"].asString () <<
+            "', issuer='" << v["issuer"].asString () <<
+            "')";
 
-        value       = v["value"];
-        currency    = v["currency"];
-        issuer      = v["issuer"];
+        value       = v[jss::value];
+        currency    = v[jss::currency];
+        issuer      = v[jss::issuer];
     }
     else if (v.isArray ())
     {
@@ -197,7 +198,7 @@ STAmount::STAmount (SField::ref n, const Json::Value& v)
     {
         if (mIsNative)
         {
-            int64 val = lexicalCastThrow <int64> (value.asString ());
+            std::int64_t val = beast::lexicalCastThrow <std::int64_t> (value.asString ());
 
             if (val >= 0)
                 mValue = val;
@@ -220,51 +221,34 @@ STAmount::STAmount (SField::ref n, const Json::Value& v)
 
 std::string STAmount::createHumanCurrency (const uint160& uCurrency)
 {
-    std::string sCurrency;
-    static uint160 sFiatBits("FFFFFFFFFFFFFFFFFFFFFFFF0000000000000000");
+    static uint160 const sIsoBits ("FFFFFFFFFFFFFFFFFFFFFFFF000000FFFFFFFFFF");
 
     if (uCurrency.isZero ())
     {
         return SYSTEM_CURRENCY_CODE;
     }
-    else if (CURRENCY_ONE == uCurrency)
+
+    if (CURRENCY_ONE == uCurrency)
     {
         return "1";
     }
-    else if (CURRENCY_BAD == uCurrency)
+
+    if ((uCurrency & sIsoBits).isZero ())
     {
-        return uCurrency.ToString ();
+        // The offset of the 3 character ISO code in the currency descriptor
+        int const isoOffset = 12;
+
+        std::string const iso(
+            uCurrency.data () + isoOffset,
+            uCurrency.data () + isoOffset + 3);
+
+        // Specifying the system currency code using ISO-style representation
+        // is not allowed.
+        if (iso != SYSTEM_CURRENCY_CODE)
+            return iso;
     }
-    else if ((uCurrency & sFiatBits).isZero ())
-    {
-        Serializer  s (160 / 8);
 
-        s.add160 (uCurrency);
-
-        SerializerIterator  sit (s);
-
-        Blob    vucZeros    = sit.getRaw (96 / 8);
-        Blob    vucIso      = sit.getRaw (24 / 8);
-        Blob    vucVersion  = sit.getRaw (16 / 8);
-        Blob    vucReserved = sit.getRaw (24 / 8);
-
-        bool    bIso    =    isZeroFilled (vucZeros.begin (), vucZeros.size ())            // Leading zeros
-                          && isZeroFilled (vucVersion.begin (), vucVersion.size ())   // Zero version
-                          && isZeroFilled (vucReserved.begin (), vucReserved.size ()); // Reserved is zero.
-
-        if (bIso)
-        {
-            sCurrency.assign (vucIso.begin (), vucIso.end ());
-        }
-        else
-        {
-            sCurrency   = uCurrency.ToString ();
-        }
-    }
-    else
-       sCurrency = uCurrency.GetHex ();
-
-    return sCurrency;
+    return to_string (uCurrency);
 }
 
 bool STAmount::setValue (const std::string& sAmount)
@@ -295,13 +279,13 @@ bool STAmount::setValue (const std::string& sAmount)
 
         if (!smMatch[4].matched) // integer only
         {
-            mValue = lexicalCast <uint64> (std::string (smMatch[2]));
+            mValue = beast::lexicalCast <std::uint64_t> (std::string (smMatch[2]));
             mOffset = 0;
         }
         else
         {
             // integer and fraction
-            mValue = lexicalCast <uint64> (smMatch[2] + smMatch[4]);
+            mValue = beast::lexicalCast <std::uint64_t> (smMatch[2] + smMatch[4]);
             mOffset = - (smMatch[4].length ());
         }
 
@@ -309,9 +293,9 @@ bool STAmount::setValue (const std::string& sAmount)
         {
             // we have an exponent
             if (smMatch[6].matched && (smMatch[6] == "-"))
-                mOffset -= lexicalCast <int> (std::string (smMatch[7]));
+                mOffset -= beast::lexicalCast <int> (std::string (smMatch[7]));
             else
-                mOffset += lexicalCast <int> (std::string (smMatch[7]));
+                mOffset += beast::lexicalCast <int> (std::string (smMatch[7]));
         }
     }
     catch (...)
@@ -480,23 +464,23 @@ void STAmount::add (Serializer& s) const
     }
     else
     {
-        if (isZero ())
+        if (*this == zero)
             s.add64 (cNotNative);
         else if (mIsNegative) // 512 = not native
-            s.add64 (mValue | (static_cast<uint64> (mOffset + 512 + 97) << (64 - 10)));
+            s.add64 (mValue | (static_cast<std::uint64_t> (mOffset + 512 + 97) << (64 - 10)));
         else // 256 = positive
-            s.add64 (mValue | (static_cast<uint64> (mOffset + 512 + 256 + 97) << (64 - 10)));
+            s.add64 (mValue | (static_cast<std::uint64_t> (mOffset + 512 + 256 + 97) << (64 - 10)));
 
         s.add160 (mCurrency);
         s.add160 (mIssuer);
     }
 }
 
-STAmount STAmount::createFromInt64 (SField::ref name, int64 value)
+STAmount STAmount::createFromInt64 (SField::ref name, std::int64_t value)
 {
     return value >= 0
-           ? STAmount (name, static_cast<uint64> (value), false)
-           : STAmount (name, static_cast<uint64> (-value), true);
+           ? STAmount (name, static_cast<std::uint64_t> (value), false)
+           : STAmount (name, static_cast<std::uint64_t> (-value), true);
 }
 
 void STAmount::setValue (const STAmount& a)
@@ -536,7 +520,7 @@ int STAmount::compare (const STAmount& a) const
 
 STAmount* STAmount::construct (SerializerIterator& sit, SField::ref name)
 {
-    uint64 value = sit.get64 ();
+    std::uint64_t value = sit.get64 ();
 
     if ((value & cNotNative) == 0)
     {
@@ -576,93 +560,119 @@ STAmount* STAmount::construct (SerializerIterator& sit, SField::ref name)
     return new STAmount (name, uCurrencyID, uIssuerID);
 }
 
-int64 STAmount::getSNValue () const
+std::int64_t STAmount::getSNValue () const
 {
     // signed native value
     if (!mIsNative) throw std::runtime_error ("not native");
 
-    if (mIsNegative) return - static_cast<int64> (mValue);
+    if (mIsNegative) return - static_cast<std::int64_t> (mValue);
 
-    return static_cast<int64> (mValue);
+    return static_cast<std::int64_t> (mValue);
 }
 
-void STAmount::setSNValue (int64 v)
+void STAmount::setSNValue (std::int64_t v)
 {
     if (!mIsNative) throw std::runtime_error ("not native");
 
     if (v > 0)
     {
         mIsNegative = false;
-        mValue = static_cast<uint64> (v);
+        mValue = static_cast<std::uint64_t> (v);
     }
     else
     {
         mIsNegative = true;
-        mValue = static_cast<uint64> (-v);
+        mValue = static_cast<std::uint64_t> (-v);
     }
-}
-
-std::string STAmount::getRaw () const
-{
-    // show raw internal form
-    if (mValue == 0) return "0";
-
-    if (mIsNative)
-    {
-        if (mIsNegative) return std::string ("-") + lexicalCast <std::string> (mValue);
-        else return lexicalCast <std::string> (mValue);
-    }
-
-    if (mIsNegative)
-        return mCurrency.GetHex () + ": -" +
-               lexicalCast <std::string> (mValue) + "e" + lexicalCast <std::string> (mOffset);
-    else return mCurrency.GetHex () + ": " +
-                    lexicalCast <std::string> (mValue) + "e" + lexicalCast <std::string> (mOffset);
 }
 
 std::string STAmount::getText () const
 {
     // keep full internal accuracy, but make more human friendly if posible
-    if (isZero ()) return "0";
+    if (*this == zero)
+        return "0";
 
-    if (mIsNative)
+    std::string const raw_value (std::to_string (mValue));
+    std::string ret;
+
+    if (mIsNegative)
+        ret.append (1, '-');
+
+    bool const scientific ((mOffset != 0) && ((mOffset < -25) || (mOffset > -5)));
+
+    if (mIsNative || scientific)
     {
-        if (mIsNegative)
-            return std::string ("-") +  lexicalCast <std::string> (mValue);
-        else return lexicalCast <std::string> (mValue);
+        ret.append (raw_value);
+
+        if(scientific)
+        {
+            ret.append (1, 'e');
+            ret.append (std::to_string (mOffset));
+        }
+
+        return ret;
     }
 
-    if ((mOffset != 0) && ((mOffset < -25) || (mOffset > -5)))
+    assert (mOffset + 43 > 0);
+
+    size_t const pad_prefix = 27;
+    size_t const pad_suffix = 23;
+
+    std::string val;
+    val.reserve (raw_value.length () + pad_prefix + pad_suffix);
+    val.append (pad_prefix, '0');
+    val.append (raw_value);
+    val.append (pad_suffix, '0');
+
+    size_t const offset (mOffset + 43);
+
+    auto pre_from (val.begin ());
+    auto const pre_to (val.begin () + offset);
+
+    auto const post_from (val.begin () + offset);
+    auto post_to (val.end ());
+
+    // Crop leading zeroes. Take advantage of the fact that there's always a
+    // fixed amount of leading zeroes and skip them.
+    if (std::distance (pre_from, pre_to) > pad_prefix)
+        pre_from += pad_prefix;
+
+    assert (post_to >= post_from);
+
+    pre_from = std::find_if (pre_from, pre_to,
+        [](char c)
+        {
+            return c != '0';
+        });
+
+    // Crop trailing zeroes. Take advantage of the fact that there's always a
+    // fixed amount of trailing zeroes and skip them.
+    if (std::distance (post_from, post_to) > pad_suffix)
+        post_to -= pad_suffix;
+
+    assert (post_to >= post_from);
+
+    post_to = std::find_if(
+        std::make_reverse_iterator (post_to),
+        std::make_reverse_iterator (post_from),
+        [](char c)
+        {
+            return c != '0';
+        }).base();
+
+    // Assemble the output:
+    if (pre_from == pre_to)
+        ret.append (1, '0');
+    else
+        ret.append(pre_from, pre_to);
+
+    if (post_to != post_from)
     {
-        if (mIsNegative)
-            return std::string ("-") + lexicalCast <std::string> (mValue) +
-                   "e" + lexicalCast <std::string> (mOffset);
-        else
-            return lexicalCast <std::string> (mValue) + "e" + lexicalCast <std::string> (mOffset);
+        ret.append (1, '.');
+        ret.append (post_from, post_to);
     }
 
-    std::string val = "000000000000000000000000000";
-    val += lexicalCast <std::string> (mValue);
-    val += "00000000000000000000000";
-
-    std::string pre = val.substr (0, mOffset + 43);
-    std::string post = val.substr (mOffset + 43);
-
-    size_t s_pre = pre.find_first_not_of ('0');
-
-    if (s_pre == std::string::npos)
-        pre = "0";
-    else
-        pre = pre.substr (s_pre);
-
-    size_t s_post = post.find_last_not_of ('0');
-
-    if (mIsNegative) pre = std::string ("-") + pre;
-
-    if (s_post == std::string::npos)
-        return pre;
-    else
-        return pre + "." + post.substr (0, s_post + 1);
+    return ret;
 }
 
 bool STAmount::isComparable (const STAmount& t) const
@@ -744,7 +754,7 @@ STAmount STAmount::operator- (void) const
     return STAmount (getFName (), mCurrency, mIssuer, mValue, mOffset, mIsNative, !mIsNegative);
 }
 
-STAmount& STAmount::operator= (uint64 v)
+STAmount& STAmount::operator= (std::uint64_t v)
 {
     // does not copy name, does not change currency type
     mOffset = 0;
@@ -756,52 +766,56 @@ STAmount& STAmount::operator= (uint64 v)
     return *this;
 }
 
-STAmount& STAmount::operator+= (uint64 v)
+STAmount& STAmount::operator+= (std::uint64_t v)
 {
-    if (mIsNative)
-        setSNValue (getSNValue () + static_cast<int64> (v));
-    else *this += STAmount (mCurrency, v);
+    assert (mIsNative);
 
+    if (!mIsNative)
+        throw std::runtime_error ("not native");
+
+    setSNValue (getSNValue () + static_cast<std::int64_t> (v));
     return *this;
 }
 
-STAmount& STAmount::operator-= (uint64 v)
+STAmount& STAmount::operator-= (std::uint64_t v)
 {
-    if (mIsNative)
-        setSNValue (getSNValue () - static_cast<int64> (v));
-    else *this -= STAmount (mCurrency, v);
+    assert (mIsNative);
 
+    if (!mIsNative)
+        throw std::runtime_error ("not native");
+
+    setSNValue (getSNValue () - static_cast<std::int64_t> (v));
     return *this;
 }
 
-bool STAmount::operator< (uint64 v) const
+bool STAmount::operator< (std::uint64_t v) const
 {
-    return getSNValue () < static_cast<int64> (v);
+    return getSNValue () < static_cast<std::int64_t> (v);
 }
 
-bool STAmount::operator> (uint64 v) const
+bool STAmount::operator> (std::uint64_t v) const
 {
-    return getSNValue () > static_cast<int64> (v);
+    return getSNValue () > static_cast<std::int64_t> (v);
 }
 
-bool STAmount::operator<= (uint64 v) const
+bool STAmount::operator<= (std::uint64_t v) const
 {
-    return getSNValue () <= static_cast<int64> (v);
+    return getSNValue () <= static_cast<std::int64_t> (v);
 }
 
-bool STAmount::operator>= (uint64 v) const
+bool STAmount::operator>= (std::uint64_t v) const
 {
-    return getSNValue () >= static_cast<int64> (v);
+    return getSNValue () >= static_cast<std::int64_t> (v);
 }
 
-STAmount STAmount::operator+ (uint64 v) const
+STAmount STAmount::operator+ (std::uint64_t v) const
 {
-    return STAmount (getFName (), getSNValue () + static_cast<int64> (v));
+    return STAmount (getFName (), getSNValue () + static_cast<std::int64_t> (v));
 }
 
-STAmount STAmount::operator- (uint64 v) const
+STAmount STAmount::operator- (std::uint64_t v) const
 {
-    return STAmount (getFName (), getSNValue () - static_cast<int64> (v));
+    return STAmount (getFName (), getSNValue () - static_cast<std::int64_t> (v));
 }
 
 STAmount::operator double () const
@@ -819,9 +833,10 @@ STAmount operator+ (const STAmount& v1, const STAmount& v2)
 {
     v1.throwComparable (v2);
 
-    if (v2.isZero ()) return v1;
+    if (v2 == zero)
+        return v1;
 
-    if (v1.isZero ())
+    if (v1 == zero)
     {
         // Result must be in terms of v1 currency and issuer.
         return STAmount (v1.getFName (), v1.mCurrency, v1.mIssuer, v2.mValue, v2.mOffset, v2.mIsNegative);
@@ -831,7 +846,7 @@ STAmount operator+ (const STAmount& v1, const STAmount& v2)
         return STAmount (v1.getFName (), v1.getSNValue () + v2.getSNValue ());
 
     int ov1 = v1.mOffset, ov2 = v2.mOffset;
-    int64 vv1 = static_cast<int64> (v1.mValue), vv2 = static_cast<int64> (v2.mValue);
+    std::int64_t vv1 = static_cast<std::int64_t> (v1.mValue), vv2 = static_cast<std::int64_t> (v2.mValue);
 
     if (v1.mIsNegative) vv1 = -vv1;
 
@@ -849,9 +864,9 @@ STAmount operator+ (const STAmount& v1, const STAmount& v2)
         ++ov2;
     }
 
-    // this addition cannot overflow an int64, it can overflow an STAmount and the constructor will throw
+    // this addition cannot overflow an std::int64_t, it can overflow an STAmount and the constructor will throw
 
-    int64 fv = vv1 + vv2;
+    std::int64_t fv = vv1 + vv2;
 
     if ((fv >= -10) && (fv <= 10))
         return STAmount (v1.getFName (), v1.mCurrency, v1.mIssuer);
@@ -865,7 +880,8 @@ STAmount operator- (const STAmount& v1, const STAmount& v2)
 {
     v1.throwComparable (v2);
 
-    if (v2.isZero ()) return v1;
+    if (v2 == zero)
+        return v1;
 
     if (v2.mIsNative)
     {
@@ -874,7 +890,7 @@ STAmount operator- (const STAmount& v1, const STAmount& v2)
     }
 
     int ov1 = v1.mOffset, ov2 = v2.mOffset;
-    int64 vv1 = static_cast<int64> (v1.mValue), vv2 = static_cast<int64> (v2.mValue);
+    std::int64_t vv1 = static_cast<std::int64_t> (v1.mValue), vv2 = static_cast<std::int64_t> (v2.mValue);
 
     if (v1.mIsNegative) vv1 = -vv1;
 
@@ -892,9 +908,9 @@ STAmount operator- (const STAmount& v1, const STAmount& v2)
         ++ov2;
     }
 
-    // this subtraction cannot overflow an int64, it can overflow an STAmount and the constructor will throw
+    // this subtraction cannot overflow an std::int64_t, it can overflow an STAmount and the constructor will throw
 
-    int64 fv = vv1 - vv2;
+    std::int64_t fv = vv1 - vv2;
 
     if ((fv >= -10) && (fv <= 10))
         return STAmount (v1.getFName (), v1.mCurrency, v1.mIssuer);
@@ -906,13 +922,13 @@ STAmount operator- (const STAmount& v1, const STAmount& v2)
 
 STAmount STAmount::divide (const STAmount& num, const STAmount& den, const uint160& uCurrencyID, const uint160& uIssuerID)
 {
-    if (den.isZero ())
+    if (den == zero)
         throw std::runtime_error ("division by zero");
 
-    if (num.isZero ())
+    if (num == zero)
         return STAmount (uCurrencyID, uIssuerID);
 
-    uint64 numVal = num.mValue, denVal = den.mValue;
+    std::uint64_t numVal = num.mValue, denVal = den.mValue;
     int numOffset = num.mOffset, denOffset = den.mOffset;
 
     if (num.mIsNative)
@@ -935,7 +951,7 @@ STAmount STAmount::divide (const STAmount& num, const STAmount& den, const uint1
 
     if ((BN_add_word64 (&v, numVal) != 1) ||
             (BN_mul_word64 (&v, tenTo17) != 1) ||
-            (BN_div_word64 (&v, denVal) == ((uint64) - 1)))
+            (BN_div_word64 (&v, denVal) == ((std::uint64_t) - 1)))
     {
         throw std::runtime_error ("internal bn error");
     }
@@ -949,13 +965,13 @@ STAmount STAmount::divide (const STAmount& num, const STAmount& den, const uint1
 
 STAmount STAmount::multiply (const STAmount& v1, const STAmount& v2, const uint160& uCurrencyID, const uint160& uIssuerID)
 {
-    if (v1.isZero () || v2.isZero ())
+    if (v1 == zero || v2 == zero)
         return STAmount (uCurrencyID, uIssuerID);
 
     if (v1.mIsNative && v2.mIsNative && uCurrencyID.isZero ())
     {
-        uint64 minV = (v1.getSNValue () < v2.getSNValue ()) ? v1.getSNValue () : v2.getSNValue ();
-        uint64 maxV = (v1.getSNValue () < v2.getSNValue ()) ? v2.getSNValue () : v1.getSNValue ();
+        std::uint64_t minV = (v1.getSNValue () < v2.getSNValue ()) ? v1.getSNValue () : v2.getSNValue ();
+        std::uint64_t maxV = (v1.getSNValue () < v2.getSNValue ()) ? v2.getSNValue () : v1.getSNValue ();
 
         if (minV > 3000000000ull) // sqrt(cMaxNative)
             throw std::runtime_error ("Native value overflow");
@@ -966,7 +982,7 @@ STAmount STAmount::multiply (const STAmount& v1, const STAmount& v2, const uint1
         return STAmount (v1.getFName (), minV * maxV);
     }
 
-    uint64 value1 = v1.mValue, value2 = v2.mValue;
+    std::uint64_t value1 = v1.mValue, value2 = v2.mValue;
     int offset1 = v1.mOffset, offset2 = v2.mOffset;
 
     if (v1.mIsNative)
@@ -993,7 +1009,7 @@ STAmount STAmount::multiply (const STAmount& v1, const STAmount& v2, const uint1
 
     if ((BN_add_word64 (&v, value1) != 1) ||
             (BN_mul_word64 (&v, value2) != 1) ||
-            (BN_div_word64 (&v, tenTo14) == ((uint64) - 1)))
+            (BN_div_word64 (&v, tenTo14) == ((std::uint64_t) - 1)))
     {
         throw std::runtime_error ("internal bn error");
     }
@@ -1014,21 +1030,21 @@ STAmount STAmount::multiply (const STAmount& v1, const STAmount& v2, const uint1
 //             A lower rate is better for the person taking the order.
 //             The taker gets more for less with a lower rate.
 // Zero is returned if the offer is worthless.
-uint64 STAmount::getRate (const STAmount& offerOut, const STAmount& offerIn)
+std::uint64_t STAmount::getRate (const STAmount& offerOut, const STAmount& offerIn)
 {
-    if (offerOut.isZero ())
+    if (offerOut == zero)
         return 0;
 
     try
     {
         STAmount r = divide (offerIn, offerOut, CURRENCY_ONE, ACCOUNT_ONE);
 
-        if (r.isZero ()) // offer is too good
+        if (r == zero) // offer is too good
             return 0;
 
         assert ((r.getExponent () >= -100) && (r.getExponent () <= 155));
 
-        uint64 ret = r.getExponent () + 100;
+        std::uint64_t ret = r.getExponent () + 100;
 
         return (ret << (64 - 8)) | r.getMantissa ();
     }
@@ -1039,172 +1055,21 @@ uint64 STAmount::getRate (const STAmount& offerOut, const STAmount& offerIn)
     }
 }
 
-STAmount STAmount::setRate (uint64 rate)
+STAmount STAmount::setRate (std::uint64_t rate)
 {
     if (rate == 0)
         return STAmount (CURRENCY_ONE, ACCOUNT_ONE);
 
-    uint64 mantissa = rate & ~ (255ull << (64 - 8));
+    std::uint64_t mantissa = rate & ~ (255ull << (64 - 8));
     int exponent = static_cast<int> (rate >> (64 - 8)) - 100;
 
     return STAmount (CURRENCY_ONE, ACCOUNT_ONE, mantissa, exponent);
 }
 
-// Existing offer is on the books.
-// Price is offer owner's, which might be better for taker.
-// Taker pays what they can.
-// Taker gets all taker can pay for with saTakerFunds/uTakerPaysRate, limited by saOfferPays and saOfferFunds/uOfferPaysRate.
-// If taker is an offer, taker is spending at same or better rate than they wanted.
-// Taker should consider themselves as wanting to buy X amount.
-// Taker is willing to pay at most the rate of Y/X each.
-// Buy semantics:
-// - After having some part of their offer fulfilled at a better rate their offer should be reduced accordingly.
-//
-// There are no quality costs for offer vs offer taking.
-//
-// -->            bSell: True for sell semantics.
-// -->   uTakerPaysRate: >= QUALITY_ONE | TransferRate for third party IOUs paid by taker.
-// -->   uOfferPaysRate: >= QUALITY_ONE | TransferRate for third party IOUs paid by offer owner.
-// -->      saOfferRate: Original saOfferGets/saOfferPays, when offer was made.
-// -->     saOfferFunds: Limit for saOfferPays : How much can pay including fees.
-// -->     saTakerFunds: Limit for saOfferGets : How much can pay including fees.
-// -->      saOfferPays: Request : this should be reduced as the offer is fullfilled.
-// -->      saOfferGets: Request : this should be reduced as the offer is fullfilled.
-// -->      saTakerPays: Limit for taker to pay.
-// -->      saTakerGets: Limit for taker to get.
-// <--      saTakerPaid: Actual
-// <--       saTakerGot: Actual
-// <-- saTakerIssuerFee: Actual
-// <-- saOfferIssuerFee: Actual
-bool STAmount::applyOffer (
-    const bool bSell,
-    const uint32 uTakerPaysRate, const uint32 uOfferPaysRate,
-    const STAmount& saOfferRate,
-    const STAmount& saOfferFunds, const STAmount& saTakerFunds,
-    const STAmount& saOfferPays, const STAmount& saOfferGets,
-    const STAmount& saTakerPays, const STAmount& saTakerGets,
-    STAmount& saTakerPaid, STAmount& saTakerGot,
-    STAmount& saTakerIssuerFee, STAmount& saOfferIssuerFee)
-{
-    saOfferGets.throwComparable (saTakerFunds);
-
-    assert (saOfferFunds.isPositive () && saTakerFunds.isPositive ()); // Both must have funds.
-    assert (saOfferGets.isPositive () && saOfferPays.isPositive ()); // Must not be a null offer.
-
-    // Available = limited by funds.
-    // Limit offerer funds available, by transfer fees.
-    STAmount    saOfferFundsAvailable   = QUALITY_ONE == uOfferPaysRate
-                                          ? saOfferFunds          // As is.
-                                          : STAmount::divide (saOfferFunds, STAmount (CURRENCY_ONE, ACCOUNT_ONE, uOfferPaysRate, -9)); // Reduce by offer fees.
-
-    WriteLog (lsINFO, STAmount) << "applyOffer: uOfferPaysRate=" << uOfferPaysRate;
-    WriteLog (lsINFO, STAmount) << "applyOffer: saOfferFundsAvailable=" << saOfferFundsAvailable.getFullText ();
-
-    // Limit taker funds available, by transfer fees.
-    STAmount    saTakerFundsAvailable   = QUALITY_ONE == uTakerPaysRate
-                                          ? saTakerFunds          // As is.
-                                          : STAmount::divide (saTakerFunds, STAmount (CURRENCY_ONE, ACCOUNT_ONE, uTakerPaysRate, -9)); // Reduce by taker fees.
-
-    WriteLog (lsINFO, STAmount) << "applyOffer: TAKER_FEES=" << STAmount (CURRENCY_ONE, ACCOUNT_ONE, uTakerPaysRate, -9).getFullText ();
-    WriteLog (lsINFO, STAmount) << "applyOffer: uTakerPaysRate=" << uTakerPaysRate;
-    WriteLog (lsINFO, STAmount) << "applyOffer: saTakerFundsAvailable=" << saTakerFundsAvailable.getFullText ();
-
-    STAmount    saOfferPaysAvailable;   // Amount offer can pay out, limited by offer and offerer funds.
-    STAmount    saOfferGetsAvailable;   // Amount offer would get, limited by offer funds.
-
-    if (saOfferFundsAvailable >= saOfferPays)
-    {
-        // Offer was fully funded, avoid math shenanigans.
-
-        saOfferPaysAvailable    = saOfferPays;
-        saOfferGetsAvailable    = saOfferGets;
-    }
-    else
-    {
-        // Offer has limited funding, limit offer gets and pays by funds available.
-
-        saOfferPaysAvailable    = saOfferFundsAvailable;
-        saOfferGetsAvailable    = std::min (saOfferGets, mulRound (saOfferPaysAvailable, saOfferRate, saOfferGets, true));
-    }
-
-    WriteLog (lsINFO, STAmount) << "applyOffer: saOfferPaysAvailable=" << saOfferPaysAvailable.getFullText ();
-    WriteLog (lsINFO, STAmount) << "applyOffer: saOfferGetsAvailable=" << saOfferGetsAvailable.getFullText ();
-
-    STAmount    saTakerPaysAvailable    = std::min (saTakerPays, saTakerFundsAvailable);
-    WriteLog (lsINFO, STAmount) << "applyOffer: saTakerPaysAvailable=" << saTakerPaysAvailable.getFullText ();
-
-    // Limited = limited by other sides raw numbers.
-    // Taker can't pay more to offer than offer can get.
-    STAmount    saTakerPaysLimited      = std::min (saTakerPaysAvailable, saOfferGetsAvailable);
-    WriteLog (lsINFO, STAmount) << "applyOffer: saTakerPaysLimited=" << saTakerPaysLimited.getFullText ();
-
-    // Align saTakerGetsLimited with saTakerPaysLimited.
-    STAmount    saTakerGetsLimited      = saTakerPaysLimited >= saOfferGetsAvailable              // Cannot actually be greater
-                                          ? saOfferPaysAvailable                                  // Potentially take entire offer. Avoid math shenanigans.
-                                          : std::min (saOfferPaysAvailable, divRound (saTakerPaysLimited, saOfferRate, saTakerGets, true)); // Take a portion of offer.
-
-    WriteLog (lsINFO, STAmount) << "applyOffer: saOfferRate=" << saOfferRate.getFullText ();
-    WriteLog (lsINFO, STAmount) << "applyOffer: saTakerGetsLimited=" << saTakerGetsLimited.getFullText ();
-
-    // Got & Paid = Calculated by price and transfered without fees.
-    // Compute from got as when !bSell, we want got to be exact to finish off offer if possible.
-
-    saTakerGot  = bSell
-                  ? saTakerGetsLimited                            // Get all available that are paid for.
-                  : std::min (saTakerGets, saTakerGetsLimited);   // Limit by wanted.
-    saTakerPaid = saTakerGot >= saTakerGetsLimited
-                  ? saTakerPaysLimited
-                  : std::min (saTakerPaysLimited, mulRound (saTakerGot, saOfferRate, saTakerFunds, true));
-
-    WriteLog (lsINFO, STAmount) << "applyOffer: saTakerGot=" << saTakerGot.getFullText ();
-    WriteLog (lsINFO, STAmount) << "applyOffer: saTakerPaid=" << saTakerPaid.getFullText ();
-
-    if (uTakerPaysRate == QUALITY_ONE)
-    {
-        saTakerIssuerFee    = STAmount (saTakerPaid.getCurrency (), saTakerPaid.getIssuer ());
-    }
-    else
-    {
-        // Compute fees in a rounding safe way.
-
-        STAmount    saTransferRate  = STAmount (CURRENCY_ONE, ACCOUNT_ONE, uTakerPaysRate, -9);
-        WriteLog (lsINFO, STAmount) << "applyOffer: saTransferRate=" << saTransferRate.getFullText ();
-
-        // TakerCost includes transfer fees.
-        STAmount    saTakerCost     = STAmount::mulRound (saTakerPaid, saTransferRate, true);
-
-        WriteLog (lsINFO, STAmount) << "applyOffer: saTakerCost=" << saTakerCost.getFullText ();
-        WriteLog (lsINFO, STAmount) << "applyOffer: saTakerFunds=" << saTakerFunds.getFullText ();
-        saTakerIssuerFee    = saTakerCost > saTakerFunds
-                              ? saTakerFunds - saTakerPaid // Not enough funds to cover fee, stiff issuer the rounding error.
-                              : saTakerCost - saTakerPaid;
-        WriteLog (lsINFO, STAmount) << "applyOffer: saTakerIssuerFee=" << saTakerIssuerFee.getFullText ();
-        assert (!saTakerIssuerFee.isNegative ());
-    }
-
-    if (uOfferPaysRate == QUALITY_ONE)
-    {
-        saOfferIssuerFee    = STAmount (saTakerGot.getCurrency (), saTakerGot.getIssuer ());
-    }
-    else
-    {
-        // Compute fees in a rounding safe way.
-        STAmount    saOfferCost = STAmount::mulRound (saTakerGot, STAmount (CURRENCY_ONE, ACCOUNT_ONE, uOfferPaysRate, -9), true);
-
-        saOfferIssuerFee    = saOfferCost > saOfferFunds
-                              ? saOfferFunds - saTakerGot // Not enough funds to cover fee, stiff issuer the rounding error.
-                              : saOfferCost - saTakerGot;
-    }
-
-    WriteLog (lsINFO, STAmount) << "applyOffer: saTakerGot=" << saTakerGot.getFullText ();
-
-    return saTakerGot >= saOfferPaysAvailable;              // True, if consumed offer.
-}
-
 STAmount STAmount::getPay (const STAmount& offerOut, const STAmount& offerIn, const STAmount& needed)
 {
     // Someone wants to get (needed) out of the offer, how much should they pay in?
-    if (offerOut.isZero ())
+    if (offerOut == zero)
         return STAmount (offerIn.getCurrency (), offerIn.getIssuer ());
 
     if (needed >= offerOut)
@@ -1227,30 +1092,24 @@ STAmount STAmount::deserialize (SerializerIterator& it)
 
 std::string STAmount::getFullText () const
 {
-    static const boost::format nativeFormat ("%s/" SYSTEM_CURRENCY_CODE);
-    static const boost::format noIssuer ("%s/%s/0");
-    static const boost::format issuerOne ("%s/%s/1");
-    static const boost::format normal ("%s/%s/%s");
+    std::string ret;
 
-    if (mIsNative)
+    ret.reserve(64);
+    ret = getText () + "/" + getHumanCurrency ();
+
+    if (!mIsNative)
     {
-        return str (boost::format (nativeFormat) % getText ());
+        ret += "/";
+
+        if (!mIssuer)
+            ret += "0";
+        else if (mIssuer == ACCOUNT_ONE)
+            ret += "1";
+        else
+            ret += RippleAddress::createHumanAccountID (mIssuer);
     }
-    else if (!mIssuer)
-    {
-        return str (boost::format (noIssuer) % getText () % getHumanCurrency ());
-    }
-    else if (mIssuer == ACCOUNT_ONE)
-    {
-        return str (boost::format (issuerOne) % getText () % getHumanCurrency ());
-    }
-    else
-    {
-        return str (boost::format (normal)
-                    % getText ()
-                    % getHumanCurrency ()
-                    % RippleAddress::createHumanAccountID (mIssuer));
-    }
+
+    return ret;
 }
 
 STAmount STAmount::getRound () const
@@ -1258,7 +1117,7 @@ STAmount STAmount::getRound () const
     if (mIsNative)
         return *this;
 
-    uint64 valueDigits = mValue % 1000000000ull;
+    std::uint64_t valueDigits = mValue % 1000000000ull;
 
     if (valueDigits == 1)
         return STAmount (mCurrency, mIssuer, mValue - 1, mOffset, mIsNegative);
@@ -1273,7 +1132,7 @@ void STAmount::roundSelf ()
     if (mIsNative)
         return;
 
-    uint64 valueDigits = mValue % 1000000000ull;
+    std::uint64_t valueDigits = mValue % 1000000000ull;
 
     if (valueDigits == 1)
     {
@@ -1299,9 +1158,9 @@ void STAmount::setJson (Json::Value& elem) const
     {
         // It is an error for currency or issuer not to be specified for valid json.
 
-        elem["value"]       = getText ();
-        elem["currency"]    = getHumanCurrency ();
-        elem["issuer"]      = RippleAddress::createHumanAccountID (mIssuer);
+        elem[jss::value]      = getText ();
+        elem[jss::currency]   = getHumanCurrency ();
+        elem[jss::issuer]     = RippleAddress::createHumanAccountID (mIssuer);
     }
     else
     {
@@ -1318,13 +1177,9 @@ Json::Value STAmount::getJson (int) const
 
 //------------------------------------------------------------------------------
 
-class STAmountTests : public UnitTest
+class STAmount_test : public beast::unit_test::suite
 {
 public:
-    STAmountTests () : UnitTest ("STAmount", "ripple")
-    {
-    }
-
     static STAmount serializeAndDeserialize (const STAmount& s)
     {
         Serializer ser;
@@ -1370,7 +1225,7 @@ public:
         {
             pass ();
         }
-        
+
         return true;
     }
 
@@ -1382,7 +1237,7 @@ public:
 
         expect (! prod1.isNative ());
 
-        STAmount prod2 (CURRENCY_ONE, ACCOUNT_ONE, static_cast<uint64> (a) * static_cast<uint64> (b));
+        STAmount prod2 (CURRENCY_ONE, ACCOUNT_ONE, static_cast<std::uint64_t> (a) * static_cast<std::uint64_t> (b));
 
         if (prod1 != prod2)
         {
@@ -1415,7 +1270,7 @@ public:
 
     void testSetValue ()
     {
-        beginTestCase ("set value");
+        testcase ("set value");
 
         STAmount    saTmp;
 
@@ -1440,129 +1295,129 @@ public:
 
     void testNativeCurrency ()
     {
-        beginTestCase ("native currency");
+        testcase ("native currency");
 
-        STAmount zero, one (1), hundred (100);
+        STAmount zeroSt, one (1), hundred (100);
 
-        unexpected (serializeAndDeserialize (zero) != zero, "STAmount fail");
+        unexpected (serializeAndDeserialize (zeroSt) != zeroSt, "STAmount fail");
 
         unexpected (serializeAndDeserialize (one) != one, "STAmount fail");
 
         unexpected (serializeAndDeserialize (hundred) != hundred, "STAmount fail");
 
-        unexpected (!zero.isNative (), "STAmount fail");
+        unexpected (!zeroSt.isNative (), "STAmount fail");
 
         unexpected (!hundred.isNative (), "STAmount fail");
 
-        unexpected (!zero.isZero (), "STAmount fail");
+        unexpected (zeroSt != zero, "STAmount fail");
 
-        unexpected (one.isZero (), "STAmount fail");
+        unexpected (one == zero, "STAmount fail");
 
-        unexpected (hundred.isZero (), "STAmount fail");
+        unexpected (hundred == zero, "STAmount fail");
 
-        unexpected ((zero < zero), "STAmount fail");
+        unexpected ((zeroSt < zeroSt), "STAmount fail");
 
-        unexpected (! (zero < one), "STAmount fail");
+        unexpected (! (zeroSt < one), "STAmount fail");
 
-        unexpected (! (zero < hundred), "STAmount fail");
+        unexpected (! (zeroSt < hundred), "STAmount fail");
 
-        unexpected ((one < zero), "STAmount fail");
+        unexpected ((one < zeroSt), "STAmount fail");
 
         unexpected ((one < one), "STAmount fail");
 
         unexpected (! (one < hundred), "STAmount fail");
 
-        unexpected ((hundred < zero), "STAmount fail");
+        unexpected ((hundred < zeroSt), "STAmount fail");
 
         unexpected ((hundred < one), "STAmount fail");
 
         unexpected ((hundred < hundred), "STAmount fail");
 
-        unexpected ((zero > zero), "STAmount fail");
+        unexpected ((zeroSt > zeroSt), "STAmount fail");
 
-        unexpected ((zero > one), "STAmount fail");
+        unexpected ((zeroSt > one), "STAmount fail");
 
-        unexpected ((zero > hundred), "STAmount fail");
+        unexpected ((zeroSt > hundred), "STAmount fail");
 
-        unexpected (! (one > zero), "STAmount fail");
+        unexpected (! (one > zeroSt), "STAmount fail");
 
         unexpected ((one > one), "STAmount fail");
 
         unexpected ((one > hundred), "STAmount fail");
 
-        unexpected (! (hundred > zero), "STAmount fail");
+        unexpected (! (hundred > zeroSt), "STAmount fail");
 
         unexpected (! (hundred > one), "STAmount fail");
 
         unexpected ((hundred > hundred), "STAmount fail");
 
-        unexpected (! (zero <= zero), "STAmount fail");
+        unexpected (! (zeroSt <= zeroSt), "STAmount fail");
 
-        unexpected (! (zero <= one), "STAmount fail");
+        unexpected (! (zeroSt <= one), "STAmount fail");
 
-        unexpected (! (zero <= hundred), "STAmount fail");
+        unexpected (! (zeroSt <= hundred), "STAmount fail");
 
-        unexpected ((one <= zero), "STAmount fail");
+        unexpected ((one <= zeroSt), "STAmount fail");
 
         unexpected (! (one <= one), "STAmount fail");
 
         unexpected (! (one <= hundred), "STAmount fail");
 
-        unexpected ((hundred <= zero), "STAmount fail");
+        unexpected ((hundred <= zeroSt), "STAmount fail");
 
         unexpected ((hundred <= one), "STAmount fail");
 
         unexpected (! (hundred <= hundred), "STAmount fail");
 
-        unexpected (! (zero >= zero), "STAmount fail");
+        unexpected (! (zeroSt >= zeroSt), "STAmount fail");
 
-        unexpected ((zero >= one), "STAmount fail");
+        unexpected ((zeroSt >= one), "STAmount fail");
 
-        unexpected ((zero >= hundred), "STAmount fail");
+        unexpected ((zeroSt >= hundred), "STAmount fail");
 
-        unexpected (! (one >= zero), "STAmount fail");
+        unexpected (! (one >= zeroSt), "STAmount fail");
 
         unexpected (! (one >= one), "STAmount fail");
 
         unexpected ((one >= hundred), "STAmount fail");
 
-        unexpected (! (hundred >= zero), "STAmount fail");
+        unexpected (! (hundred >= zeroSt), "STAmount fail");
 
         unexpected (! (hundred >= one), "STAmount fail");
 
         unexpected (! (hundred >= hundred), "STAmount fail");
 
-        unexpected (! (zero == zero), "STAmount fail");
+        unexpected (! (zeroSt == zeroSt), "STAmount fail");
 
-        unexpected ((zero == one), "STAmount fail");
+        unexpected ((zeroSt == one), "STAmount fail");
 
-        unexpected ((zero == hundred), "STAmount fail");
+        unexpected ((zeroSt == hundred), "STAmount fail");
 
-        unexpected ((one == zero), "STAmount fail");
+        unexpected ((one == zeroSt), "STAmount fail");
 
         unexpected (! (one == one), "STAmount fail");
 
         unexpected ((one == hundred), "STAmount fail");
 
-        unexpected ((hundred == zero), "STAmount fail");
+        unexpected ((hundred == zeroSt), "STAmount fail");
 
         unexpected ((hundred == one), "STAmount fail");
 
         unexpected (! (hundred == hundred), "STAmount fail");
 
-        unexpected ((zero != zero), "STAmount fail");
+        unexpected ((zeroSt != zeroSt), "STAmount fail");
 
-        unexpected (! (zero != one), "STAmount fail");
+        unexpected (! (zeroSt != one), "STAmount fail");
 
-        unexpected (! (zero != hundred), "STAmount fail");
+        unexpected (! (zeroSt != hundred), "STAmount fail");
 
-        unexpected (! (one != zero), "STAmount fail");
+        unexpected (! (one != zeroSt), "STAmount fail");
 
         unexpected ((one != one), "STAmount fail");
 
         unexpected (! (one != hundred), "STAmount fail");
 
-        unexpected (! (hundred != zero), "STAmount fail");
+        unexpected (! (hundred != zeroSt), "STAmount fail");
 
         unexpected (! (hundred != one), "STAmount fail");
 
@@ -1590,131 +1445,129 @@ public:
 
     void testCustomCurrency ()
     {
-        beginTestCase ("custom currency");
+        testcase ("custom currency");
 
-        STAmount zero (CURRENCY_ONE, ACCOUNT_ONE), one (CURRENCY_ONE, ACCOUNT_ONE, 1), hundred (CURRENCY_ONE, ACCOUNT_ONE, 100);
+        STAmount zeroSt (CURRENCY_ONE, ACCOUNT_ONE), one (CURRENCY_ONE, ACCOUNT_ONE, 1), hundred (CURRENCY_ONE, ACCOUNT_ONE, 100);
 
-        serializeAndDeserialize (one).getRaw ();
-
-        unexpected (serializeAndDeserialize (zero) != zero, "STAmount fail");
+        unexpected (serializeAndDeserialize (zeroSt) != zeroSt, "STAmount fail");
 
         unexpected (serializeAndDeserialize (one) != one, "STAmount fail");
 
         unexpected (serializeAndDeserialize (hundred) != hundred, "STAmount fail");
 
-        unexpected (zero.isNative (), "STAmount fail");
+        unexpected (zeroSt.isNative (), "STAmount fail");
 
         unexpected (hundred.isNative (), "STAmount fail");
 
-        unexpected (!zero.isZero (), "STAmount fail");
+        unexpected (zeroSt != zero, "STAmount fail");
 
-        unexpected (one.isZero (), "STAmount fail");
+        unexpected (one == zero, "STAmount fail");
 
-        unexpected (hundred.isZero (), "STAmount fail");
+        unexpected (hundred == zero, "STAmount fail");
 
-        unexpected ((zero < zero), "STAmount fail");
+        unexpected ((zeroSt < zeroSt), "STAmount fail");
 
-        unexpected (! (zero < one), "STAmount fail");
+        unexpected (! (zeroSt < one), "STAmount fail");
 
-        unexpected (! (zero < hundred), "STAmount fail");
+        unexpected (! (zeroSt < hundred), "STAmount fail");
 
-        unexpected ((one < zero), "STAmount fail");
+        unexpected ((one < zeroSt), "STAmount fail");
 
         unexpected ((one < one), "STAmount fail");
 
         unexpected (! (one < hundred), "STAmount fail");
 
-        unexpected ((hundred < zero), "STAmount fail");
+        unexpected ((hundred < zeroSt), "STAmount fail");
 
         unexpected ((hundred < one), "STAmount fail");
 
         unexpected ((hundred < hundred), "STAmount fail");
 
-        unexpected ((zero > zero), "STAmount fail");
+        unexpected ((zeroSt > zeroSt), "STAmount fail");
 
-        unexpected ((zero > one), "STAmount fail");
+        unexpected ((zeroSt > one), "STAmount fail");
 
-        unexpected ((zero > hundred), "STAmount fail");
+        unexpected ((zeroSt > hundred), "STAmount fail");
 
-        unexpected (! (one > zero), "STAmount fail");
+        unexpected (! (one > zeroSt), "STAmount fail");
 
         unexpected ((one > one), "STAmount fail");
 
         unexpected ((one > hundred), "STAmount fail");
 
-        unexpected (! (hundred > zero), "STAmount fail");
+        unexpected (! (hundred > zeroSt), "STAmount fail");
 
         unexpected (! (hundred > one), "STAmount fail");
 
         unexpected ((hundred > hundred), "STAmount fail");
 
-        unexpected (! (zero <= zero), "STAmount fail");
+        unexpected (! (zeroSt <= zeroSt), "STAmount fail");
 
-        unexpected (! (zero <= one), "STAmount fail");
+        unexpected (! (zeroSt <= one), "STAmount fail");
 
-        unexpected (! (zero <= hundred), "STAmount fail");
+        unexpected (! (zeroSt <= hundred), "STAmount fail");
 
-        unexpected ((one <= zero), "STAmount fail");
+        unexpected ((one <= zeroSt), "STAmount fail");
 
         unexpected (! (one <= one), "STAmount fail");
 
         unexpected (! (one <= hundred), "STAmount fail");
 
-        unexpected ((hundred <= zero), "STAmount fail");
+        unexpected ((hundred <= zeroSt), "STAmount fail");
 
         unexpected ((hundred <= one), "STAmount fail");
 
         unexpected (! (hundred <= hundred), "STAmount fail");
 
-        unexpected (! (zero >= zero), "STAmount fail");
+        unexpected (! (zeroSt >= zeroSt), "STAmount fail");
 
-        unexpected ((zero >= one), "STAmount fail");
+        unexpected ((zeroSt >= one), "STAmount fail");
 
-        unexpected ((zero >= hundred), "STAmount fail");
+        unexpected ((zeroSt >= hundred), "STAmount fail");
 
-        unexpected (! (one >= zero), "STAmount fail");
+        unexpected (! (one >= zeroSt), "STAmount fail");
 
         unexpected (! (one >= one), "STAmount fail");
 
         unexpected ((one >= hundred), "STAmount fail");
 
-        unexpected (! (hundred >= zero), "STAmount fail");
+        unexpected (! (hundred >= zeroSt), "STAmount fail");
 
         unexpected (! (hundred >= one), "STAmount fail");
 
         unexpected (! (hundred >= hundred), "STAmount fail");
 
-        unexpected (! (zero == zero), "STAmount fail");
+        unexpected (! (zeroSt == zeroSt), "STAmount fail");
 
-        unexpected ((zero == one), "STAmount fail");
+        unexpected ((zeroSt == one), "STAmount fail");
 
-        unexpected ((zero == hundred), "STAmount fail");
+        unexpected ((zeroSt == hundred), "STAmount fail");
 
-        unexpected ((one == zero), "STAmount fail");
+        unexpected ((one == zeroSt), "STAmount fail");
 
         unexpected (! (one == one), "STAmount fail");
 
         unexpected ((one == hundred), "STAmount fail");
 
-        unexpected ((hundred == zero), "STAmount fail");
+        unexpected ((hundred == zeroSt), "STAmount fail");
 
         unexpected ((hundred == one), "STAmount fail");
 
         unexpected (! (hundred == hundred), "STAmount fail");
 
-        unexpected ((zero != zero), "STAmount fail");
+        unexpected ((zeroSt != zeroSt), "STAmount fail");
 
-        unexpected (! (zero != one), "STAmount fail");
+        unexpected (! (zeroSt != one), "STAmount fail");
 
-        unexpected (! (zero != hundred), "STAmount fail");
+        unexpected (! (zeroSt != hundred), "STAmount fail");
 
-        unexpected (! (one != zero), "STAmount fail");
+        unexpected (! (one != zeroSt), "STAmount fail");
 
         unexpected ((one != one), "STAmount fail");
 
         unexpected (! (one != hundred), "STAmount fail");
 
-        unexpected (! (hundred != zero), "STAmount fail");
+        unexpected (! (hundred != zeroSt), "STAmount fail");
 
         unexpected (! (hundred != one), "STAmount fail");
 
@@ -1776,13 +1629,13 @@ public:
 
     void testArithmetic ()
     {
-        beginTestCase ("arithmetic");
+        testcase ("arithmetic");
 
         CBigNum b;
 
         for (int i = 0; i < 16; ++i)
         {
-            uint64 r = rand ();
+            std::uint64_t r = rand ();
             r <<= 32;
             r |= rand ();
             b.setuint64 (r);
@@ -1838,39 +1691,53 @@ public:
 
     //--------------------------------------------------------------------------
 
+    template <class Cond>
+    bool
+    expect (Cond cond, beast::String const& s)
+    {
+        return suite::expect (cond, s.toStdString());
+    }
+
+    template <class Cond>
+    bool
+    expect (Cond cond)
+    {
+        return suite::expect (cond);
+    }
+
     void testUnderflow ()
     {
-        beginTestCase ("underflow");
+        testcase ("underflow");
 
         STAmount bigNative (STAmount::cMaxNative / 2);
         STAmount bigValue (CURRENCY_ONE, ACCOUNT_ONE,
                            (STAmount::cMinValue + STAmount::cMaxValue) / 2, STAmount::cMaxOffset - 1);
         STAmount smallValue (CURRENCY_ONE, ACCOUNT_ONE,
                              (STAmount::cMinValue + STAmount::cMaxValue) / 2, STAmount::cMinOffset + 1);
-        STAmount zero (CURRENCY_ONE, ACCOUNT_ONE, 0);
+        STAmount zeroSt (CURRENCY_ONE, ACCOUNT_ONE, 0);
 
         STAmount smallXsmall = STAmount::multiply (smallValue, smallValue, CURRENCY_ONE, ACCOUNT_ONE);
 
-        expect (smallXsmall.isZero (), "smallXsmall != 0");
+        expect (smallXsmall == zero, "smallXsmall != 0");
 
         STAmount bigDsmall = STAmount::divide (smallValue, bigValue, CURRENCY_ONE, ACCOUNT_ONE);
 
-        expect (bigDsmall.isZero (), String ("small/big != 0: ") + bigDsmall.getText ());
+        expect (bigDsmall == zero, beast::String ("small/big != 0: ") + bigDsmall.getText ());
 
         bigDsmall = STAmount::divide (smallValue, bigNative, CURRENCY_ONE, uint160 ());
 
-        expect (bigDsmall.isZero (), String ("small/bigNative != 0: ") + bigDsmall.getText ());
+        expect (bigDsmall == zero, beast::String ("small/bigNative != 0: ") + bigDsmall.getText ());
 
         bigDsmall = STAmount::divide (smallValue, bigValue, uint160 (), uint160 ());
 
-        expect (bigDsmall.isZero (), String ("(small/big)->N != 0: ") + bigDsmall.getText ());
+        expect (bigDsmall == zero, beast::String ("(small/big)->N != 0: ") + bigDsmall.getText ());
 
         bigDsmall = STAmount::divide (smallValue, bigNative, uint160 (), uint160 ());
 
-        expect (bigDsmall.isZero (), String ("(small/bigNative)->N != 0: ") + bigDsmall.getText ());
+        expect (bigDsmall == zero, beast::String ("(small/bigNative)->N != 0: ") + bigDsmall.getText ());
 
         // very bad offer
-        uint64 r = STAmount::getRate (smallValue, bigValue);
+        std::uint64_t r = STAmount::getRate (smallValue, bigValue);
 
         expect (r == 0, "getRate(smallOut/bigIn) != 0");
 
@@ -1890,7 +1757,7 @@ public:
 #if 0
         beginTestCase ("rounding ");
 
-        uint64 value = 25000000000000000ull;
+        std::uint64_t value = 25000000000000000ull;
         int offset = -14;
         STAmount::canonicalizeRound (false, value, offset, true);
 
@@ -1937,7 +1804,7 @@ public:
 
     //--------------------------------------------------------------------------
 
-    void runTest ()
+    void run ()
     {
         testSetValue ();
         testNativeCurrency ();
@@ -1948,4 +1815,6 @@ public:
     }
 };
 
-static STAmountTests stAmountTests;
+BEAST_DEFINE_TESTSUITE(STAmount,ripple_data,ripple);
+
+} // ripple

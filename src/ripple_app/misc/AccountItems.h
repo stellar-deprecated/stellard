@@ -20,9 +20,10 @@
 #ifndef RIPPLE_ACCOUNTITEMS_H
 #define RIPPLE_ACCOUNTITEMS_H
 
-/** A set of AccountItem objects.
-*/
-class AccountItems : LeakChecked <AccountItems>
+namespace ripple {
+
+/** A set of AccountItem objects. */
+class AccountItems : beast::LeakChecked <AccountItems>
 {
 public:
     typedef boost::shared_ptr <AccountItems> pointer;
@@ -54,5 +55,7 @@ private:
 
     Container mItems;
 };
+
+} // ripple
 
 #endif

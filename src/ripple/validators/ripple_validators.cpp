@@ -17,13 +17,12 @@
 */
 //==============================================================================
 
-#include "BeastConfig.h"
+#include "../../BeastConfig.h"
 
 #include "ripple_validators.h"
 
 #include "../beast/modules/beast_core/system/BeforeBoost.h"
 #include <boost/regex.hpp>
-#include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/hashed_index.hpp>
@@ -37,10 +36,6 @@
 
 #include "../algorithm/api/CycledSet.h"
 #include "../testoverlay/ripple_testoverlay.h" // for unit test
-
-namespace ripple {
-using namespace beast;
-}
 
 #  include "impl/Tuning.h"
 # include "impl/ChosenList.h"

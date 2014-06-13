@@ -19,16 +19,17 @@
 
 #include "../KeyCache.h"
 
+#include "../../beast/beast/unit_test/suite.h"
+#include "../../beast/beast/chrono/manual_clock.h"
+
 namespace ripple {
 
-class KeyCacheTests : public UnitTest
+class KeyCache_test : public beast::unit_test::suite
 {
 public:
-    void runTest ()
+    void run ()
     {
-        beginTestCase ("Insert");
-
-        manual_clock <std::chrono::seconds> clock;
+        beast::manual_clock <std::chrono::seconds> clock;
         clock.set (0);
 
         typedef std::string Key;
@@ -88,13 +89,8 @@ public:
             expect (c.size () < 3);
         }
     }
-
-    KeyCacheTests () : UnitTest (
-        "KeyCache", "ripple")
-    {
-    }
 };
 
-static KeyCacheTests keyCacheTests;
+BEAST_DEFINE_TESTSUITE(KeyCache,common,ripple);
 
 }

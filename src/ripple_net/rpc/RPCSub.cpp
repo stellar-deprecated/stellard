@@ -17,12 +17,14 @@
 */
 //==============================================================================
 
+namespace ripple {
+
 SETUP_LOG (RPCSub)
 
 // Subscription object for JSON-RPC
 class RPCSubImp
     : public RPCSub
-    , public LeakChecked <RPCSub>
+    , public beast::LeakChecked <RPCSub>
 {
 public:
     RPCSubImp (InfoSub::Source& source, boost::asio::io_service& io_service,
@@ -70,7 +72,7 @@ public:
 
     void send (const Json::Value& jvObj, bool broadcast)
     {
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
 
         if (mDeque.size () >= eventQueueMax)
         {
@@ -98,14 +100,14 @@ public:
 
     void setUsername (const std::string& strUsername)
     {
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
 
         mUsername = strUsername;
     }
 
     void setPassword (const std::string& strPassword)
     {
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
 
         mPassword = strPassword;
     }
@@ -121,7 +123,7 @@ private:
         {
             {
                 // Obtain the lock to manipulate the queue and change sending.
-                ScopedLockType sl (mLock, __FILE__, __LINE__);
+                ScopedLockType sl (mLock);
 
                 if (mDeque.empty ())
                 {
@@ -207,3 +209,5 @@ RPCSub::pointer RPCSub::New (InfoSub::Source& source,
         boost::ref (io_service), boost::ref (jobQueue),
             strUrl, strUsername, strPassword);
 }
+
+} // ripple

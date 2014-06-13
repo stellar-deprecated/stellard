@@ -17,6 +17,8 @@
 */
 //==============================================================================
 
+namespace ripple {
+
 SETUP_LOG (SHAMapNode)
 
 // canonicalize the hash to a node ID for this depth
@@ -44,8 +46,8 @@ std::string SHAMapNode::getString () const
         return "NodeID(root)";
 
     return str (boost::format (NodeID)
-                % lexicalCastThrow <std::string> (mDepth)
-                % mNodeID.GetHex ());
+                % beast::lexicalCastThrow <std::string> (mDepth)
+                % to_string (mNodeID));
 }
 
 uint256 SHAMapNode::smMasks[65];
@@ -175,3 +177,5 @@ void SHAMapNode::dump () const
 {
     WriteLog (lsDEBUG, SHAMapNode) << getString ();
 }
+
+} // ripple

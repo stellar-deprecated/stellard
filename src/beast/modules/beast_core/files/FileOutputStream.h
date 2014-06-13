@@ -21,6 +21,9 @@
 */
 //==============================================================================
 
+namespace beast
+{
+
 #ifndef BEAST_FILEOUTPUTSTREAM_H_INCLUDED
 #define BEAST_FILEOUTPUTSTREAM_H_INCLUDED
 
@@ -30,7 +33,7 @@
 
     @see OutputStream, FileInputStream, File::createOutputStream
 */
-class BEAST_API FileOutputStream
+class FileOutputStream
     : public OutputStream
     , LeakChecked <FileOutputStream>
 {
@@ -84,10 +87,10 @@ public:
 
     //==============================================================================
     void flush() override;
-    int64 getPosition() override;
-    bool setPosition (int64) override;
+    std::int64_t getPosition() override;
+    bool setPosition (std::int64_t) override;
     bool write (const void*, size_t) override;
-    bool writeRepeatedByte (uint8 byte, size_t numTimesToRepeat) override;
+    bool writeRepeatedByte (std::uint8_t byte, size_t numTimesToRepeat) override;
 
 
 private:
@@ -95,7 +98,7 @@ private:
     File file;
     void* fileHandle;
     Result status;
-    int64 currentPosition;
+    std::int64_t currentPosition;
     size_t bufferSize, bytesInBuffer;
     HeapBlock <char> buffer;
 
@@ -103,8 +106,10 @@ private:
     void closeHandle();
     void flushInternal();
     bool flushBuffer();
-    int64 setPositionInternal (int64);
-    ssize_t writeInternal (const void*, size_t);
+    std::int64_t setPositionInternal (std::int64_t);
+    std::ptrdiff_t writeInternal (const void*, size_t);
 };
+
+} // beast
 
 #endif

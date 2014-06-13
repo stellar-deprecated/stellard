@@ -17,6 +17,10 @@
 */
 //==============================================================================
 
+#include <boost/regex.hpp>
+
+namespace ripple {
+
 //
 // Fetch a web page via http or https.
 //
@@ -72,7 +76,7 @@ private:
 //
 void HTTPClient::initializeSSLContext ()
 {
-    SharedSingleton <HTTPClientSSLContext>::get();
+    beast::SharedSingleton <HTTPClientSSLContext>::get();
 }
 
 //------------------------------------------------------------------------------
@@ -80,13 +84,13 @@ void HTTPClient::initializeSSLContext ()
 class HTTPClientImp
     : public boost::enable_shared_from_this <HTTPClientImp>
     , public HTTPClient
-    , LeakChecked <HTTPClientImp>
+    , beast::LeakChecked <HTTPClientImp>
 {
 public:
     HTTPClientImp (boost::asio::io_service& io_service,
                               const unsigned short port,
                               std::size_t responseMax)
-        : mSocket (io_service, SharedSingleton <HTTPClientSSLContext>::get()->context())
+        : mSocket (io_service, beast::SharedSingleton <HTTPClientSSLContext>::get()->context())
         , mResolver (io_service)
         , mHeader (maxClientHeaderBytes)
         , mPort (port)
@@ -161,7 +165,7 @@ public:
         boost::shared_ptr <boost::asio::ip::tcp::resolver::query> query (
             new boost::asio::ip::tcp::resolver::query (
                 mDeqSites[0],
-                lexicalCast <std::string> (mPort),
+                beast::lexicalCast <std::string> (mPort),
                 boost::asio::ip::resolver_query_base::numeric_service));
         mQuery  = query;
 
@@ -384,14 +388,14 @@ public:
             return;
         }
 
-        mStatus = lexicalCastThrow <int> (std::string (smMatch[1]));
+        mStatus = beast::lexicalCastThrow <int> (std::string (smMatch[1]));
 
         if (boost::regex_match (strHeader, smMatch, reBody)) // we got some body
             mBody = smMatch[1];
 
         if (boost::regex_match (strHeader, smMatch, reSize))
         {
-            int size = lexicalCastThrow <int> (std::string(smMatch[1]));
+            int size = beast::lexicalCastThrow <int> (std::string(smMatch[1]));
 
             if (size < mResponseMax)
                 mResponseMax = size;
@@ -610,4 +614,6 @@ void HTTPClient::sendSMS (boost::asio::io_service& io_service, const std::string
                             BIND_TYPE (&HTTPClientImp::onSMSResponse, P_1, P_2, P_3));
     }
 }
+
+} // ripple
 

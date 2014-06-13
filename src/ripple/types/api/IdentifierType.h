@@ -49,7 +49,7 @@ public:
         template <typename Arg>
         hasher (Arg arg) : m_hasher (arg)
             { }
-        std::size_t operator() (IdentifierType const& id) const
+        std::size_t operator() (IdentifierType const& id) const noexcept
             { return m_hasher(id.value()); }
     private:
         typename Traits::hasher m_hasher;
@@ -65,7 +65,7 @@ public:
         key_equal (Arg arg) : m_equal (arg)
             { }
         bool operator() (IdentifierType const& lhs,
-                         IdentifierType const& rhs) const
+                         IdentifierType const& rhs) const noexcept
             { return m_equal (lhs.value(), rhs.value()); }
     private:
         typename Traits::key_equal m_equal;
@@ -84,7 +84,7 @@ public:
         { }
 
     /** Create a copy of the value from range of bytes. */
-    IdentifierType (uint8 const* begin, uint8 const* end)
+    IdentifierType (std::uint8_t const* begin, std::uint8_t const* end)
         { Traits::construct (begin, end, m_value); }
 
     /** Conversion construction from any specialized type. */
@@ -161,9 +161,19 @@ public:
         return Traits::from_string (s);
     }
 
+
 private:
     value_type m_value;
 };
+
+template <class Hasher, class Traits>
+inline
+void
+hash_append(Hasher& h, IdentifierType<Traits> const& id)
+{
+    using beast::hash_append;
+    hash_append (h, id.value());
+}
 
 //------------------------------------------------------------------------------
 

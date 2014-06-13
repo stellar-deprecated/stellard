@@ -24,6 +24,9 @@
 #ifndef BEAST_RANDOM_H_INCLUDED
 #define BEAST_RANDOM_H_INCLUDED
 
+namespace beast
+{
+
 //==============================================================================
 /**
     A random number generator.
@@ -42,7 +45,7 @@ public:
 
         new Random (Time::currentTimeMillis())
     */
-    explicit Random (int64 seedValue) noexcept;
+    explicit Random (std::int64_t seedValue) noexcept;
 
     /** Creates a Random object using a random seed value.
         Internally, this calls setSeedRandomly() to randomise the seed.
@@ -68,7 +71,7 @@ public:
 
         @returns a random integer from the full range 0x8000000000000000 to 0x7fffffffffffffff
     */
-    int64 nextInt64() noexcept;
+    std::int64_t nextInt64() noexcept;
 
     /** Returns the next random floating-point number.
 
@@ -86,27 +89,18 @@ public:
     */
     bool nextBool() noexcept;
 
-    /** Returns a BigInteger containing a random number.
-
-        @returns a random value in the range 0 to (maximumValue - 1).
-    */
-    BigInteger nextLargeNumber (const BigInteger& maximumValue);
-
     /** Fills a block of memory with random values. */
     void fillBitsRandomly (void* bufferToFill, size_t sizeInBytes);
 
-    /** Sets a range of bits in a BigInteger to random values. */
-    void fillBitsRandomly (BigInteger& arrayToChange, int startBit, int numBits);
-
     //==============================================================================
     /** Resets this Random object to a given seed value. */
-    void setSeed (int64 newSeed) noexcept;
+    void setSeed (std::int64_t newSeed) noexcept;
 
     /** Merges this object's seed with another value.
         This sets the seed to be a value created by combining the current seed and this
         new value.
     */
-    void combineSeed (int64 seedValue) noexcept;
+    void combineSeed (std::int64_t seedValue) noexcept;
 
     /** Reseeds this generator using a value generated from various semi-random system
         properties like the current time, etc.
@@ -126,8 +120,9 @@ public:
 
 private:
     //==============================================================================
-    int64 seed;
+    std::int64_t seed;
 };
 
+} // beast
 
 #endif   // BEAST_RANDOM_H_INCLUDED

@@ -20,13 +20,14 @@
 #ifndef RIPPLE_PATHREQUESTS_H
 #define RIPPLE_PATHREQUESTS_H
 
+namespace ripple {
+
 class PathRequests
 {
 public:
-    PathRequests (Journal journal, insight::Collector::ptr const& collector)
+    PathRequests (beast::Journal journal, beast::insight::Collector::ptr const& collector)
         : mJournal (journal)
         , mLastIdentifier (0)
-        , mLock ("PathRequests", __FILE__, __LINE__)
     {
         mFast = collector->make_event ("pathfind_fast");
         mFull = collector->make_event ("pathfind_full");
@@ -43,19 +44,19 @@ public:
 
     void reportFast (int milliseconds)
     {
-        mFast.notify (static_cast < insight::Event::value_type> (milliseconds));
+        mFast.notify (static_cast < beast::insight::Event::value_type> (milliseconds));
     }
 
     void reportFull (int milliseconds)
     {
-        mFull.notify (static_cast < insight::Event::value_type> (milliseconds));
+        mFull.notify (static_cast < beast::insight::Event::value_type> (milliseconds));
     }
 
 private:
-    Journal                          mJournal;
+    beast::Journal                   mJournal;
 
-    insight::Event                   mFast;
-    insight::Event                   mFull;
+    beast::insight::Event            mFast;
+    beast::insight::Event            mFull;
 
     // Track all requests
     std::vector<PathRequest::wptr>   mRequests;
@@ -63,12 +64,14 @@ private:
     // Use a RippleLineCache
     RippleLineCache::pointer         mLineCache;
 
-    Atomic<int>                      mLastIdentifier;
+    beast::Atomic<int>               mLastIdentifier;
 
     typedef RippleRecursiveMutex     LockType;
-    typedef LockType::ScopedLockType ScopedLockType;
+    typedef std::lock_guard <LockType> ScopedLockType;
     LockType                         mLock;
 
 };
+
+} // ripple
 
 #endif

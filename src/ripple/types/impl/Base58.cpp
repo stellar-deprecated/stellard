@@ -24,8 +24,6 @@
 
 namespace ripple {
 
-Base58::Alphabet const* Base58::s_currentAlphabet = &Base58::getRippleAlphabet ();
-
 void Base58::fourbyte_hash256 (void* out, void const* in, std::size_t bytes)
 {
     unsigned char const* const p (
@@ -88,16 +86,6 @@ std::string Base58::raw_encode (
     return str;
 }
 
-Base58::Alphabet const& Base58::getCurrentAlphabet ()
-{
-    return *s_currentAlphabet;
-}
-
-void Base58::setCurrentAlphabet (Alphabet const& alphabet)
-{
-    s_currentAlphabet = &alphabet;
-}
-
 //------------------------------------------------------------------------------
 
 bool Base58::raw_decode (char const* first, char const* last, void* dest,
@@ -116,7 +104,8 @@ bool Base58::raw_decode (char const* first, char const* last, void* dest,
             return false;
         bnChar.setuint ((unsigned int) i);
 
-        meets_invariant (BN_mul (&bn, &bn, &bn58, pctx));
+        int const success (BN_mul (&bn, &bn, &bn58, pctx));
+        assert (success);
 
         bn += bnChar;
     }
@@ -176,7 +165,7 @@ bool Base58::decode (const char* psz, Blob& vchRet, Alphabet const& alphabet)
         //
         const char* p1 = strchr (alphabet.chars(), *p);
 
-        if (p1 == NULL)
+        if (p1 == nullptr)
         {
             while (isspace (*p))
                 p++;

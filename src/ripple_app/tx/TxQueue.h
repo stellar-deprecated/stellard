@@ -20,7 +20,9 @@
 #ifndef RIPPLE_TXQUEUE_H_INCLUDED
 #define RIPPLE_TXQUEUE_H_INCLUDED
 
-class TxQueue : LeakChecked <TxQueue>
+namespace ripple {
+
+class TxQueue : beast::LeakChecked <TxQueue>
 {
 public:
     static TxQueue* New ();
@@ -40,5 +42,7 @@ public:
     virtual void getJob (TxQueueEntry::pointer&) = 0;
     virtual bool stopProcessing (TxQueueEntry::ref finishedJob) = 0;
 };
+
+} // ripple
 
 #endif

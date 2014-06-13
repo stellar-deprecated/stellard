@@ -24,6 +24,9 @@
 #ifndef BEAST_ELEMENTCOMPARATOR_H_INCLUDED
 #define BEAST_ELEMENTCOMPARATOR_H_INCLUDED
 
+namespace beast
+{
+
 #ifndef DOXYGEN
 
 /** This is an internal helper class which converts a beast ElementComparator style
@@ -176,7 +179,7 @@ template <class ElementType>
 class DefaultElementComparator
 {
 private:
-    typedef PARAMETER_TYPE (ElementType) ParameterType;
+    typedef ElementType ParameterType;
 
 public:
     static int compareElements (ParameterType first, ParameterType second)
@@ -184,6 +187,8 @@ public:
         return (first < second) ? -1 : ((second < first) ? 1 : 0);
     }
 };
+
+} // beast
 
 #endif
 

@@ -22,10 +22,13 @@
 
 #include <atomic>
 #include <deque>
+#include <locale>
 
 #include "boost/asio.hpp"
 
 #include "../ResolverAsio.h"
+
+#include <cassert>
 
 namespace ripple {
 
@@ -36,13 +39,13 @@ class ResolverAsioImpl
 public:
     typedef std::pair <std::string, std::string> HostAndPort;
 
-    Journal m_journal;
+    beast::Journal m_journal;
 
     boost::asio::io_service& m_io_service;
     boost::asio::io_service::strand m_strand;
     boost::asio::ip::tcp::resolver m_resolver;
 
-    WaitableEvent m_stop_complete;
+    beast::WaitableEvent m_stop_complete;
     std::atomic <bool> m_stop_called;
     std::atomic <bool> m_stopped;
 
@@ -66,7 +69,7 @@ public:
     std::deque <Work> m_work;
 
     ResolverAsioImpl (boost::asio::io_service& io_service,
-        Journal journal)
+        beast::Journal journal)
             : m_journal (journal)
             , m_io_service (io_service)
             , m_strand (io_service)
@@ -80,8 +83,8 @@ public:
 
     ~ResolverAsioImpl ()
     {
-        check_precondition (m_work.empty ());
-        check_precondition (m_stopped);
+        assert (m_work.empty ());
+        assert (m_stopped);
     }
 
     //-------------------------------------------------------------------------
@@ -99,9 +102,9 @@ public:
 
     void start ()
     {
-        check_precondition (m_work.empty ());
-        check_precondition (m_stopped == true);
-        check_precondition (m_stop_called == false);
+        assert (m_work.empty ());
+        assert (m_stopped == true);
+        assert (m_stop_called == false);
 
         if (m_stopped.exchange (false) == true)
         {
@@ -135,9 +138,9 @@ public:
         std::vector <std::string> const& names,
         HandlerType const& handler)
     {
-        check_precondition (m_stop_called == false);
-        check_precondition (m_stopped == true);
-        check_precondition (!names.empty());
+        assert (m_stop_called == false);
+        assert (m_stopped == true);
+        assert (!names.empty());
 
         // TODO NIKB use rvalue references to construct and move
         //           reducing cost.
@@ -150,7 +153,7 @@ public:
     // Resolver
     void do_stop (CompletionCounter)
     {
-        check_precondition (m_stop_called == true);
+        assert (m_stop_called == true);
 
         if (m_stopped.exchange (true) == false)
         {
@@ -171,7 +174,7 @@ public:
         if (ec == boost::asio::error::operation_aborted)
             return;
 
-        std::vector <IP::Endpoint> addresses;
+        std::vector <beast::IP::Endpoint> addresses;
 
         // If we get an error message back, we don't return any
         // results that we may have gotten.
@@ -179,7 +182,7 @@ public:
         {
             while (iter != boost::asio::ip::tcp::resolver::iterator())
             {
-                addresses.push_back (IPAddressConversion::from_asio (*iter));
+                addresses.push_back (beast::IPAddressConversion::from_asio (*iter));
                 ++iter;
             }
         }
@@ -195,7 +198,7 @@ public:
     {
         // Attempt to find the first and last non-whitespace
         auto const find_whitespace = std::bind (
-            std::isspace <std::string::value_type>,
+            &std::isspace <std::string::value_type>,
             std::placeholders::_1, 
             std::locale ());
 
@@ -276,7 +279,7 @@ public:
     void do_resolve (std::vector <std::string> const& names,
         HandlerType const& handler, CompletionCounter)
     {
-        check_precondition (! names.empty());
+        assert (! names.empty());
 
         if (m_stop_called == false)
         {

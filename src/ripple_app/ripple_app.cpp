@@ -17,7 +17,7 @@
 */
 //==============================================================================
 
-#include "BeastConfig.h"
+#include "../../BeastConfig.h"
 
 #include "../beast/modules/beast_core/system/BeforeBoost.h"
 #include <boost/bimap.hpp>
@@ -32,6 +32,7 @@
 #include "../ripple_net/ripple_net.h"
 #include "../ripple_rpc/ripple_rpc.h"
 #include "../ripple_websocket/ripple_websocket.h"
+#include "../ripple/common/jsonrpc_fields.h"
 
 // This .cpp will end up including all of the public header
 // material in Ripple since it holds the Application object.
@@ -42,7 +43,6 @@
 #include "../ripple/sitefiles/ripple_sitefiles.h"
 #include "../ripple/validators/ripple_validators.h"
 
-#include "../beast/beast/Asio.h"
 #include "../beast/beast/asio/io_latency_probe.h"
 #include "../beast/beast/cxx14/memory.h"
 
@@ -51,7 +51,6 @@
 
 #include "misc/ProofOfWorkFactory.h"
 
-namespace ripple {
 # include "main/NodeStoreScheduler.h"
 #include "main/NodeStoreScheduler.cpp"
 
@@ -62,12 +61,10 @@ namespace ripple {
 #include "main/FatalErrorReporter.cpp"
 
 # include "rpc/RPCHandler.h"
-}
 # include "rpc/RPCServerHandler.h"
 # include "main/RPCHTTPServer.h"
 #include "main/RPCHTTPServer.cpp"
 #include "rpc/RPCServerHandler.cpp"
-namespace ripple {
 #include "rpc/RPCHandler.cpp"
 
 #include "websocket/WSConnection.h"
@@ -82,9 +79,6 @@ namespace ripple {
 #include "websocket/WSConnection.cpp"
 # include "websocket/WSDoor.h"
 #include "websocket/WSDoor.cpp"
-}
-
-
 
 #include "../ripple/common/ResolverAsio.h"
 
@@ -93,14 +87,13 @@ namespace ripple {
 
 #include "main/Application.cpp"
 
-
-
-namespace ripple {
-# include "main/RippleMain.h"
-#include "main/RippleMain.cpp"
-}
+#include "main/Main.cpp"
 
 //------------------------------------------------------------------------------
+
+namespace ripple {
+int run (int argc, char** argv);
+}
 
 struct ProtobufLibrary
 {
@@ -153,12 +146,5 @@ int main (int argc, char** argv)
 
     beast::SharedSingleton <ProtobufLibrary>::get ();
 
-    int result (0);
-
-    ripple::RippleMain rippled;
-
-    result = rippled.runFromMain (argc, argv);
-
-    return result;
+    return ripple::run (argc, argv);
 }
-

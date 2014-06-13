@@ -21,6 +21,9 @@
 */
 //==============================================================================
 
+namespace beast
+{
+
 enum
 {
     U_ISOFS_SUPER_MAGIC = 0x9660,   // linux/iso_fs.h
@@ -258,7 +261,7 @@ public:
     }
 
     bool next (String& filenameFound,
-               bool* const isDir, bool* const isHidden, int64* const fileSize,
+               bool* const isDir, bool* const isHidden, std::int64_t* const fileSize,
                Time* const modTime, Time* const creationTime, bool* const isReadOnly)
     {
         if (dir != nullptr)
@@ -307,7 +310,7 @@ DirectoryIterator::NativeIterator::~NativeIterator()
 }
 
 bool DirectoryIterator::NativeIterator::next (String& filenameFound,
-                                              bool* const isDir, bool* const isHidden, int64* const fileSize,
+                                              bool* const isDir, bool* const isHidden, std::int64_t* const fileSize,
                                               Time* const modTime, Time* const creationTime, bool* const isReadOnly)
 {
     return pimpl->next (filenameFound, isDir, isHidden, fileSize, modTime, creationTime, isReadOnly);
@@ -367,3 +370,5 @@ void File::revealToUser() const
     else if (getParentDirectory().exists())
         getParentDirectory().startAsProcess();
 }
+
+} // beast

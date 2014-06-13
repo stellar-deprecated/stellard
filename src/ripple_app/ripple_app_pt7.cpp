@@ -17,16 +17,13 @@
 */
 //==============================================================================
 
-#include "BeastConfig.h"
+#include "../../BeastConfig.h"
 
 #include "ripple_app.h"
 
 #include "../ripple/resource/ripple_resource.h"
 
 #include "../ripple/common/seconds_clock.h"
-
-namespace ripple
-{
 
 #include "ledger/InboundLedgers.cpp"
 #include "ledger/LedgerHistory.cpp"
@@ -35,6 +32,5 @@ namespace ripple
 
 # include "tx/TxQueueEntry.h"
 # include "tx/TxQueue.h"
+# include "tx/LocalTxs.cpp"
 #include "misc/NetworkOPs.cpp"
-
-}

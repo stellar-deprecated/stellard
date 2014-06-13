@@ -20,6 +20,8 @@
 #ifndef RIPPLE_RIPPLELINECACHE_H
 #define RIPPLE_RIPPLELINECACHE_H
 
+namespace ripple {
+
 // Used by Pathfinder
 class RippleLineCache
 {
@@ -38,12 +40,14 @@ public:
 
 private:
     typedef RippleMutex LockType;
-    typedef LockType::ScopedLockType ScopedLockType;
+    typedef std::lock_guard <LockType> ScopedLockType;
     LockType mLock;
    
     Ledger::pointer mLedger;
     
-    boost::unordered_map <uint160, AccountItems::pointer> mRLMap;
+    ripple::unordered_map <uint160, AccountItems::pointer> mRLMap;
 };
+
+} // ripple
 
 #endif

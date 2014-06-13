@@ -20,6 +20,8 @@
 #ifndef RIPPLE_LOADMANAGER_H_INCLUDED
 #define RIPPLE_LOADMANAGER_H_INCLUDED
 
+namespace ripple {
+
 /** Manages load sources.
 
     This object creates an associated thread to maintain a clock.
@@ -33,7 +35,7 @@
 
     @see LoadSource, LoadType
 */
-class LoadManager : public Stoppable
+class LoadManager : public beast::Stoppable
 {
 protected:
     explicit LoadManager (Stoppable& parent);
@@ -44,7 +46,7 @@ public:
         @note The thresholds for warnings and punishments are in
               the ctor-initializer
     */
-    static LoadManager* New (Stoppable& parent, Journal journal);
+    static LoadManager* New (Stoppable& parent, beast::Journal journal);
 
     /** Destroy the manager.
 
@@ -73,5 +75,7 @@ public:
     */
     virtual void resetDeadlockDetector () = 0;
 };
+
+} // ripple
 
 #endif

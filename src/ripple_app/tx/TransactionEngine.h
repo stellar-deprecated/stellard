@@ -20,6 +20,8 @@
 #ifndef __TRANSACTIONENGINE__
 #define __TRANSACTIONENGINE__
 
+namespace ripple {
+
 // A TransactionEngine applies serialized transactions to a ledger
 // It can also, verify signatures, verify fees, and give rejection reasons
 
@@ -68,7 +70,7 @@ public:
         assert (mLedger);
     }
 
-    LedgerEntrySet& getNodes ()
+    LedgerEntrySet& view ()
     {
         return mNodes;
     }
@@ -82,19 +84,23 @@ public:
         mLedger = ledger;
     }
 
-    SLE::pointer        entryCreate (LedgerEntryType type, uint256 const & index)
+    // VFALCO TODO Remove these pointless wrappers
+    SLE::pointer entryCreate (LedgerEntryType type, uint256 const & index)
     {
         return mNodes.entryCreate (type, index);
     }
-    SLE::pointer        entryCache (LedgerEntryType type, uint256 const & index)
+
+    SLE::pointer entryCache (LedgerEntryType type, uint256 const & index)
     {
         return mNodes.entryCache (type, index);
     }
-    void                entryDelete (SLE::ref sleEntry)
+
+    void entryDelete (SLE::ref sleEntry)
     {
         mNodes.entryDelete (sleEntry);
     }
-    void                entryModify (SLE::ref sleEntry)
+
+    void entryModify (SLE::ref sleEntry)
     {
         mNodes.entryModify (sleEntry);
     }
@@ -113,5 +119,6 @@ inline TransactionEngineParams operator& (const TransactionEngineParams& l1, con
     return static_cast<TransactionEngineParams> (static_cast<int> (l1) & static_cast<int> (l2));
 }
 
+} // ripple
+
 #endif
-// vim:ts=4

@@ -20,6 +20,8 @@
 #ifndef RIPPLE_LEDGERFORMATS_H_INCLUDED
 #define RIPPLE_LEDGERFORMATS_H_INCLUDED
 
+namespace ripple {
+
 /** Ledger entry types.
 
     These are stored in serialized data.
@@ -63,7 +65,7 @@ enum LedgerEntryType
 
     ltLEDGER_HASHES     = 'h',
 
-    ltFEATURES          = 'f',
+    ltAMENDMENTS        = 'f',
 
     ltFEE_SETTINGS      = 's',
 };
@@ -85,7 +87,7 @@ enum LedgerNameSpace
     spaceBookDir        = 'B',  // Directory of order books.
     spaceContract       = 'c',
     spaceSkipList       = 's',
-    spaceFeature        = 'f',
+    spaceAmendment      = 'f',
     spaceFee            = 'e',
 };
 
@@ -129,5 +131,6 @@ private:
     void addCommonFields (Item& item);
 };
 
-#endif
+} // ripple
 
+#endif

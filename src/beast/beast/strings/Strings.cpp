@@ -17,7 +17,5 @@
 */
 //==============================================================================
 
-#include "BeastConfig.h"
-
 #include "impl/CharacterFunctions.cpp"
 #include "impl/String.cpp"

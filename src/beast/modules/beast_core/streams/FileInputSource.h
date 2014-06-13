@@ -24,13 +24,16 @@
 #ifndef BEAST_FILEINPUTSOURCE_H_INCLUDED
 #define BEAST_FILEINPUTSOURCE_H_INCLUDED
 
+namespace beast
+{
+
 //==============================================================================
 /**
     A type of InputSource that represents a normal file.
 
     @see InputSource
 */
-class BEAST_API FileInputSource
+class FileInputSource
     : public InputSource
     , LeakChecked <FileInputSource>
     , public Uncopyable
@@ -49,7 +52,7 @@ public:
 
     InputStream* createInputStream();
     InputStream* createInputStreamFor (const String& relatedItemPath);
-    int64 hashCode() const;
+    std::int64_t hashCode() const;
 
 private:
     //==============================================================================
@@ -57,5 +60,6 @@ private:
     bool useFileTimeInHashGeneration;
 };
 
+} // beast
 
 #endif   // BEAST_FILEINPUTSOURCE_H_INCLUDED

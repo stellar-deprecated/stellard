@@ -17,6 +17,8 @@
 */
 //==============================================================================
 
+namespace ripple {
+
 // These must stay at the top of this file
 std::map<int, SField::ptr> SField::codeToField;
 int SField::num = 0;
@@ -25,7 +27,7 @@ int SField::num = 0;
 // Solve construction issues for objects with static storage duration.
 SField::StaticLockType& SField::getMutex ()
 {
-    static StaticLockType mutex ("SField", __FILE__, __LINE__);
+    static StaticLockType mutex;
     return mutex;
 }
 
@@ -60,11 +62,14 @@ static const int f = initFields ();
 
 
 SField::SField (SerializedTypeID tid, int fv) : fieldCode (FIELD_CODE (tid, fv)), fieldType (tid), fieldValue (fv),
-    fieldMeta (sMD_Default), fieldNum (++num), signingField (true)
+    fieldMeta (sMD_Default), fieldNum (++num), signingField (true), jsonName (nullptr)
 {
     // call with the map mutex
-    fieldName = lexicalCast <std::string> (tid) + "/" + lexicalCast <std::string> (fv);
+    fieldName = beast::lexicalCast <std::string> (tid) + "/" +
+                beast::lexicalCast <std::string> (fv);
     codeToField[fieldCode] = this;
+    rawJsonName = getName ();
+    jsonName = Json::StaticString (rawJsonName.c_str ());
     assert ((fv != 1) || ((tid != STI_ARRAY) && (tid != STI_OBJECT)));
 }
 
@@ -76,7 +81,7 @@ SField::ref SField::getField (int code)
     if ((type <= 0) || (field <= 0))
         return sfInvalid;
 
-    StaticScopedLockType sl (getMutex (), __FILE__, __LINE__);
+    StaticScopedLockType sl (getMutex ());
 
     std::map<int, SField::ptr>::iterator it = codeToField.find (code);
 
@@ -128,14 +133,14 @@ std::string SField::getName () const
     if (fieldValue == 0)
         return "";
 
-    return lexicalCastThrow <std::string> (static_cast<int> (fieldType)) + "/" +
-           lexicalCastThrow <std::string> (fieldValue);
+    return beast::lexicalCastThrow <std::string> (static_cast<int> (fieldType)) + "/" +
+           beast::lexicalCastThrow <std::string> (fieldValue);
 }
 
 SField::ref SField::getField (const std::string& fieldName)
 {
     // OPTIMIZEME me with a map. CHECKME this is case sensitive
-    StaticScopedLockType sl (getMutex (), __FILE__, __LINE__);
+    StaticScopedLockType sl (getMutex ());
     typedef std::map<int, SField::ptr>::value_type int_sfref_pair;
     BOOST_FOREACH (const int_sfref_pair & fieldPair, codeToField)
     {
@@ -147,11 +152,12 @@ SField::ref SField::getField (const std::string& fieldName)
 
 SField::~SField ()
 {
-    StaticScopedLockType sl (getMutex (), __FILE__, __LINE__);
+    StaticScopedLockType sl (getMutex ());
     std::map<int, ptr>::iterator it = codeToField.find (fieldCode);
 
     if ((it != codeToField.end ()) && (it->second == this))
         codeToField.erase (it);
 }
 
-// vim:ts=4
+} // ripple
+

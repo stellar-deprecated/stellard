@@ -20,18 +20,22 @@
 #ifndef RIPPLE_NET_BASICS_SNTPCLIENT_H_INCLUDED
 #define RIPPLE_NET_BASICS_SNTPCLIENT_H_INCLUDED
 
-class SNTPClient : public Stoppable
+namespace ripple {
+
+class SNTPClient : public beast::Stoppable
 {
 protected:
-    explicit SNTPClient (Stoppable& parent);
+    explicit SNTPClient (beast::Stoppable& parent);
 
 public:
-    static SNTPClient* New (Stoppable& parent);
+    static SNTPClient* New (beast::Stoppable& parent);
     virtual ~SNTPClient() { }
     virtual void init (std::vector <std::string> const& servers) = 0;
     virtual void addServer (std::string const& mServer) = 0;
     virtual void queryAll () = 0;
     virtual bool getOffset (int& offset) = 0;
 };
+
+} // ripple
 
 #endif

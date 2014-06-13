@@ -21,8 +21,11 @@
 // Copyright (c) 2011 The Bitcoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file license.txt or http://www.opensource.org/licenses/mit-license.php.
+
 #ifndef RIPPLE_CKEY_H
 #define RIPPLE_CKEY_H
+
+namespace ripple {
 
 // secp256k1:
 // const unsigned int PRIVATE_KEY_SIZE = 279;
@@ -93,7 +96,7 @@ public:
     {
         pkey = EC_KEY_new_by_curve_name (NID_secp256k1);
 
-        if (pkey == NULL)
+        if (pkey == nullptr)
             throw key_error ("CKey::CKey() : EC_KEY_new_by_curve_name failed");
 
         EC_KEY_set_conv_form (pkey, POINT_CONVERSION_COMPRESSED);
@@ -105,7 +108,7 @@ public:
     {
         pkey = EC_KEY_dup (b.pkey);
 
-        if (pkey == NULL)
+        if (pkey == nullptr)
             throw key_error ("CKey::CKey(const CKey&) : EC_KEY_dup failed");
 
         EC_KEY_set_conv_form (pkey, POINT_CONVERSION_COMPRESSED);
@@ -159,14 +162,14 @@ public:
         assert (pkey);
     }
 
-    CKey (uint256 const& privateKey) : pkey (NULL), fSet (false)
+    CKey (uint256 const& privateKey) : pkey (nullptr), fSet (false)
     {
         // XXX Broken pkey is null.
         SetPrivateKeyU (privateKey);
     }
 
 #if 0
-    CKey (const RippleAddress& masterKey, int keyNum, bool isPublic) : pkey (NULL), fSet (false)
+    CKey (const RippleAddress& masterKey, int keyNum, bool isPublic) : pkey (nullptr), fSet (false)
     {
         if (isPublic)
             SetPubSeq (masterKey, keyNum);
@@ -202,7 +205,7 @@ public:
     {
         const BIGNUM* bn = EC_KEY_get0_private_key (pkey);
 
-        if (bn == NULL)
+        if (bn == nullptr)
             throw key_error ("CKey::GetPrivateKeyU: EC_KEY_get0_private_key failed");
 
         privKey.zero ();
@@ -212,7 +215,7 @@ public:
     bool SetPrivateKeyU (uint256 const& key, bool bThrow = false)
     {
         // XXX Broken if pkey is not set.
-        BIGNUM* bn          = BN_bin2bn (key.begin (), key.size (), NULL);
+        BIGNUM* bn          = BN_bin2bn (key.begin (), key.size (), nullptr);
         bool    bSuccess    = !!EC_KEY_set_private_key (pkey, bn);
 
         BN_clear_free (bn);
@@ -253,7 +256,7 @@ public:
 
     Blob GetPubKey () const
     {
-        unsigned int nSize = i2o_ECPublicKey (pkey, NULL);
+        unsigned int nSize = i2o_ECPublicKey (pkey, nullptr);
         assert (nSize <= 33);
 
         if (!nSize)
@@ -315,5 +318,6 @@ public:
     Blob decryptECIES (CKey& otherKey, Blob const& ciphertext);
 };
 
+} // ripple
+
 #endif
-// vim:ts=4

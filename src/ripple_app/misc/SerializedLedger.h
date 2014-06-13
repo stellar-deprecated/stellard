@@ -20,6 +20,8 @@
 #ifndef RIPPLE_SERIALIZEDLEDGER_H
 #define RIPPLE_SERIALIZEDLEDGER_H
 
+namespace ripple {
+
 // VFALCO NOTE
 //
 //      This looks like a central class for Ripple. Almost everything that
@@ -81,7 +83,7 @@ public:
     {
         return mType;
     }
-    uint16 getVersion () const
+    std::uint16_t getVersion () const
     {
         return getFieldU16 (sfLedgerEntryType);
     }
@@ -98,8 +100,9 @@ public:
     RippleAddress getFirstOwner ();
     RippleAddress getSecondOwner ();
     uint256 getThreadedTransaction ();
-    uint32 getThreadedLedger ();
-    bool thread (uint256 const & txID, uint32 ledgerSeq, uint256 & prevTxID, uint32 & prevLedgerID);
+    std::uint32_t getThreadedLedger ();
+    bool thread (uint256 const & txID, std::uint32_t ledgerSeq, uint256 & prevTxID,
+                 std::uint32_t & prevLedgerID);
     std::vector<uint256> getOwners ();  // nodes notified if this node is deleted
 
 private:
@@ -117,5 +120,7 @@ private:
 
 typedef SerializedLedgerEntry SLE;
 
+} // ripple
+
 #endif
-// vim:ts=4
+

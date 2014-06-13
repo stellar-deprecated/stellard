@@ -20,25 +20,33 @@
 #ifndef RIPPLE_TRANSACTIONMETA_H
 #define RIPPLE_TRANSACTIONMETA_H
 
-class TransactionMetaSet : LeakChecked <TransactionMetaSet>
+namespace ripple {
+
+class TransactionMetaSet : beast::LeakChecked <TransactionMetaSet>
 {
 public:
     typedef boost::shared_ptr<TransactionMetaSet> pointer;
     typedef const pointer& ref;
 
 public:
-    TransactionMetaSet () : mLedger (0), mIndex (static_cast<uint32> (-1)), mResult (255)
+    TransactionMetaSet ()
+        : mLedger (0)
+        , mIndex (static_cast<std::uint32_t> (-1))
+        , mResult (255)
     {
-        ;
     }
-    TransactionMetaSet (uint256 const& txID, uint32 ledger, uint32 index) :
-        mTransactionID (txID), mLedger (ledger), mIndex (static_cast<uint32> (-1)), mResult (255)
-    {
-        ;
-    }
-    TransactionMetaSet (uint256 const& txID, uint32 ledger, Blob const&);
 
-    void init (uint256 const& transactionID, uint32 ledger);
+    TransactionMetaSet (uint256 const& txID, std::uint32_t ledger, std::uint32_t index)
+        : mTransactionID (txID)
+        , mLedger (ledger)
+        , mIndex (static_cast<std::uint32_t> (-1))
+        , mResult (255)
+    {
+    }
+
+    TransactionMetaSet (uint256 const& txID, std::uint32_t ledger, Blob const&);
+
+    void init (uint256 const& transactionID, std::uint32_t ledger);
     void clear ()
     {
         mNodes.clear ();
@@ -49,7 +57,7 @@ public:
     {
         return mTransactionID;
     }
-    uint32 getLgrSeq ()
+    std::uint32_t getLgrSeq ()
     {
         return mLedger;
     }
@@ -61,13 +69,13 @@ public:
     {
         return static_cast<TER> (mResult);
     }
-    uint32 getIndex () const
+    std::uint32_t getIndex () const
     {
         return mIndex;
     }
 
     bool isNodeAffected (uint256 const& ) const;
-    void setAffectedNode (uint256 const& , SField::ref type, uint16 nodeType);
+    void setAffectedNode (uint256 const& , SField::ref type, std::uint16_t nodeType);
     STObject& getAffectedNode (SLE::ref node, SField::ref type); // create if needed
     STObject& getAffectedNode (uint256 const& );
     const STObject& peekAffectedNode (uint256 const& ) const;
@@ -78,7 +86,7 @@ public:
     {
         return getAsObject ().getJson (p);
     }
-    void addRaw (Serializer&, TER, uint32 index);
+    void addRaw (Serializer&, TER, std::uint32_t index);
 
     STObject getAsObject () const;
     STArray& getNodes ()
@@ -102,19 +110,19 @@ public:
          return mDelivered;
     }
 
-    static bool thread (STObject& node, uint256 const& prevTxID, uint32 prevLgrID);
+    static bool thread (STObject& node, uint256 const& prevTxID, std::uint32_t prevLgrID);
 
 private:
-    uint256 mTransactionID;
-    uint32  mLedger;
-    uint32  mIndex;
-    int     mResult;
+    uint256       mTransactionID;
+    std::uint32_t mLedger;
+    std::uint32_t mIndex;
+    int           mResult;
 
     boost::optional <STAmount> mDelivered;
 
     STArray mNodes;
 };
 
-#endif
+} // ripple
 
-// vim:ts=4
+#endif

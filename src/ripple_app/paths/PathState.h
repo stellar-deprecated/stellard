@@ -20,10 +20,12 @@
 #ifndef RIPPLE_PATHSTATE_H
 #define RIPPLE_PATHSTATE_H
 
+namespace ripple {
+
 // account id, currency id, issuer id :: node
-typedef boost::tuple <uint160, uint160, uint160> aciSource;
-typedef boost::unordered_map <aciSource, unsigned int>                   curIssuerNode;  // Map of currency, issuer to node index.
-typedef boost::unordered_map <aciSource, unsigned int>::const_iterator   curIssuerNodeConstIterator;
+typedef std::tuple <uint160, uint160, uint160> aciSource;
+typedef ripple::unordered_map <aciSource, unsigned int>                   curIssuerNode;  // Map of currency, issuer to node index.
+typedef ripple::unordered_map <aciSource, unsigned int>::const_iterator   curIssuerNodeConstIterator;
 
 extern std::size_t hash_value (const aciSource& asValue);
 
@@ -42,7 +44,7 @@ public:
         Json::Value                     getJson () const;
 
     public:
-        uint16                          uFlags;             // --> From path.
+        std::uint16_t                   uFlags;             // --> From path.
 
         uint160                         uAccountID;         // --> Accounts: Recieving/sending account.
         uint160                         uCurrencyID;        // --> Accounts: Receive and send, Offers: send.
@@ -167,7 +169,7 @@ public:
     LedgerEntrySet              lesEntries;
 
     int                         mIndex;             // Index/rank amoung siblings.
-    uint64                      uQuality;           // 0 = no quality/liquity left.
+    std::uint64_t               uQuality;           // 0 = no quality/liquity left.
     const STAmount&             saInReq;            // --> Max amount to spend by sender.
     STAmount                    saInAct;            // --> Amount spent by sender so far.
     STAmount                    saInPass;           // <-- Amount spent by sender.
@@ -180,5 +182,7 @@ private:
     TER pushNode (const int iType, const uint160& uAccountID, const uint160& uCurrencyID, const uint160& uIssuerID);
     TER pushImply (const uint160& uAccountID, const uint160& uCurrencyID, const uint160& uIssuerID);
 };
+
+} // ripple
 
 #endif

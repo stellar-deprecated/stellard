@@ -20,10 +20,12 @@
 #ifndef RIPPLE_LEDGERCLEANER_H_INCLUDED
 #define RIPPLE_LEDGERCLEANER_H_INCLUDED
 
+namespace ripple {
+
 /** Check the ledger/transaction databases to make sure they have continuity */
 class LedgerCleaner
-    : public Stoppable
-    , public PropertyStream::Source
+    : public beast::Stoppable
+    , public beast::PropertyStream::Source
 {
 protected:
     explicit LedgerCleaner (Stoppable& parent);
@@ -34,7 +36,7 @@ public:
     */
     static LedgerCleaner* New (
         Stoppable& parent,
-        Journal journal);
+        beast::Journal journal);
 
     /** Destroy the object. */
     virtual ~LedgerCleaner () = 0;
@@ -51,5 +53,7 @@ public:
     */
     virtual void doClean (Json::Value const& parameters) = 0;
 };
+
+} // ripple
 
 #endif

@@ -24,13 +24,8 @@
 #ifndef BEAST_CONFIG_COMPILERCONFIG_H_INCLUDED
 #define BEAST_CONFIG_COMPILERCONFIG_H_INCLUDED
 
-// This file has to work when included in a C source file.
-
-#ifndef BEAST_CONFIG_PLATFORMCONFIG_H_INCLUDED
-#error "PlatformConfig.h must come first!"
-#endif
-
 #include <assert.h>
+#include "PlatformConfig.h"
 
 // This file defines miscellaneous macros for debugging, assertions, etc.
 
@@ -42,12 +37,19 @@
 /** This macro defines the C calling convention used as the standard for Beast calls.
 */
 #if BEAST_MSVC
-# define BEAST_CALLTYPE   __stdcall
 # define BEAST_CDECL      __cdecl
 #else
-# define BEAST_CALLTYPE
 # define BEAST_CDECL
 #endif
+
+/** This macro fixes C++'s constexpr for VS2012, which doesn't understand it.
+*/
+#if BEAST_MSVC
+# define BEAST_CONSTEXPR const
+#else
+# define BEAST_CONSTEXPR constexpr
+#endif
+
 
 // Debugging and assertion macros
 
@@ -148,16 +150,6 @@ extern void beast_reportFatalError (char const* message, char const* fileName, i
 
 //------------------------------------------------------------------------------
 
-/** This macro can be added to class definitions to disable the use of new/delete to
-    allocate the object on the heap, forcing it to only be used as a stack or member variable.
-*/
-#define BEAST_PREVENT_HEAP_ALLOCATION \
-   private: \
-    static void* operator new (size_t); \
-    static void operator delete (void*);
-
-//------------------------------------------------------------------------------
-
 #if ! DOXYGEN
  #define BEAST_JOIN_MACRO_HELPER(a, b) a ## b
  #define BEAST_STRINGIFY_MACRO_HELPER(a) #a
@@ -174,19 +166,6 @@ extern void beast_reportFatalError (char const* message, char const* fileName, i
 #define BEAST_STRINGIFY(item)  BEAST_STRINGIFY_MACRO_HELPER (item)
 
 //------------------------------------------------------------------------------
-
-#if BEAST_DEBUG || DOXYGEN
-/** A platform-independent way of forcing an inline function.
-    Use the syntax: @code
-    forcedinline void myfunction (int x)
-    @endcode
-*/
-# define forcedinline inline
-#elif BEAST_MSVC
-# define forcedinline __forceinline
-#else
-# define forcedinline inline __attribute__((always_inline))
-#endif
 
 #if BEAST_MSVC || DOXYGEN
 /** This can be placed before a stack or member variable declaration to tell
@@ -278,35 +257,10 @@ extern void beast_reportFatalError (char const* message, char const* fileName, i
 # define BEAST_MOVE_CAST(type) type
 #endif
 
-//------------------------------------------------------------------------------
-
-// Declare some fake versions of nullptr and noexcept, for older compilers:
-#if ! (DOXYGEN || BEAST_COMPILER_SUPPORTS_NOEXCEPT)
-# ifdef noexcept
-#  undef noexcept
-# endif
-# define noexcept  throw()
-# if defined (_MSC_VER) && _MSC_VER > 1600
-#  define _ALLOW_KEYWORD_MACROS 1 // (to stop VC2012 complaining)
-# endif
-#endif
-
-#if ! (DOXYGEN || BEAST_COMPILER_SUPPORTS_NULLPTR)
-#ifdef nullptr
-#undef nullptr
-#endif
-#define nullptr (0)
-#endif
-
-#if ! (DOXYGEN || BEAST_COMPILER_SUPPORTS_OVERRIDE_AND_FINAL)
-#undef  override
-#define override
-#endif
-
 #ifdef __cplusplus
 namespace beast {
 bool beast_isRunningUnderDebugger();
-void logAssertion (char const* file, int line) noexcept;
+void logAssertion (char const* file, int line);
 }
 #endif
 

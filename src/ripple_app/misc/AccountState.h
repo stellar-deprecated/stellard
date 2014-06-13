@@ -20,11 +20,13 @@
 #ifndef RIPPLE_ACCOUNTSTATE_H
 #define RIPPLE_ACCOUNTSTATE_H
 
+namespace ripple {
+
 //
 // Provide abstract access to an account's state, such that access to the serialized format is hidden.
 //
 
-class AccountState : LeakChecked <AccountState>
+class AccountState : beast::LeakChecked <AccountState>
 {
 public:
     typedef boost::shared_ptr<AccountState> pointer;
@@ -51,7 +53,7 @@ public:
         return mLedgerEntry->getFieldAmount (sfBalance);
     }
 
-    uint32 getSeq () const
+    std::uint32_t getSeq () const
     {
         return mLedgerEntry->getFieldU32 (sfSequence);
     }
@@ -86,5 +88,7 @@ private:
 
     bool                           mValid;
 };
+
+} // ripple
 
 #endif

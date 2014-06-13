@@ -17,6 +17,10 @@
 */
 //==============================================================================
 
+#include <boost/regex.hpp>
+
+namespace ripple {
+
 class RPCParser;
 
 SETUP_LOG (RPCParser)
@@ -47,7 +51,7 @@ private:
         }
         else
         {
-            jvRequest["ledger_index"]   = lexicalCast <uint32> (strLedger);
+            jvRequest["ledger_index"]   = beast::lexicalCast <std::uint32_t> (strLedger);
         }
 
         return true;
@@ -78,7 +82,7 @@ private:
         }
         else
         {
-            return RPC::make_param_error (std::string ("Invalid currency/issuer '") + 
+            return RPC::make_param_error (std::string ("Invalid currency/issuer '") +
                     strCurrencyIssuer + "'");
         }
     }
@@ -171,8 +175,8 @@ private:
         }
         else
         {
-            int64   uLedgerMin  = jvParams[1u].asInt ();
-            int64   uLedgerMax  = jvParams[2u].asInt ();
+            std::int64_t   uLedgerMin  = jvParams[1u].asInt ();
+            std::int64_t   uLedgerMax  = jvParams[2u].asInt ();
 
             if (uLedgerMax != -1 && uLedgerMax < uLedgerMin)
             {
@@ -240,8 +244,8 @@ private:
         }
         else
         {
-            int64   uLedgerMin  = jvParams[1u].asInt ();
-            int64   uLedgerMax  = jvParams[2u].asInt ();
+            std::int64_t   uLedgerMin  = jvParams[1u].asInt ();
+            std::int64_t   uLedgerMax  = jvParams[2u].asInt ();
 
             if (uLedgerMax != -1 && uLedgerMax < uLedgerMin)
             {
@@ -328,43 +332,6 @@ private:
         return jvRequest;
     }
 
-    #if ENABLE_INSECURE
-    // data_delete <key>
-    Json::Value parseDataDelete (const Json::Value& jvParams)
-    {
-        Json::Value     jvRequest (Json::objectValue);
-
-        jvRequest["key"]    = jvParams[0u].asString ();
-
-        return jvRequest;
-    }
-    #endif
-
-    #if ENABLE_INSECURE
-    // data_fetch <key>
-    Json::Value parseDataFetch (const Json::Value& jvParams)
-    {
-        Json::Value     jvRequest (Json::objectValue);
-
-        jvRequest["key"]    = jvParams[0u].asString ();
-
-        return jvRequest;
-    }
-    #endif
-
-    #if ENABLE_INSECURE
-    // data_store <key> <value>
-    Json::Value parseDataStore (const Json::Value& jvParams)
-    {
-        Json::Value     jvRequest (Json::objectValue);
-
-        jvRequest["key"]    = jvParams[0u].asString ();
-        jvRequest["value"]  = jvParams[1u].asString ();
-
-        return jvRequest;
-    }
-    #endif
-
     // Return an error for attemping to subscribe/unsubscribe via RPC.
     Json::Value parseEvented (const Json::Value& jvParams)
     {
@@ -380,7 +347,7 @@ private:
             jvRequest["feature"]    = jvParams[0u].asString ();
 
         if (jvParams.size () > 1)
-            jvRequest["vote"]       = lexicalCastThrow <bool> (jvParams[1u].asString ());
+            jvRequest["vote"]       = beast::lexicalCastThrow <bool> (jvParams[1u].asString ());
 
         return jvRequest;
     }
@@ -451,24 +418,11 @@ private:
         }
         else
         {
-            jvRequest["ledger_index"]   = lexicalCast <uint32> (strLedger);
+            jvRequest["ledger_index"]   = beast::lexicalCast <std::uint32_t> (strLedger);
         }
 
         return jvRequest;
     }
-
-    #if ENABLE_INSECURE
-    // login <username> <password>
-    Json::Value parseLogin (const Json::Value& jvParams)
-    {
-        Json::Value     jvRequest (Json::objectValue);
-
-        jvRequest["username"]   = jvParams[0u].asString ();
-        jvRequest["password"]   = jvParams[1u].asString ();
-
-        return jvRequest;
-    }
-    #endif
 
     // log_level:                           Get log levels
     // log_level <severity>:                Set master log level to the specified severity
@@ -529,7 +483,7 @@ private:
             strPeer = jvParams[iCursor].asString ();
 
         int             iIndex      = 0;
-        //  int             iIndex      = jvParams.size() >= 2 ? lexicalCast <int>(jvParams[1u].asString()) : 0;
+        //  int             iIndex      = jvParams.size() >= 2 ? beast::lexicalCast <int>(jvParams[1u].asString()) : 0;
 
         RippleAddress   raAddress;
 
@@ -875,7 +829,7 @@ public:
             {   "ripple_path_find",     &RPCParser::parseRipplePathFind,        1,  2   },
             {   "sign",                 &RPCParser::parseSignSubmit,            2,  3   },
             {   "sms",                  &RPCParser::parseSMS,                   1,  1   },
-            {   "submit",               &RPCParser::parseSignSubmit,            1,  2   },
+            {   "submit",               &RPCParser::parseSignSubmit,            1,  3   },
             {   "server_info",          &RPCParser::parseAsIs,                  0,  0   },
             {   "server_state",         &RPCParser::parseAsIs,                  0,  0   },
             {   "stop",                 &RPCParser::parseAsIs,                  0,  0   },
@@ -896,14 +850,6 @@ public:
             {   "wallet_propose",       &RPCParser::parseWalletPropose,         0,  1   },
             {   "wallet_seed",          &RPCParser::parseWalletSeed,            0,  1   },
             {   "internal",             &RPCParser::parseInternal,              1,  -1  },
-
-    #if ENABLE_INSECURE
-            // XXX Unnecessary commands which should be removed.
-            {   "login",                &RPCParser::parseLogin,                 2,  2   },
-            {   "data_delete",          &RPCParser::parseDataDelete,            1,  1   },
-            {   "data_fetch",           &RPCParser::parseDataFetch,             1,  1   },
-            {   "data_store",           &RPCParser::parseDataStore,             2,  2   },
-    #endif
 
             // Evented methods
             {   "path_find",            &RPCParser::parseEvented,               -1, -1  },
@@ -1096,7 +1042,7 @@ int RPCCall::fromCommandLine (const std::vector<std::string>& vCmd)
             jvOutput["status"]  = "error";
 
             nRet    = jvOutput.isMember ("error_code")
-                      ? lexicalCast <int> (jvOutput["error_code"].asString ())
+                      ? beast::lexicalCast <int> (jvOutput["error_code"].asString ())
                       : 1;
         }
 
@@ -1169,3 +1115,5 @@ void RPCCall::fromNetwork (
         boost::posix_time::seconds (RPC_NOTIFY_SECONDS),
         BIND_TYPE (&RPCCallImp::onResponse, callbackFuncP, P_1, P_2, P_3));
 }
+
+} // ripple

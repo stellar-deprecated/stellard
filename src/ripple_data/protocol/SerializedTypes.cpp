@@ -17,6 +17,8 @@
 */
 //==============================================================================
 
+namespace ripple {
+
 SETUP_LOG (SerializedType)
 
 const STAmount saZero (CURRENCY_ONE, ACCOUNT_ONE, 0);
@@ -111,7 +113,7 @@ std::string STUInt8::getText () const
             return human;
     }
 
-    return lexicalCastThrow <std::string> (value);
+    return beast::lexicalCastThrow <std::string> (value);
 }
 
 Json::Value STUInt8::getJson (int) const
@@ -160,7 +162,7 @@ std::string STUInt16::getText () const
             return item->getName ();
     }
 
-    return lexicalCastThrow <std::string> (value);
+    return beast::lexicalCastThrow <std::string> (value);
 }
 
 Json::Value STUInt16::getJson (int) const
@@ -199,7 +201,7 @@ STUInt32* STUInt32::construct (SerializerIterator& u, SField::ref name)
 
 std::string STUInt32::getText () const
 {
-    return lexicalCastThrow <std::string> (value);
+    return beast::lexicalCastThrow <std::string> (value);
 }
 
 Json::Value STUInt32::getJson (int) const
@@ -220,7 +222,7 @@ STUInt64* STUInt64::construct (SerializerIterator& u, SField::ref name)
 
 std::string STUInt64::getText () const
 {
-    return lexicalCastThrow <std::string> (value);
+    return beast::lexicalCastThrow <std::string> (value);
 }
 
 Json::Value STUInt64::getJson (int) const
@@ -241,7 +243,7 @@ STHash128* STHash128::construct (SerializerIterator& u, SField::ref name)
 
 std::string STHash128::getText () const
 {
-    return value.GetHex ();
+    return to_string (value);
 }
 
 bool STHash128::isEquivalent (const SerializedType& t) const
@@ -257,7 +259,7 @@ STHash160* STHash160::construct (SerializerIterator& u, SField::ref name)
 
 std::string STHash160::getText () const
 {
-    return value.GetHex ();
+    return to_string (value);
 }
 
 bool STHash160::isEquivalent (const SerializedType& t) const
@@ -273,7 +275,7 @@ STHash256* STHash256::construct (SerializerIterator& u, SField::ref name)
 
 std::string STHash256::getText () const
 {
-    return value.GetHex ();
+    return to_string (value);
 }
 
 bool STHash256::isEquivalent (const SerializedType& t) const
@@ -351,7 +353,7 @@ STVector256* STVector256::construct (SerializerIterator& u, SField::ref name)
 
 void STVector256::add (Serializer& s) const
 {
-    s.addVL (mValue.empty () ? NULL : mValue[0].begin (), mValue.size () * (256 / 8));
+    s.addVL (mValue.empty () ? nullptr : mValue[0].begin (), mValue.size () * (256 / 8));
 }
 
 bool STVector256::isEquivalent (const SerializedType& t) const
@@ -503,17 +505,17 @@ Json::Value STPath::getJson (int) const
         Json::Value elem (Json::objectValue);
         int         iType   = it.getNodeType ();
 
-        elem["type"]        = iType;
-        elem["type_hex"]    = strHex (iType);
+        elem[jss::type]      = iType;
+        elem[jss::type_hex]  = strHex (iType);
 
         if (iType & STPathElement::typeAccount)
-            elem["account"]     = RippleAddress::createHumanAccountID (it.getAccountID ());
+            elem[jss::account]  = RippleAddress::createHumanAccountID (it.getAccountID ());
 
         if (iType & STPathElement::typeCurrency)
-            elem["currency"]    = STAmount::createHumanCurrency (it.getCurrency ());
+            elem[jss::currency] = STAmount::createHumanCurrency (it.getCurrency ());
 
         if (iType & STPathElement::typeIssuer)
-            elem["issuer"]      = RippleAddress::createHumanAccountID (it.getIssuerID ());
+            elem[jss::issuer]   = RippleAddress::createHumanAccountID (it.getIssuerID ());
 
         ret.append (elem);
     }
@@ -619,4 +621,5 @@ void STPathSet::add (Serializer& s) const
     }
     s.add8 (STPathElement::typeEnd);
 }
-// vim:ts=4
+
+} // ripple

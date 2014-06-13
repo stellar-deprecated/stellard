@@ -20,6 +20,8 @@
 #ifndef RIPPLE_SHAMAPSYNCFILTERS_H
 #define RIPPLE_SHAMAPSYNCFILTERS_H
 
+namespace ripple {
+
 // Sync filters allow low-level SHAMapSync code to interact correctly with
 // higher-level structures such as caches and transaction stores
 
@@ -53,7 +55,7 @@ private:
 class AccountStateSF : public SHAMapSyncFilter
 {
 public:
-    explicit AccountStateSF (uint32 ledgerSeq);
+    explicit AccountStateSF (std::uint32_t ledgerSeq);
 
     // Note that the nodeData is overwritten by this call
     void gotNode (bool fromFilter,
@@ -67,7 +69,7 @@ public:
                    Blob& nodeData);
 
 private:
-    uint32 mLedgerSeq;
+    std::uint32_t mLedgerSeq;
 };
 
 // This class is only needed on add functions
@@ -75,7 +77,7 @@ private:
 class TransactionStateSF : public SHAMapSyncFilter
 {
 public:
-    explicit TransactionStateSF (uint32 ledgerSeq);
+    explicit TransactionStateSF (std::uint32_t ledgerSeq);
 
     // Note that the nodeData is overwritten by this call
     void gotNode (bool fromFilter,
@@ -89,7 +91,9 @@ public:
                    Blob& nodeData);
 
 private:
-    uint32 mLedgerSeq;
+    std::uint32_t mLedgerSeq;
 };
+
+} // ripple
 
 #endif

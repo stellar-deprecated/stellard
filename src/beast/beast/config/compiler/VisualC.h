@@ -19,6 +19,4 @@
 
 // Microsoft Visual C++ compiler configuration
 
-#ifndef noexcept
-# define noexcept throw()
-#endif
+#include "../../utility/noexcept.h"

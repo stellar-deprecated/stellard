@@ -21,9 +21,9 @@
 */
 //==============================================================================
 
-// Your project must contain a BeastConfig.h file with your project-specific settings in it,
-// and your header search path must make it accessible to the module's files.
-#include "BeastConfig.h"
+#if BEAST_INCLUDE_BEASTCONFIG
+#include "../../BeastConfig.h"
+#endif
 
 //==============================================================================
 #include "native/BasicNativeHeaders.h"
@@ -126,18 +126,8 @@
 #undef _aligned_msize
 #endif
 
-namespace beast
-{
-
-#include "containers/DynamicObject.cpp"
-#include "containers/NamedValueSet.cpp"
-#include "containers/PropertySet.cpp"
-#include "containers/Variant.cpp"
-
 #include "diagnostic/FatalError.cpp"
-#include "diagnostic/FPUFlags.cpp"
 #include "diagnostic/SemanticVersion.cpp"
-#include "diagnostic/UnitTest.cpp"
 #include "diagnostic/UnitTestUtilities.cpp"
 
 #include "files/DirectoryIterator.cpp"
@@ -148,68 +138,33 @@ namespace beast
 #include "files/RandomAccessFile.cpp"
 #include "files/TemporaryFile.cpp"
 
-#include "json/JSON.cpp"
-
-#include "logging/FileLogger.cpp"
 #include "logging/Logger.cpp"
 
-#include "maths/BigInteger.cpp"
 #include "maths/Random.cpp"
 
 #include "memory/MemoryBlock.cpp"
 
-#include "misc/Main.cpp"
 #include "misc/Result.cpp"
-#include "misc/Uuid.cpp"
 
-#include "network/MACAddress.cpp"
-#include "network/NamedPipe.cpp"
-#include "network/Socket.cpp"
-
-#include "streams/BufferedInputStream.cpp"
 #include "streams/FileInputSource.cpp"
 #include "streams/InputStream.cpp"
-#include "streams/MemoryInputStream.cpp"
 #include "streams/MemoryOutputStream.cpp"
 #include "streams/OutputStream.cpp"
-#include "streams/SubregionStream.cpp"
 
 #include "system/SystemStats.cpp"
 
 #include "text/LexicalCast.cpp"
-#include "text/Identifier.cpp"
-#include "text/LocalisedStrings.cpp"
 #include "text/StringArray.cpp"
 #include "text/StringPairArray.cpp"
-#include "text/StringPool.cpp"
 
-#include "thread/impl/TrackedMutex.cpp"
 #include "thread/DeadlineTimer.cpp"
 #include "thread/Workers.cpp"
 
-#include "threads/ChildProcess.cpp"
-#include "threads/ReadWriteLock.cpp"
-#include "threads/SpinDelay.cpp"
-
-#include "time/PerformanceCounter.cpp"
 #include "time/AtExitHook.cpp"
 #include "time/Time.cpp"
 
-#include "xml/XmlDocument.cpp"
-#include "xml/XmlElement.cpp"
-
-#include "zip/GZIPDecompressorInputStream.cpp"
-#include "zip/GZIPCompressorOutputStream.cpp"
-#include "zip/ZipFile.cpp"
-
 #if BEAST_MAC || BEAST_IOS
 #include "native/osx_ObjCHelpers.h"
-#endif
-
-#if BEAST_WINDOWS
-#include "native/win32_FPUFlags.cpp"
-#else
-#include "native/posix_FPUFlags.cpp"
 #endif
 
 #if BEAST_ANDROID
@@ -218,12 +173,10 @@ namespace beast
 
 #if ! BEAST_WINDOWS
 #include "native/posix_SharedCode.h"
-#include "native/posix_NamedPipe.cpp"
 #endif
 
 #if BEAST_MAC || BEAST_IOS
 #include "native/mac_Files.mm"
-#include "native/mac_Network.mm"
 #include "native/mac_Strings.mm"
 #include "native/mac_SystemStats.mm"
 #include "native/mac_Threads.mm"
@@ -231,35 +184,27 @@ namespace beast
 #elif BEAST_WINDOWS
 #include "native/win32_ComSmartPtr.h"
 #include "native/win32_Files.cpp"
-#include "native/win32_Network.cpp"
 #include "native/win32_Registry.cpp"
 #include "native/win32_SystemStats.cpp"
 #include "native/win32_Threads.cpp"
 
 #elif BEAST_LINUX
 #include "native/linux_Files.cpp"
-#include "native/linux_Network.cpp"
 #include "native/linux_SystemStats.cpp"
 #include "native/linux_Threads.cpp"
 
 #elif BEAST_BSD
 #include "native/bsd_Files.cpp"
-#include "native/bsd_Network.cpp"
 #include "native/bsd_SystemStats.cpp"
 #include "native/bsd_Threads.cpp"
 
 #elif BEAST_ANDROID
 #include "native/android_Files.cpp"
 #include "native/android_Misc.cpp"
-#include "native/android_Network.cpp"
 #include "native/android_SystemStats.cpp"
 #include "native/android_Threads.cpp"
 
 #endif
-
-#include "threads/HighResolutionTimer.cpp"
-
-}
 
 // Has to be outside the beast namespace
 extern "C" {
@@ -286,24 +231,6 @@ void beast_reportFatalError (char const* message, char const* fileName, int line
 #pragma pop_macro("_aligned_offset_realloc")
 #pragma pop_macro("_aligned_offset_recalloc")
 #pragma pop_macro("_aligned_msize")
-#endif
-
-//------------------------------------------------------------------------------
-
-// When we compile the static library, which is really just for browsing the
-// sources in the Visual Studio IDE, we want to compile each individual unity
-// .cpp in order to make sure that it builds by itself. An application that
-// uses beast will typically include all of these .cpp files in one of its
-// own unity .cpp
-#if ! BEAST_COMPILING_STATIC_LIBARARY
-/*
-#include "../../beast/chrono/Chrono.cpp"
-#include "../../beast/crypto/Crypto.cpp"
-#include "../../beast/http/HTTP.cpp"
-#include "../../beast/net/Net.cpp"
-#include "../../beast/strings/Strings.cpp"
-#include "../../beast/utility/Utility.cpp"
-*/
 #endif
 
 // Must be outside the namespace

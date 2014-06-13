@@ -22,7 +22,6 @@
 
 #include "../json/ripple_json.h"
 
-#include "../beast/modules/beast_core/beast_core.h"
 #include "../beast/beast/Crypto.h"
 
 #include "../beast/modules/beast_core/system/BeforeBoost.h"
@@ -41,17 +40,11 @@
 # include <sys/types.h>
 #endif
 
-namespace ripple {
-using namespace beast;
-}
-
 #include "api/AgedHistory.h"
 #  include "api/Blob.h"
 # include "api/Base58.h"
 #  include "api/ByteOrder.h"
 #  include "api/strHex.h"
-# include "api/UInt128.h"
-# include "api/UInt256.h"
 # include "api/UInt160.h"
 # include "api/RandomNumbers.h"
 #include "api/HashMaps.h"

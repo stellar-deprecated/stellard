@@ -17,9 +17,13 @@
 */
 //==============================================================================
 
-#include "BeastConfig.h"
+#if BEAST_INCLUDE_BEASTCONFIG
+#include "../../BeastConfig.h"
+#endif
 
-#include "impl/aged_associative_container.cpp"
+#include "impl/spookyv2.cpp"
 
+#include "tests/aged_associative_container.test.cpp"
 #include "tests/buffer_view.test.cpp"
-
+#include "tests/hardened_hash.test.cpp"
+#include "tests/hash_append.test.cpp"

@@ -17,6 +17,13 @@
 */
 //==============================================================================
 
+#include "../../beast/modules/beast_core/thread/DeadlineTimer.h"
+
+#include <boost/algorithm/string.hpp>
+#include <boost/regex.hpp>
+
+namespace ripple {
+
 // XXX Dynamically limit fetching by distance.
 // XXX Want a limit of 2000 validators.
 
@@ -57,7 +64,7 @@ SETUP_LOG (UniqueNodeList)
 // VFALCO TODO move all function definitions inlined into the class.
 class UniqueNodeListImp
     : public UniqueNodeList
-    , public DeadlineTimer::Listener
+    , public beast::DeadlineTimer::Listener
 {
 private:
     // VFALCO TODO Rename these structs? Are they objects with static storage?
@@ -97,15 +104,13 @@ private:
         std::vector<int>    viReferrals;
     } scoreNode;
 
-    typedef boost::unordered_map<std::string, int> strIndex;
+    typedef ripple::unordered_map<std::string, int> strIndex;
     typedef std::pair<std::string, int> IPAndPortNumber;
-    typedef boost::unordered_map<std::pair< std::string, int>, score>   epScore;
+    typedef ripple::unordered_map<std::pair< std::string, int>, score>   epScore;
 
 public:
     explicit UniqueNodeListImp (Stoppable& parent)
         : UniqueNodeList (parent)
-        , mFetchLock (this, "Fetch", __FILE__, __LINE__)
-        , mUNLLock (this, "UNL", __FILE__, __LINE__)
         , m_scoreTimer (this)
         , mFetchActive (0)
         , m_fetchTimer (this)
@@ -152,7 +157,7 @@ public:
         fetchNext ();
     }
 
-    void onDeadlineTimer (DeadlineTimer& timer)
+    void onDeadlineTimer (beast::DeadlineTimer& timer)
     {
         if (timer == m_scoreTimer)
         {
@@ -277,7 +282,7 @@ public:
         // YYY Only dirty on successful delete.
         fetchDirty ();
 
-        ScopedUNLLockType sl (mUNLLock, __FILE__, __LINE__);
+        ScopedUNLLockType sl (mUNLLock);
         mUNL.erase (naNodePublic.humanNodePublic ());
     }
 
@@ -328,7 +333,7 @@ public:
 
     bool nodeInUNL (const RippleAddress& naNodePublic)
     {
-        ScopedUNLLockType sl (mUNLLock, __FILE__, __LINE__);
+        ScopedUNLLockType sl (mUNLLock);
 
         return mUNL.end () != mUNL.find (naNodePublic.humanNodePublic ());
     }
@@ -337,7 +342,7 @@ public:
 
     bool nodeInCluster (const RippleAddress& naNodePublic)
     {
-        ScopedUNLLockType sl (mUNLLock, __FILE__, __LINE__);
+        ScopedUNLLockType sl (mUNLLock);
         return m_clusterNodes.end () != m_clusterNodes.find (naNodePublic);
     }
 
@@ -345,7 +350,7 @@ public:
 
     bool nodeInCluster (const RippleAddress& naNodePublic, std::string& name)
     {
-        ScopedUNLLockType sl (mUNLLock, __FILE__, __LINE__);
+        ScopedUNLLockType sl (mUNLLock);
         std::map<RippleAddress, ClusterNodeStatus>::iterator it = m_clusterNodes.find (naNodePublic);
 
         if (it == m_clusterNodes.end ())
@@ -359,7 +364,7 @@ public:
 
     bool nodeUpdate (const RippleAddress& naNodePublic, ClusterNodeStatus const& cnsStatus)
     {
-        ScopedUNLLockType sl (mUNLLock, __FILE__, __LINE__);
+        ScopedUNLLockType sl (mUNLLock);
         return m_clusterNodes[naNodePublic].update(cnsStatus);
     }
 
@@ -369,7 +374,7 @@ public:
     {
         std::map<RippleAddress, ClusterNodeStatus> ret;
         {
-            ScopedUNLLockType sl (mUNLLock, __FILE__, __LINE__);
+            ScopedUNLLockType sl (mUNLLock);
             ret = m_clusterNodes;
         }
         return ret;
@@ -377,13 +382,13 @@ public:
 
     //--------------------------------------------------------------------------
 
-    uint32 getClusterFee ()
+    std::uint32_t getClusterFee ()
     {
         int thresh = getApp().getOPs().getNetworkTimeNC() - 90;
 
-        std::vector<uint32> fees;
+        std::vector<std::uint32_t> fees;
         {
-            ScopedUNLLockType sl (mUNLLock, __FILE__, __LINE__);
+            ScopedUNLLockType sl (mUNLLock);
             {
                 for (std::map<RippleAddress, ClusterNodeStatus>::iterator it = m_clusterNodes.begin(),
                     end = m_clusterNodes.end(); it != end; ++it)
@@ -404,11 +409,11 @@ public:
 
     void addClusterStatus (Json::Value& obj)
     {
-        ScopedUNLLockType sl (mUNLLock, __FILE__, __LINE__);
+        ScopedUNLLockType sl (mUNLLock);
         if (m_clusterNodes.size() > 1) // nodes other than us
         {
             int          now   = getApp().getOPs().getNetworkTimeNC();
-            uint32       ref   = getApp().getFeeTrack().getLoadBase();
+            std::uint32_t ref   = getApp().getFeeTrack().getLoadBase();
             Json::Value& nodes = (obj["cluster"] = Json::objectValue);
 
             for (std::map<RippleAddress, ClusterNodeStatus>::iterator it = m_clusterNodes.begin(),
@@ -696,7 +701,7 @@ private:
 
         Database*   db = getApp().getWalletDB ()->getDB ();
         DeprecatedScopedLock sl (getApp().getWalletDB ()->getDBLock ());
-        ScopedUNLLockType slUNL (mUNLLock, __FILE__, __LINE__);
+        ScopedUNLLockType slUNL (mUNLLock);
 
         mUNL.clear ();
 
@@ -1045,13 +1050,13 @@ private:
         }
 
         {
-            ScopedUNLLockType sl (mUNLLock, __FILE__, __LINE__);
+            ScopedUNLLockType sl (mUNLLock);
 
             // XXX Should limit to scores above a certain minimum and limit to a certain number.
             mUNL.swap (usUNL);
         }
 
-        boost::unordered_map<std::string, int>  umValidators;
+        ripple::unordered_map<std::string, int>  umValidators;
 
         if (!vsnNodes.empty ())
         {
@@ -1070,7 +1075,7 @@ private:
         // map of pair<IP,Port> :: score
         epScore umScore;
 
-        typedef boost::unordered_map<std::string, int>::value_type vcType;
+        typedef ripple::unordered_map<std::string, int>::value_type vcType;
         BOOST_FOREACH (vcType & vc, umValidators)
         {
             std::string strValidator    = vc.first;
@@ -1272,7 +1277,7 @@ private:
         bool    bFull;
 
         {
-            ScopedFetchLockType sl (mFetchLock, __FILE__, __LINE__);
+            ScopedFetchLockType sl (mFetchLock);
 
             bFull = (mFetchActive == NODE_FETCH_JOBS);
         }
@@ -1302,7 +1307,7 @@ private:
 
             if (!strDomain.empty ())
             {
-                ScopedFetchLockType sl (mFetchLock, __FILE__, __LINE__);
+                ScopedFetchLockType sl (mFetchLock);
 
                 bFull = (mFetchActive == NODE_FETCH_JOBS);
 
@@ -1377,7 +1382,7 @@ private:
     void fetchFinish ()
     {
         {
-            ScopedFetchLockType sl (mFetchLock, __FILE__, __LINE__);
+            ScopedFetchLockType sl (mFetchLock);
             mFetchActive--;
         }
 
@@ -1816,7 +1821,7 @@ private:
                                           % iNext
                                           % iScan
                                           % iFetch
-                                          % sdSource.iSha256.GetHex ()
+                                          % to_string (sdSource.iSha256)
                                           % sqlEscape (sdSource.strComment)
                                          );
 
@@ -1918,7 +1923,7 @@ private:
                                    % iNext
                                    % iScan
                                    % iFetch
-                                   % snSource.iSha256.GetHex ()
+                                   % to_string (snSource.iSha256)
                                    % sqlEscape (snSource.strComment)
                                   );
 
@@ -2001,11 +2006,11 @@ private:
     }
 private:
     typedef RippleMutex FetchLockType;
-    typedef FetchLockType::ScopedLockType ScopedFetchLockType;
+    typedef std::lock_guard <FetchLockType> ScopedFetchLockType;
     FetchLockType mFetchLock;
 
     typedef RippleRecursiveMutex UNLLockType;
-    typedef UNLLockType::ScopedLockType ScopedUNLLockType;
+    typedef std::lock_guard <UNLLockType> ScopedUNLLockType;
     UNLLockType mUNLLock;
 
     // VFALCO TODO Replace ptime with beast::Time
@@ -2019,12 +2024,12 @@ private:
 
     boost::posix_time::ptime        mtpScoreNext;       // When to start scoring.
     boost::posix_time::ptime        mtpScoreStart;      // Time currently started scoring.
-    DeadlineTimer m_scoreTimer;                         // Timer to start scoring.
+    beast::DeadlineTimer m_scoreTimer;                  // Timer to start scoring.
 
     int                             mFetchActive;       // Count of active fetches.
 
     boost::posix_time::ptime        mtpFetchNext;       // Time of to start next fetch.
-    DeadlineTimer m_fetchTimer;                         // Timer to start fetching.
+    beast::DeadlineTimer m_fetchTimer;                  // Timer to start fetching.
 
     std::map<RippleAddress, ClusterNodeStatus> m_clusterNodes;
 };
@@ -2042,3 +2047,5 @@ UniqueNodeList* UniqueNodeList::New (Stoppable& parent)
 {
     return new UniqueNodeListImp (parent);
 }
+
+} // ripple

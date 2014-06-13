@@ -17,7 +17,7 @@
 */
 //==============================================================================
 
-#include "BeastConfig.h"
+#include "../../BeastConfig.h"
 
 #include "ripple_data.h"
 
@@ -33,7 +33,6 @@
 #include <boost/functional/hash.hpp>
 #include <boost/range/adaptor/copied.hpp>
 #include <boost/regex.hpp>
-#include <boost/unordered_map.hpp>
 #include <boost/thread/mutex.hpp>
 
 #include <openssl/ec.h>
@@ -45,6 +44,7 @@
 
 #include "../ripple/sslutil/ripple_sslutil.h"
 #include "../ripple_rpc/api/ErrorCodes.h"
+#include "../ripple/common/jsonrpc_fields.h"
 
 // VFALCO TODO fix these warnings!
 #if BEAST_MSVC
@@ -57,9 +57,6 @@
 #endif
 
 #include "protocol/STParsedJSON.cpp"
-
-namespace ripple
-{
 
 #include "crypto/CKey.h" // needs RippleAddress VFALCO TODO remove this dependency cycle
 #include "crypto/RFC1751.h"
@@ -83,14 +80,12 @@ namespace ripple
 #include "protocol/TxFormats.cpp"
 
 // These are for STAmount
-static const uint64 tenTo14 = 100000000000000ull;
-static const uint64 tenTo14m1 = tenTo14 - 1;
-static const uint64 tenTo17 = tenTo14 * 1000;
-static const uint64 tenTo17m1 = tenTo17 - 1;
+static const std::uint64_t tenTo14 = 100000000000000ull;
+static const std::uint64_t tenTo14m1 = tenTo14 - 1;
+static const std::uint64_t tenTo17 = tenTo14 * 1000;
+static const std::uint64_t tenTo17m1 = tenTo17 - 1;
 #include "protocol/STAmount.cpp"
 #include "protocol/STAmountRound.cpp"
-
-}
 
 #if BEAST_MSVC
 #pragma warning (pop)

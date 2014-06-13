@@ -17,6 +17,8 @@
 */
 //==============================================================================
 
+namespace ripple {
+
 Database::Database (const char* host)
     : mNumCol (0)
 {
@@ -48,10 +50,10 @@ char* Database::getStr (const char* colName, std::string& retStr)
         return getStr (index, retStr);
     }
 
-    return NULL;
+    return nullptr;
 }
 
-int32 Database::getInt (const char* colName)
+std::int32_t Database::getInt (const char* colName)
 {
     int index;
 
@@ -117,7 +119,7 @@ std::string Database::getStrBinary (const std::string& strColName)
     return strCopy (getBinary (strColName.c_str ()));
 }
 
-uint64 Database::getBigInt (const char* colName)
+std::uint64_t Database::getBigInt (const char* colName)
 {
     int index;
 
@@ -203,4 +205,4 @@ char* Database::getSingleDBValueStr (const char* sql, std::string& retStr)
 }
 #endif
 
-// vim:ts=4
+} // ripple

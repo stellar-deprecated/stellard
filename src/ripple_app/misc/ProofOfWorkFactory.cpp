@@ -17,9 +17,15 @@
 */
 //==============================================================================
 
+#include "../../beast/beast/unit_test/suite.h"
+
+#include <boost/algorithm/string.hpp>
+
+namespace ripple {
+
 class ProofOfWorkFactoryImp
     : public ProofOfWorkFactory
-    , public LeakChecked <ProofOfWorkFactoryImp>
+    , public beast::LeakChecked <ProofOfWorkFactoryImp>
 {
 public:
     typedef boost::bimap< boost::bimaps::multiset_of<time_t>,
@@ -30,8 +36,7 @@ public:
     //--------------------------------------------------------------------------
 
     ProofOfWorkFactoryImp ()
-        : mLock (this, "PoWFactory", __FILE__, __LINE__)
-        , mValidTime (180)
+        : mValidTime (180)
     {
         setDifficulty (1);
         RandomNumbers::getInstance ().fillBytes (mSecret.begin (), mSecret.size ());
@@ -145,16 +150,17 @@ public:
         // challenge - target - iterations - time - validator
         static boost::format f ("%s-%s-%d-%d");
 
-        int now = static_cast<int> (time (NULL) / 4);
+        int now = static_cast<int> (time (nullptr) / 4);
 
         uint256 challenge;
         RandomNumbers::getInstance ().fillBytes (challenge.begin (), challenge.size ());
 
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
 
-        std::string s = boost::str (boost::format (f) % challenge.GetHex () % mTarget.GetHex () % mIterations % now);
-        std::string c = mSecret.GetHex () + s;
-        s += "-" + Serializer::getSHA512Half (c).GetHex ();
+        std::string s = boost::str (boost::format (f) % to_string (challenge) % 
+            to_string (mTarget) % mIterations % now);
+        std::string c = to_string (mSecret) + s;
+        s += "-" + to_string (Serializer::getSHA512Half (c));
 
         return ProofOfWork (s, mIterations, challenge, mTarget);
     }
@@ -177,9 +183,10 @@ public:
             return powCORRUPT;
         }
 
-        std::string v = mSecret.GetHex () + fields[0] + "-" + fields[1] + "-" + fields[2] + "-" + fields[3];
+        std::string v = to_string (mSecret) + fields[0] + "-" + 
+                        fields[1] + "-" + fields[2] + "-" + fields[3];
 
-        if (fields[4] != Serializer::getSHA512Half (v).GetHex ())
+        if (fields[4] != to_string (Serializer::getSHA512Half (v)))
         {
             WriteLog (lsDEBUG, ProofOfWork) << "PoW " << token << " has a bad token";
             return powCORRUPT;
@@ -192,17 +199,17 @@ public:
         time_t t;
     #if 0
         // Broken with lexicalCast<> changes
-        t = lexicalCast <time_t> (fields[3]);
+        t = beast::lexicalCast <time_t> (fields[3]);
     #else
-        t = static_cast <time_t> (lexicalCast <uint64> (fields [3]));
+        t = static_cast <time_t> (beast::lexicalCast <std::uint64_t> (fields [3]));
     #endif
 
-        time_t now = time (NULL);
+        time_t now = time (nullptr);
 
-        int iterations = lexicalCast <int> (fields[2]);
+        int iterations = beast::lexicalCast <int> (fields[2]);
 
         {
-            ScopedLockType sl (mLock, __FILE__, __LINE__);
+            ScopedLockType sl (mLock);
 
             if ((t * 4) > (now + mValidTime))
             {
@@ -227,7 +234,7 @@ public:
         }
 
         {
-            ScopedLockType sl (mLock, __FILE__, __LINE__);
+            ScopedLockType sl (mLock);
 
             if (!mSolvedChallenges.insert (powMap_vt (now, challenge)).second)
             {
@@ -243,9 +250,9 @@ public:
 
     void sweep ()
     {
-        time_t expire = time (NULL) - mValidTime;
+        time_t expire = time (nullptr) - mValidTime;
 
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
 
         do
         {
@@ -266,9 +273,9 @@ public:
 
     void loadHigh ()
     {
-        time_t now = time (NULL);
+        time_t now = time (nullptr);
 
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
 
         if (mLastDifficultyChange == now)
             return;
@@ -284,9 +291,9 @@ public:
 
     void loadLow ()
     {
-        time_t now = time (NULL);
+        time_t now = time (nullptr);
 
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
 
         if (mLastDifficultyChange == now)
             return;
@@ -303,9 +310,9 @@ public:
     void setDifficulty (int i)
     {
         assert ((i >= 0) && (i <= kMaxDifficulty));
-        time_t now = time (NULL);
+        time_t now = time (nullptr);
 
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
         mPowEntry = i;
         PowEntries const& entries (getPowEntries ());
         mIterations = entries [i].iterations;
@@ -315,7 +322,7 @@ public:
 
     //--------------------------------------------------------------------------
 
-    uint64 getDifficulty ()
+    std::uint64_t getDifficulty ()
     {
         return ProofOfWork::getDifficulty (mTarget, mIterations);
     }
@@ -332,7 +339,7 @@ public:
 
 private:
     typedef RippleMutex LockType;
-    typedef LockType::ScopedLockType ScopedLockType;
+    typedef std::lock_guard <LockType> ScopedLockType;
     LockType mLock;
 
     uint256      mSecret;
@@ -354,24 +361,19 @@ ProofOfWorkFactory* ProofOfWorkFactory::New ()
 
 //------------------------------------------------------------------------------
 
-class ProofOfWorkTests : public UnitTest
+class ProofOfWork_test : public beast::unit_test::suite
 {
 public:
-    ProofOfWorkTests () : UnitTest ("ProofOfWork", "ripple", runManual)
-    {
-    }
-
-    void runTest ()
+    void run ()
     {
         using namespace ripple;
 
         ProofOfWorkFactoryImp gen;
         ProofOfWork pow = gen.getProof ();
 
-        String s;
+        beast::String s;
         
-        s << "solve difficulty " << String (pow.getDifficulty ());
-        beginTestCase ("solve");
+        s << "solve difficulty " << beast::String (pow.getDifficulty ());
 
         uint256 solution = pow.solve (16777216);
 
@@ -420,4 +422,6 @@ public:
     }
 };
 
-static ProofOfWorkTests proofOfWorkTests;
+BEAST_DEFINE_TESTSUITE_MANUAL(ProofOfWork,ripple_app,ripple);
+
+} // ripple

@@ -17,6 +17,8 @@
 */
 //==============================================================================
 
+namespace ripple {
+
 /*
 
 TODO
@@ -41,8 +43,7 @@ LoadMonitor::Stats::Stats()
 SETUP_LOG (LoadMonitor)
 
 LoadMonitor::LoadMonitor ()
-    : mLock (this, "LoadMonitor", __FILE__, __LINE__)
-    , mCounts (0)
+    : mCounts (0)
     , mLatencyEvents (0)
     , mLatencyMSAvg (0)
     , mLatencyMSPeak (0)
@@ -101,7 +102,7 @@ void LoadMonitor::update ()
 
 void LoadMonitor::addCount ()
 {
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
 
     update ();
     ++mCounts;
@@ -113,7 +114,7 @@ void LoadMonitor::addLatency (int latency)
     if (latency == 1)
         latency = 0;
 
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
 
     update ();
 
@@ -121,7 +122,7 @@ void LoadMonitor::addLatency (int latency)
     mLatencyMSAvg += latency;
     mLatencyMSPeak += latency;
 
-    // VFALCO NOTE Why are we multiplying by 4?
+    // Units are quarters of a millisecond
     int const latencyPeak = mLatencyEvents * latency * 4;
 
     if (mLatencyMSPeak < latencyPeak)
@@ -138,7 +139,7 @@ std::string LoadMonitor::printElapsed (double seconds)
 void LoadMonitor::addLoadSample (LoadEvent const& sample)
 {
     std::string const& name (sample.name());
-    RelativeTime const latency (sample.getSecondsTotal());
+    beast::RelativeTime const latency (sample.getSecondsTotal());
 
     if (latency.inSeconds() > 0.5)
     {
@@ -152,7 +153,7 @@ void LoadMonitor::addLoadSample (LoadEvent const& sample)
     if (latencyMilliseconds == 1)
         latencyMilliseconds = 0;
 
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
 
     update ();
     ++mCounts;
@@ -167,13 +168,33 @@ void LoadMonitor::addLoadSample (LoadEvent const& sample)
         mLatencyMSPeak = latencyPeak;
 }
 
-void LoadMonitor::setTargetLatency (uint64 avg, uint64 pk)
+/* Add multiple samples
+   @param count The number of samples to add
+   @param latencyMS The total number of milliseconds
+*/
+void LoadMonitor::addSamples (int count, std::chrono::milliseconds latency)
+{
+    ScopedLockType sl (mLock);
+
+    update ();
+    mCounts += count;
+    mLatencyEvents += count;
+    mLatencyMSAvg += latency.count();
+    mLatencyMSPeak += latency.count();
+
+    int const latencyPeak = mLatencyEvents * latency.count() * 4 / count;
+
+    if (mLatencyMSPeak < latencyPeak)
+        mLatencyMSPeak = latencyPeak;
+}
+
+void LoadMonitor::setTargetLatency (std::uint64_t avg, std::uint64_t pk)
 {
     mTargetLatencyAvg  = avg;
     mTargetLatencyPk = pk;
 }
 
-bool LoadMonitor::isOverTarget (uint64 avg, uint64 peak)
+bool LoadMonitor::isOverTarget (std::uint64_t avg, std::uint64_t peak)
 {
     return (mTargetLatencyPk && (peak > mTargetLatencyPk)) ||
            (mTargetLatencyAvg && (avg > mTargetLatencyAvg));
@@ -181,7 +202,7 @@ bool LoadMonitor::isOverTarget (uint64 avg, uint64 peak)
 
 bool LoadMonitor::isOver ()
 {
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
 
     update ();
 
@@ -195,7 +216,7 @@ LoadMonitor::Stats LoadMonitor::getStats ()
 {
     Stats stats;
 
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
 
     update ();
 
@@ -216,3 +237,5 @@ LoadMonitor::Stats LoadMonitor::getStats ()
 
     return stats;
 }
+
+} // ripple

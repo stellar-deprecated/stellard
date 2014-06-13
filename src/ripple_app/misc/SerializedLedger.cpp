@@ -17,6 +17,8 @@
 */
 //==============================================================================
 
+namespace ripple {
+
 struct SerializedLedgerLog; // for Log
 
 SETUP_LOGN (SerializedLedgerLog,"SerializedLedger")
@@ -25,7 +27,7 @@ SerializedLedgerEntry::SerializedLedgerEntry (SerializerIterator& sit, uint256 c
     : STObject (sfLedgerEntry), mIndex (index), mMutable (true)
 {
     set (sit);
-    uint16 type = getFieldU16 (sfLedgerEntryType);
+    std::uint16_t type = getFieldU16 (sfLedgerEntryType);
     
     LedgerFormats::Item const* const item =
         LedgerFormats::getInstance()->findByType (static_cast <LedgerEntryType> (type));
@@ -45,7 +47,7 @@ SerializedLedgerEntry::SerializedLedgerEntry (const Serializer& s, uint256 const
     SerializerIterator sit (const_cast<Serializer&> (s)); // we know 's' isn't going away
     set (sit);
 
-    uint16 type = getFieldU16 (sfLedgerEntryType);
+    std::uint16_t type = getFieldU16 (sfLedgerEntryType);
 
     LedgerFormats::Item const* const item =
         LedgerFormats::getInstance()->findByType (static_cast <LedgerEntryType> (type));
@@ -73,7 +75,7 @@ SerializedLedgerEntry::SerializedLedgerEntry (LedgerEntryType type, uint256 cons
     {
         set (item->elements);
 
-        setFieldU16 (sfLedgerEntryType, static_cast <uint16> (item->getType ()));
+        setFieldU16 (sfLedgerEntryType, static_cast <std::uint16_t> (item->getType ()));
     }
     else
     {
@@ -91,7 +93,7 @@ SerializedLedgerEntry::pointer SerializedLedgerEntry::getMutable () const
 std::string SerializedLedgerEntry::getFullText () const
 {
     std::string ret = "\"";
-    ret += mIndex.GetHex ();
+    ret += to_string (mIndex);
     ret += "\" = { ";
     ret += mFormat->getName ();
     ret += ", ";
@@ -103,7 +105,7 @@ std::string SerializedLedgerEntry::getFullText () const
 std::string SerializedLedgerEntry::getText () const
 {
     return str (boost::format ("{ %s, %s }")
-                % mIndex.GetHex ()
+                % to_string (mIndex)
                 % STObject::getText ());
 }
 
@@ -111,7 +113,7 @@ Json::Value SerializedLedgerEntry::getJson (int options) const
 {
     Json::Value ret (STObject::getJson (options));
 
-    ret["index"]    = mIndex.GetHex ();
+    ret["index"] = to_string (mIndex);
 
     return ret;
 }
@@ -131,12 +133,13 @@ uint256 SerializedLedgerEntry::getThreadedTransaction ()
     return getFieldH256 (sfPreviousTxnID);
 }
 
-uint32 SerializedLedgerEntry::getThreadedLedger ()
+std::uint32_t SerializedLedgerEntry::getThreadedLedger ()
 {
     return getFieldU32 (sfPreviousTxnLgrSeq);
 }
 
-bool SerializedLedgerEntry::thread (uint256 const& txID, uint32 ledgerSeq, uint256& prevTxID, uint32& prevLedgerID)
+bool SerializedLedgerEntry::thread (uint256 const& txID, std::uint32_t ledgerSeq,
+                                    uint256& prevTxID, std::uint32_t& prevLedgerID)
 {
     uint256 oldPrevTxID = getFieldH256 (sfPreviousTxnID);
     WriteLog (lsTRACE, SerializedLedgerLog) << "Thread Tx:" << txID << " prev:" << oldPrevTxID;
@@ -193,7 +196,7 @@ std::vector<uint256> SerializedLedgerEntry::getOwners ()
         {
             const STAccount* entry = dynamic_cast<const STAccount*> (peekAtPIndex (i));
 
-            if ((entry != NULL) && entry->getValueH160 (account))
+            if ((entry != nullptr) && entry->getValueH160 (account))
                 owners.push_back (Ledger::getAccountRootIndex (account));
         }
 
@@ -201,7 +204,7 @@ std::vector<uint256> SerializedLedgerEntry::getOwners ()
         {
             const STAmount* entry = dynamic_cast<const STAmount*> (peekAtPIndex (i));
 
-            if ((entry != NULL))
+            if ((entry != nullptr))
             {
                 uint160 issuer = entry->getIssuer ();
 
@@ -214,4 +217,4 @@ std::vector<uint256> SerializedLedgerEntry::getOwners ()
     return owners;
 }
 
-// vim:ts=4
+} // ripple

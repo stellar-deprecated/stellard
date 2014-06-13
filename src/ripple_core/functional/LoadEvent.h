@@ -20,6 +20,10 @@
 #ifndef RIPPLE_LOADEVENT_H
 #define RIPPLE_LOADEVENT_H
 
+#include "../../beast/beast/chrono/RelativeTime.h"
+
+namespace ripple {
+
 class LoadMonitor;
 
 // VFALCO NOTE What is the difference between a LoadEvent and a LoadMonitor?
@@ -70,10 +74,13 @@ private:
     LoadMonitor& m_loadMonitor;
     bool m_isRunning;
     std::string m_name;
-    RelativeTime m_timeStopped;
-    RelativeTime m_timeStarted;
+    // VFALCO TODO Replace these with chrono
+    beast::RelativeTime m_timeStopped;
+    beast::RelativeTime m_timeStarted;
     double m_secondsWaiting;
     double m_secondsRunning;
 };
+
+} // ripple
 
 #endif

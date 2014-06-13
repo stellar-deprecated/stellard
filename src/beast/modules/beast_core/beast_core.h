@@ -44,7 +44,6 @@
 //------------------------------------------------------------------------------
 
 // New header-only library modeled more closely according to boost
-#include "../../beast/CStdInt.h"
 #include "../../beast/SmartPtr.h"
 #include "../../beast/StaticAssert.h"
 #include "../../beast/Uncopyable.h"
@@ -54,29 +53,32 @@
 #include "../../beast/HeapBlock.h"
 #include "../../beast/Memory.h"
 #include "../../beast/Intrusive.h"
-#include "../../beast/Net.h"
-#include "../../beast/SafeBool.h"
 #include "../../beast/Strings.h"
-#include "../../beast/TypeTraits.h"
 #include "../../beast/Threads.h"
-#include "../../beast/Utility.h"
-#include "../../beast/Chrono.h"
+
+#include "../../beast/utility/Debug.h"
+#include "../../beast/utility/Error.h"
+#include "../../beast/utility/Journal.h"
+#include "../../beast/utility/LeakChecked.h"
+#include "../../beast/utility/PropertyStream.h"
+#include "../../beast/utility/StaticObject.h"
 
 #include "system/StandardIncludes.h"
 
-namespace beast {
+namespace beast
+{
 
 class InputStream;
 class OutputStream;
 class FileInputStream;
 class FileOutputStream;
 
+} // beast
+
 // Order matters, since headers don't have their own #include lines.
 // Add new includes to the bottom.
 
-#include "diagnostic/Throw.h"
 #include "system/Functional.h"
-#include "threads/SpinDelay.h"
 
 #include "time/AtExitHook.h"
 #include "time/Time.h"
@@ -137,30 +139,17 @@ class FileOutputStream;
 #include "text/StringArray.h"
 #include "memory/MemoryBlock.h"
 #include "files/File.h"
-#include "time/PerformanceCounter.h"
 
-#include "memory/MemoryAlignment.h"
-#include "memory/CacheLine.h"
 #include "thread/MutexTraits.h"
-#include "thread/TrackedMutex.h"
 #include "diagnostic/FatalError.h"
 #include "text/LexicalCast.h"
 #include "maths/Math.h"
 #include "logging/Logger.h"
-#include "diagnostic/FPUFlags.h"
-#include "text/Identifier.h"
-#include "containers/Variant.h"
 #include "containers/LinkedListPointer.h"
-#include "containers/NamedValueSet.h"
-#include "containers/DynamicObject.h"
-#include "maths/BigInteger.h"
 #include "maths/Random.h"
-#include "containers/OwnedArray.h"
 #include "text/StringPairArray.h"
-#include "containers/PropertySet.h"
 #include "containers/ScopedValueSetter.h"
 #include "maths/Range.h"
-#include "containers/SparseSet.h"
 #include "files/DirectoryIterator.h"
 #include "streams/InputStream.h"
 #include "files/FileInputStream.h"
@@ -169,52 +158,24 @@ class FileOutputStream;
 #include "streams/OutputStream.h"
 #include "files/FileOutputStream.h"
 #include "files/FileSearchPath.h"
-#include "files/MemoryMappedFile.h"
 #include "files/RandomAccessFile.h"
 #include "files/TemporaryFile.h"
-#include "json/JSON.h"
-#include "logging/FileLogger.h"
 #include "logging/Logger.h"
-#include "memory/OptionalScopedPointer.h"
 #include "memory/SharedSingleton.h"
-#include "misc/Main.h"
-#include "misc/Uuid.h"
 #include "misc/WindowsRegistry.h"
-#include "network/MACAddress.h"
-#include "threads/ReadWriteLock.h"
-#include "network/NamedPipe.h"
-#include "network/Socket.h"
-#include "streams/BufferedInputStream.h"
-#include "streams/MemoryInputStream.h"
 #include "streams/MemoryOutputStream.h"
-#include "streams/SubregionStream.h"
 
 #include "system/SystemStats.h"
-#include "text/LocalisedStrings.h"
 #include "diagnostic/SemanticVersion.h"
-#include "text/StringPool.h"
-#include "threads/ChildProcess.h"
 #include "threads/DynamicLibrary.h"
-#include "threads/HighResolutionTimer.h"
-#include "threads/InterProcessLock.h"
 #include "threads/Process.h"
-#include "threads/ScopedReadLock.h"
-#include "threads/ScopedWriteLock.h"
-#include "diagnostic/UnitTest.h"
-#include "xml/XmlDocument.h"
-#include "xml/XmlElement.h"
 #include "diagnostic/UnitTestUtilities.h"
-#include "zip/GZIPCompressorOutputStream.h"
-#include "zip/GZIPDecompressorInputStream.h"
-#include "zip/ZipFile.h"
 
 #include "diagnostic/MeasureFunctionCallTime.h"
 
 #include "thread/DeadlineTimer.h"
 
 #include "thread/Workers.h"
-
-}
 
 #if BEAST_MSVC
 #pragma warning (pop)

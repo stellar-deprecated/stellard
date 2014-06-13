@@ -17,6 +17,10 @@
 */
 //==============================================================================
 
+#include "../../beast/beast/unit_test/suite.h"
+
+namespace ripple {
+
 SETUP_LOG (RippleAddress)
 
 RippleAddress::RippleAddress ()
@@ -149,7 +153,7 @@ std::string RippleAddress::humanNodePublic () const
 
 bool RippleAddress::setNodePublic (const std::string& strPublic)
 {
-    mIsValid        = SetString (strPublic.c_str (), VER_NODE_PUBLIC);
+    mIsValid = SetString (strPublic, VER_NODE_PUBLIC, Base58::getRippleAlphabet ());
 
     return mIsValid;
 }
@@ -252,23 +256,23 @@ std::string RippleAddress::humanNodePrivate () const
 
 bool RippleAddress::setNodePrivate (const std::string& strPrivate)
 {
-    mIsValid        = SetString (strPrivate.c_str (), VER_NODE_PRIVATE);
+    mIsValid = SetString (strPrivate, VER_NODE_PRIVATE, Base58::getRippleAlphabet ());
 
     return mIsValid;
 }
 
 void RippleAddress::setNodePrivate (Blob const& vPrivate)
 {
-    mIsValid        = true;
+    mIsValid = true;
 
     SetData (VER_NODE_PRIVATE, vPrivate);
 }
 
 void RippleAddress::setNodePrivate (uint256 hash256)
 {
-    mIsValid        = true;
+    mIsValid = true;
 
-    SetData (VER_NODE_PRIVATE, hash256.begin (), 32);
+    SetData (VER_NODE_PRIVATE, hash256);
 }
 
 void RippleAddress::signNodePrivate (uint256 const& hash, Blob& vchSig) const
@@ -305,10 +309,10 @@ uint160 RippleAddress::getAccountID () const
 }
 
 typedef RippleMutex StaticLockType;
-typedef StaticLockType::ScopedLockType StaticScopedLockType;
-static StaticLockType s_lock ("RippleAddress", __FILE__, __LINE__);
+typedef std::lock_guard <StaticLockType> StaticScopedLockType;
+static StaticLockType s_lock;
 
-static boost::unordered_map< Blob , std::string > rncMap;
+static ripple::unordered_map< Blob , std::string > rncMap;
 
 std::string RippleAddress::humanAccountID () const
 {
@@ -319,8 +323,9 @@ std::string RippleAddress::humanAccountID () const
 
     case VER_ACCOUNT_ID:
     {
-        StaticScopedLockType sl (s_lock, __FILE__, __LINE__);
-        boost::unordered_map< Blob , std::string >::iterator it = rncMap.find (vchData);
+        StaticScopedLockType sl (s_lock);
+
+        auto it = rncMap.find (vchData);
 
         if (it != rncMap.end ())
             return it->second;
@@ -359,7 +364,7 @@ bool RippleAddress::setAccountID (const std::string& strAccountID, Base58::Alpha
     }
     else
     {
-        mIsValid    = SetString (strAccountID.c_str (), VER_ACCOUNT_ID, alphabet);
+        mIsValid = SetString (strAccountID, VER_ACCOUNT_ID, alphabet);
     }
 
     return mIsValid;
@@ -369,7 +374,7 @@ void RippleAddress::setAccountID (const uint160& hash160)
 {
     mIsValid        = true;
 
-    SetData (VER_ACCOUNT_ID, hash160.begin (), 20);
+    SetData (VER_ACCOUNT_ID, hash160);
 }
 
 //
@@ -425,14 +430,14 @@ std::string RippleAddress::humanAccountPublic () const
 
 bool RippleAddress::setAccountPublic (const std::string& strPublic)
 {
-    mIsValid        = SetString (strPublic.c_str (), VER_ACCOUNT_PUBLIC);
+    mIsValid = SetString (strPublic, VER_ACCOUNT_PUBLIC, Base58::getRippleAlphabet ());
 
     return mIsValid;
 }
 
 void RippleAddress::setAccountPublic (Blob const& vPublic)
 {
-    mIsValid        = true;
+    mIsValid = true;
 
     SetData (VER_ACCOUNT_PUBLIC, vPublic);
 }
@@ -518,7 +523,7 @@ std::string RippleAddress::humanAccountPrivate () const
 
 bool RippleAddress::setAccountPrivate (const std::string& strPrivate)
 {
-    mIsValid        = SetString (strPrivate.c_str (), VER_ACCOUNT_PRIVATE);
+    mIsValid = SetString (strPrivate, VER_ACCOUNT_PRIVATE, Base58::getRippleAlphabet ());
 
     return mIsValid;
 }
@@ -532,9 +537,9 @@ void RippleAddress::setAccountPrivate (Blob const& vPrivate)
 
 void RippleAddress::setAccountPrivate (uint256 hash256)
 {
-    mIsValid        = true;
+    mIsValid = true;
 
-    SetData (VER_ACCOUNT_PRIVATE, hash256.begin (), 32);
+    SetData (VER_ACCOUNT_PRIVATE, hash256);
 }
 
 void RippleAddress::setAccountPrivate (const RippleAddress& naGenerator, const RippleAddress& naSeed, int seq)
@@ -567,27 +572,6 @@ bool RippleAddress::accountPrivateSign (uint256 const& uHash, Blob& vucSig) cons
 
     return bResult;
 }
-
-#if 0
-bool RippleAddress::accountPrivateVerify (uint256 const& uHash, Blob const& vucSig) const
-{
-    CKey        ckPrivate;
-    bool        bVerified;
-
-    if (!ckPrivate.SetPrivateKeyU (getAccountPrivate ()))
-    {
-        // Bad private key.
-        WriteLog (lsWARNING, RippleAddress) << "accountPrivateVerify: Bad private key.";
-        bVerified   = false;
-    }
-    else
-    {
-        bVerified   = ckPrivate.Verify (uHash, vucSig);
-    }
-
-    return bVerified;
-}
-#endif
 
 Blob RippleAddress::accountPrivateEncrypt (const RippleAddress& naPublicTo, Blob const& vucPlainText) const
 {
@@ -655,27 +639,6 @@ Blob RippleAddress::accountPrivateDecrypt (const RippleAddress& naPublicFrom, Bl
 // Generators
 //
 
-BIGNUM* RippleAddress::getGeneratorBN () const
-{
-    // returns the public generator
-    switch (nVersion)
-    {
-    case VER_NONE:
-        throw std::runtime_error ("unset source - getGeneratorBN");
-
-    case VER_FAMILY_GENERATOR:
-        // Do nothing.
-        break;
-
-    default:
-        throw std::runtime_error (str (boost::format ("bad source: %d") % int (nVersion)));
-    }
-
-    BIGNUM* ret = BN_bin2bn (&vchData[0], vchData.size (), NULL);
-    assert (ret);
-    return ret;
-}
-
 Blob const& RippleAddress::getGenerator () const
 {
     // returns the public generator
@@ -710,7 +673,7 @@ std::string RippleAddress::humanGenerator () const
 
 bool RippleAddress::setGenerator (const std::string& strGenerator)
 {
-    mIsValid        = SetString (strGenerator.c_str (), VER_FAMILY_GENERATOR);
+    mIsValid = SetString (strGenerator, VER_FAMILY_GENERATOR, Base58::getRippleAlphabet ());
 
     return mIsValid;
 }
@@ -812,7 +775,7 @@ int RippleAddress::setSeed1751 (const std::string& strHuman1751)
 
 bool RippleAddress::setSeed (const std::string& strSeed)
 {
-    mIsValid        = SetString (strSeed.c_str (), VER_FAMILY_SEED);
+    mIsValid = SetString (strSeed, VER_FAMILY_SEED, Base58::getRippleAlphabet ());
 
     return mIsValid;
 }
@@ -857,9 +820,9 @@ bool RippleAddress::setSeedGeneric (const std::string& strText)
 
 void RippleAddress::setSeed (uint128 hash128)
 {
-    mIsValid        = true;
+    mIsValid = true;
 
-    SetData (VER_FAMILY_SEED, hash128.begin (), 16);
+    SetData (VER_FAMILY_SEED, hash128);
 }
 
 void RippleAddress::setSeedRandom ()
@@ -892,26 +855,20 @@ RippleAddress RippleAddress::createSeedGeneric (const std::string& strText)
 
 //------------------------------------------------------------------------------
 
-class RippleAddressTests : public UnitTest
+class RippleAddress_test : public beast::unit_test::suite
 {
 public:
-    RippleAddressTests () : UnitTest ("RippleAddress", "ripple")
+    void run()
     {
-    }
-
-    void runTest ()
-    {
-        beginTestCase ("public/private");
-
         // Construct a seed.
-        RippleAddress   naSeed;
+        RippleAddress naSeed;
 
         expect (naSeed.setSeedGeneric ("masterpassphrase"));
         expect (naSeed.humanSeed () == "snoPBgXtMeMyMHUVTrbuqAfr1SUTb", naSeed.humanSeed ());
 
         // Create node public/private key pair
-        RippleAddress   naNodePublic    = RippleAddress::createNodePublic (naSeed);
-        RippleAddress   naNodePrivate   = RippleAddress::createNodePrivate (naSeed);
+        RippleAddress naNodePublic    = RippleAddress::createNodePublic (naSeed);
+        RippleAddress naNodePrivate   = RippleAddress::createNodePrivate (naSeed);
 
         expect (naNodePublic.humanNodePublic () == "n94a1u4jAz288pZLtw6yFWVbi89YamiC6JBXPVUj5zmExe5fTVr9", naNodePublic.humanNodePublic ());
         expect (naNodePrivate.humanNodePrivate () == "pnen77YEeUd4fFKG7iycBWcwKpTaeFRkW2WFostaATy1DSupwXe", naNodePrivate.humanNodePrivate ());
@@ -966,21 +923,19 @@ public:
     }
 };
 
-static RippleAddressTests rippleAddressTests;
-
 //------------------------------------------------------------------------------
 
-class RippleIdentifierTests : public UnitTest
+class RippleIdentifier_test : public beast::unit_test::suite
 {
 public:
-    void runTest ()
+    void run ()
     {
-        beginTestCase ("Seed");
+        testcase ("Seed");
         RippleAddress seed;
         expect (seed.setSeedGeneric ("masterpassphrase"));
         expect (seed.humanSeed () == "snoPBgXtMeMyMHUVTrbuqAfr1SUTb", seed.humanSeed ());
 
-        beginTestCase ("RipplePublicKey");
+        testcase ("RipplePublicKey");
         RippleAddress deprecatedPublicKey (RippleAddress::createNodePublic (seed));
         expect (deprecatedPublicKey.humanNodePublic () ==
             "n94a1u4jAz288pZLtw6yFWVbi89YamiC6JBXPVUj5zmExe5fTVr9",
@@ -989,7 +944,7 @@ public:
         expect (publicKey.to_string() == deprecatedPublicKey.humanNodePublic(),
             publicKey.to_string());
 
-        beginTestCase ("RipplePrivateKey");
+        testcase ("RipplePrivateKey");
         RippleAddress deprecatedPrivateKey (RippleAddress::createNodePrivate (seed));
         expect (deprecatedPrivateKey.humanNodePrivate () ==
             "pnen77YEeUd4fFKG7iycBWcwKpTaeFRkW2WFostaATy1DSupwXe",
@@ -998,13 +953,13 @@ public:
         expect (privateKey.to_string() == deprecatedPrivateKey.humanNodePrivate(),
             privateKey.to_string());
 
-        beginTestCase ("Generator");
+        testcase ("Generator");
         RippleAddress generator (RippleAddress::createGeneratorPublic (seed));
         expect (generator.humanGenerator () ==
             "fhuJKghSDzV2SkjLn9qbwm5AaRmgxDPfFsHDCP6yfDZWcxDFz4mt",
                 generator.humanGenerator ());
 
-        beginTestCase ("RippleAccountID");
+        testcase ("RippleAccountID");
         RippleAddress deprecatedAccountPublicKey (
             RippleAddress::createAccountPublic (generator, 0));
         expect (deprecatedAccountPublicKey.humanAccountID () ==
@@ -1015,12 +970,12 @@ public:
             deprecatedAccountPublicKey.humanAccountID(),
                 accountID.to_string());
 
-        beginTestCase ("RippleAccountPublicKey");
+        testcase ("RippleAccountPublicKey");
         expect (deprecatedAccountPublicKey.humanAccountPublic () ==
             "aBQG8RQAzjs1eTKFEAQXg2rS4utcDiEC9wmi7pfUPTi27VCahwrw",
                 deprecatedAccountPublicKey.humanAccountPublic ());
 
-        beginTestCase ("RippleAccountPrivateKey");
+        testcase ("RippleAccountPrivateKey");
         RippleAddress deprecatedAccountPrivateKey (
             RippleAddress::createAccountPrivate (generator, seed, 0));
         expect (deprecatedAccountPrivateKey.humanAccountPrivate () ==
@@ -1031,10 +986,9 @@ public:
             deprecatedAccountPrivateKey.humanAccountPrivate(),
                 privateKey.to_string());
     }
-
-    RippleIdentifierTests () : UnitTest ("RippleIdentifier", "ripple")
-    {
-    }
 };
 
-static RippleIdentifierTests rippleIdentifierTests;
+BEAST_DEFINE_TESTSUITE(RippleAddress,ripple_data,ripple);
+BEAST_DEFINE_TESTSUITE(RippleIdentifier,ripple_data,ripple);
+
+} // ripple

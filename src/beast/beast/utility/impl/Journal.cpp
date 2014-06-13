@@ -18,6 +18,7 @@
 //==============================================================================
 
 #include "../Journal.h"
+#include "../../../modules/beast_core/memory/SharedSingleton.h"
 
 namespace beast {
 
@@ -209,11 +210,6 @@ Journal::Severity Journal::Stream::severity () const
 bool Journal::Stream::active () const
 {
     return ! m_disabled && m_sink->active (m_level);
-}
-
-bool Journal::Stream::asBoolean () const
-{
-    return active();
 }
 
 Journal::Stream& Journal::Stream::operator= (Stream const& other)

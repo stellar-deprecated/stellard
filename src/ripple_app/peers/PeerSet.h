@@ -20,14 +20,18 @@
 #ifndef RIPPLE_PEERSET_H
 #define RIPPLE_PEERSET_H
 
+#include "../../ripple_overlay/api/Peer.h"
+
+namespace ripple {
+
 /** A set of peers used to acquire data.
 
     A peer set is used to acquire a ledger or a transaction set.
 */
-class PeerSet : LeakChecked <PeerSet>
+class PeerSet : beast::LeakChecked <PeerSet>
 {
 public:
-    typedef abstract_clock <std::chrono::seconds> clock_type;
+    typedef beast::abstract_clock <std::chrono::seconds> clock_type;
 
     uint256 const& getHash () const
     {
@@ -79,15 +83,15 @@ public:
 
     // VFALCO TODO Rename this to addPeerToSet
     //
-    bool peerHas (Peer::ref);
+    bool peerHas (Peer::ptr const&);
 
     // VFALCO Workaround for MSVC std::function which doesn't swallow return types.
-    void peerHasVoid (Peer::ref peer)
+    void peerHasVoid (Peer::ptr const& peer)
     {
         peerHas (peer);
     }
 
-    void badPeer (Peer::ref);
+    void badPeer (Peer::ptr const&);
 
     void setTimer ();
 
@@ -105,13 +109,13 @@ private:
 protected:
     // VFALCO TODO try to make some of these private
     typedef RippleRecursiveMutex LockType;
-    typedef LockType::ScopedLockType ScopedLockType;
+    typedef std::unique_lock <LockType> ScopedLockType;
 
     PeerSet (uint256 const& hash, int interval, bool txnData,
-        clock_type& clock, Journal journal);
+        clock_type& clock, beast::Journal journal);
     virtual ~PeerSet () = 0;
 
-    virtual void newPeer (Peer::ref) = 0;
+    virtual void newPeer (Peer::ptr const&) = 0;
     virtual void onTimer (bool progress, ScopedLockType&) = 0;
     virtual boost::weak_ptr<PeerSet> pmDowncast () = 0;
 
@@ -126,10 +130,10 @@ protected:
     void invokeOnTimer ();
 
     void sendRequest (const protocol::TMGetLedger& message);
-    void sendRequest (const protocol::TMGetLedger& message, Peer::ref peer);
+    void sendRequest (const protocol::TMGetLedger& message, Peer::ptr const& peer);
 
 protected:
-    Journal m_journal;
+    beast::Journal m_journal;
     clock_type& m_clock;
 
     LockType mLock;
@@ -151,9 +155,11 @@ protected:
     // VFALCO TODO Verify that these are used in the way that the names suggest.
     typedef Peer::ShortId PeerIdentifier;
     typedef int ReceivedChunkCount;
-    typedef boost::unordered_map <PeerIdentifier, ReceivedChunkCount> PeerSetMap;
+    typedef ripple::unordered_map <PeerIdentifier, ReceivedChunkCount> PeerSetMap;
 
     PeerSetMap mPeers;
 };
+
+} // ripple
 
 #endif

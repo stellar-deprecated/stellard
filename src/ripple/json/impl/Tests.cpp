@@ -17,16 +17,16 @@
 */
 //==============================================================================
 
-namespace ripple {
-using namespace beast;
+#include "../../../beast/beast/unit_test/suite.h"
+#include "../../../beast/beast/utility/type_name.h"
 
-class JsonCppTests : public UnitTest
+namespace ripple {
+
+class JsonCpp_test : public beast::unit_test::suite
 {
 public:
     void testBadJson ()
     {
-        beginTestCase ("bad input");
-
         char const* s (
             "{\"method\":\"ledger\",\"params\":[{\"ledger_index\":1e300}]}"
             );
@@ -38,16 +38,60 @@ public:
         pass ();
     }
 
-    void runTest ()
+    void
+    test_copy ()
     {
-        testBadJson ();
+        Json::Value v1{2.5};
+        expect (v1.isDouble ());
+        expect (v1.asDouble () == 2.5);
+
+        Json::Value v2 = v1;
+        expect (v1.isDouble ());
+        expect (v1.asDouble () == 2.5);
+        expect (v2.isDouble ());
+        expect (v2.asDouble () == 2.5);
+        expect (v1 == v2);
+
+        v1 = v2;
+        expect (v1.isDouble ());
+        expect (v1.asDouble () == 2.5);
+        expect (v2.isDouble ());
+        expect (v2.asDouble () == 2.5);
+        expect (v1 == v2);
+
+        pass ();
     }
 
-    JsonCppTests () : UnitTest ("JsonCpp", "ripple")
+    void
+    test_move ()
     {
+        Json::Value v1{2.5};
+        expect (v1.isDouble ());
+        expect (v1.asDouble () == 2.5);
+
+        Json::Value v2 = std::move(v1);
+        expect (v1.isNull ());
+        expect (v2.isDouble ());
+        expect (v2.asDouble () == 2.5);
+        expect (v1 != v2);
+
+        v1 = std::move(v2);
+        expect (v1.isDouble ());
+        expect (v1.asDouble () == 2.5);
+        expect (v2.isNull ());
+        expect (v1 != v2);
+
+        pass ();
+    }
+
+    void run ()
+    {
+        testBadJson ();
+        test_copy ();
+        test_move ();
     }
 };
 
-static JsonCppTests jsonCppTests;
+BEAST_DEFINE_TESTSUITE(JsonCpp,json,ripple);
 
-}
+} // ripple

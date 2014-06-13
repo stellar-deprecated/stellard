@@ -17,13 +17,11 @@
 */
 //==============================================================================
 
-#include "BeastConfig.h"
+#include "../../BeastConfig.h"
 
 #include "ripple_app.h"
 
 #include "../ripple/common/seconds_clock.h"
-
-namespace ripple {
 
 #include "ledger/LedgerEntrySet.cpp"
 #include "ledger/AcceptedLedger.cpp"
@@ -33,6 +31,4 @@ namespace ripple {
 #include "misc/HashRouter.cpp"
 #include "misc/Offer.cpp"
 #include "paths/Pathfinder.cpp"
-#include "misc/Features.cpp"
-
-}
+#include "misc/AmendmentTableImpl.cpp"

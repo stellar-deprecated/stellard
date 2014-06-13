@@ -20,16 +20,17 @@
 #ifndef RIPPLE_BASICS_H_INCLUDED
 #define RIPPLE_BASICS_H_INCLUDED
 
-#include "../beast/modules/beast_core/beast_core.h"
 #include "../beast/beast/Crypto.h"
 
 #include "../beast/modules/beast_core/system/BeforeBoost.h"
 #include "system/BoostIncludes.h"
 
-#include "../../beast/beast/Utility.h"
-
 #include <atomic>
 #include "../../beast/beast/cxx14/memory.h"
+#include "../../beast/beast/utility/Zero.h"
+
+using beast::zero;
+using beast::Zero;
 
 #ifndef  RIPPLE_TRACK_MUTEXES
 # define RIPPLE_TRACK_MUTEXES 0
@@ -38,10 +39,6 @@
 //------------------------------------------------------------------------------
 
 #include "../ripple/types/ripple_types.h"
-
-namespace ripple {
-
-using namespace beast;
 
 #include "types/BasicTypes.h"
 
@@ -63,7 +60,5 @@ using namespace beast;
 
 #include "containers/RangeSet.h"
 #include "containers/SyncUnorderedMap.h"
-
-}
 
 #endif

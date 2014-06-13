@@ -17,6 +17,8 @@
 */
 //==============================================================================
 
+namespace ripple {
+
 // TODO:
 // - Do automatic bridging via XRP.
 //
@@ -28,13 +30,8 @@ class RippleCalc; // for logging
 
 std::size_t hash_value (const aciSource& asValue)
 {
-    std::size_t seed = 0;
-
-    asValue.get<0> ().hash_combine (seed);
-    asValue.get<1> ().hash_combine (seed);
-    asValue.get<2> ().hash_combine (seed);
-
-    return seed;
+    std::size_t const seed = 0;
+    return beast::hardened_hash<aciSource>{seed}(asValue);
 }
 
 // Compare the non-calculated fields.
@@ -54,14 +51,14 @@ Json::Value PathState::Node::getJson () const
 
     jvNode["type"]  = uFlags;
 
-    if (isSetBit (uFlags, STPathElement::typeAccount) || !!uAccountID)
-        jvFlags.append (!!isSetBit (uFlags, STPathElement::typeAccount) == !!uAccountID ? "account" : "-account");
+    if (is_bit_set (uFlags, STPathElement::typeAccount) || !!uAccountID)
+        jvFlags.append (!!is_bit_set (uFlags, STPathElement::typeAccount) == !!uAccountID ? "account" : "-account");
 
-    if (isSetBit (uFlags, STPathElement::typeCurrency) || !!uCurrencyID)
-        jvFlags.append (!!isSetBit (uFlags, STPathElement::typeCurrency) == !!uCurrencyID ? "currency" : "-currency");
+    if (is_bit_set (uFlags, STPathElement::typeCurrency) || !!uCurrencyID)
+        jvFlags.append (!!is_bit_set (uFlags, STPathElement::typeCurrency) == !!uCurrencyID ? "currency" : "-currency");
 
-    if (isSetBit (uFlags, STPathElement::typeIssuer) || !!uIssuerID)
-        jvFlags.append (!!isSetBit (uFlags, STPathElement::typeIssuer) == !!uIssuerID ? "issuer" : "-issuer");
+    if (is_bit_set (uFlags, STPathElement::typeIssuer) || !!uIssuerID)
+        jvFlags.append (!!is_bit_set (uFlags, STPathElement::typeIssuer) == !!uIssuerID ? "issuer" : "-issuer");
 
     jvNode["flags"] = jvFlags;
 
@@ -132,10 +129,10 @@ TER PathState::pushImply (
     const Node&  pnPrv       = vpnNodes.back ();
     TER          terResult   = tesSUCCESS;
 
-    WriteLog (lsTRACE, RippleCalc) << "pushImply> "
-                                   << RippleAddress::createHumanAccountID (uAccountID)
-                                   << " " << STAmount::createHumanCurrency (uCurrencyID)
-                                   << " " << RippleAddress::createHumanAccountID (uIssuerID);
+    WriteLog (lsTRACE, RippleCalc) << "pushImply>" <<
+        " " << RippleAddress::createHumanAccountID (uAccountID) <<
+        " " << STAmount::createHumanCurrency (uCurrencyID) <<
+        " " << RippleAddress::createHumanAccountID (uIssuerID);
 
     if (pnPrv.uCurrencyID != uCurrencyID)
     {
@@ -167,7 +164,7 @@ TER PathState::pushImply (
                           uIssuerID);
     }
 
-    WriteLog (lsTRACE, RippleCalc) << boost::str (boost::format ("pushImply< : %s") % transToken (terResult));
+    WriteLog (lsTRACE, RippleCalc) << "pushImply< : " << transToken (terResult);
 
     return terResult;
 }
@@ -185,19 +182,19 @@ TER PathState::pushNode (
     const bool          bFirst      = vpnNodes.empty ();
     const Node&         pnPrv       = bFirst ? Node () : vpnNodes.back ();
     // true, iff node is a ripple account. false, iff node is an offer node.
-    const bool          bAccount    = isSetBit (iType, STPathElement::typeAccount);
+    const bool          bAccount    = is_bit_set (iType, STPathElement::typeAccount);
     // true, iff currency supplied.
     // Currency is specified for the output of the current node.
-    const bool          bCurrency   = isSetBit (iType, STPathElement::typeCurrency);
+    const bool          bCurrency   = is_bit_set (iType, STPathElement::typeCurrency);
     // Issuer is specified for the output of the current node.
-    const bool          bIssuer     = isSetBit (iType, STPathElement::typeIssuer);
+    const bool          bIssuer     = is_bit_set (iType, STPathElement::typeIssuer);
     TER                 terResult   = tesSUCCESS;
 
-    WriteLog (lsTRACE, RippleCalc) << "pushNode> "
-                                   << iType
-                                   << ": " << (bAccount ? RippleAddress::createHumanAccountID (uAccountID) : "-")
-                                   << " " << (bCurrency ? STAmount::createHumanCurrency (uCurrencyID) : "-")
-                                   << "/" << (bIssuer ? RippleAddress::createHumanAccountID (uIssuerID) : "-");
+    WriteLog (lsTRACE, RippleCalc) << "pushNode> " <<
+       iType <<
+       ": " << (bAccount ? RippleAddress::createHumanAccountID (uAccountID) : "-") <<
+       " " << (bCurrency ? STAmount::createHumanCurrency (uCurrencyID) : "-") <<
+       "/" << (bIssuer ? RippleAddress::createHumanAccountID (uIssuerID) : "-");
 
     pnCur.uFlags        = iType;
     pnCur.uCurrencyID   = bCurrency ? uCurrencyID : pnPrv.uCurrencyID;
@@ -269,7 +266,7 @@ TER PathState::pushNode (
         if (tesSUCCESS == terResult && !vpnNodes.empty ())
         {
             const Node&     pnBck       = vpnNodes.back ();
-            bool            bBckAccount = isSetBit (pnBck.uFlags, STPathElement::typeAccount);
+            bool            bBckAccount = is_bit_set (pnBck.uFlags, STPathElement::typeAccount);
 
             if (bBckAccount)
             {
@@ -308,9 +305,9 @@ TER PathState::pushNode (
 
                         terResult   = terNO_ACCOUNT;
                     }
-                    else if ((isSetBit (sleBck->getFieldU32 (sfFlags), lsfRequireAuth)
-                             && !isSetBit (sleRippleState->getFieldU32 (sfFlags), (bHigh ? lsfHighAuth : lsfLowAuth)))
-                             && sleRippleState->getFieldAmount(sfBalance).isZero()) // CHECKME
+                    else if ((is_bit_set (sleBck->getFieldU32 (sfFlags), lsfRequireAuth)
+                             && !is_bit_set (sleRippleState->getFieldU32 (sfFlags), (bHigh ? lsfHighAuth : lsfLowAuth)))
+                             && sleRippleState->getFieldAmount(sfBalance) == zero) // CHECKME
                     {
                         WriteLog (lsWARNING, RippleCalc) << "pushNode: delay: can't receive IOUs from issuer without auth.";
 
@@ -322,12 +319,13 @@ TER PathState::pushNode (
                         STAmount    saOwed  = lesEntries.rippleOwed (pnCur.uAccountID, pnBck.uAccountID, pnCur.uCurrencyID);
                         STAmount    saLimit;
 
-                        if (!saOwed.isPositive ()
+                        if (saOwed <= zero
                                 && -saOwed >= (saLimit = lesEntries.rippleLimit (pnCur.uAccountID, pnBck.uAccountID, pnCur.uCurrencyID)))
                         {
-                            WriteLog (lsWARNING, RippleCalc) << boost::str (boost::format ("pushNode: dry: saOwed=%s saLimit=%s")
-                                                             % saOwed
-                                                             % saLimit);
+                            WriteLog (lsWARNING, RippleCalc) <<
+                                "pushNode: dry:" <<
+                                " saOwed=" << saOwed <<
+                                " saLimit=" << saLimit;
 
                             terResult   = tecPATH_DRY;
                         }
@@ -369,9 +367,9 @@ TER PathState::pushNode (
 
             // Insert intermediary issuer account if needed.
             terResult   = pushImply (
-                              ACCOUNT_XRP,                // Rippling, but offers don't have an account.
-                              pnPrv.uCurrencyID,
-                              pnPrv.uIssuerID);
+                ACCOUNT_XRP, // Rippling, but offers don't have an account.
+                pnPrv.uCurrencyID,
+                pnPrv.uIssuerID);
         }
 
         if (tesSUCCESS == terResult)
@@ -380,7 +378,7 @@ TER PathState::pushNode (
         }
     }
 
-    WriteLog (lsTRACE, RippleCalc) << boost::str (boost::format ("pushNode< : %s") % transToken (terResult));
+    WriteLog (lsTRACE, RippleCalc) << "pushNode< : " << transToken (terResult);
 
     return terResult;
 }
@@ -404,7 +402,7 @@ void PathState::setExpanded (
     const uint160   uOutIssuerID    = saOutReq.getIssuer ();
     const uint160   uSenderIssuerID = !!uMaxCurrencyID ? uSenderID : ACCOUNT_XRP;   // Sender is always issuer for non-XRP.
 
-    WriteLog (lsTRACE, RippleCalc) << boost::str (boost::format ("setExpanded> %s") % spSourcePath.getJson (0));
+    WriteLog (lsTRACE, RippleCalc) << "setExpanded> " << spSourcePath.getJson (0);
 
     lesEntries  = lesSource.duplicate ();
 
@@ -427,10 +425,10 @@ void PathState::setExpanded (
                           uMaxCurrencyID,                                 // Max specifies the currency.
                           uSenderIssuerID);
 
-    WriteLog (lsDEBUG, RippleCalc) << boost::str (boost::format ("setExpanded: pushed: account=%s currency=%s issuer=%s")
-                                   % RippleAddress::createHumanAccountID (uSenderID)
-                                   % STAmount::createHumanCurrency (uMaxCurrencyID)
-                                   % RippleAddress::createHumanAccountID (uSenderIssuerID));
+    WriteLog (lsDEBUG, RippleCalc) << "setExpanded: pushed:" <<
+        " account=" << RippleAddress::createHumanAccountID (uSenderID) <<
+        " currency=" << STAmount::createHumanCurrency (uMaxCurrencyID) <<
+        " issuer=" << RippleAddress::createHumanAccountID (uSenderIssuerID);
 
     if (tesSUCCESS == terStatus
             && uMaxIssuerID != uSenderIssuerID)                 // Issuer was not same as sender.
@@ -450,29 +448,30 @@ void PathState::setExpanded (
                                           : uOutIssuerID                      // Use implied node.
                                   : ACCOUNT_XRP;
 
-        WriteLog (lsDEBUG, RippleCalc) << boost::str (boost::format ("setExpanded: implied check: uMaxIssuerID=%s uSenderIssuerID=%s uNxtCurrencyID=%s uNxtAccountID=%s")
-                                       % RippleAddress::createHumanAccountID (uMaxIssuerID)
-                                       % RippleAddress::createHumanAccountID (uSenderIssuerID)
-                                       % STAmount::createHumanCurrency (uNxtCurrencyID)
-                                       % RippleAddress::createHumanAccountID (uNxtAccountID));
+        WriteLog (lsDEBUG, RippleCalc) << "setExpanded: implied check:" <<
+            " uMaxIssuerID=" << RippleAddress::createHumanAccountID (uMaxIssuerID) <<
+            " uSenderIssuerID=" << RippleAddress::createHumanAccountID (uSenderIssuerID) <<
+            " uNxtCurrencyID=" << STAmount::createHumanCurrency (uNxtCurrencyID) <<
+            " uNxtAccountID=" << RippleAddress::createHumanAccountID (uNxtAccountID);
 
         // Can't just use push implied, because it can't compensate for next account.
         if (!uNxtCurrencyID                         // Next is XRP, offer next. Must go through issuer.
                 || uMaxCurrencyID != uNxtCurrencyID // Next is different currency, offer next...
                 || uMaxIssuerID != uNxtAccountID)   // Next is not implied issuer
         {
-            WriteLog (lsDEBUG, RippleCalc) << boost::str (boost::format ("setExpanded: sender implied: account=%s currency=%s issuer=%s")
-                                           % RippleAddress::createHumanAccountID (uMaxIssuerID)
-                                           % STAmount::createHumanCurrency (uMaxCurrencyID)
-                                           % RippleAddress::createHumanAccountID (uMaxIssuerID));
+            WriteLog (lsDEBUG, RippleCalc) << "setExpanded: sender implied:" <<
+                " account=" << RippleAddress::createHumanAccountID (uMaxIssuerID) <<
+                " currency=" << STAmount::createHumanCurrency (uMaxCurrencyID) <<
+                " issuer=" << RippleAddress::createHumanAccountID (uMaxIssuerID);
+
             // Add account implied by SendMax.
             terStatus   = pushNode (
-                              !!uMaxCurrencyID
-                              ? STPathElement::typeAccount | STPathElement::typeCurrency | STPathElement::typeIssuer
-                              : STPathElement::typeAccount | STPathElement::typeCurrency,
-                              uMaxIssuerID,
-                              uMaxCurrencyID,
-                              uMaxIssuerID);
+                !!uMaxCurrencyID
+                    ? STPathElement::typeAccount | STPathElement::typeCurrency | STPathElement::typeIssuer
+                    : STPathElement::typeAccount | STPathElement::typeCurrency,
+                uMaxIssuerID,
+                uMaxCurrencyID,
+                uMaxIssuerID);
         }
     }
 
@@ -480,8 +479,10 @@ void PathState::setExpanded (
     {
         if (tesSUCCESS == terStatus)
         {
-            WriteLog (lsTRACE, RippleCalc) << boost::str (boost::format ("setExpanded: element in path:"));
-            terStatus   = pushNode (speElement.getNodeType (), speElement.getAccountID (), speElement.getCurrency (), speElement.getIssuerID ());
+            WriteLog (lsTRACE, RippleCalc) << "setExpanded: element in path";
+            terStatus   = pushNode (
+                speElement.getNodeType (), speElement.getAccountID (), 
+                speElement.getCurrency (), speElement.getIssuerID ());
         }
     }
 
@@ -494,17 +495,18 @@ void PathState::setExpanded (
                 || pnPrv.uAccountID != uOutIssuerID))   // Need the implied issuer.
     {
         // Add implied account.
-        WriteLog (lsDEBUG, RippleCalc) << boost::str (boost::format ("setExpanded: receiver implied: account=%s currency=%s issuer=%s")
-                                       % RippleAddress::createHumanAccountID (uOutIssuerID)
-                                       % STAmount::createHumanCurrency (uOutCurrencyID)
-                                       % RippleAddress::createHumanAccountID (uOutIssuerID));
+        WriteLog (lsDEBUG, RippleCalc) << "setExpanded: receiver implied:" <<
+            " account=" << RippleAddress::createHumanAccountID (uOutIssuerID) <<
+            " currency=" << STAmount::createHumanCurrency (uOutCurrencyID) <<
+            " issuer=" << RippleAddress::createHumanAccountID (uOutIssuerID);
+
         terStatus   = pushNode (
-                          !!uOutCurrencyID
-                          ? STPathElement::typeAccount | STPathElement::typeCurrency | STPathElement::typeIssuer
-                          : STPathElement::typeAccount | STPathElement::typeCurrency,
-                          uOutIssuerID,
-                          uOutCurrencyID,
-                          uOutIssuerID);
+            !!uOutCurrencyID
+                ? STPathElement::typeAccount | STPathElement::typeCurrency | STPathElement::typeIssuer
+                : STPathElement::typeAccount | STPathElement::typeCurrency,
+            uOutIssuerID,
+            uOutCurrencyID,
+            uOutIssuerID);
     }
 
     if (tesSUCCESS == terStatus)
@@ -513,12 +515,12 @@ void PathState::setExpanded (
         // Last node is always an account.
 
         terStatus   = pushNode (
-                          !!uOutCurrencyID
-                          ? STPathElement::typeAccount | STPathElement::typeCurrency | STPathElement::typeIssuer
-                          : STPathElement::typeAccount | STPathElement::typeCurrency,
-                          uReceiverID,                                    // Receive to output
-                          uOutCurrencyID,                                 // Desired currency
-                          uReceiverID);
+            !!uOutCurrencyID
+                ? STPathElement::typeAccount | STPathElement::typeCurrency | STPathElement::typeIssuer
+                : STPathElement::typeAccount | STPathElement::typeCurrency,
+            uReceiverID,                                    // Receive to output
+            uOutCurrencyID,                                 // Desired currency
+            uReceiverID);
     }
 
     if (tesSUCCESS == terStatus)
@@ -532,23 +534,23 @@ void PathState::setExpanded (
         {
             const Node&  pnCur   = vpnNodes[uNode];
 
-            if (!umForward.insert (std::make_pair (boost::make_tuple (pnCur.uAccountID, pnCur.uCurrencyID, pnCur.uIssuerID), uNode)).second)
+            if (!umForward.insert (std::make_pair (std::make_tuple (pnCur.uAccountID, pnCur.uCurrencyID, pnCur.uIssuerID), uNode)).second)
             {
                 // Failed to insert. Have a loop.
-                WriteLog (lsDEBUG, RippleCalc) << boost::str (boost::format ("setExpanded: loop detected: %s")
-                                               % getJson ());
+                WriteLog (lsDEBUG, RippleCalc) <<
+                    "setExpanded: loop detected: " << getJson ();
 
                 terStatus   = temBAD_PATH_LOOP;
             }
         }
     }
 
-    WriteLog (lsDEBUG, RippleCalc) << boost::str (boost::format ("setExpanded: in=%s/%s out=%s/%s %s")
-                                   % STAmount::createHumanCurrency (uMaxCurrencyID)
-                                   % RippleAddress::createHumanAccountID (uMaxIssuerID)
-                                   % STAmount::createHumanCurrency (uOutCurrencyID)
-                                   % RippleAddress::createHumanAccountID (uOutIssuerID)
-                                   % getJson ());
+    WriteLog (lsDEBUG, RippleCalc) << "setExpanded:" <<
+        " in=" << STAmount::createHumanCurrency (uMaxCurrencyID) <<
+        "/" << RippleAddress::createHumanAccountID (uMaxIssuerID) <<
+        " out=" << STAmount::createHumanCurrency (uOutCurrencyID) <<
+        "/" << RippleAddress::createHumanAccountID (uOutIssuerID) <<
+        ": " << getJson ();
 }
 
 // Set to a canonical path.
@@ -690,7 +692,7 @@ void PathState::setCanonical (
         const Node&  pnCur   = psExpanded.vpnNodes[uNode];
         const Node&  pnNxt   = psExpanded.vpnNodes[uNode + 1];
 
-        const bool      bCurAccount     = isSetBit (pnCur.uFlags, STPathElement::typeAccount);
+        const bool      bCurAccount     = is_bit_set (pnCur.uFlags, STPathElement::typeAccount);
 
         bool            bSkip   = false;
 
@@ -710,8 +712,8 @@ void PathState::setCanonical (
         else
         {
             // Currently at an offer.
-            const bool      bPrvAccount     = isSetBit (pnPrv.uFlags, STPathElement::typeAccount);
-            const bool      bNxtAccount     = isSetBit (pnNxt.uFlags, STPathElement::typeAccount);
+            const bool      bPrvAccount     = is_bit_set (pnPrv.uFlags, STPathElement::typeAccount);
+            const bool      bNxtAccount     = is_bit_set (pnNxt.uFlags, STPathElement::typeAccount);
 
             if (bPrvAccount && bNxtAccount                  // Offer surrounded by accounts.
                     && pnPrv.uCurrencyID != pnNxt.uCurrencyID)
@@ -758,12 +760,12 @@ void PathState::setCanonical (
         }
     }
 
-    WriteLog (lsDEBUG, RippleCalc) << boost::str (boost::format ("setCanonical: in=%s/%s out=%s/%s %s")
-                                   % STAmount::createHumanCurrency (uMaxCurrencyID)
-                                   % RippleAddress::createHumanAccountID (uMaxIssuerID)
-                                   % STAmount::createHumanCurrency (uOutCurrencyID)
-                                   % RippleAddress::createHumanAccountID (uOutIssuerID)
-                                   % getJson ());
+    WriteLog (lsDEBUG, RippleCalc) << "setCanonical:" <<
+        " in=" << STAmount::createHumanCurrency (uMaxCurrencyID) <<
+        "/" << RippleAddress::createHumanAccountID (uMaxIssuerID) <<
+        " out=" << STAmount::createHumanCurrency (uOutCurrencyID) <<
+        "/" << RippleAddress::createHumanAccountID (uOutIssuerID) <<
+        ": " << getJson ();
 }
 
 /** Check if a sequence of three accounts violates the no ripple constrains
@@ -787,9 +789,9 @@ void PathState::checkNoRipple (
         terStatus = terNO_LINE;
     }
     else if (
-        isSetBit (sleIn->getFieldU32 (sfFlags),
+        is_bit_set (sleIn->getFieldU32 (sfFlags),
             (secondAccount > firstAccount) ? lsfHighNoRipple : lsfLowNoRipple) &&
-        isSetBit (sleOut->getFieldU32 (sfFlags),
+        is_bit_set (sleOut->getFieldU32 (sfFlags),
             (secondAccount > thirdAccount) ? lsfHighNoRipple : lsfLowNoRipple))
     {
         WriteLog (lsINFO, RippleCalc) << "Path violates noRipple constraint between " <<
@@ -813,7 +815,7 @@ void PathState::checkNoRipple (uint160 const& uDstAccountID, uint160 const& uSrc
     {
         // There's just one link in the path
         // We only need to check source-node-dest
-        if (isSetBit (vpnNodes[0].uFlags, STPathElement::typeAccount) &&
+        if (is_bit_set (vpnNodes[0].uFlags, STPathElement::typeAccount) &&
             (vpnNodes[0].uAccountID != uSrcAccountID) &&
             (vpnNodes[0].uAccountID != uDstAccountID))
         {
@@ -827,8 +829,8 @@ void PathState::checkNoRipple (uint160 const& uDstAccountID, uint160 const& uSrc
     }
 
     // Check source <-> first <-> second
-    if (isSetBit (vpnNodes[0].uFlags, STPathElement::typeAccount) &&
-        isSetBit (vpnNodes[1].uFlags, STPathElement::typeAccount) &&
+    if (is_bit_set (vpnNodes[0].uFlags, STPathElement::typeAccount) &&
+        is_bit_set (vpnNodes[1].uFlags, STPathElement::typeAccount) &&
         (vpnNodes[0].uAccountID != uSrcAccountID))
     {
         if ((vpnNodes[0].uCurrencyID != vpnNodes[1].uCurrencyID))
@@ -847,8 +849,8 @@ void PathState::checkNoRipple (uint160 const& uDstAccountID, uint160 const& uSrc
 
     // Check second_from_last <-> last <-> destination
     size_t s = vpnNodes.size() - 2;
-    if (isSetBit (vpnNodes[s].uFlags, STPathElement::typeAccount) &&
-        isSetBit (vpnNodes[s+1].uFlags, STPathElement::typeAccount) &&
+    if (is_bit_set (vpnNodes[s].uFlags, STPathElement::typeAccount) &&
+        is_bit_set (vpnNodes[s+1].uFlags, STPathElement::typeAccount) &&
         (uDstAccountID != vpnNodes[s+1].uAccountID))
     {
         if ((vpnNodes[s].uCurrencyID != vpnNodes[s+1].uCurrencyID))
@@ -871,9 +873,9 @@ void PathState::checkNoRipple (uint160 const& uDstAccountID, uint160 const& uSrc
     for (int i = 1; i < (vpnNodes.size() - 1); ++i)
     {
 
-        if (isSetBit (vpnNodes[i-1].uFlags, STPathElement::typeAccount) &&
-            isSetBit (vpnNodes[i].uFlags, STPathElement::typeAccount) &&
-            isSetBit (vpnNodes[i+1].uFlags, STPathElement::typeAccount))
+        if (is_bit_set (vpnNodes[i-1].uFlags, STPathElement::typeAccount) &&
+            is_bit_set (vpnNodes[i].uFlags, STPathElement::typeAccount) &&
+            is_bit_set (vpnNodes[i+1].uFlags, STPathElement::typeAccount))
         { // two consecutive account-to-account links
 
             uint160 const& currencyID = vpnNodes[i].uCurrencyID;
@@ -927,8 +929,9 @@ Json::Value PathState::getJson () const
         jvPathState["out_pass"] = saOutPass.getJson (0);
 
     if (uQuality)
-        jvPathState["uQuality"] = boost::str (boost::format ("%d") % uQuality);
+        jvPathState["uQuality"] = boost::lexical_cast<std::string>(uQuality);
 
     return jvPathState;
 }
 
+} // ripple

@@ -20,7 +20,6 @@
 #ifndef BEAST_THREADS_SERVICEQUEUE_H_INCLUDED
 #define BEAST_THREADS_SERVICEQUEUE_H_INCLUDED
 
-#include "../chrono/CPUMeter.h"
 #include "../intrusive/List.h"
 #include "SharedData.h"
 #include "ThreadLocalValue.h"
@@ -75,13 +74,13 @@ public:
 
         static Page* create (size_type pageBytes)
         {
-            return new (new uint8[pageBytes + overhead()]) Page (pageBytes);
+            return new (new std::uint8_t[pageBytes + overhead()]) Page (pageBytes);
         }
 
         static void destroy (Page* page)
         {
             page->~Page();
-            delete[] ((uint8*)page);
+            delete[] ((std::uint8_t*)page);
         }
 
         void reset ()
@@ -395,7 +394,6 @@ protected:
 
     typedef SharedData <State> SharedState;
     SharedState m_state;
-    CPUMeter m_cpuMeter;
     Atomic <int> m_stopped;
 
     static ThreadLocalValue <ServiceQueueBase*> s_service;
@@ -432,7 +430,7 @@ private:
 public:
     typedef Allocator allocator_type; // for std::uses_allocator<>
 
-    explicit ServiceQueueType (int expectedConcurrency = 1,
+    explicit ServiceQueueType (std::size_t expectedConcurrency = 1,
         Allocator alloc = Allocator())
         : m_alloc (alloc)
     {
@@ -462,10 +460,6 @@ public:
             a.deallocate (waiter, 1);
         }
     }
-
-    /** Returns the percentage of time the queue is using the CPU. */
-    double getUtilization () const
-        { return m_cpuMeter.getUtilization(); }
 
     /** Returns the allocator associated with the container. */
     allocator_type get_allocator() const
@@ -605,10 +599,10 @@ private:
 
         (*item)();
 
-        typename Allocator::template rebind <uint8>::other a (m_alloc);
+        typename Allocator::template rebind <std::uint8_t>::other a (m_alloc);
         std::size_t const size (item->size());
         item->~Item();
-        a.deallocate (reinterpret_cast<uint8*>(item), size);
+        a.deallocate (reinterpret_cast<std::uint8_t*>(item), size);
         return 1;
     }
 

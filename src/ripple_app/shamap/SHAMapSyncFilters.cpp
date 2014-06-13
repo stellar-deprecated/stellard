@@ -17,6 +17,8 @@
 */
 //==============================================================================
 
+namespace ripple {
+
 ConsensusTransSetSF::ConsensusTransSetSF (NodeCache& nodeCache)
     : m_nodeCache (nodeCache)
 {
@@ -77,7 +79,7 @@ bool ConsensusTransSetSF::haveNode (const SHAMapNode& id, uint256 const& nodeHas
 
 //------------------------------------------------------------------------------
 
-AccountStateSF::AccountStateSF (uint32 ledgerSeq)
+AccountStateSF::AccountStateSF (std::uint32_t ledgerSeq)
     : mLedgerSeq (ledgerSeq)
 {
 }
@@ -88,7 +90,7 @@ void AccountStateSF::gotNode (bool fromFilter,
                               Blob& nodeData,
                               SHAMapTreeNode::TNType)
 {
-    getApp().getNodeStore ().store (hotACCOUNT_NODE, mLedgerSeq, nodeData, nodeHash);
+    getApp().getNodeStore ().store (hotACCOUNT_NODE, mLedgerSeq, std::move (nodeData), nodeHash);
 }
 
 bool AccountStateSF::haveNode (SHAMapNode const& id,
@@ -100,7 +102,7 @@ bool AccountStateSF::haveNode (SHAMapNode const& id,
 
 //------------------------------------------------------------------------------
 
-TransactionStateSF::TransactionStateSF (uint32 ledgerSeq)
+TransactionStateSF::TransactionStateSF (std::uint32_t ledgerSeq)
     : mLedgerSeq (ledgerSeq)
 {
 }
@@ -114,7 +116,7 @@ void TransactionStateSF::gotNode (bool fromFilter,
     getApp().getNodeStore ().store (
         (type == SHAMapTreeNode::tnTRANSACTION_NM) ? hotTRANSACTION : hotTRANSACTION_NODE,
         mLedgerSeq,
-        nodeData,
+        std::move (nodeData),
         nodeHash);
 }
 
@@ -124,3 +126,5 @@ bool TransactionStateSF::haveNode (SHAMapNode const& id,
 {
     return getApp().getOPs ().getFetchPack (nodeHash, nodeData);
 }
+
+} // ripple

@@ -17,6 +17,10 @@
 */
 //==============================================================================
 
+#include "../../../beast/unit_test/suite.h"
+
+namespace beast {
+
 RandomAccessFile::RandomAccessFile () noexcept
     : fileHandle (nullptr)
     , currentPosition (0)
@@ -64,7 +68,7 @@ Result RandomAccessFile::read (void* buffer, ByteCount numBytes, ByteCount* pAct
 
 Result RandomAccessFile::write (const void* data, ByteCount numBytes, ByteCount* pActualAmount)
 {
-    bassert (data != nullptr && ((ssize_t) numBytes) >= 0);
+    bassert (data != nullptr && ((std::ptrdiff_t) numBytes) >= 0);
 
     Result result (Result::ok ());
 
@@ -98,13 +102,9 @@ Result RandomAccessFile::flush ()
 
 //------------------------------------------------------------------------------
 
-class RandomAccessFileTests : public UnitTest
+class RandomAccessFile_test : public unit_test::suite
 {
 public:
-    RandomAccessFileTests () : UnitTest ("RandomAccessFile", "beast")
-    {
-    }
-
     enum
     {
         maxPayload = 8192
@@ -128,7 +128,7 @@ public:
     static void createRecords (HeapBlock <Record>& records,
                                int numRecords,
                                int maxBytes,
-                               int64 seedValue)
+                               std::int64_t seedValue)
     {
         using namespace UnitTestUtilities;
 
@@ -157,7 +157,7 @@ public:
     void writeRecords (RandomAccessFile& file,
                        int numRecords,
                        HeapBlock <Record> const& records,
-                       int64 seedValue)
+                       std::int64_t seedValue)
     {
         using namespace UnitTestUtilities;
 
@@ -181,7 +181,7 @@ public:
     void readRecords (RandomAccessFile& file,
                       int numRecords,
                       HeapBlock <Record> const& records,
-                      int64 seedValue)
+                      std::int64_t seedValue)
     {
         using namespace UnitTestUtilities;
 
@@ -218,7 +218,9 @@ public:
 
         int const seedValue = 50;
 
-        beginTestCase (String ("numRecords=") + String (numRecords));
+        std::stringstream ss;
+        ss << numRecords << " records";
+        testcase (ss.str());
 
         // Calculate the path
         File const path (File::createTempFile ("RandomAccessFile"));
@@ -261,12 +263,12 @@ public:
         }
     }
 
-    void runTest ()
+    void run ()
     {
         testFile (10000);
     }
-
-private:
 };
 
-static RandomAccessFileTests randomAccessFileTests;
+BEAST_DEFINE_TESTSUITE(RandomAccessFile,beast_core,beast);
+
+} // beast

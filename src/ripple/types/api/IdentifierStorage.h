@@ -20,19 +20,21 @@
 #ifndef RIPPLE_TYPES_IDENTIFIERSTORAGE_H_INCLUDED
 #define RIPPLE_TYPES_IDENTIFIERSTORAGE_H_INCLUDED
 
-#include "../../beast/beast/FixedArray.h"
 #include "../../beast/beast/crypto/MurmurHash.h"
+#include "../../beast/beast/container/hardened_hash.h"
+
+#include <array>
 
 namespace ripple {
 
-/** A padded FixedArray used with IdentifierType traits. */
+/** A padded std::array used with IdentifierType traits. */
 template <std::size_t PreSize, std::size_t Size, std::size_t PostSize>
 class IdentifierStorage
 {
 public:
     typedef std::size_t         size_type;
     typedef std::ptrdiff_t      difference_type;
-    typedef uint8               value_type;
+    typedef std::uint8_t        value_type;
     typedef value_type*         iterator;
     typedef value_type const*   const_iterator;
     typedef value_type&         reference;
@@ -43,30 +45,13 @@ public:
     static size_type const      post_size = PostSize;
     static size_type const      storage_size = pre_size + size + post_size;
 
-    typedef FixedArray <
-        uint8, storage_size>    storage_type;
+    typedef std::array <
+        std::uint8_t, storage_size>    storage_type;
 
     /** Value hashing function.
         The seed prevents crafted inputs from causing degenarate parent containers.
     */
-    class hasher
-    {
-    public:
-        explicit hasher (std::size_t seedToUse = Random::getSystemRandom ().nextInt ())
-            : m_seed (seedToUse)
-        {
-        }
-
-        std::size_t operator() (IdentifierStorage const& storage) const
-        {
-            std::size_t hash;
-            Murmur::Hash (storage.cbegin (), storage.size, m_seed, &hash);
-            return hash;
-        }
-
-    private:
-        std::size_t m_seed;
-    };
+    typedef beast::hardened_hash <IdentifierStorage> hasher;
 
     /** Container equality testing function. */
     class key_equal
@@ -143,6 +128,13 @@ public:
     bool isNotZero() const
     {
         return !isZero();
+    }
+
+    template <class Hasher>
+    friend void hash_append (Hasher& h, IdentifierStorage const& a) noexcept
+    {
+        using beast::hash_append;
+        hash_append (h, a.m_storage);
     }
 
 private:

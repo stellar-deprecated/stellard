@@ -20,6 +20,8 @@
 #ifndef RIPPLE_LOADMONITOR_H_INCLUDED
 #define RIPPLE_LOADMONITOR_H_INCLUDED
 
+namespace ripple {
+
 // Monitors load levels and response times
 
 // VFALCO TODO Rename this. Having both LoadManager and LoadMonitor is confusing.
@@ -35,18 +37,20 @@ public:
 
     void addLoadSample (LoadEvent const& sample);
 
-    void setTargetLatency (uint64 avg, uint64 pk);
+    void addSamples (int count, std::chrono::milliseconds latency);
 
-    bool isOverTarget (uint64 avg, uint64 peak);
+    void setTargetLatency (std::uint64_t avg, std::uint64_t pk);
+
+    bool isOverTarget (std::uint64_t avg, std::uint64_t peak);
 
     // VFALCO TODO make this return the values in a struct.
     struct Stats
     {
         Stats();
 
-        uint64 count;
-        uint64 latencyAvg;
-        uint64 latencyPeak;
+        std::uint64_t count;
+        std::uint64_t latencyAvg;
+        std::uint64_t latencyPeak;
         bool isOverloaded;
     };
 
@@ -60,16 +64,18 @@ private:
     void update ();
 
     typedef RippleMutex LockType;
-    typedef LockType::ScopedLockType ScopedLockType;
+    typedef std::lock_guard <LockType> ScopedLockType;
     LockType mLock;
 
-    uint64              mCounts;
-    int mLatencyEvents;
-    uint64              mLatencyMSAvg;
-    uint64              mLatencyMSPeak;
-    uint64              mTargetLatencyAvg;
-    uint64              mTargetLatencyPk;
-    int                 mLastUpdate;
+    std::uint64_t mCounts;
+    int           mLatencyEvents;
+    std::uint64_t mLatencyMSAvg;
+    std::uint64_t mLatencyMSPeak;
+    std::uint64_t mTargetLatencyAvg;
+    std::uint64_t mTargetLatencyPk;
+    int           mLastUpdate;
 };
+
+} // ripple
 
 #endif

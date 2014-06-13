@@ -20,6 +20,9 @@
 #ifndef BEAST_RANDOMACCESSFILE_H_INCLUDED
 #define BEAST_RANDOMACCESSFILE_H_INCLUDED
 
+namespace beast
+{
+
 /** Provides random access reading and writing to an operating system file.
 
     This class wraps the underlying native operating system routines for
@@ -36,14 +39,14 @@
 
     @see FileInputStream, FileOutputStream
 */
-class BEAST_API  RandomAccessFile : public Uncopyable, LeakChecked <RandomAccessFile>
+class  RandomAccessFile : public Uncopyable, LeakChecked <RandomAccessFile>
 {
 public:
     /** The type of an FileOffset.
 
         This can be useful when writing templates.
     */
-    typedef int64 FileOffset;
+    typedef std::int64_t FileOffset;
 
     /** The type of a byte count.
 
@@ -190,6 +193,8 @@ private:
     void* fileHandle;
     FileOffset currentPosition;
 };
+
+} // beast
 
 #endif
 

@@ -17,6 +17,8 @@
 */
 //==============================================================================
 
+namespace ripple {
+
 SETUP_LOG (HTTPRequest)
 
 // Logic to handle incoming HTTP reqests
@@ -111,7 +113,7 @@ HTTPRequest::Action HTTPRequest::consume (boost::asio::streambuf& buf)
             }
 
             if (headerName == "content-length")
-                iDataSize = lexicalCastThrow <int> (headerValue);
+                iDataSize = beast::lexicalCastThrow <int> (headerValue);
 
             if (headerName == "authorization")
                 sAuthorization = headerValue;
@@ -124,4 +126,4 @@ HTTPRequest::Action HTTPRequest::consume (boost::asio::streambuf& buf)
     return haERROR;
 }
 
-// vim:ts=4
+} // ripple

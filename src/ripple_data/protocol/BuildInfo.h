@@ -20,6 +20,8 @@
 #ifndef RIPPLE_BUILDINFO_H_INCLUDED
 #define RIPPLE_BUILDINFO_H_INCLUDED
 
+namespace ripple {
+
 /** Versioning information for this build. */
 struct BuildInfo
 {
@@ -29,7 +31,7 @@ struct BuildInfo
 
         http://semver.org/
     */
-    static String const& getVersionString ();
+    static beast::String const& getVersionString ();
 
     /** Full server version string.
 
@@ -53,7 +55,7 @@ struct BuildInfo
         //----
 
         /** The serialized format of the protocol version. */
-        typedef uint32 PackedFormat;
+        typedef std::uint32_t PackedFormat;
 
         Protocol ();
         Protocol (unsigned short vmajor, unsigned short vminor);
@@ -77,10 +79,9 @@ struct BuildInfo
     /** The oldest protocol version we will accept. */
     static Protocol const& getMinimumProtocol ();
 
-private:
-    friend class BuildInfoTests;
-
     static char const* getRawVersionString ();
 };
+
+} // ripple
 
 #endif

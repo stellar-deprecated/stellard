@@ -17,12 +17,18 @@
 */
 //==============================================================================
 
-#ifndef __RPCHANDLER__
-#define __RPCHANDLER__
+#ifndef RIPPLE_APP_RPC_HANDLER
+#define RIPPLE_APP_RPC_HANDLER
 
-#define LEDGER_CURRENT      -1
-#define LEDGER_CLOSED       -2
-#define LEDGER_VALIDATED    -3
+#include "../../ripple_rpc/impl/AccountFromString.h"
+#include "../../ripple_rpc/impl/Accounts.h"
+#include "../../ripple_rpc/impl/Authorize.h"
+#include "../../ripple_rpc/impl/GetMasterGenerator.h"
+#include "../../ripple_rpc/impl/LookupLedger.h"
+#include "../../ripple_rpc/impl/ParseAccountIds.h"
+#include "../../ripple_rpc/impl/TransactionSign.h"
+
+namespace ripple {
 
 // used by the RPCServer or WSDoor to carry out these RPC commands
 class NetworkOPs;
@@ -30,6 +36,7 @@ class InfoSub;
 
 // VFALCO TODO Refactor to abstract interface IRPCHandler
 //
+
 class RPCHandler
 {
 public:
@@ -57,42 +64,6 @@ private:
     };
 
     // Utilities
-
-    void addSubmitPath (Json::Value& txJSON);
-
-    boost::unordered_set <RippleAddress> parseAccountIds (const Json::Value& jvArray);
-
-    Json::Value transactionSign (Json::Value jvRequest, bool bSubmit, bool bFailHard, Application::ScopedLockType& mlh);
-
-    Json::Value lookupLedger (Json::Value const& jvRequest, Ledger::pointer& lpLedger);
-
-    Json::Value getMasterGenerator (
-        Ledger::ref lrLedger,
-        const RippleAddress& naRegularSeed,
-        RippleAddress& naMasterGenerator);
-
-    Json::Value authorize (
-        Ledger::ref lrLedger,
-        const RippleAddress& naRegularSeed,
-        const RippleAddress& naSrcAccountID,
-        RippleAddress& naAccountPublic,
-        RippleAddress& naAccountPrivate,
-        STAmount& saSrcBalance,
-        const STAmount& saFee,
-        AccountState::pointer& asSrc,
-        const RippleAddress& naVerifyGenerator);
-
-    Json::Value accounts (
-        Ledger::ref lrLedger,
-        const RippleAddress& naMasterGenerator);
-
-    Json::Value accountFromString (
-        Ledger::ref lrLedger,
-        RippleAddress& naAccount,
-        bool& bIndex,
-        const std::string& strIdent,
-        const int iIndex,
-        const bool bStrict);
 
     Json::Value doAccountCurrencies     (Json::Value params, Resource::Charge& loadType, Application::ScopedLockType& mlh);
     Json::Value doAccountInfo           (Json::Value params, Resource::Charge& loadType, Application::ScopedLockType& mlh);
@@ -162,13 +133,6 @@ private:
     Json::Value doWalletUnlock          (Json::Value params, Resource::Charge& loadType, Application::ScopedLockType& mlh);
     Json::Value doWalletVerify          (Json::Value params, Resource::Charge& loadType, Application::ScopedLockType& mlh);
 
-#if ENABLE_INSECURE
-    Json::Value doDataDelete            (Json::Value params, Resource::Charge& loadType, Application::ScopedLockType& mlh);
-    Json::Value doDataFetch             (Json::Value params, Resource::Charge& loadType, Application::ScopedLockType& mlh);
-    Json::Value doDataStore             (Json::Value params, Resource::Charge& loadType, Application::ScopedLockType& mlh);
-    Json::Value doLogin                 (Json::Value params, Resource::Charge& loadType, Application::ScopedLockType& mlh);
-#endif
-
 private:
     NetworkOPs*         mNetOps;
     InfoSub::pointer    mInfoSub;
@@ -196,5 +160,7 @@ private:
     std::string                 mName;
     handler_t                   mHandler;
 };
+
+} // ripple
 
 #endif

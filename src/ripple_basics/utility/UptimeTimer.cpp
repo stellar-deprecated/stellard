@@ -17,6 +17,8 @@
 */
 //==============================================================================
 
+namespace ripple {
+
 UptimeTimer::UptimeTimer ()
     : m_elapsedTime (0)
     , m_startTime (::time (0))
@@ -34,7 +36,7 @@ int UptimeTimer::getElapsedSeconds () const
 
     if (m_isUpdatingManually)
     {
-        memoryBarrier();
+        beast::memoryBarrier();
         result = m_elapsedTime;
     }
     else
@@ -72,3 +74,5 @@ UptimeTimer& UptimeTimer::getInstance ()
 
     return instance;
 }
+
+} // ripple

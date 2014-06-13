@@ -21,6 +21,9 @@
 */
 //==============================================================================
 
+namespace beast
+{
+
 #ifndef INVALID_FILE_ATTRIBUTES
  #define INVALID_FILE_ATTRIBUTES ((DWORD) -1)
 #endif
@@ -33,19 +36,19 @@ namespace WindowsFileHelpers
         return GetFileAttributes (path.toWideCharPointer());
     }
 
-    int64 fileTimeToTime (const FILETIME* const ft)
+    std::int64_t fileTimeToTime (const FILETIME* const ft)
     {
         static_bassert (sizeof (ULARGE_INTEGER) == sizeof (FILETIME)); // tell me if this fails!
 
-        return (int64) ((reinterpret_cast<const ULARGE_INTEGER*> (ft)->QuadPart - literal64bit (116444736000000000)) / 10000);
+        return (std::int64_t) ((reinterpret_cast<const ULARGE_INTEGER*> (ft)->QuadPart - 116444736000000000LL) / 10000);
     }
 
-    FILETIME* timeToFileTime (const int64 time, FILETIME* const ft) noexcept
+    FILETIME* timeToFileTime (const std::int64_t time, FILETIME* const ft) noexcept
     {
         if (time <= 0)
             return nullptr;
 
-        reinterpret_cast<ULARGE_INTEGER*> (ft)->QuadPart = (ULONGLONG) (time * 10000 + literal64bit (116444736000000000));
+        reinterpret_cast<ULARGE_INTEGER*> (ft)->QuadPart = (ULONGLONG) (time * 10000 + 116444736000000000LL);
         return ft;
     }
 
@@ -65,13 +68,13 @@ namespace WindowsFileHelpers
         return path;
     }
 
-    int64 getDiskSpaceInfo (const String& path, const bool total)
+    std::int64_t getDiskSpaceInfo (const String& path, const bool total)
     {
         ULARGE_INTEGER spc, tot, totFree;
 
         if (GetDiskFreeSpaceEx (getDriveFromPath (path).toWideCharPointer(), &spc, &tot, &totFree))
-            return total ? (int64) tot.QuadPart
-                         : (int64) spc.QuadPart;
+            return total ? (std::int64_t) tot.QuadPart
+                         : (std::int64_t) spc.QuadPart;
 
         return 0;
     }
@@ -210,7 +213,7 @@ Result File::createDirectoryInternal (const String& fileName) const
 }
 
 //==============================================================================
-int64 beast_fileSetPosition (void* handle, int64 pos)
+std::int64_t beast_fileSetPosition (void* handle, std::int64_t pos)
 {
     LARGE_INTEGER li;
     li.QuadPart = pos;
@@ -276,7 +279,7 @@ void FileOutputStream::closeHandle()
     CloseHandle ((HANDLE) fileHandle);
 }
 
-ssize_t FileOutputStream::writeInternal (const void* buffer, size_t numBytes)
+std::ptrdiff_t FileOutputStream::writeInternal (const void* buffer, size_t numBytes)
 {
     if (fileHandle != nullptr)
     {
@@ -284,7 +287,7 @@ ssize_t FileOutputStream::writeInternal (const void* buffer, size_t numBytes)
         if (! WriteFile ((HANDLE) fileHandle, buffer, (DWORD) numBytes, &actualNum, 0))
             status = WindowsFileHelpers::getResultForLastError();
 
-        return (ssize_t) actualNum;
+        return (std::ptrdiff_t) actualNum;
     }
 
     return 0;
@@ -463,74 +466,19 @@ Result RandomAccessFile::nativeFlush ()
     return result;
 }
 
-
 //==============================================================================
-void MemoryMappedFile::openInternal (const File& file, AccessMode mode)
-{
-    bassert (mode == readOnly || mode == readWrite);
 
-    if (range.getStart() > 0)
-    {
-        SYSTEM_INFO systemInfo;
-        GetNativeSystemInfo (&systemInfo);
-
-        range.setStart (range.getStart() - (range.getStart() % systemInfo.dwAllocationGranularity));
-    }
-
-    DWORD accessMode = GENERIC_READ, createType = OPEN_EXISTING;
-    DWORD protect = PAGE_READONLY, access = FILE_MAP_READ;
-
-    if (mode == readWrite)
-    {
-        accessMode = GENERIC_READ | GENERIC_WRITE;
-        createType = OPEN_ALWAYS;
-        protect = PAGE_READWRITE;
-        access = FILE_MAP_ALL_ACCESS;
-    }
-
-    HANDLE h = CreateFile (file.getFullPathName().toWideCharPointer(), accessMode, FILE_SHARE_READ, 0,
-                           createType, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, 0);
-
-    if (h != INVALID_HANDLE_VALUE)
-    {
-        fileHandle = (void*) h;
-
-        HANDLE mappingHandle = CreateFileMapping (h, 0, protect, (DWORD) (range.getEnd() >> 32), (DWORD) range.getEnd(), 0);
-
-        if (mappingHandle != 0)
-        {
-            address = MapViewOfFile (mappingHandle, access, (DWORD) (range.getStart() >> 32),
-                                     (DWORD) range.getStart(), (SIZE_T) range.getLength());
-
-            if (address == nullptr)
-                range = Range<int64>();
-
-            CloseHandle (mappingHandle);
-        }
-    }
-}
-
-MemoryMappedFile::~MemoryMappedFile()
-{
-    if (address != nullptr)
-        UnmapViewOfFile (address);
-
-    if (fileHandle != nullptr)
-        CloseHandle ((HANDLE) fileHandle);
-}
-
-//==============================================================================
-int64 File::getSize() const
+std::int64_t File::getSize() const
 {
     WIN32_FILE_ATTRIBUTE_DATA attributes;
 
     if (GetFileAttributesEx (fullPath.toWideCharPointer(), GetFileExInfoStandard, &attributes))
-        return (((int64) attributes.nFileSizeHigh) << 32) | attributes.nFileSizeLow;
+        return (((std::int64_t) attributes.nFileSizeHigh) << 32) | attributes.nFileSizeLow;
 
     return 0;
 }
 
-void File::getFileTimesInternal (int64& modificationTime, int64& accessTime, int64& creationTime) const
+void File::getFileTimesInternal (std::int64_t& modificationTime, std::int64_t& accessTime, std::int64_t& creationTime) const
 {
     using namespace WindowsFileHelpers;
     WIN32_FILE_ATTRIBUTE_DATA attributes;
@@ -547,7 +495,7 @@ void File::getFileTimesInternal (int64& modificationTime, int64& accessTime, int
     }
 }
 
-bool File::setFileTimesInternal (int64 modificationTime, int64 accessTime, int64 creationTime) const
+bool File::setFileTimesInternal (std::int64_t modificationTime, std::int64_t accessTime, std::int64_t creationTime) const
 {
     using namespace WindowsFileHelpers;
 
@@ -616,12 +564,12 @@ int File::getVolumeSerialNumber() const
     return (int) serialNum;
 }
 
-int64 File::getBytesFreeOnVolume() const
+std::int64_t File::getBytesFreeOnVolume() const
 {
     return WindowsFileHelpers::getDiskSpaceInfo (getFullPathName(), false);
 }
 
-int64 File::getVolumeTotalSize() const
+std::int64_t File::getVolumeTotalSize() const
 {
     return WindowsFileHelpers::getDiskSpaceInfo (getFullPathName(), true);
 }
@@ -659,7 +607,7 @@ bool File::isOnRemovableDrive() const
 }
 
 //==============================================================================
-File BEAST_CALLTYPE File::getSpecialLocation (const SpecialLocationType type)
+File File::getSpecialLocation (const SpecialLocationType type)
 {
     int csidlType = 0;
 
@@ -803,7 +751,7 @@ public:
     }
 
     bool next (String& filenameFound,
-               bool* const isDir, bool* const isHidden, int64* const fileSize,
+               bool* const isDir, bool* const isHidden, std::int64_t* const fileSize,
                Time* const modTime, Time* const creationTime, bool* const isReadOnly)
     {
         using namespace WindowsFileHelpers;
@@ -827,7 +775,7 @@ public:
         if (isDir != nullptr)         *isDir        = ((findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0);
         if (isHidden != nullptr)      *isHidden     = ((findData.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) != 0);
         if (isReadOnly != nullptr)    *isReadOnly   = ((findData.dwFileAttributes & FILE_ATTRIBUTE_READONLY) != 0);
-        if (fileSize != nullptr)      *fileSize     = findData.nFileSizeLow + (((int64) findData.nFileSizeHigh) << 32);
+        if (fileSize != nullptr)      *fileSize     = findData.nFileSizeLow + (((std::int64_t) findData.nFileSizeHigh) << 32);
         if (modTime != nullptr)       *modTime      = Time (fileTimeToTime (&findData.ftLastWriteTime));
         if (creationTime != nullptr)  *creationTime = Time (fileTimeToTime (&findData.ftCreationTime));
 
@@ -849,7 +797,7 @@ DirectoryIterator::NativeIterator::~NativeIterator()
 }
 
 bool DirectoryIterator::NativeIterator::next (String& filenameFound,
-                                              bool* const isDir, bool* const isHidden, int64* const fileSize,
+                                              bool* const isDir, bool* const isHidden, std::int64_t* const fileSize,
                                               Time* const modTime, Time* const creationTime, bool* const isReadOnly)
 {
     return pimpl->next (filenameFound, isDir, isHidden, fileSize, modTime, creationTime, isReadOnly);
@@ -884,225 +832,4 @@ void File::revealToUser() const
     }
 }
 
-//==============================================================================
-class NamedPipe::Pimpl : LeakChecked <NamedPipe::Pimpl>, public Uncopyable
-{
-public:
-    Pimpl (const String& pipeName, const bool createPipe)
-        : filename ("\\\\.\\pipe\\" + File::createLegalFileName (pipeName)),
-          pipeH (INVALID_HANDLE_VALUE),
-          cancelEvent (CreateEvent (0, FALSE, FALSE, 0)),
-          connected (false), ownsPipe (createPipe), shouldStop (false)
-    {
-        if (createPipe)
-            pipeH = CreateNamedPipe (filename.toWideCharPointer(),
-                                     PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED, 0,
-                                     PIPE_UNLIMITED_INSTANCES, 4096, 4096, 0, 0);
-    }
-
-    ~Pimpl()
-    {
-        disconnectPipe();
-
-        if (pipeH != INVALID_HANDLE_VALUE)
-            CloseHandle (pipeH);
-
-        CloseHandle (cancelEvent);
-    }
-
-    bool connect (const int timeOutMs)
-    {
-        if (! ownsPipe)
-        {
-            if (pipeH != INVALID_HANDLE_VALUE)
-                return true;
-
-            const Time timeOutEnd (Time::getCurrentTime() + RelativeTime::milliseconds (timeOutMs));
-
-            for (;;)
-            {
-                {
-                    const ScopedLock sl (createFileLock);
-
-                    if (pipeH == INVALID_HANDLE_VALUE)
-                        pipeH = CreateFile (filename.toWideCharPointer(),
-                                            GENERIC_READ | GENERIC_WRITE, 0, 0,
-                                            OPEN_EXISTING, FILE_FLAG_OVERLAPPED, 0);
-                }
-
-                if (pipeH != INVALID_HANDLE_VALUE)
-                    return true;
-
-                if (shouldStop || (timeOutMs >= 0 && Time::getCurrentTime() > timeOutEnd))
-                    return false;
-
-                Thread::sleep (1);
-            }
-        }
-
-        if (! connected)
-        {
-            OverlappedEvent over;
-
-            if (ConnectNamedPipe (pipeH, &over.over) == 0)
-            {
-                switch (GetLastError())
-                {
-                    case ERROR_PIPE_CONNECTED:   connected = true; break;
-                    case ERROR_IO_PENDING:
-                    case ERROR_PIPE_LISTENING:   connected = waitForIO (over, timeOutMs); break;
-                    default: break;
-                }
-            }
-        }
-
-        return connected;
-    }
-
-    void disconnectPipe()
-    {
-        if (ownsPipe && connected)
-        {
-            DisconnectNamedPipe (pipeH);
-            connected = false;
-        }
-    }
-
-    int read (void* destBuffer, const int maxBytesToRead, const int timeOutMilliseconds)
-    {
-        while (connect (timeOutMilliseconds))
-        {
-            if (maxBytesToRead <= 0)
-                return 0;
-
-            OverlappedEvent over;
-            unsigned long numRead;
-
-            if (ReadFile (pipeH, destBuffer, (DWORD) maxBytesToRead, &numRead, &over.over))
-                return (int) numRead;
-
-            const DWORD lastError = GetLastError();
-
-            if (lastError == ERROR_IO_PENDING)
-            {
-                if (! waitForIO (over, timeOutMilliseconds))
-                    return -1;
-
-                if (GetOverlappedResult (pipeH, &over.over, &numRead, FALSE))
-                    return (int) numRead;
-            }
-
-            if (ownsPipe && (GetLastError() == ERROR_BROKEN_PIPE || GetLastError() == ERROR_PIPE_NOT_CONNECTED))
-                disconnectPipe();
-            else
-                break;
-        }
-
-        return -1;
-    }
-
-    int write (const void* sourceBuffer, int numBytesToWrite, int timeOutMilliseconds)
-    {
-        if (connect (timeOutMilliseconds))
-        {
-            if (numBytesToWrite <= 0)
-                return 0;
-
-            OverlappedEvent over;
-            unsigned long numWritten;
-
-            if (WriteFile (pipeH, sourceBuffer, (DWORD) numBytesToWrite, &numWritten, &over.over))
-                return (int) numWritten;
-
-            if (GetLastError() == ERROR_IO_PENDING)
-            {
-                if (! waitForIO (over, timeOutMilliseconds))
-                    return -1;
-
-                if (GetOverlappedResult (pipeH, &over.over, &numWritten, FALSE))
-                    return (int) numWritten;
-
-                if (GetLastError() == ERROR_BROKEN_PIPE && ownsPipe)
-                    disconnectPipe();
-            }
-        }
-
-        return -1;
-    }
-
-    const String filename;
-    HANDLE pipeH, cancelEvent;
-    bool connected, ownsPipe, shouldStop;
-    CriticalSection createFileLock;
-
-private:
-    struct OverlappedEvent
-    {
-        OverlappedEvent()
-        {
-            zerostruct (over);
-            over.hEvent = CreateEvent (0, TRUE, FALSE, 0);
-        }
-
-        ~OverlappedEvent()
-        {
-            CloseHandle (over.hEvent);
-        }
-
-        OVERLAPPED over;
-    };
-
-    bool waitForIO (OverlappedEvent& over, int timeOutMilliseconds)
-    {
-        if (shouldStop)
-            return false;
-
-        HANDLE handles[] = { over.over.hEvent, cancelEvent };
-        DWORD waitResult = WaitForMultipleObjects (2, handles, FALSE,
-                                                   timeOutMilliseconds >= 0 ? timeOutMilliseconds
-                                                                            : INFINITE);
-
-        if (waitResult == WAIT_OBJECT_0)
-            return true;
-
-        CancelIo (pipeH);
-        return false;
-    }
-};
-
-void NamedPipe::close()
-{
-    if (pimpl != nullptr)
-    {
-        pimpl->shouldStop = true;
-        SetEvent (pimpl->cancelEvent);
-
-        ScopedWriteLock sl (lock);
-        pimpl = nullptr;
-    }
-}
-
-bool NamedPipe::openInternal (const String& pipeName, const bool createPipe)
-{
-    pimpl = new Pimpl (pipeName, createPipe);
-
-    if (createPipe && pimpl->pipeH == INVALID_HANDLE_VALUE)
-    {
-        pimpl = nullptr;
-        return false;
-    }
-
-    return true;
-}
-
-int NamedPipe::read (void* destBuffer, int maxBytesToRead, int timeOutMilliseconds)
-{
-    ScopedReadLock sl (lock);
-    return pimpl != nullptr ? pimpl->read (destBuffer, maxBytesToRead, timeOutMilliseconds) : -1;
-}
-
-int NamedPipe::write (const void* sourceBuffer, int numBytesToWrite, int timeOutMilliseconds)
-{
-    ScopedReadLock sl (lock);
-    return pimpl != nullptr ? pimpl->write (sourceBuffer, numBytesToWrite, timeOutMilliseconds) : -1;
-}
+} // beast

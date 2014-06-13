@@ -17,6 +17,8 @@
 */
 //==============================================================================
 
+namespace ripple {
+
 class ValidationsImp;
 
 SETUP_LOG (Validations)
@@ -28,12 +30,12 @@ class ValidationsImp : public Validations
 {
 private:
     typedef RippleMutex LockType;
-    typedef LockType::ScopedLockType ScopedLockType;
-    typedef LockType::ScopedUnlockType ScopedUnlockType;
+    typedef std::lock_guard <LockType> ScopedLockType;
+    typedef beast::GenericScopedUnlock <LockType> ScopedUnlockType;
     LockType mLock;
 
     TaggedCache<uint256, ValidationSet>     mValidations;
-    boost::unordered_map<uint160, SerializedValidation::pointer>    mCurrentValidations;
+    ripple::unordered_map<uint160, SerializedValidation::pointer>   mCurrentValidations;
     std::vector<SerializedValidation::pointer>                      mStaleValidations;
 
     bool mWriting;
@@ -59,8 +61,7 @@ private:
 
 public:
     ValidationsImp ()
-        : mLock (this, "Validations", __FILE__, __LINE__)
-        , mValidations ("Validations", 128, 600, get_seconds_clock (),
+        : mValidations ("Validations", 128, 600, get_seconds_clock (),
             LogPartition::getJournal <TaggedCacheLog> ())
         , mWriting (false)
     {
@@ -73,20 +74,18 @@ private:
         RippleAddress signer = val->getSignerPublic ();
         bool isCurrent = false;
 
-        if (val->isTrusted () || getApp().getUNL ().nodeInUNL (signer))
-        {
-            val->setTrusted ();
-            uint32 now = getApp().getOPs ().getCloseTimeNC ();
-            uint32 valClose = val->getSignTime ();
+        if (!val->isTrusted() && getApp().getUNL().nodeInUNL (signer))
+            val->setTrusted();
 
-            if ((now > (valClose - LEDGER_EARLY_INTERVAL)) && (now < (valClose + LEDGER_VAL_INTERVAL)))
-                isCurrent = true;
-            else
-            {
-                WriteLog (lsWARNING, Validations) << "Received stale validation now=" << now << ", close=" << valClose;
-            }
-        }
+        std::uint32_t now = getApp().getOPs().getCloseTimeNC();
+        std::uint32_t valClose = val->getSignTime();
+
+        if ((now > (valClose - LEDGER_EARLY_INTERVAL)) && (now < (valClose + LEDGER_VAL_INTERVAL)))
+            isCurrent = true;
         else
+            WriteLog (lsWARNING, Validations) << "Received stale validation now=" << now << ", close=" << valClose;
+
+        if (!val->isTrusted ())
         {
             WriteLog (lsDEBUG, Validations) << "Node " << signer.humanNodePublic () << " not in UNL st=" << val->getSignTime () <<
                                             ", hash=" << val->getLedgerHash () << ", shash=" << val->getSigningHash () << " src=" << source;
@@ -95,29 +94,37 @@ private:
         uint256 hash = val->getLedgerHash ();
         uint160 node = signer.getNodeID ();
 
+        if (val->isTrusted () && isCurrent)
         {
-            ScopedLockType sl (mLock, __FILE__, __LINE__);
+            ScopedLockType sl (mLock);
 
             if (!findCreateSet (hash)->insert (std::make_pair (node, val)).second)
                 return false;
 
-            if (isCurrent)
-            {
-                boost::unordered_map<uint160, SerializedValidation::pointer>::iterator it = mCurrentValidations.find (node);
+            auto it = mCurrentValidations.find (node);
 
-                if (it == mCurrentValidations.end ())
-                    mCurrentValidations.emplace (node, val);
-                else if (!it->second)
-                    it->second = val;
-                else if (val->getSignTime () > it->second->getSignTime ())
-                {
-                    val->setPreviousHash (it->second->getLedgerHash ());
-                    mStaleValidations.push_back (it->second);
-                    it->second = val;
-                    condWrite ();
-                }
-                else
-                    isCurrent = false;
+            if (it == mCurrentValidations.end ())
+            {
+                // No previous validation from this validator
+                mCurrentValidations.emplace (node, val);
+            }
+            else if (!it->second)
+            {
+                // Previous validation has expired
+                it->second = val;
+            }
+            else if (val->getSignTime () > it->second->getSignTime ())
+            {
+                // This is a newer validation
+                val->setPreviousHash (it->second->getLedgerHash ());
+                mStaleValidations.push_back (it->second);
+                it->second = val;
+                condWrite ();
+            }
+            else
+            {
+                // We already have a newer validation from this source
+                isCurrent = false;
             }
         }
 
@@ -125,10 +132,13 @@ private:
                                         << " added " << (val->isTrusted () ? "trusted/" : "UNtrusted/") << (isCurrent ? "current" : "stale");
 
         if (val->isTrusted () && isCurrent)
+        {
             getApp().getLedgerMaster ().checkAccept (hash, val->getFieldU32 (sfLedgerSequence));
+            return true;
+        }
 
         // FIXME: This never forwards untrusted validations
-        return isCurrent;
+        return false;
     }
 
     void tune (int size, int age)
@@ -140,7 +150,7 @@ private:
     ValidationSet getValidations (uint256 const& ledger)
     {
         {
-            ScopedLockType sl (mLock, __FILE__, __LINE__);
+            ScopedLockType sl (mLock);
             VSpointer set = findSet (ledger);
 
             if (set)
@@ -152,19 +162,19 @@ private:
     void getValidationCount (uint256 const& ledger, bool currentOnly, int& trusted, int& untrusted)
     {
         trusted = untrusted = 0;
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
         VSpointer set = findSet (ledger);
 
         if (set)
         {
-            uint32 now = getApp().getOPs ().getNetworkTimeNC ();
+            std::uint32_t now = getApp().getOPs ().getNetworkTimeNC ();
             BOOST_FOREACH (u160_val_pair & it, *set)
             {
                 bool isTrusted = it.second->isTrusted ();
 
                 if (isTrusted && currentOnly)
                 {
-                    uint32 closeTime = it.second->getSignTime ();
+                    std::uint32_t closeTime = it.second->getSignTime ();
 
                     if ((now < (closeTime - LEDGER_EARLY_INTERVAL)) || (now > (closeTime + LEDGER_VAL_INTERVAL)))
                         isTrusted = false;
@@ -187,7 +197,7 @@ private:
     void getValidationTypes (uint256 const& ledger, int& full, int& partial)
     {
         full = partial = 0;
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
         VSpointer set = findSet (ledger);
 
         if (set)
@@ -211,7 +221,7 @@ private:
     int getTrustedValidationCount (uint256 const& ledger)
     {
         int trusted = 0;
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
         VSpointer set = findSet (ledger);
 
         if (set)
@@ -226,12 +236,12 @@ private:
         return trusted;
     }
 
-    int getFeeAverage (uint256 const& ledger, uint64 ref, uint64& fee)
+    int getFeeAverage (uint256 const& ledger, std::uint64_t ref, std::uint64_t& fee)
     {
         int trusted = 0;
         fee = 0;
 
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
         VSpointer set = findSet (ledger);
 
         if (set)
@@ -245,7 +255,7 @@ private:
                         fee += it.second->getFieldU32(sfLoadFee);
                     else
                         fee += ref;
-		}
+                 }
             }
         }
 
@@ -260,7 +270,7 @@ private:
     {
         // Number of trusted nodes that have moved past this ledger
         int count = 0;
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
         BOOST_FOREACH (u160_val_pair & it, mCurrentValidations)
         {
             if (it.second->isTrusted () && it.second->isPreviousHash (ledger))
@@ -275,7 +285,7 @@ private:
         int goodNodes = overLoaded ? 1 : 0;
         int badNodes = overLoaded ? 0 : 1;
         {
-            ScopedLockType sl (mLock, __FILE__, __LINE__);
+            ScopedLockType sl (mLock);
             BOOST_FOREACH (u160_val_pair & it, mCurrentValidations)
             {
                 if (it.second->isTrusted ())
@@ -292,12 +302,12 @@ private:
 
     std::list<SerializedValidation::pointer> getCurrentTrustedValidations ()
     {
-        uint32 cutoff = getApp().getOPs ().getNetworkTimeNC () - LEDGER_VAL_INTERVAL;
+        std::uint32_t cutoff = getApp().getOPs ().getNetworkTimeNC () - LEDGER_VAL_INTERVAL;
 
         std::list<SerializedValidation::pointer> ret;
 
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
-        boost::unordered_map<uint160, SerializedValidation::pointer>::iterator it = mCurrentValidations.begin ();
+        ScopedLockType sl (mLock);
+        ripple::unordered_map<uint160, SerializedValidation::pointer>::iterator it = mCurrentValidations.begin ();
 
         while (it != mCurrentValidations.end ())
         {
@@ -324,17 +334,17 @@ private:
         return ret;
     }
 
-    boost::unordered_map<uint256, currentValidationCount>
+    ripple::unordered_map<uint256, currentValidationCount>
     getCurrentValidations (uint256 currentLedger, uint256 priorLedger)
     {
-        uint32 cutoff = getApp().getOPs ().getNetworkTimeNC () - LEDGER_VAL_INTERVAL;
+        std::uint32_t cutoff = getApp().getOPs ().getNetworkTimeNC () - LEDGER_VAL_INTERVAL;
         bool valCurrentLedger = currentLedger.isNonZero ();
         bool valPriorLedger = priorLedger.isNonZero ();
 
-        boost::unordered_map<uint256, currentValidationCount> ret;
+        ripple::unordered_map<uint256, currentValidationCount> ret;
 
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
-        boost::unordered_map<uint160, SerializedValidation::pointer>::iterator it = mCurrentValidations.begin ();
+        ScopedLockType sl (mLock);
+        ripple::unordered_map<uint160, SerializedValidation::pointer>::iterator it = mCurrentValidations.begin ();
 
         while (it != mCurrentValidations.end ())
         {
@@ -380,7 +390,7 @@ private:
         bool anyNew = false;
 
         WriteLog (lsINFO, Validations) << "Flushing validations";
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
         BOOST_FOREACH (u160_val_pair & it, mCurrentValidations)
         {
             if (it.second)
@@ -395,7 +405,7 @@ private:
 
         while (mWriting)
         {
-            ScopedUnlockType sul (mLock, __FILE__, __LINE__);
+            ScopedUnlockType sul (mLock);
             boost::this_thread::sleep (boost::posix_time::milliseconds (100));
         }
 
@@ -418,7 +428,7 @@ private:
         boost::format insVal ("INSERT INTO Validations "
                               "(LedgerHash,NodePubKey,SignTime,RawData) VALUES ('%s','%s','%u',%s);");
 
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
         assert (mWriting);
 
         while (!mStaleValidations.empty ())
@@ -428,7 +438,7 @@ private:
             mStaleValidations.swap (vector);
 
             {
-                ScopedUnlockType sul (mLock, __FILE__, __LINE__);
+                ScopedUnlockType sul (mLock);
                 {
                     Database* db = getApp().getLedgerDB ()->getDB ();
                     DeprecatedScopedLock dbl (getApp().getLedgerDB ()->getDBLock ());
@@ -439,9 +449,10 @@ private:
                     {
                         s.erase ();
                         it->add (s);
-                        db->executeSQL (boost::str (insVal % it->getLedgerHash ().GetHex ()
-                                                    % it->getSignerPublic ().humanNodePublic () % it->getSignTime ()
-                                                    % sqlEscape (s.peekData ())));
+                        db->executeSQL (boost::str (
+                            insVal % to_string (it->getLedgerHash ()) %
+                            it->getSignerPublic ().humanNodePublic () %
+                            it->getSignTime () % sqlEscape (s.peekData ())));
                     }
                     db->executeSQL ("END TRANSACTION;");
                 }
@@ -453,7 +464,7 @@ private:
 
     void sweep ()
     {
-        ScopedLockType sl (mLock, __FILE__, __LINE__);
+        ScopedLockType sl (mLock);
         mValidations.sweep ();
     }
 };
@@ -463,4 +474,4 @@ Validations* Validations::New ()
     return new ValidationsImp;
 }
 
-// vim:ts=4
+} // ripple

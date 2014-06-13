@@ -24,6 +24,9 @@
 #ifndef BEAST_LOGGER_H_INCLUDED
 #define BEAST_LOGGER_H_INCLUDED
 
+namespace beast
+{
+
 //==============================================================================
 /**
     Acts as an application-wide logging class.
@@ -33,10 +36,8 @@
 
     The logger class also contains methods for writing messages to the debugger's
     output stream.
-
-    @see FileLogger
 */
-class BEAST_API Logger
+class Logger
 {
 public:
     //==============================================================================
@@ -50,7 +51,7 @@ public:
         the caller must make sure that it is not deleted while still being used.
         A null pointer can be passed-in to disable any logging.
     */
-    static void BEAST_CALLTYPE setCurrentLogger (Logger* newLogger) noexcept;
+    static void setCurrentLogger (Logger* newLogger) noexcept;
 
     /** Returns the current logger, or nullptr if none has been set. */
     static Logger* getCurrentLogger() noexcept;
@@ -62,7 +63,7 @@ public:
 
         @see logMessage
     */
-    static void BEAST_CALLTYPE writeToLog (const String& message);
+    static void writeToLog (const String& message);
 
 
     //==============================================================================
@@ -71,7 +72,7 @@ public:
         This can be called directly, or by using the DBG() macro in
         CompilerConfig.h (which will avoid calling the method in non-debug builds).
     */
-    static void BEAST_CALLTYPE outputDebugString (const String& text);
+    static void outputDebugString (const String& text);
 
 
 protected:
@@ -87,5 +88,6 @@ private:
     static Logger* currentLogger;
 };
 
+} // beast
 
 #endif   // BEAST_LOGGER_H_INCLUDED

@@ -34,9 +34,10 @@ BatchWriter::~BatchWriter ()
     waitForWriting ();
 }
 
-void BatchWriter::store (NodeObject::ref object)
+void
+BatchWriter::store (NodeObject::ref object)
 {
-    LockType::scoped_lock sl (mWriteMutex);
+    std::lock_guard<decltype(mWriteMutex)> sl (mWriteMutex);
 
     mWriteSet.push_back (object);
 
@@ -48,19 +49,22 @@ void BatchWriter::store (NodeObject::ref object)
     }
 }
 
-int BatchWriter::getWriteLoad ()
+int
+BatchWriter::getWriteLoad ()
 {
-    LockType::scoped_lock sl (mWriteMutex);
+    std::lock_guard<decltype(mWriteMutex)> sl (mWriteMutex);
 
     return std::max (mWriteLoad, static_cast<int> (mWriteSet.size ()));
 }
 
-void BatchWriter::performScheduledTask ()
+void
+BatchWriter::performScheduledTask ()
 {
     writeBatch ();
 }
 
-void BatchWriter::writeBatch ()
+void
+BatchWriter::writeBatch ()
 {
     for (;;)
     {
@@ -69,7 +73,7 @@ void BatchWriter::writeBatch ()
         set.reserve (batchWritePreallocationSize);
 
         {
-            LockType::scoped_lock sl (mWriteMutex);
+            std::lock_guard<decltype(mWriteMutex)> sl (mWriteMutex);
 
             mWriteSet.swap (set);
             assert (mWriteSet.empty ());
@@ -86,13 +90,23 @@ void BatchWriter::writeBatch ()
 
         }
 
+        BatchWriteReport report;
+        report.writeCount = set.size();
+        auto const before = std::chrono::steady_clock::now();
+
         m_callback.writeBatch (set);
+
+        report.elapsed = std::chrono::duration_cast <std::chrono::milliseconds>
+            (std::chrono::steady_clock::now() - before);
+
+        m_scheduler.onBatchWrite (report);
     }
 }
 
-void BatchWriter::waitForWriting ()
+void
+BatchWriter::waitForWriting ()
 {
-    LockType::scoped_lock sl (mWriteMutex);
+    std::unique_lock <decltype(mWriteMutex)> sl (mWriteMutex);
 
     while (mWritePending)
         mWriteCondition.wait (sl);

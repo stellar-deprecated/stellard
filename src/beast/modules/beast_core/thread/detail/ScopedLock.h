@@ -22,6 +22,9 @@
 
 #include "../MutexTraits.h"
 
+namespace beast
+{
+
 namespace detail
 {
 
@@ -247,6 +250,8 @@ private:
     bool m_owns_lock;
 };
 
-} // namespace detail
+} // detail
+
+} // beast
 
 #endif

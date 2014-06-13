@@ -24,13 +24,18 @@
 #ifndef BEAST_STRINGARRAY_H_INCLUDED
 #define BEAST_STRINGARRAY_H_INCLUDED
 
+#include "../containers/Array.h"
+#include "../threads/CriticalSection.h"
+
+namespace beast {
+
 //==============================================================================
 /**
     A special array for holding a list of strings.
 
     @see String, StringPairArray
 */
-class BEAST_API StringArray : LeakChecked <StringArray>
+class StringArray : LeakChecked <StringArray>
 {
 public:
     //==============================================================================
@@ -404,5 +409,6 @@ private:
     Array <String> strings;
 };
 
+} // beast
 
 #endif   // BEAST_STRINGARRAY_H_INCLUDED

@@ -19,6 +19,9 @@
 
 #include "../../../beast/asio/wrap_handler.h"
 #include "../../../beast/asio/placeholders.h"
+#include "../../../beast/unit_test/suite.h"
+
+#include "../../../beast/cxx14/memory.h" // <memory>
 
 namespace beast {
 namespace asio {
@@ -189,7 +192,7 @@ public:
 
         String m_get_string;
         WaitableEvent m_done;
-        ScopedPointer <abstract_socket> m_stream;
+        std::unique_ptr <abstract_socket> m_stream;
 
         struct State
         {
@@ -386,7 +389,8 @@ public:
             if (m_url.scheme () == "https")
             {
                 typedef boost::asio::ssl::stream <socket&> ssl_stream;
-                m_stream = new socket_wrapper <ssl_stream> (m_socket, m_context);
+                m_stream = std::make_unique <
+                    socket_wrapper <ssl_stream>> (m_socket, m_context);
                 /*
                 m_stream->set_verify_mode (
                     boost::asio::ssl::verify_peer |
@@ -398,7 +402,7 @@ public:
                 return;
             }
 
-            m_stream = new socket_wrapper <socket&> (m_socket);
+            m_stream = std::make_unique <socket_wrapper <socket&>> (m_socket);
             handle_handshake (ec);
         }
 
@@ -545,7 +549,7 @@ HTTPClientBase* HTTPClientBase::New (Journal journal,
 
 //------------------------------------------------------------------------------
 
-class HTTPClientTests : public UnitTest
+class HTTPClient_test : public unit_test::suite
 {
 public:
     typedef boost::system::error_code error_code;
@@ -592,35 +596,38 @@ public:
 
     //--------------------------------------------------------------------------
 
-    void log (HTTPMessage const& m)
+    void print (HTTPMessage const& m)
     {
-        for (std::size_t i = 0; i < m.headers().size(); ++i)
+        for (int i = 0; i < m.headers().size(); ++i)
         {
             HTTPField const f (m.headers()[i]);
-            String s;
-            s = "[ '" + f.name() +
-                "' , '" + f.value() + "' ]";
-            logMessage (s);
+            std::stringstream ss;
+            log <<
+                "[ '" << f.name() <<
+                "' , '" << f.value() + "' ]";
         }
     }
 
-    void log (HTTPClientBase::error_type error, HTTPClientBase::value_type const& response)
+    void print (HTTPClientBase::error_type error,
+        HTTPClientBase::value_type const& response)
     {
         if (error != 0)
         {
-            logMessage (String (
-                "HTTPClient error: '" + error.message() + "'"));
+            log <<
+                "HTTPClient error: '" + error.message() << "'";
         }
         else if (! response.empty ())
         {
-            logMessage (String ("Status: ") +
-                String::fromNumber (response->status()));
+            log <<
+                "Status: " <<
+                String::fromNumber (response->status()).toStdString();
 
-            log (*response);
+            print (*response);
         }
         else
         {
-            logMessage ("HTTPClient: no response");
+            log <<
+                "HTTPClient: no response";
         }
     }
 
@@ -628,28 +635,28 @@ public:
 
     void handle_get (HTTPClientBase::result_type result)
     {
-        log (result.first, result.second);
+        print (result.first, result.second);
     }
 
     void testSync (String const& s, double timeoutSeconds)
     {
-        ScopedPointer <HTTPClientBase> client (
+        std::unique_ptr <HTTPClientBase> client (
             HTTPClientBase::New (Journal(), timeoutSeconds));
 
         HTTPClientBase::result_type const& result (
             client->get (ParsedURL (s).url ()));
 
-        log (result.first, result.second);
+        print (result.first, result.second);
     }
 
     void testAsync (String const& s, double timeoutSeconds)
     {
         IoServiceThread t;
-        ScopedPointer <HTTPClientBase> client (
+        std::unique_ptr <HTTPClientBase> client (
             HTTPClientBase::New (Journal(), timeoutSeconds));
 
         client->async_get (t.get_io_service (), ParsedURL (s).url (),
-            beast::bind (&HTTPClientTests::handle_get, this,
+            beast::bind (&HTTPClient_test::handle_get, this,
                 beast::_1));
 
         t.start ();
@@ -658,10 +665,8 @@ public:
 
     //--------------------------------------------------------------------------
 
-    void runTest ()
+    void run ()
     {
-        beginTestCase ("HTTPClient::get");
-
         testSync (
             "http://www.boost.org/doc/libs/1_54_0/doc/html/boost_asio/reference.html",
             5);
@@ -676,13 +681,9 @@ public:
 
         pass ();
     }
-
-    HTTPClientTests () : UnitTest ("HttpClient", "beast", runManual)
-    {
-    }
 };
 
-static HTTPClientTests httpClientTests;
+BEAST_DEFINE_TESTSUITE_MANUAL(HTTPClient,beast_asio,beast);
 
 }
 }

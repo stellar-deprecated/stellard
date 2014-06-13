@@ -17,16 +17,19 @@
 */
 //==============================================================================
 
-#include "BeastConfig.h"
+#if BEAST_INCLUDE_BEASTCONFIG
+#include "../../BeastConfig.h"
+#endif
 
 #include "impl/Error.cpp"
 
-// For Journal and Debug
-#include "../../modules/beast_core/beast_core.h"
-
-#include "impl/Assert.cpp"
 #include "impl/Debug.cpp"
 #include "impl/Journal.cpp"
 #include "impl/LeakChecked.cpp"
 #include "impl/StaticObject.cpp"
 #include "impl/PropertyStream.cpp"
+
+#include "tests/bassert.test.cpp"
+#include "tests/empty_base_optimization.test.cpp"
+#include "tests/Zero.test.cpp"
+#include "tests/tagged_integer.test.cpp"

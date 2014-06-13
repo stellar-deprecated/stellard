@@ -158,6 +158,14 @@ public:
 
         add (jtGENERIC,       "generic",
             0,        false,  true,  0,     0);
+
+        add (jtNS_SYNC_READ,  "SyncReadNode",
+            0,        false,  true,  0,     0);
+        add (jtNS_ASYNC_READ, "AsyncReadNode",
+            0,        false,  true,  0,     0);
+        add (jtNS_WRITE,      "WriteNode",
+            0,        false,  true,  0,     0);
+
     }
 
     JobTypeInfo const& get (JobType jt) const
@@ -198,7 +206,7 @@ public:
 
 private:
     void add(JobType jt, std::string name, int limit, 
-        bool skip, bool special, uint64 avgLatency, uint64 peakLatency)
+        bool skip, bool special, std::uint64_t avgLatency, std::uint64_t peakLatency)
     {
         assert (m_map.find (jt) == m_map.end ());
 

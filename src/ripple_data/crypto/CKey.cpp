@@ -17,6 +17,10 @@
 */
 //==============================================================================
 
+#include "../../beast/beast/unit_test/suite.h"
+
+namespace ripple {
+
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2011 The Bitcoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
@@ -25,17 +29,12 @@
 
 // VFALCO TODO move inlined stuff from CKey into here
 
-class CKeyTests : public UnitTest
+class CKey_test : public beast::unit_test::suite
 {
 public:
-    CKeyTests () : UnitTest ("CKey", "ripple")
+    void
+    run ()
     {
-    }
-
-    void runTest ()
-    {
-        beginTestCase ("determinism");
-
         uint128 seed1, seed2;
         seed1.SetHex ("71ED064155FFADFA38782C5E0158CB26");
         seed2.SetHex ("CF0C3BE4485961858C4198515AE5B965");
@@ -45,10 +44,10 @@ public:
         root1.GetPrivateKeyU (priv1);
         root2.GetPrivateKeyU (priv2);
 
-        unexpected (priv1.GetHex () != "7CFBA64F771E93E817E15039215430B53F7401C34931D111EAB3510B22DBB0D8",
+        unexpected (to_string (priv1) != "7CFBA64F771E93E817E15039215430B53F7401C34931D111EAB3510B22DBB0D8",
             "Incorrect private key for generator");
 
-        unexpected (priv2.GetHex () != "98BC2EACB26EB021D1A6293C044D88BA2F0B6729A2772DEEBF2E21A263C1740B",
+        unexpected (to_string (priv2) != "98BC2EACB26EB021D1A6293C044D88BA2F0B6729A2772DEEBF2E21A263C1740B",
             "Incorrect private key for generator");
 
         RippleAddress nSeed;
@@ -62,4 +61,7 @@ public:
     }
 };
 
-static CKeyTests cKeyTests;
+BEAST_DEFINE_TESTSUITE(CKey,ripple_data,ripple);
+
+} // ripple
+

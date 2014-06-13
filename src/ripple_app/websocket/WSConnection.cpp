@@ -17,18 +17,19 @@
 */
 //==============================================================================
 
+namespace ripple {
+
 SETUP_LOGN (WSConnection, "WSConnection")
 
 //------------------------------------------------------------------------------
 
 WSConnection::WSConnection (Resource::Manager& resourceManager,
     Resource::Consumer usage, InfoSub::Source& source, bool isPublic,
-        IP::Endpoint const& remoteAddress, boost::asio::io_service& io_service)
+        beast::IP::Endpoint const& remoteAddress, boost::asio::io_service& io_service)
     : InfoSub (source, usage)
     , m_resourceManager (resourceManager)
     , m_isPublic (isPublic)
     , m_remoteAddress (remoteAddress)
-    , m_receiveQueueMutex (this, "WSConnection", __FILE__, __LINE__)
     , m_netOPs (getApp ().getOPs ())
     , m_pingTimer (io_service)
     , m_sentPing (false)
@@ -51,7 +52,7 @@ void WSConnection::onPong (const std::string&)
 
 void WSConnection::rcvMessage (message_ptr msg, bool& msgRejected, bool& runQueue)
 {
-    ScopedLockType sl (m_receiveQueueMutex, __FILE__, __LINE__);
+    ScopedLockType sl (m_receiveQueueMutex);
 
     if (m_isDead)
     {
@@ -82,7 +83,7 @@ void WSConnection::rcvMessage (message_ptr msg, bool& msgRejected, bool& runQueu
 
 bool WSConnection::checkMessage ()
 {
-    ScopedLockType sl (m_receiveQueueMutex, __FILE__, __LINE__);
+    ScopedLockType sl (m_receiveQueueMutex);
 
     assert (m_receiveQueueRunning);
 
@@ -97,7 +98,7 @@ bool WSConnection::checkMessage ()
 
 WSConnection::message_ptr WSConnection::getMessage ()
 {
-    ScopedLockType sl (m_receiveQueueMutex, __FILE__, __LINE__);
+    ScopedLockType sl (m_receiveQueueMutex);
 
     if (m_isDead || m_receiveQueue.empty ())
     {
@@ -112,7 +113,7 @@ WSConnection::message_ptr WSConnection::getMessage ()
 
 void WSConnection::returnMessage (message_ptr ptr)
 {
-    ScopedLockType sl (m_receiveQueueMutex, __FILE__, __LINE__);
+    ScopedLockType sl (m_receiveQueueMutex);
 
     if (!m_isDead)
     {
@@ -131,18 +132,18 @@ Json::Value WSConnection::invokeCommand (Json::Value& jvRequest)
 
     // Requests without "command" are invalid.
     //
-    if (!jvRequest.isMember ("command"))
+    if (!jvRequest.isMember (jss::command))
     {
         Json::Value jvResult (Json::objectValue);
 
-        jvResult["type"]    = "response";
-        jvResult["status"]  = "error";
-        jvResult["error"]   = "missingCommand";
-        jvResult["request"] = jvRequest;
+        jvResult[jss::type]    = jss::response;
+        jvResult[jss::status]  = jss::error;
+        jvResult[jss::error]   = jss::missingCommand;
+        jvResult[jss::request] = jvRequest;
 
-        if (jvRequest.isMember ("id"))
+        if (jvRequest.isMember (jss::id))
         {
-            jvResult["id"]  = jvRequest["id"];
+            jvResult[jss::id]  = jvRequest[jss::id];
         }
 
         getConsumer().charge (Resource::feeInvalidRPC);
@@ -161,17 +162,17 @@ Json::Value WSConnection::invokeCommand (Json::Value& jvRequest)
 
     if (Config::FORBID == role)
     {
-        jvResult["result"]  = rpcError (rpcFORBIDDEN);
+        jvResult[jss::result]  = rpcError (rpcFORBIDDEN);
     }
     else
     {
-        jvResult["result"] = mRPCHandler.doCommand (jvRequest, role, loadType);
+        jvResult[jss::result] = mRPCHandler.doCommand (jvRequest, role, loadType);
     }
 
     getConsumer().charge (loadType);
     if (getConsumer().warn ())
     {
-        jvResult["warning"] = "load";
+        jvResult[jss::warning] = jss::load;
     }
 
     // Currently we will simply unwrap errors returned by the RPC
@@ -179,24 +180,26 @@ Json::Value WSConnection::invokeCommand (Json::Value& jvRequest)
     // consistent.
     //
     // Regularize result. This is duplicate code.
-    if (jvResult["result"].isMember ("error"))
+    if (jvResult[jss::result].isMember (jss::error))
     {
-        jvResult            = jvResult["result"];
-        jvResult["status"]  = "error";
-        jvResult["request"] = jvRequest;
+        jvResult               = jvResult[jss::result];
+        jvResult[jss::status]  = jss::error;
+        jvResult[jss::request] = jvRequest;
 
     }
     else
     {
-        jvResult["status"]  = "success";
+        jvResult[jss::status]  = jss::success;
     }
 
-    if (jvRequest.isMember ("id"))
+    if (jvRequest.isMember (jss::id))
     {
-        jvResult["id"]      = jvRequest["id"];
+        jvResult[jss::id]      = jvRequest[jss::id];
     }
 
-    jvResult["type"]        = "response";
+    jvResult[jss::type]        = jss::response;
 
     return jvResult;
 }
+
+} // ripple

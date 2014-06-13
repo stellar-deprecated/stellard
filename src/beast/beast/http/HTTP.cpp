@@ -17,8 +17,13 @@
 */
 //==============================================================================
 
-#include "BeastConfig.h"
+#if BEAST_INCLUDE_BEASTCONFIG
+#include "../../BeastConfig.h"
+#endif
 
 #include "impl/URL.cpp"
 #include "impl/ParsedURL.cpp"
-#include "impl/http_parser.cpp"
+#include "impl/joyent_parser.cpp"
+#include "impl/raw_parser.cpp"
+
+#include "tests/ParsedURL.cpp"

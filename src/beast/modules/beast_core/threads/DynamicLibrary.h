@@ -24,6 +24,9 @@
 #ifndef BEAST_DYNAMICLIBRARY_H_INCLUDED
 #define BEAST_DYNAMICLIBRARY_H_INCLUDED
 
+namespace beast
+{
+
 /**
     Handles the opening and closing of DLLs.
 
@@ -31,7 +34,7 @@
     Since the DLL is freed when this object is deleted, it's handy for managing
     library lifetimes using RAII.
 */
-class BEAST_API DynamicLibrary : LeakChecked <DynamicLibrary>, public Uncopyable
+class DynamicLibrary : LeakChecked <DynamicLibrary>, public Uncopyable
 {
 public:
     /** Creates an unopened DynamicLibrary object.
@@ -74,5 +77,6 @@ private:
     void* handle;
 };
 
+} // beast
 
 #endif   // BEAST_DYNAMICLIBRARY_H_INCLUDED

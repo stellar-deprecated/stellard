@@ -20,17 +20,19 @@
 #ifndef BEAST_ASIO_SHARED_HANDLER_H_INCLUDED
 #define BEAST_ASIO_SHARED_HANDLER_H_INCLUDED
 
-#include "../mpl/IsCallPossible.h"
+#include "../Config.h"
 
-#include <functional>
-#include <memory>
-#include "../cxx14/type_traits.h" // <type_traits>
+#include "../utility/is_call_possible.h"
 
 #include <boost/utility/base_from_member.hpp>
-
 #include <boost/asio/detail/handler_alloc_helpers.hpp>
 #include <boost/asio/detail/handler_cont_helpers.hpp>
 #include <boost/asio/detail/handler_invoke_helpers.hpp>
+
+#include "../utility/noexcept.h"
+#include <functional>
+#include <memory>
+#include "../cxx14/type_traits.h" // <type_traits>
 
 #ifndef BEAST_ASIO_NO_ALLOCATE_SHARED
 #define BEAST_ASIO_NO_ALLOCATE_SHARED 0
@@ -260,9 +262,7 @@ public:
 //------------------------------------------------------------------------------
 
 /** Handler shared reference that provides io_service execution guarantees. */
-template <
-    class Signature
->
+template <class Signature>
 class shared_handler
 {
 private:
@@ -318,6 +318,7 @@ public:
     operator= (std::nullptr_t)
     {
         m_ptr = nullptr;
+        return *this;
     }
 
     shared_handler&
@@ -327,15 +328,17 @@ public:
         return *this;
     }
 
-    bool
-    empty() const
+    shared_handler&
+    operator= (shared_handler&& rhs)
     {
-        return ! m_ptr.operator bool();
+        m_ptr = std::move (rhs.m_ptr);
+        return *this;
     }
 
-    operator bool() const
+    explicit
+    operator bool() const noexcept
     {
-        return !empty();
+        return m_ptr.operator bool();
     }
 
     void

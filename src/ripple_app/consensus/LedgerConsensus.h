@@ -20,6 +20,8 @@
 #ifndef RIPPLE_LEDGERCONSENSUS_H
 #define RIPPLE_LEDGERCONSENSUS_H
 
+namespace ripple {
+    
 /** Manager for achieving consensus on the next ledger.
 
     This object is created when the consensus process starts, and
@@ -28,13 +30,9 @@
 class LedgerConsensus
 {
 public:    
-    typedef abstract_clock <std::chrono::seconds> clock_type;
+    typedef beast::abstract_clock <std::chrono::seconds> clock_type;
 
-    static boost::shared_ptr <LedgerConsensus> New (clock_type& clock,
-        LedgerHash const & prevLCLHash, Ledger::ref previousLedger,
-            uint32 closeTime);
-
-    virtual ~LedgerConsensus () = 0;
+    virtual ~LedgerConsensus() = 0;
 
     virtual int startup () = 0;
 
@@ -68,10 +66,10 @@ public:
 
     virtual bool peerPosition (LedgerProposal::ref) = 0;
 
-    virtual bool peerHasSet (Peer::ref peer, uint256 const & set,
+    virtual bool peerHasSet (Peer::ptr const& peer, uint256 const & set,
         protocol::TxSetStatus status) = 0;
 
-    virtual SHAMapAddNode peerGaveNodes (Peer::ref peer, 
+    virtual SHAMapAddNode peerGaveNodes (Peer::ptr const& peer, 
         uint256 const & setHash,
         const std::list<SHAMapNode>& nodeIDs, 
         const std::list< Blob >& nodeData) = 0;
@@ -82,5 +80,11 @@ public:
     virtual void simulate () = 0;
 };
 
+boost::shared_ptr <LedgerConsensus>
+make_LedgerConsensus (LedgerConsensus::clock_type& clock, LocalTxs& localtx,
+    LedgerHash const & prevLCLHash, Ledger::ref previousLedger,
+        std::uint32_t closeTime, FeeVote& feeVote);
+
+} // ripple
 
 #endif

@@ -20,6 +20,8 @@
 #ifndef RIPPLE_ORDERBOOKDB_H_INCLUDED
 #define RIPPLE_ORDERBOOKDB_H_INCLUDED
 
+namespace ripple {
+
 // VFALCO TODO Add Javadoc comment explaining what this class does
 class BookListeners
 {
@@ -28,25 +30,25 @@ public:
 
     BookListeners ();
     void addSubscriber (InfoSub::ref sub);
-    void removeSubscriber (uint64 sub);
+    void removeSubscriber (std::uint64_t sub);
     void publish (Json::Value const& jvObj);
 
 private:
     typedef RippleRecursiveMutex LockType;
-    typedef LockType::ScopedLockType ScopedLockType;
+    typedef std::lock_guard <LockType> ScopedLockType;
     LockType mLock;
 
     // VFALCO TODO Use a typedef for the uint64
     //             Use a typedef for the container
-    boost::unordered_map<uint64, InfoSub::wptr> mListeners;
+    ripple::unordered_map<std::uint64_t, InfoSub::wptr> mListeners;
 };
 
 //------------------------------------------------------------------------------
 
 // VFALCO TODO Add Javadoc comment explaining what this class does
 class OrderBookDB
-    : public Stoppable
-    , public LeakChecked <OrderBookDB>
+    : public beast::Stoppable
+    , public beast::LeakChecked <OrderBookDB>
 {
 public:
     explicit OrderBookDB (Stoppable& parent);
@@ -77,28 +79,28 @@ public:
 
 private:
     // by ci/ii
-    boost::unordered_map <RippleAsset,
+    ripple::unordered_map <RippleAsset,
         std::vector <OrderBook::pointer>> mSourceMap;
 
     // by co/io
-    boost::unordered_map <RippleAsset,
+    ripple::unordered_map <RippleAsset,
         std::vector<OrderBook::pointer>> mDestMap;
 
     // does an order book to XRP exist
     boost::unordered_set <RippleAsset> mXRPBooks;
 
     typedef RippleRecursiveMutex LockType;
-    typedef LockType::ScopedLockType ScopedLockType;
+    typedef std::lock_guard <LockType> ScopedLockType;
     LockType mLock;
 
-    typedef boost::unordered_map <RippleBook, BookListeners::pointer> MapType;
+    typedef ripple::unordered_map <RippleBook, BookListeners::pointer> MapType;
 
     MapType mListeners;
 
-    uint32 mSeq;
+    std::uint32_t mSeq;
 
 };
 
-#endif
+} // ripple
 
-// vim:ts=4
+#endif

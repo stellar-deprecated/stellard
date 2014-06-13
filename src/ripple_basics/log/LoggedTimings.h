@@ -20,20 +20,20 @@
 #ifndef RIPPLE_BASICS_LOGGEDTIMINGS_H_INCLUDED
 #define RIPPLE_BASICS_LOGGEDTIMINGS_H_INCLUDED
 
-namespace detail
-{
+#include "../../beast/modules/beast_core/time/Time.h"
+#include "../../beast/modules/beast_core/diagnostic/MeasureFunctionCallTime.h"
+#include "../../beast/beast/utility/Debug.h"
+#include "../containers/SyncUnorderedMap.h"
+    
+namespace ripple {
+
+namespace detail {
 
 /** Template class that performs destruction of an object.
     Default implementation simply calls delete
 */
 template <typename Object>
-struct Destroyer
-{
-    static void destroy (Object& object)
-    {
-        delete &object;
-    }
-};
+struct Destroyer;
 
 /** Specialization for boost::shared_ptr.
 */
@@ -46,12 +46,23 @@ struct Destroyer <boost::shared_ptr <Object> >
     }
 };
 
-/** Specialization for boost::unordered_map
+/** Specialization for std::unordered_map
 */
-template <typename Key, typename Value>
-struct Destroyer <boost::unordered_map <Key, Value> >
+template <typename Key, typename Value, typename Hash, typename Alloc>
+struct Destroyer <std::unordered_map <Key, Value, Hash, Alloc> >
 {
-    static void destroy (boost::unordered_map <Key, Value>& v)
+    static void destroy (std::unordered_map <Key, Value, Hash, Alloc>& v)
+    {
+        v.clear ();
+    }
+};
+
+/** Specialization for SyncUnorderedMapType
+*/
+template <typename Key, typename Value, typename Hash>
+struct Destroyer <SyncUnorderedMapType <Key, Value, Hash> >
+{
+    static void destroy (SyncUnorderedMapType <Key, Value, Hash>& v)
     {
         v.clear ();
     }
@@ -66,7 +77,7 @@ inline double cleanElapsed (double seconds) noexcept
     return static_cast <int> ((seconds * 10 + 0.5) / 10);
 }
 
-}
+} // detail
 
 //------------------------------------------------------------------------------
 
@@ -76,19 +87,19 @@ inline double cleanElapsed (double seconds) noexcept
 template <typename Object>
 double timedDestroy (Object& object)
 {
-    int64 const startTime (Time::getHighResolutionTicks ());
+    std::int64_t const startTime (beast::Time::getHighResolutionTicks ());
 
     detail::Destroyer <Object>::destroy (object);
 
-    return Time::highResolutionTicksToSeconds (
-            Time::getHighResolutionTicks () - startTime);
+    return beast::Time::highResolutionTicksToSeconds (
+            beast::Time::getHighResolutionTicks () - startTime);
 }
 
 /** Log the timed destruction of an object if the time exceeds a threshold.
 */
 template <typename PartitionKey, typename Object>
 void logTimedDestroy (
-    Object& object, String objectDescription, double thresholdSeconds = 1)
+    Object& object, beast::String objectDescription, double thresholdSeconds = 1)
 {
     double const seconds = timedDestroy (object);
 
@@ -98,7 +109,7 @@ void logTimedDestroy (
 
         Log (severity, LogPartition::get <PartitionKey> ()) <<
             objectDescription << " took "<<
-            String (detail::cleanElapsed (seconds)) <<
+            beast::String (detail::cleanElapsed (seconds)) <<
             " seconds to destroy";
     }
 }
@@ -107,22 +118,24 @@ void logTimedDestroy (
 
 /** Log a timed function call if the time exceeds a threshold. */
 template <typename Function>
-void logTimedCall (Journal::Stream stream,
-                   String description,
+void logTimedCall (beast::Journal::Stream stream,
+                   beast::String description,
                    char const* fileName,
                    int lineNumber,
     Function f, double thresholdSeconds = 1)
 {
-    double const seconds = measureFunctionCallTime (f);
+    double const seconds = beast::measureFunctionCallTime (f);
 
     if (seconds > thresholdSeconds)
     {
         stream <<
             description << " took "<<
-                String (detail::cleanElapsed (seconds)) <<
+                beast::String (detail::cleanElapsed (seconds)) <<
                 " seconds to execute at " <<
-                    Debug::getSourceLocation (fileName, lineNumber);
+                    beast::Debug::getSourceLocation (fileName, lineNumber);
     }
 }
+
+} // ripple
 
 #endif

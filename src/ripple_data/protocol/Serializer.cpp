@@ -17,6 +17,10 @@
 */
 //==============================================================================
 
+#include "../../beast/beast/unit_test/suite.h"
+
+namespace ripple {
+
 SETUP_LOG (Serializer)
 
 int Serializer::addZeros (size_t uBytes)
@@ -29,7 +33,7 @@ int Serializer::addZeros (size_t uBytes)
     return ret;
 }
 
-int Serializer::add16 (uint16 i)
+int Serializer::add16 (std::uint16_t i)
 {
     int ret = mData.size ();
     mData.push_back (static_cast<unsigned char> (i >> 8));
@@ -37,7 +41,7 @@ int Serializer::add16 (uint16 i)
     return ret;
 }
 
-int Serializer::add32 (uint32 i)
+int Serializer::add32 (std::uint32_t i)
 {
     int ret = mData.size ();
     mData.push_back (static_cast<unsigned char> (i >> 24));
@@ -47,7 +51,7 @@ int Serializer::add32 (uint32 i)
     return ret;
 }
 
-int Serializer::add64 (uint64 i)
+int Serializer::add64 (std::uint64_t i)
 {
     int ret = mData.size ();
     mData.push_back (static_cast<unsigned char> (i >> 56));
@@ -103,7 +107,7 @@ int Serializer::addRaw (const void* ptr, int len)
     return ret;
 }
 
-bool Serializer::get16 (uint16& o, int offset) const
+bool Serializer::get16 (std::uint16_t& o, int offset) const
 {
     if ((offset + 2) > mData.size ()) return false;
 
@@ -114,7 +118,7 @@ bool Serializer::get16 (uint16& o, int offset) const
     return true;
 }
 
-bool Serializer::get32 (uint32& o, int offset) const
+bool Serializer::get32 (std::uint32_t& o, int offset) const
 {
     if ((offset + 4) > mData.size ()) return false;
 
@@ -129,7 +133,7 @@ bool Serializer::get32 (uint32& o, int offset) const
     return true;
 }
 
-bool Serializer::get64 (uint64& o, int offset) const
+bool Serializer::get64 (std::uint64_t& o, int offset) const
 {
     if ((offset + 8) > mData.size ()) return false;
 
@@ -362,7 +366,7 @@ uint256 Serializer::getSHA512Half (const unsigned char* data, int len)
     return j[0];
 }
 
-uint256 Serializer::getPrefixHash (uint32 prefix, const unsigned char* data, int len)
+uint256 Serializer::getPrefixHash (std::uint32_t prefix, const unsigned char* data, int len)
 {
     char be_prefix[4];
     be_prefix[0] = static_cast<unsigned char> (prefix >> 24);
@@ -603,9 +607,9 @@ unsigned char SerializerIterator::get8 ()
     return val;
 }
 
-uint16 SerializerIterator::get16 ()
+std::uint16_t SerializerIterator::get16 ()
 {
-    uint16 val;
+    std::uint16_t val;
 
     if (!mSerializer.get16 (val, mPos)) throw std::runtime_error ("invalid serializer get16");
 
@@ -613,9 +617,9 @@ uint16 SerializerIterator::get16 ()
     return val;
 }
 
-uint32 SerializerIterator::get32 ()
+std::uint32_t SerializerIterator::get32 ()
 {
-    uint32 val;
+    std::uint32_t val;
 
     if (!mSerializer.get32 (val, mPos)) throw std::runtime_error ("invalid serializer get32");
 
@@ -623,9 +627,9 @@ uint32 SerializerIterator::get32 ()
     return val;
 }
 
-uint64 SerializerIterator::get64 ()
+std::uint64_t SerializerIterator::get64 ()
 {
-    uint64 val;
+    std::uint64_t val;
 
     if (!mSerializer.get64 (val, mPos)) throw std::runtime_error ("invalid serializer get64");
 
@@ -684,17 +688,11 @@ Blob SerializerIterator::getRaw (int iLength)
 
 //------------------------------------------------------------------------------
 
-class SerializerTests : public UnitTest
+class Serializer_test : public beast::unit_test::suite
 {
 public:
-    SerializerTests () : UnitTest ("Serializer", "ripple")
+    void run ()
     {
-    }
-
-    void runTest ()
-    {
-        beginTestCase ("hash");
-
         Serializer s1;
         s1.add32 (3);
         s1.add256 (uint256 ());
@@ -707,6 +705,6 @@ public:
     }
 };
 
-static SerializerTests serializerTests;
+BEAST_DEFINE_TESTSUITE(Serializer,ripple_data,ripple);
 
-
+} // ripple

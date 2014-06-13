@@ -17,6 +17,10 @@
 */
 //==============================================================================
 
+#include"../../ripple_overlay/api/Overlay.h"
+
+namespace ripple {
+
 class InboundLedger;
 
 // VFALCO NOTE The txnData constructor parameter is a code smell.
@@ -27,10 +31,9 @@ class InboundLedger;
 //             function pure virtual?
 //
 PeerSet::PeerSet (uint256 const& hash, int interval, bool txnData,
-    clock_type& clock, Journal journal)
+    clock_type& clock, beast::Journal journal)
     : m_journal (journal)
     , m_clock (clock)
-    , mLock (this, "PeerSet", __FILE__, __LINE__)
     , mHash (hash)
     , mTimerInterval (interval)
     , mTimeouts (0)
@@ -49,9 +52,9 @@ PeerSet::~PeerSet ()
 {
 }
 
-bool PeerSet::peerHas (Peer::ref ptr)
+bool PeerSet::peerHas (Peer::ptr const& ptr)
 {
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
 
     if (!mPeers.insert (std::make_pair (ptr->getShortId (), 0)).second)
         return false;
@@ -60,9 +63,9 @@ bool PeerSet::peerHas (Peer::ref ptr)
     return true;
 }
 
-void PeerSet::badPeer (Peer::ref ptr)
+void PeerSet::badPeer (Peer::ptr const& ptr)
 {
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
     mPeers.erase (ptr->getShortId ());
 }
 
@@ -74,7 +77,7 @@ void PeerSet::setTimer ()
 
 void PeerSet::invokeOnTimer ()
 {
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
 
     if (isDone ())
         return;
@@ -136,31 +139,31 @@ void PeerSet::TimerJobEntry (Job&, boost::shared_ptr<PeerSet> ptr)
 
 bool PeerSet::isActive ()
 {
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
     return !isDone ();
 }
 
-void PeerSet::sendRequest (const protocol::TMGetLedger& tmGL, Peer::ref peer)
+void PeerSet::sendRequest (const protocol::TMGetLedger& tmGL, Peer::ptr const& peer)
 {
     if (!peer)
         sendRequest (tmGL);
     else
-        peer->sendPacket (boost::make_shared<PackedMessage> (tmGL, protocol::mtGET_LEDGER), false);
+        peer->sendPacket (boost::make_shared<Message> (tmGL, protocol::mtGET_LEDGER), false);
 }
 
 void PeerSet::sendRequest (const protocol::TMGetLedger& tmGL)
 {
-    ScopedLockType sl (mLock, __FILE__, __LINE__);
+    ScopedLockType sl (mLock);
 
     if (mPeers.empty ())
         return;
 
-    PackedMessage::pointer packet (
-        boost::make_shared<PackedMessage> (tmGL, protocol::mtGET_LEDGER));
+    Message::pointer packet (
+        boost::make_shared<Message> (tmGL, protocol::mtGET_LEDGER));
 
     for (auto const& p : mPeers)
     {
-        Peer::pointer peer (getApp().getPeers ().findPeerByShortID (p.first));
+        Peer::ptr peer (getApp().overlay ().findPeerByShortID (p.first));
 
         if (peer)
             peer->sendPacket (packet, false);
@@ -187,10 +190,11 @@ std::size_t PeerSet::getPeerCount () const
 
     for (auto const& p : mPeers)
     {
-        if (getApp ().getPeers ().findPeerByShortID (p.first))
+        if (getApp ().overlay ().findPeerByShortID (p.first))
             ++ret;
     }
 
     return ret;
 }
 
+} // ripple

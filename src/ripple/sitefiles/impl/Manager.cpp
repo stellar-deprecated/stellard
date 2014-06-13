@@ -17,26 +17,28 @@
 */
 //==============================================================================
 
+#include <functional>
+
 namespace ripple {
 namespace SiteFiles {
 
-typedef ScopedWrapperContext <
-    RecursiveMutex, RecursiveMutex::ScopedLockType> SerializedContext;
+typedef beast::ScopedWrapperContext <
+    beast::RecursiveMutex, beast::RecursiveMutex::ScopedLockType> SerializedContext;
 
 class ManagerImp
     : public Manager
-    , public Thread
-    , public DeadlineTimer::Listener
-    , public LeakChecked <ManagerImp>
+    , public beast::Thread
+    , public beast::DeadlineTimer::Listener
+    , public beast::LeakChecked <ManagerImp>
 {
 public:
     Logic m_logic;
-    Journal m_journal;
-    ServiceQueue m_queue;
+    beast::Journal m_journal;
+    beast::ServiceQueue m_queue;
 
     //--------------------------------------------------------------------------
 
-    ManagerImp (Stoppable& stoppable, Journal journal)
+    ManagerImp (Stoppable& stoppable, beast::Journal journal)
         : Manager (stoppable)
         , Thread ("SiteFiles")
         , m_logic (journal)
@@ -60,13 +62,13 @@ public:
     void addListener (SiteFiles::Listener& listener)
     {
         m_queue.post (beast::bind (
-            &Logic::addListener, &m_logic, beast::ref (listener)));
+            &Logic::addListener, &m_logic, std::ref (listener)));
     }
 
     void removeListener (SiteFiles::Listener& listener)
     {
         m_queue.post (beast::bind (
-            &Logic::removeListener, &m_logic, beast::ref (listener)));
+            &Logic::removeListener, &m_logic, std::ref (listener)));
     }
 
     void addURL (std::string const& urlstr)
@@ -101,7 +103,7 @@ public:
     //
     //--------------------------------------------------------------------------
 
-    void onWrite (PropertyStream::Map& map)
+    void onWrite (beast::PropertyStream::Map& map)
     {
         //SerializedContext::Scope scope (m_context);
 
@@ -110,7 +112,7 @@ public:
 
     //--------------------------------------------------------------------------
 
-    void onDeadlineTimer (DeadlineTimer& timer)
+    void onDeadlineTimer (beast::DeadlineTimer& timer)
     {
     }
 
@@ -127,12 +129,12 @@ public:
 //------------------------------------------------------------------------------
 
 Manager::Manager (Stoppable& parent)
-    : Stoppable ("PeerFinder", parent)
-    , PropertyStream::Source ("peerfinder")
+    : Stoppable ("SiteFiles", parent)
+    , beast::PropertyStream::Source ("sitefiles")
 {
 }
 
-Manager* Manager::New (Stoppable& parent, Journal journal)
+Manager* Manager::New (Stoppable& parent, beast::Journal journal)
 {
     return new ManagerImp (parent, journal);
 }

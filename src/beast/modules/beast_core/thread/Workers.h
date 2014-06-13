@@ -20,6 +20,11 @@
 #ifndef BEAST_WORKERS_H_INCLUDED
 #define BEAST_WORKERS_H_INCLUDED
 
+#include "../system/SystemStats.h"
+#include "../../../beast/threads/semaphore.h"
+
+namespace beast {
+
 /** A group of threads that process tasks.
 */
 class Workers
@@ -93,9 +98,6 @@ public:
     */
     int numberOfCurrentlyRunningTasks () const noexcept;
 
-    /** Returns the fraction of time that the CPU is being used. */
-    double getUtilization () const;
-
     //--------------------------------------------------------------------------
 
 private:
@@ -131,7 +133,6 @@ private:
 
 private:
     Callback& m_callback;
-    CPUMeter m_usage;                            // CPU utilization across threads
     String m_threadNames;                        // The name to give each thread
     WaitableEvent m_allPaused;                   // signaled when all threads paused
     semaphore m_semaphore;                       // each pending task is 1 resource
@@ -142,5 +143,7 @@ private:
     LockFreeStack <Worker> m_everyone;           // holds all created workers
     LockFreeStack <Worker, PausedTag> m_paused;  // holds just paused workers
 };
+
+} // beast
 
 #endif

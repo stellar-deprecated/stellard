@@ -24,13 +24,18 @@
 #ifndef BEAST_STRINGPAIRARRAY_H_INCLUDED
 #define BEAST_STRINGPAIRARRAY_H_INCLUDED
 
+#include "StringArray.h"
+#include "../../../beast/utility/LeakChecked.h"
+
+namespace beast {
+
 //==============================================================================
 /**
     A container for holding a set of strings which are keyed by another string.
 
     @see StringArray
 */
-class BEAST_API StringPairArray : LeakChecked <StringPairArray>
+class StringPairArray : LeakChecked <StringPairArray>
 {
 public:
     //==============================================================================
@@ -152,5 +157,6 @@ private:
     bool ignoreCase;
 };
 
+} // beast
 
 #endif   // BEAST_STRINGPAIRARRAY_H_INCLUDED

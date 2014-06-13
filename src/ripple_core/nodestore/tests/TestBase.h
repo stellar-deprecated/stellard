@@ -20,12 +20,15 @@
 #ifndef RIPPLE_NODESTORE_TESTBASE_H_INCLUDED
 #define RIPPLE_NODESTORE_TESTBASE_H_INCLUDED
 
+#include "../../../beast/beast/unit_test/suite.h"
+#include "../../../beast/modules/beast_core/maths/Random.h"
+
 namespace ripple {
 namespace NodeStore {
 
 // Some common code for the unit tests
 //
-class TestBase : public UnitTest
+class TestBase : public beast::unit_test::suite
 {
 public:
     // Tunable parameters
@@ -40,14 +43,14 @@ public:
     class PredictableObjectFactory
     {
     public:
-        explicit PredictableObjectFactory (int64 seedValue)
+        explicit PredictableObjectFactory (std::int64_t seedValue)
             : m_seedValue (seedValue)
         {
         }
 
         NodeObject::Ptr createObject (int index)
         {
-            Random r (m_seedValue + index);
+            beast::Random r (m_seedValue + index);
 
             NodeObjectType type;
             switch (r.nextInt (4))
@@ -72,16 +75,17 @@ public:
 
             r.fillBitsRandomly (data.data (), payloadBytes);
 
-            return NodeObject::createObject (type, ledgerIndex, data, hash);
+            return NodeObject::createObject(type, ledgerIndex, std::move(data), hash);
         }
 
     private:
-        int64 const m_seedValue;
+        std::int64_t const m_seedValue;
     };
 
 public:
     // Create a predictable batch of objects
-    static void createPredictableBatch (Batch& batch, int startingIndex, int numObjects, int64 seedValue)
+    static void createPredictableBatch (Batch& batch, int startingIndex,
+                                        int numObjects, std::int64_t seedValue)
     {
         batch.reserve (numObjects);
 
@@ -159,7 +163,7 @@ public:
 
             db.store (object->getType (),
                       object->getIndex (),
-                      data,
+                      std::move (data),
                       object->getHash ());
         }
     }
@@ -179,11 +183,6 @@ public:
             if (object != nullptr)
                 pCopy->push_back (object);
         }
-    }
-
-    TestBase (String name, UnitTest::When when = UnitTest::runNormal)
-        : UnitTest (name, "ripple", when)
-    {
     }
 };
 

@@ -17,18 +17,25 @@
 */
 //==============================================================================
 
-#include "BeastConfig.h"
+#include "../../BeastConfig.h"
 
 #include "ripple_app.h"
 
 #include "transactors/Transactor.cpp"
-#include "transactors/ChangeTransactor.cpp"
-#include "transactors/OfferCancelTransactor.cpp"
-#include "transactors/OfferCreateTransactor.cpp"
-#include "transactors/PaymentTransactor.cpp"
-#include "transactors/RegularKeySetTransactor.cpp"
-#include "transactors/AccountSetTransactor.cpp"
-#include "transactors/AccountDeleteTransactor.cpp"
-#include "transactors/WalletAddTransactor.cpp"
-#include "transactors/TrustSetTransactor.cpp"
+
+#include "transactors/Change.cpp"
+#include "transactors/CancelOffer.cpp"
+#include "transactors/Payment.cpp"
+#include "transactors/SetRegularKey.cpp"
+#include "transactors/SetAccount.cpp"
+#include "transactors/AddWallet.cpp"
+#include "transactors/SetTrust.cpp"
+#include "transactors/CreateOffer.cpp"
+#include "transactors/CreateOfferDirect.cpp"
+#include "transactors/CreateOfferBridged.cpp"
 #include "transactors/InflationTransactor.cpp"
+
+
+#if RIPPLE_USE_OLD_CREATE_TRANSACTOR
+#include "transactors/CreateOfferLegacy.cpp"
+#endif

@@ -20,8 +20,10 @@
 #ifndef RIPPLE_SERIALIZEDVALIDATION_H
 #define RIPPLE_SERIALIZEDVALIDATION_H
 
+namespace ripple {
+
 // Validation flags
-const uint32 vfFullyCanonicalSig    = 0x80000000; // signature is fully canonical
+const std::uint32_t vfFullyCanonicalSig    = 0x80000000; // signature is fully canonical
 
 class SerializedValidation
     : public STObject
@@ -42,11 +44,12 @@ public:
     SerializedValidation (SerializerIterator & sit, bool checkSignature = true);
 
     // Does not sign the validation
-    SerializedValidation (uint256 const & ledgerHash, uint32 signTime, const RippleAddress & raPub, bool isFull);
+    SerializedValidation (uint256 const & ledgerHash, std::uint32_t signTime,
+                          const RippleAddress & raPub, bool isFull);
 
     uint256         getLedgerHash ()     const;
-    uint32          getSignTime ()       const;
-    uint32          getFlags ()          const;
+    std::uint32_t   getSignTime ()       const;
+    std::uint32_t   getFlags ()          const;
     RippleAddress   getSignerPublic ()   const;
     uint160         getNodeID ()         const
     {
@@ -94,5 +97,6 @@ private:
     bool mTrusted;
 };
 
+} // ripple
+
 #endif
-// vim:ts=4

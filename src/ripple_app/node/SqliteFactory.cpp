@@ -52,11 +52,11 @@ public:
         : m_name (path)
         , m_db (new DatabaseCon(path, s_nodeStoreDBInit, s_nodeStoreDBCount))
     {
-        String s;
+        beast::String s;
 
         // VFALCO TODO Remove this dependency on theConfig
         //
-        s << "PRAGMA cache_size=-" << String (getConfig ().getSize(siHashNodeDBCache) * 1024);
+        s << "PRAGMA cache_size=-" << beast::String (getConfig ().getSize(siHashNodeDBCache) * 1024);
         m_db->getDB()->executeSQL (s.toStdString ().c_str ());
     }
 
@@ -85,7 +85,7 @@ public:
             static SqliteStatement pSt (m_db->getDB()->getSqliteDB(),
                 "SELECT ObjType,LedgerIndex,Object FROM CommittedObjects WHERE Hash = ?;");
 
-            pSt.bind (1, hash.GetHex());
+            pSt.bind (1, to_string (hash));
 
             if (pSt.isRow (pSt.step()))
             {
@@ -95,7 +95,7 @@ public:
                 *pObject = NodeObject::createObject (
                     getTypeFromString (pSt.peekString (0)),
                     pSt.getUInt32 (1),
-                    data,
+                    std::move(data),
                     hash);
             }
             else
@@ -145,9 +145,9 @@ public:
         pStE.reset();
     }
 
-    void visitAll (NodeStore::VisitCallback& callback)
+    void for_each (std::function <void(NodeObject::Ptr)> f)
     {
-        // No lock needed as per the visitAll() API
+        // No lock needed as per the for_each() API
 
         uint256 hash;
 
@@ -164,10 +164,10 @@ public:
             NodeObject::Ptr const object (NodeObject::createObject (
                 getTypeFromString (pSt.peekString (0)),
                 pSt.getUInt32 (1),
-                data,
+                std::move(data),
                 hash));
 
-            callback.visitObject (object);
+            f (object);
         }
 
         pSt.reset ();
@@ -192,7 +192,7 @@ public:
             default:                    type = "U";
         }
 
-        statement.bind(1, object->getHash().GetHex());
+        statement.bind(1, to_string (object->getHash()));
         statement.bind(2, type);
         statement.bind(3, object->getIndex());
         statement.bindStatic(4, object->getData());
@@ -225,14 +225,14 @@ private:
 class SqliteFactory : public NodeStore::Factory
 {
 public:
-    String getName () const
+    beast::String getName () const
     {
         return "Sqlite";
     }
 
     std::unique_ptr <NodeStore::Backend> createInstance (
         size_t, NodeStore::Parameters const& keyValues,
-            NodeStore::Scheduler&, Journal)
+            NodeStore::Scheduler&, beast::Journal)
     {
         return std::make_unique <SqliteBackend> (keyValues ["path"].toStdString ());
     }

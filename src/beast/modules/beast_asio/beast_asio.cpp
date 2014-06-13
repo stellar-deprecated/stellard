@@ -17,13 +17,15 @@
 */
 //==============================================================================
 
-#include "BeastConfig.h"
+#if BEAST_INCLUDE_BEASTCONFIG
+#include "../../BeastConfig.h"
+#endif
 
 #include "system/OpenSSLIncludes.h"
 
 #include "beast_asio.h"
 
-# include "../../beast/http/impl/http_parser.h"
+# include "../../beast/http/impl/joyent_parser.h"
 
 #include "basics/PeerRole.cpp"
 #include "basics/SSLContext.cpp"
@@ -48,8 +50,6 @@
 #include "tests/TestPeerLogicAsyncServer.cpp"
 #include "tests/TestPeerLogicAsyncClient.cpp"
 #include "tests/TestPeerUnitTests.cpp"
-
-#include "system/BoostUnitTests.cpp"
 
 #include "http/HTTPParser.cpp"
 #include "http/HTTPRequestParser.cpp"

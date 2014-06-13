@@ -20,16 +20,17 @@
 #ifndef RIPPLE_PEERDOOR_H_INCLUDED
 #define RIPPLE_PEERDOOR_H_INCLUDED
 
+#include "OverlayImpl.h"
+
+#include "../../beast/beast/cxx14/memory.h" // <memory>
+
 namespace ripple {
 
 /** Handles incoming connections from peers. */
-class PeerDoor : public Stoppable
+class PeerDoor
 {
-protected:
-    explicit PeerDoor (Stoppable& parent);
-
 public:
-    virtual ~PeerDoor () { }
+    virtual ~PeerDoor () = default;
 
     enum Kind
     {
@@ -37,10 +38,15 @@ public:
         sslAndPROXYRequired
     };
 
-    static PeerDoor* New (Kind kind, Peers& peers,
-        std::string const& ip, int port,
-        boost::asio::io_service& io_service);
+    virtual
+    void stop() = 0;
 };
+
+std::unique_ptr <PeerDoor>
+make_PeerDoor (
+    PeerDoor::Kind kind, OverlayImpl& overlay,
+        std::string const& ip, int port,
+            boost::asio::io_service& io_service);
 
 }
 

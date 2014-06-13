@@ -17,6 +17,8 @@
 */
 //==============================================================================
 
+namespace ripple {
+
 //
 // XXX Make sure all fields are recognized in transactions.
 //
@@ -109,7 +111,7 @@ TER TransactionEngine::applyTransaction (const SerializedTransaction& txn, Trans
 
     std::unique_ptr<Transactor> transactor = Transactor::makeTransactor (txn, params, this);
 
-    if (transactor.get () == NULL)
+    if (transactor.get () == nullptr)
     {
         WriteLog (lsWARNING, TransactionEngine) << "applyTransaction: Invalid transaction: unknown transaction type";
         return temUNKNOWN;
@@ -125,7 +127,7 @@ TER TransactionEngine::applyTransaction (const SerializedTransaction& txn, Trans
 
     if (isTesSuccess (terResult))
         didApply = true;
-    else if (isTecClaim (terResult) && !isSetBit (params, tapRETRY))
+    else if (isTecClaim (terResult) && !is_bit_set (params, tapRETRY))
     {
         // only claim the transaction fee
         WriteLog (lsDEBUG, TransactionEngine) << "Reprocessing to only claim fee";
@@ -137,8 +139,8 @@ TER TransactionEngine::applyTransaction (const SerializedTransaction& txn, Trans
             terResult = terNO_ACCOUNT;
         else
         {
-            uint32 t_seq = txn.getSequence ();
-            uint32 a_seq = txnAcct->getFieldU32 (sfSequence);
+            std::uint32_t t_seq = txn.getSequence ();
+            std::uint32_t a_seq = txnAcct->getFieldU32 (sfSequence);
 
             if (a_seq < t_seq)
                 terResult = terPRE_SEQ;
@@ -186,7 +188,7 @@ TER TransactionEngine::applyTransaction (const SerializedTransaction& txn, Trans
             Serializer s;
             txn.add (s);
 
-            if (isSetBit (params, tapOPEN_LEDGER))
+            if (is_bit_set (params, tapOPEN_LEDGER))
             {
                 if (!mLedger->addTransaction (txID, s))
                 {
@@ -214,7 +216,7 @@ TER TransactionEngine::applyTransaction (const SerializedTransaction& txn, Trans
     mTxnAccount.reset ();
     mNodes.clear ();
 
-    if (!isSetBit (params, tapOPEN_LEDGER) && isTemMalformed (terResult))
+    if (!is_bit_set (params, tapOPEN_LEDGER) && isTemMalformed (terResult))
     {
         // XXX Malformed or failed transaction in closed ledger must bow out.
     }
@@ -222,4 +224,4 @@ TER TransactionEngine::applyTransaction (const SerializedTransaction& txn, Trans
     return terResult;
 }
 
-// vim:ts=4
+} // ripple

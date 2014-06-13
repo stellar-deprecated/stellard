@@ -20,10 +20,12 @@
 #ifndef RIPPLE_APP_NODESTORESCHEDULER_H_INCLUDED
 #define RIPPLE_APP_NODESTORESCHEDULER_H_INCLUDED
 
+namespace ripple {
+
 /** A NodeStore::Scheduler which uses the JobQueue and implements the Stoppable API. */
 class NodeStoreScheduler
     : public NodeStore::Scheduler
-    , public Stoppable
+    , public beast::Stoppable
 {
 public:
     NodeStoreScheduler (Stoppable& parent);
@@ -36,6 +38,8 @@ public:
     void onStop ();
     void onChildrenStopped ();
     void scheduleTask (NodeStore::Task& task);
+    void onFetch (NodeStore::FetchReport const& report) override;
+    void onBatchWrite (NodeStore::BatchWriteReport const& report) override;
 
 private:
     void doTask (NodeStore::Task& task, Job&);
@@ -44,5 +48,6 @@ private:
     std::atomic <int> m_taskCount;
 };
 
+} // ripple
 
 #endif

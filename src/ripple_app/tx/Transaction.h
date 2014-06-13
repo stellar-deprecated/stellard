@@ -20,6 +20,8 @@
 #ifndef RIPPLE_TRANSACTION_H
 #define RIPPLE_TRANSACTION_H
 
+namespace ripple {
+
 //
 // Transactions should be constructed in JSON with. Use STObject::parseJson to obtain a binary version.
 //
@@ -60,9 +62,9 @@ public:
         TxType ttKind,
         const RippleAddress &    naPublicKey,       // To prove transaction is consistent and authorized.
         const RippleAddress &    naSourceAccount,   // To identify the paying account.
-        uint32                  uSeq,               // To order transactions.
+        std::uint32_t            uSeq,               // To order transactions.
         const STAmount &         saFee,             // Transaction fee.
-        uint32                  uSourceTag);        // User call back value.
+        std::uint32_t            uSourceTag);        // User call back value.
 
 
     bool sign (const RippleAddress & naAccountPrivate);
@@ -99,12 +101,12 @@ public:
         return mTransaction->getTransactionFee ();
     }
 
-    uint32 getFromAccountSeq () const
+    std::uint32_t getFromAccountSeq () const
     {
         return mTransaction->getSequence ();
     }
 
-    uint32 getSourceTag () const
+    std::uint32_t getSourceTag () const
     {
         return mTransaction->getFieldU32 (sfSourceTag);
     }
@@ -135,7 +137,7 @@ public:
         mResult = terResult;
     }
 
-    void setStatus (TransStatus status, uint32 ledgerSeq);
+    void setStatus (TransStatus status, std::uint32_t ledgerSeq);
 
     void setStatus (TransStatus status)
     {
@@ -159,9 +161,13 @@ public:
     static Transaction::pointer load (uint256 const & id);
 
     // conversion function
-    static bool convertToTransactions (uint32 ourLedgerSeq, uint32 otherLedgerSeq,
-                                       bool checkFirstTransactions, bool checkSecondTransactions, const SHAMap::Delta & inMap,
-                                       std::map<uint256, std::pair<Transaction::pointer, Transaction::pointer> >& outMap);
+    static bool convertToTransactions (std::uint32_t ourLedgerSeq,
+                                       std::uint32_t otherLedgerSeq,
+                                       bool checkFirstTransactions,
+                                       bool checkSecondTransactions,
+                                       const SHAMap::Delta & inMap,
+                                       std::map<uint256, std::pair<Transaction::pointer,
+                                                                   Transaction::pointer> >& outMap);
 
     static bool isHexTxID (const std::string&);
 
@@ -181,5 +187,6 @@ private:
     SerializedTransaction::pointer mTransaction;
 };
 
+} // ripple
+
 #endif
-// vim:ts=4

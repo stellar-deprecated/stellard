@@ -32,11 +32,10 @@ namespace RPC { class Manager; }
 
 // VFALCO TODO Fix forward declares required for header dependency loops
 class CollectorManager;
-class IFeatures;
-class IFeeVote;
+class AmendmentTable;
 class IHashRouter;
 class LoadFeeTrack;
-class Peers;
+class Overlay;
 class UniqueNodeList;
 class JobQueue;
 class InboundLedgers;
@@ -56,7 +55,7 @@ class DatabaseCon;
 typedef TaggedCache <uint256, Blob> NodeCache;
 typedef TaggedCache <uint256, SerializedLedgerEntry> SLECache;
 
-class Application : public PropertyStream::Source
+class Application : public beast::PropertyStream::Source
 {
 public:
     /* VFALCO NOTE
@@ -71,7 +70,7 @@ public:
         other things
     */
     typedef RippleRecursiveMutex LockType;
-    typedef LockType::ScopedLockType ScopedLockType;
+    typedef std::unique_lock <LockType> ScopedLockType;
 
     virtual LockType& getMasterLock () = 0;
 
@@ -89,12 +88,11 @@ public:
     virtual NodeCache&              getTempNodeCache () = 0;
     virtual SLECache&               getSLECache () = 0;
     virtual Validators::Manager&    getValidators () = 0;
-    virtual IFeatures&              getFeatureTable () = 0;
-    virtual IFeeVote&               getFeeVote () = 0;
+    virtual AmendmentTable&         getAmendmentTable() = 0;
     virtual IHashRouter&            getHashRouter () = 0;
     virtual LoadFeeTrack&           getFeeTrack () = 0;
     virtual LoadManager&            getLoadManager () = 0;
-    virtual Peers&                  getPeers () = 0;
+    virtual Overlay&                overlay () = 0;
     virtual ProofOfWorkFactory&     getProofOfWorkFactory () = 0;
     virtual UniqueNodeList&         getUNL () = 0;
     virtual Validations&            getValidations () = 0;
@@ -112,6 +110,8 @@ public:
     virtual DatabaseCon* getRpcDB () = 0;
     virtual DatabaseCon* getTxnDB () = 0;
     virtual DatabaseCon* getLedgerDB () = 0;
+
+    virtual std::chrono::milliseconds getIOLatency () = 0;
 
     /** Retrieve the "wallet database"
 

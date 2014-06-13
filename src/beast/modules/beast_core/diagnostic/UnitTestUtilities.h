@@ -20,8 +20,8 @@
 #ifndef BEAST_UNITTESTUTILITIES_H_INCLUDED
 #define BEAST_UNITTESTUTILITIES_H_INCLUDED
 
-namespace UnitTestUtilities
-{
+namespace beast {
+namespace UnitTestUtilities {
 
 /** Fairly shuffle an array pseudo-randomly.
 */
@@ -36,7 +36,7 @@ void repeatableShuffle (int const numberOfItems, T& arrayOfItems, Random& r)
 }
 
 template <class T>
-void repeatableShuffle (int const numberOfItems, T& arrayOfItems, int64 seedValue)
+void repeatableShuffle (int const numberOfItems, T& arrayOfItems, std::int64_t seedValue)
 {
     Random r (seedValue);
     repeatableShuffle (numberOfItems, arrayOfItems, r);
@@ -64,7 +64,7 @@ struct Payload
         @param maximumBytes The largest number of bytes in the resulting payload.
         @param seedValue The value to seed the random number generator with.
     */
-    void repeatableRandomFill (int minimumBytes, int maximumBytes, int64 seedValue) noexcept
+    void repeatableRandomFill (int minimumBytes, int maximumBytes, std::int64_t seedValue) noexcept
     {
         bassert (minimumBytes >=0 && maximumBytes <= bufferSize);
 
@@ -99,37 +99,7 @@ public:
     HeapBlock <char> data;
 };
 
-//------------------------------------------------------------------------------
-
-/** Format unit test results in JUnit XML format.
-
-    The output can be used directly with the Jenkins CI server with
-    the appropriate JUnit plugin.
-
-    JUnit FAQ:      http://junit.sourceforge.net/doc/faq/faq.htm
-
-    Jenkins Home:   http://jenkins-ci.org/
-
-    @see UnitTest, UnitTests
-*/
-
-class JUnitXMLFormatter : public Uncopyable
-{
-public:
-    JUnitXMLFormatter (UnitTests const& tests);
-
-    String createDocumentString ();
-
-private:
-    static String timeToString (Time const& time);
-    static String secondsToString (double seconds);
-
-private:
-    UnitTests const& m_tests;
-    String const m_currentTime;
-    String const m_hostName;
-};
-
-}
+} // UnitTestUtilities
+} // beast
 
 #endif

@@ -20,6 +20,11 @@
 #ifndef RIPPLE_BASICS_LOGSINK_H_INCLUDED
 #define RIPPLE_BASICS_LOGSINK_H_INCLUDED
 
+#include "../../beast/beast/smart_ptr/SharedPtr.h"
+#include "../../beast/modules/beast_core/memory/SharedSingleton.h"
+
+namespace ripple {
+
 /** An endpoint for all logging messages. */
 class LogSink
 {
@@ -72,12 +77,12 @@ public:
     static std::string replaceFirstSecretWithAsterisks (std::string s);
 
     /** Returns a pointer to the singleton. */
-    typedef SharedPtr <SharedSingleton <LogSink> > Ptr;
+    typedef beast::SharedPtr <beast::SharedSingleton <LogSink> > Ptr;
     static Ptr get ();
 
 private:
     typedef RippleRecursiveMutex LockType;
-    typedef LockType::ScopedLockType ScopedLockType;
+    typedef std::lock_guard <LockType> ScopedLockType;
 
     enum
     {
@@ -94,4 +99,7 @@ private:
     LogFile m_logFile;
     LogSeverity m_minSeverity;
 };
+
+} // ripple
+
 #endif

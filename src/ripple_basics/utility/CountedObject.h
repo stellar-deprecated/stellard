@@ -20,10 +20,11 @@
 #ifndef RIPPLE_COUNTEDOBJECT_H_INCLUDED
 #define RIPPLE_COUNTEDOBJECT_H_INCLUDED
 
-//------------------------------------------------------------------------------
+#include "../../beast/beast/utility/LeakChecked.h"
 
-/** Manages all counted object types.
-*/
+namespace ripple {
+
+/** Manages all counted object types. */
 class CountedObjects
 {
 public:
@@ -95,7 +96,7 @@ private:
     @ingroup ripple_basics
 */
 template <class Object>
-class CountedObject : LeakChecked <CountedObject <Object> >
+class CountedObject : beast::LeakChecked <CountedObject <Object> >
 {
 public:
     CountedObject ()
@@ -130,8 +131,10 @@ private:
 private:
     static Counter& getCounter ()
     {
-        return StaticObject <Counter>::get();
+        return beast::StaticObject <Counter>::get();
     }
 };
+
+} // ripple
 
 #endif

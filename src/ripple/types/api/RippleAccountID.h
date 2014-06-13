@@ -21,6 +21,9 @@
 #define RIPPLE_TYPES_RIPPLEACCOUNTID_H_INCLUDED
 
 #include "CryptoIdentifier.h"
+#include "IdentifierType.h"
+
+#include <array>
 
 namespace ripple {
 
@@ -46,11 +49,11 @@ public:
     {
         value_type::storage_type const& storage (value.storage());
         // We will convert to little endian with an extra pad byte
-        FixedArray <uint8, value_type::storage_size + 1> le;
+        std::array <std::uint8_t, value_type::storage_size + 1> le;
         std::reverse_copy (storage.begin(), storage.end(), le.begin());
         // Set pad byte zero to make BIGNUM always positive
         le.back() = 0;
-        return Base58::raw_encode (le.begin(), le.end(),
+        return Base58::raw_encode (le.data(), le.data() + le.size(),
             Base58::getRippleAlphabet(), checked);
     }
 };

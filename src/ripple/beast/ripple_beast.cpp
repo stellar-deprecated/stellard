@@ -23,12 +23,10 @@
 */
 
 // MUST come first!
-#include "BeastConfig.h"
+#include "../../BeastConfig.h"
 
 // Include this to get all the basic includes included, to prevent errors
-#include "../beast/modules/beast_core/beast_core.h"
 #include "../beast/modules/beast_core/beast_core.cpp"
-
 #include "../beast/modules/beast_asio/beast_asio.cpp"
 #include "../beast/modules/beast_sqdb/beast_sqdb.cpp"
 
@@ -40,9 +38,11 @@
 #include "../beast/beast/http/HTTP.cpp"
 #include "../beast/beast/insight/Insight.cpp"
 #include "../beast/beast/net/Net.cpp"
-#include "../beast/beast/smart_ptr/SmartPtr.cpp"
+#include "../beast/beast/streams/streams.cpp"
 #include "../beast/beast/strings/Strings.cpp"
 #include "../beast/beast/threads/Threads.cpp"
 #include "../beast/beast/utility/Utility.cpp"
 
 #include "../beast/beast/cxx14/cxx14.cpp"
+
+#include "../beast/beast/unit_test/define_print.cpp"

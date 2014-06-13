@@ -20,9 +20,11 @@
 #ifndef RIPPLE_CORE_JOBQUEUE_H_INCLUDED
 #define RIPPLE_CORE_JOBQUEUE_H_INCLUDED
 
+#include "../../beast/beast/threads/Stoppable.h"
+
 namespace ripple {
 
-class JobQueue : public Stoppable
+class JobQueue : public beast::Stoppable
 {
 protected:
     JobQueue (char const* name, Stoppable& parent);
@@ -61,13 +63,17 @@ public:
     //          
     virtual LoadEvent::autoptr getLoadEventAP (JobType t, const std::string& name) = 0;
 
+    // Add multiple load events
+    virtual void addLoadEvents (JobType t,
+        int count, std::chrono::milliseconds elapsed) = 0;
+
     virtual bool isOverloaded () = 0;
 
     virtual Json::Value getJson (int c = 0) = 0;
 };
 
-std::unique_ptr <JobQueue> make_JobQueue (insight::Collector::ptr const& collector,
-    Stoppable& parent, Journal journal);
+std::unique_ptr <JobQueue> make_JobQueue (beast::insight::Collector::ptr const& collector,
+    beast::Stoppable& parent, beast::Journal journal);
 
 }
 

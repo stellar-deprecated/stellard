@@ -17,6 +17,10 @@
 */
 //==============================================================================
 
+#include "../../ripple_overlay/api/Overlay.h"
+
+namespace ripple {
+
 //SETUP_LOG (TransactionAcquire)
 template <> char const* LogPartition::getPartitionName <TransactionAcquire> () { return "TxAcquire"; }
 
@@ -47,7 +51,7 @@ TransactionAcquire::~TransactionAcquire ()
 static void TACompletionHandler (uint256 hash, SHAMap::pointer map)
 {
     {
-        Application::ScopedLockType lock (getApp ().getMasterLock (), __FILE__, __LINE__);
+        Application::ScopedLockType lock (getApp ().getMasterLock ());
 
         getApp().getOPs ().mapComplete (hash, map);
 
@@ -83,7 +87,7 @@ void TransactionAcquire::onTimer (bool progress, ScopedLockType& psl)
         WriteLog (lsWARNING, TransactionAcquire) << "Ten timeouts on TX set " << getHash ();
         psl.unlock();
         {
-            Application::ScopedLockType lock (getApp().getMasterLock (), __FILE__, __LINE__);
+            Application::ScopedLockType lock (getApp().getMasterLock ());
 
             if (getApp().getOPs ().stillNeedTXSet (mHash))
             {
@@ -92,7 +96,7 @@ void TransactionAcquire::onTimer (bool progress, ScopedLockType& psl)
                 aggressive = true;
             }
         }
-        psl.lock(__FILE__, __LINE__);
+        psl.lock();
 
         if (!aggressive)
         {
@@ -108,8 +112,8 @@ void TransactionAcquire::onTimer (bool progress, ScopedLockType& psl)
         WriteLog (lsWARNING, TransactionAcquire) << "Out of peers for TX set " << getHash ();
 
         bool found = false;
-        Peers::PeerSequence peerList = getApp().getPeers ().getActivePeers ();
-        BOOST_FOREACH (Peer::ref peer, peerList)
+        Overlay::PeerSequence peerList = getApp().overlay ().getActivePeers ();
+        BOOST_FOREACH (Peer::ptr const& peer, peerList)
         {
             if (peer->hasTxSet (getHash ()))
             {
@@ -120,12 +124,12 @@ void TransactionAcquire::onTimer (bool progress, ScopedLockType& psl)
 
         if (!found)
         {
-            BOOST_FOREACH (Peer::ref peer, peerList)
+            BOOST_FOREACH (Peer::ptr const& peer, peerList)
             peerHas (peer);
         }
     }
     else if (!progress)
-        trigger (Peer::pointer ());
+        trigger (Peer::ptr ());
 }
 
 boost::weak_ptr<PeerSet> TransactionAcquire::pmDowncast ()
@@ -133,7 +137,7 @@ boost::weak_ptr<PeerSet> TransactionAcquire::pmDowncast ()
     return boost::dynamic_pointer_cast<PeerSet> (shared_from_this ());
 }
 
-void TransactionAcquire::trigger (Peer::ref peer)
+void TransactionAcquire::trigger (Peer::ptr const& peer)
 {
     if (mComplete)
     {
@@ -158,6 +162,11 @@ void TransactionAcquire::trigger (Peer::ref peer)
 
         * (tmGL.add_nodeids ()) = SHAMapNode ().getRawString ();
         sendRequest (tmGL, peer);
+    }
+    else if (!mMap->isValid ())
+    {
+        mFailed = true;
+        done ();
     }
     else
     {
@@ -194,7 +203,7 @@ void TransactionAcquire::trigger (Peer::ref peer)
 }
 
 SHAMapAddNode TransactionAcquire::takeNodes (const std::list<SHAMapNode>& nodeIDs,
-        const std::list< Blob >& data, Peer::ref peer)
+        const std::list< Blob >& data, Peer::ptr const& peer)
 {
     if (mComplete)
     {
@@ -223,7 +232,7 @@ SHAMapAddNode TransactionAcquire::takeNodes (const std::list<SHAMapNode>& nodeID
             {
                 if (mHaveRoot)
                     WriteLog (lsDEBUG, TransactionAcquire) << "Got root TXS node, already have it";
-                else if (!mMap->addRootNode (getHash (), *nodeDatait, snfWIRE, NULL).isGood())
+                else if (!mMap->addRootNode (getHash (), *nodeDatait, snfWIRE, nullptr).isGood())
                 {
                     WriteLog (lsWARNING, TransactionAcquire) << "TX acquire got bad root node";
                 }
@@ -250,3 +259,5 @@ SHAMapAddNode TransactionAcquire::takeNodes (const std::list<SHAMapNode>& nodeID
         return SHAMapAddNode::invalid ();
     }
 }
+
+} // ripple

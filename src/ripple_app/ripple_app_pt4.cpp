@@ -17,7 +17,7 @@
 */
 //==============================================================================
 
-#include "BeastConfig.h"
+#include "../../BeastConfig.h"
 
 #include "ripple_app.h"
 
@@ -29,18 +29,14 @@
 
 #include "transactors/Transactor.h"
 
-namespace ripple {
-
 #include "paths/RippleState.cpp"
-
 #include "peers/UniqueNodeList.cpp"
-
 #include "ledger/InboundLedger.cpp"
-
 #include "tx/TransactionCheck.cpp"
 #include "tx/TransactionMaster.cpp"
 #include "tx/Transaction.cpp"
 #include "tx/TransactionEngine.cpp"
 #include "tx/TransactionMeta.cpp"
 
-}
+#include "book/tests/OfferStream.test.cpp"
+#include "book/tests/Quality.test.cpp"

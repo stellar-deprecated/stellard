@@ -20,7 +20,7 @@
 #ifndef RIPPLE_WSCONNECTION_H
 #define RIPPLE_WSCONNECTION_H
 
-//------------------------------------------------------------------------------
+namespace ripple {
 
 /** A Ripple WebSocket connection handler.
     This handles everything that is independent of the endpint_type.
@@ -29,7 +29,7 @@ class WSConnection
     : public boost::enable_shared_from_this <WSConnection>
     , public InfoSub
     , public CountedObject <WSConnection>
-    , public Uncopyable
+    , public beast::Uncopyable
 {
 public:
     static char const* getCountedObjectName () { return "WSConnection"; }
@@ -39,7 +39,7 @@ protected:
 
     WSConnection (Resource::Manager& resourceManager,
         Resource::Consumer usage, InfoSub::Source& source, bool isPublic,
-            IP::Endpoint const& remoteAddress, boost::asio::io_service& io_service);
+            beast::IP::Endpoint const& remoteAddress, boost::asio::io_service& io_service);
 
     virtual ~WSConnection ();
 
@@ -58,7 +58,7 @@ protected:
     Resource::Manager& m_resourceManager;
     Resource::Consumer m_usage;
     bool const m_isPublic;
-    IP::Endpoint const m_remoteAddress;
+    beast::IP::Endpoint const m_remoteAddress;
     LockType m_receiveQueueMutex;
     std::deque <message_ptr> m_receiveQueue;
     NetworkOPs& m_netOPs;
@@ -114,7 +114,7 @@ public:
         m_connection.reset ();
 
         {
-            ScopedLockType sl (m_receiveQueueMutex, __FILE__, __LINE__);
+            ScopedLockType sl (m_receiveQueueMutex);
             m_isDead = true;
         }
     }
@@ -202,5 +202,7 @@ private:
     server_type& m_serverHandler;
     weak_connection_ptr m_connection;
 };
+
+} // ripple
 
 #endif

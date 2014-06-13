@@ -17,7 +17,7 @@
 */
 //==============================================================================
 
-#include "BeastConfig.h"
+#include "../../BeastConfig.h"
 
 #include "ripple_app.h"
 
@@ -28,9 +28,6 @@
 
 #include "../ripple_rpc/api/ErrorCodes.h"
 
-namespace ripple
-{
-
 #include "paths/PathRequest.cpp"
 #include "paths/PathRequests.cpp"
 #include "paths/RippleCalc.cpp"
@@ -39,8 +36,6 @@ namespace ripple
 #include "main/ParameterTable.cpp"
 #include "paths/RippleLineCache.cpp"
 #include "ledger/SerializedValidation.cpp"
-
-}
 
 #ifdef _MSC_VER
 #pragma warning (pop)

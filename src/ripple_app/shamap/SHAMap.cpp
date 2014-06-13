@@ -17,16 +17,20 @@
 */
 //==============================================================================
 
+#include "../../beast/beast/unit_test/suite.h"
+
+namespace ripple {
+
 SETUP_LOG (SHAMap)
 
-void SHAMap::DefaultMissingNodeHandler::operator() (uint32 refNUm)
+void SHAMap::DefaultMissingNodeHandler::operator() (std::uint32_t refNUm)
 {
     getApp().getOPs ().missingNodeInLedger (refNUm);
 };
 
 //------------------------------------------------------------------------------
 
-SHAMap::SHAMap (SHAMapType t, FullBelowCache& fullBelowCache, uint32 seq,
+SHAMap::SHAMap (SHAMapType t, FullBelowCache& fullBelowCache, std::uint32_t seq,
     MissingNodeHandler missing_node_handler)
     : m_fullBelowCache (fullBelowCache)
     , mSeq (seq)
@@ -73,20 +77,20 @@ SHAMap::~SHAMap ()
     mState = smsInvalid;
 
     logTimedDestroy <SHAMap> (mTNByID,
-        String ("mTNByID with ") +
-            String::fromNumber (mTNByID.size ()) + " items");
+        beast::String ("mTNByID with ") +
+            beast::String::fromNumber (mTNByID.size ()) + " items");
 
     if (mDirtyNodes)
     {
         logTimedDestroy <SHAMap> (mDirtyNodes,
-            String ("mDirtyNodes with ") +
-                String::fromNumber (mDirtyNodes->size ()) + " items");
+            beast::String ("mDirtyNodes with ") +
+                beast::String::fromNumber (mDirtyNodes->size ()) + " items");
     }
 
     if (root)
     {
         logTimedDestroy <SHAMap> (root,
-            String ("root node"));
+            beast::String ("root node"));
     }
 }
 
@@ -265,13 +269,13 @@ SHAMapTreeNode* SHAMap::walkToPointer (uint256 const& id)
         int branch = inNode->selectBranch (id);
 
         if (inNode->isEmptyBranch (branch))
-            return NULL;
+            return nullptr;
 
         inNode = getNodePointer (inNode->getChildNodeID (branch), inNode->getChildHash (branch));
         assert (inNode);
     }
 
-    return (inNode->getTag () == id) ? inNode : NULL;
+    return (inNode->getTag () == id) ? inNode : nullptr;
 }
 
 SHAMapTreeNode::pointer SHAMap::getNode (const SHAMapNode& id, uint256 const& hash, bool modify)
@@ -289,7 +293,7 @@ SHAMapTreeNode::pointer SHAMap::getNode (const SHAMapNode& id, uint256 const& ha
             WriteLog (lsFATAL, SHAMap) << "ID: " << id;
             WriteLog (lsFATAL, SHAMap) << "TgtHash " << hash;
             WriteLog (lsFATAL, SHAMap) << "NodHash " << node->getNodeHash ();
-            Throw (std::runtime_error ("invalid node"));
+            throw std::runtime_error ("invalid node");
         }
 
 #endif
@@ -377,7 +381,7 @@ void SHAMap::returnNode (SHAMapTreeNode::pointer& node, bool modify)
             root = node;
 
         if (mDirtyNodes)
-            (*mDirtyNodes)[*node] = node;
+            mDirtyNodes->insert (*node);
     }
 }
 
@@ -385,7 +389,7 @@ void SHAMap::trackNewNode (SHAMapTreeNode::pointer& node)
 {
     assert (node->getSeq() == mSeq);
     if (mDirtyNodes)
-        (*mDirtyNodes)[*node] = node;
+        mDirtyNodes->insert (*node);
 }
 
 SHAMapTreeNode* SHAMap::firstBelow (SHAMapTreeNode* node)
@@ -408,7 +412,7 @@ SHAMapTreeNode* SHAMap::firstBelow (SHAMapTreeNode* node)
             }
 
         if (!foundNode)
-            return NULL;
+            return nullptr;
     }
     while (true);
 }
@@ -432,7 +436,7 @@ SHAMapTreeNode* SHAMap::lastBelow (SHAMapTreeNode* node)
             }
 
         if (!foundNode)
-            return NULL;
+            return nullptr;
     }
     while (true);
 }
@@ -442,7 +446,7 @@ SHAMapItem::pointer SHAMap::onlyBelow (SHAMapTreeNode* node)
     // If there is only one item below this node, return it
     while (!node->isLeaf ())
     {
-        SHAMapTreeNode* nextNode = NULL;
+        SHAMapTreeNode* nextNode = nullptr;
 
         for (int i = 0; i < 16; ++i)
             if (!node->isEmptyBranch (i))
@@ -671,7 +675,7 @@ bool SHAMap::hasItem (uint256 const& id)
     ScopedReadLockType sl (mLock);
 
     SHAMapTreeNode* leaf = walkToPointer (id);
-    return (leaf != NULL);
+    return (leaf != nullptr);
 }
 
 bool SHAMap::delItem (uint256 const& id)
@@ -1090,38 +1094,56 @@ bool SHAMap::fetchRoot (uint256 const& hash, SHAMapSyncFilter* filter)
     return true;
 }
 
+/** Begin saving dirty nodes to be written later */
 int SHAMap::armDirty ()
 {
-    // begin saving dirty nodes
-    mDirtyNodes = boost::make_shared< boost::unordered_map<SHAMapNode, SHAMapTreeNode::pointer> > ();
+    mDirtyNodes = boost::make_shared <DirtySet> ();
     return ++mSeq;
 }
 
-int SHAMap::flushDirty (NodeMap& map, int maxNodes, NodeObjectType t, uint32 seq)
+/** Write all modified nodes to the node store */
+int SHAMap::flushDirty (DirtySet& set, int maxNodes, NodeObjectType t, std::uint32_t seq)
 {
     int flushed = 0;
     Serializer s;
 
-    for (NodeMap::iterator it = map.begin (); it != map.end (); it = map.erase (it))
+    ScopedWriteLockType sl (mLock);
+
+    for (DirtySet::iterator it = set.begin (); it != set.end (); it = set.erase (it))
     {
-        //      tLog(t == hotTRANSACTION_NODE, lsDEBUG) << "TX node write " << it->first;
-        //      tLog(t == hotACCOUNT_NODE, lsDEBUG) << "STATE node write " << it->first;
+        SHAMapTreeNode::pointer node = checkCacheNode (*it);
+
+        // Check if node was deleted
+        if (!node)
+            continue;
+
+        uint256 const nodeHash = node->getNodeHash();
+
         s.erase ();
-        it->second->addRaw (s, snfPREFIX);
+        node->addRaw (s, snfPREFIX);
 
 #ifdef BEAST_DEBUG
 
-        if (s.getSHA512Half () != it->second->getNodeHash ())
+        if (s.getSHA512Half () != nodeHash)
         {
-            WriteLog (lsFATAL, SHAMap) << * (it->second);
-            WriteLog (lsFATAL, SHAMap) << lexicalCast <std::string> (s.getDataLength ());
-            WriteLog (lsFATAL, SHAMap) << s.getSHA512Half () << " != " << it->second->getNodeHash ();
+            WriteLog (lsFATAL, SHAMap) << *node;
+            WriteLog (lsFATAL, SHAMap) << beast::lexicalCast <std::string> (s.getDataLength ());
+            WriteLog (lsFATAL, SHAMap) << s.getSHA512Half () << " != " << nodeHash;
             assert (false);
         }
 
 #endif
 
-        getApp().getNodeStore ().store (t, seq, s.modData (), it->second->getNodeHash ());
+        if (node->getSeq () != 0)
+        {
+            // Node is not shareable
+            // Make and share a shareable copy
+            node = boost::make_shared <SHAMapTreeNode> (*node, 0);
+            canonicalize (node->getNodeHash(), node);
+            mTNByID.replace (*node, node);
+        }
+
+        getApp().getNodeStore ().store (t, seq, std::move (s.modData ()), nodeHash);
 
         if (flushed++ >= maxNodes)
             return flushed;
@@ -1130,12 +1152,12 @@ int SHAMap::flushDirty (NodeMap& map, int maxNodes, NodeObjectType t, uint32 seq
     return flushed;
 }
 
-boost::shared_ptr<SHAMap::NodeMap> SHAMap::disarmDirty ()
+/** Stop saving dirty nodes */
+boost::shared_ptr<SHAMap::DirtySet> SHAMap::disarmDirty ()
 {
-    // stop saving dirty nodes
     ScopedWriteLockType sl (mLock);
 
-    boost::shared_ptr<NodeMap> ret;
+    boost::shared_ptr<DirtySet> ret;
     ret.swap (mDirtyNodes);
     return ret;
 }
@@ -1182,13 +1204,13 @@ SHAMapTreeNode* SHAMap::getNodePointer (const SHAMapNode& nodeID)
     while (nodeID != *node)
     {
         if (node->isLeaf ())
-            return NULL;
+            return nullptr;
 
         int branch = node->selectBranch (nodeID.getNodeID ());
         assert (branch >= 0);
 
         if ((branch < 0) || node->isEmptyBranch (branch))
-            return NULL;
+            return nullptr;
 
         node = getNodePointer (node->getChildNodeID (branch), node->getChildHash (branch));
         assert (node);
@@ -1255,7 +1277,7 @@ void SHAMap::dump (bool hash)
     WriteLog (lsINFO, SHAMap) << " MAP Contains";
     ScopedWriteLockType sl (mLock);
 
-    for (boost::unordered_map<SHAMapNode, SHAMapTreeNode::pointer>::iterator it = mTNByID.peekMap().begin ();
+    for (ripple::unordered_map<SHAMapNode, SHAMapTreeNode::pointer, SHAMapNode_hash>::iterator it = mTNByID.peekMap().begin ();
             it != mTNByID.peekMap().end (); ++it)
     {
         WriteLog (lsINFO, SHAMap) << it->second->getString ();
@@ -1288,18 +1310,28 @@ SHAMapTreeNode::pointer SHAMap::getCache (uint256 const& hash, SHAMapNode const&
 void SHAMap::canonicalize (uint256 const& hash, SHAMapTreeNode::pointer& node)
 {
     assert (node->getSeq() == 0);
+
+    SHAMapNode id = *node;
+
     treeNodeCache.canonicalize (hash, node);
+
+    if (id != *node)
+    {
+        // The cache has the node with a different ID
+        node = boost::make_shared <SHAMapTreeNode> (*node, 0);
+        node->set (id);
+
+        // Future fetches are likely to use the newer ID
+        treeNodeCache.canonicalize (hash, node, true);
+        assert (id == *node);
+    }
 }
 
 //------------------------------------------------------------------------------
 
-class SHAMapTests : public UnitTest
+class SHAMap_test : public beast::unit_test::suite
 {
 public:
-    SHAMapTests () : UnitTest ("SHAMap", "ripple")
-    {
-    }
-
     // VFALCO TODO Rename this to createFilledVector and pass an unsigned char, tidy up
     //
     static Blob IntToVUC (int v)
@@ -1312,9 +1344,9 @@ public:
         return vuc;
     }
 
-    void runTest ()
+    void run ()
     {
-        beginTestCase ("add/traverse");
+        testcase ("add/traverse");
 
         FullBelowCache fullBelowCache ("test.full_below",
             get_seconds_clock ());
@@ -1370,7 +1402,7 @@ public:
 
 
 
-        beginTestCase ("snapshot");
+        testcase ("snapshot");
 
         uint256 mapHash = sMap.getHash ();
         SHAMap::pointer map2 = sMap.snapShot (false);
@@ -1387,4 +1419,6 @@ public:
     }
 };
 
-static SHAMapTests shaMapTests;
+BEAST_DEFINE_TESTSUITE(SHAMap,ripple_app,ripple);
+
+} // ripple
