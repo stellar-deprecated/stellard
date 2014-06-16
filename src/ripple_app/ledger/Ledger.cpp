@@ -666,18 +666,15 @@ bool Ledger::saveValidatedLedger (bool current)
         db->executeSQL ("COMMIT TRANSACTION;");
     }
 
-    {
-        DeprecatedScopedLock sl (getApp().getLedgerDB ()->getDBLock ());
+	{
+		DeprecatedScopedLock sl(getApp().getLedgerDB()->getDBLock());
 
-        getApp().getLedgerDB ()->getDB ()->executeSQL (boost::str (addLedger %
-                getHash ().GetHex () % mLedgerSeq % mParentHash.GetHex () %
-                lexicalCastThrow <std::string> (mTotCoins) % mInflationSeq % mFeePool % mCloseTime % mParentCloseTime %
-                mCloseResolution % mCloseFlags % mAccountHash.GetHex () % mTransHash.GetHex ()));
-                to_string (getHash ()) % mLedgerSeq % to_string (mParentHash) %
-                beast::lexicalCastThrow <std::string> (mTotCoins) % mCloseTime % 
-                mParentCloseTime % mCloseResolution % mCloseFlags % 
-                to_string (mAccountHash) % to_string (mTransHash)));
-    }
+		getApp().getLedgerDB()->getDB()->executeSQL(boost::str(addLedger %
+			to_string(getHash()) % mLedgerSeq % to_string(mParentHash) %
+			beast::lexicalCastThrow <std::string>(mTotCoins) % mInflationSeq % mFeePool % mCloseTime %
+			mParentCloseTime % mCloseResolution % mCloseFlags %
+			to_string(mAccountHash) % to_string(mTransHash)));
+	}
 
     { // Clients can now trust the database for information about this ledger sequence
         StaticScopedLockType sl (sPendingSaveLock);
@@ -767,7 +764,7 @@ Ledger::pointer Ledger::getSQL (const std::string& sql)
 {
     // only used with sqlite3 prepared statements not used
     uint256 ledgerHash, prevHash, accountHash, transHash;
-    std::uint64_t totCoins;
+	std::uint64_t totCoins, feePool;
     std::uint32_t closingTime, prevClosingTime, ledgerSeq, inflateSeq;
     int closeResolution;
     unsigned closeFlags;
@@ -847,7 +844,7 @@ Ledger::pointer Ledger::getSQL1 (SqliteStatement* stmt)
     }
 
     uint256 ledgerHash, prevHash, accountHash, transHash;
-    std::uint64_t totCoins;
+    std::uint64_t totCoins, feePool;
     std::uint32_t closingTime, prevClosingTime, ledgerSeq, inflateSeq;
     int closeResolution;
     unsigned closeFlags;
@@ -1050,8 +1047,8 @@ Json::Value Ledger::getJson (int options)
         ledger[jss::account_hash]      = to_string (mAccountHash);
         ledger[jss::accepted]          = mAccepted;
         ledger[jss::total_coins]       = beast::lexicalCastThrow <std::string> (mTotCoins);
-		ledger["inflate_seq"]		= lexicalCastThrow <std::string>(mInflationSeq);
-		ledger["fee_pool"]			= lexicalCastThrow <std::string>(mFeePool);
+		ledger["inflate_seq"]			= beast::lexicalCastThrow <std::string>(mInflationSeq);
+		ledger["fee_pool"]				= beast::lexicalCastThrow <std::string>(mFeePool);
 
         if (mCloseTime != 0)
         {

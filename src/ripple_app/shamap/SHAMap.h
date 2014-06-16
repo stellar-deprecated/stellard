@@ -372,8 +372,8 @@ private:
     FullBelowCache& m_fullBelowCache;
     std::uint32_t mSeq;
     std::uint32_t mLedgerSeq; // sequence number of ledger this is part of
-    SyncUnorderedMapType< SHAMapNode, SHAMapTreeNode::pointer > mTNByID;  // Tree Node by ID. hash table of all the nodes
-    boost::shared_ptr<NodeMap> mDirtyNodes;
+	SyncUnorderedMapType< SHAMapNode, SHAMapTreeNode::pointer, SHAMapNode_hash > mTNByID;  // Tree Node by ID. hash table of all the nodes
+	boost::shared_ptr<DirtySet> mDirtyNodes;
     SHAMapTreeNode::pointer root;
     SHAMapState mState;
     SHAMapType mType;

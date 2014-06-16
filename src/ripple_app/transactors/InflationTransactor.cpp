@@ -41,11 +41,13 @@ namespace ripple {
 		return p1.second > p2.second;
 	}
 
+	/* TODO: need a big int implementation
 	uint64 bigIntegerToUint64(beast::BigInteger& bigInt){
 		uint64 res = bigInt.getBitRangeAsInt(0, 32) + ( ((uint64)bigInt.getBitRangeAsInt(32, 32)) << 32 );
 
 		return res;
 	}
+	*/
 
 	SETUP_LOG(InflationTransactor)
 
@@ -56,6 +58,7 @@ namespace ripple {
 		WriteLog(lsWARNING, InflationTransactor) << "InflationTransactor::doApply()";
 
 		TER terResult = tesSUCCESS;
+		/*
 		// make sure it is time to apply inflation
 		// make sure the seq number of this inflation transaction is correct
 
@@ -199,7 +202,7 @@ namespace ripple {
 			return temUNKNOWN;
 		}
 
-
+		*/
 
 		return terResult;
 	}

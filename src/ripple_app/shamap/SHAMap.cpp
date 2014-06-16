@@ -359,31 +359,31 @@ SHAMapTreeNode* SHAMap::getNodePointerNT (const SHAMapNode& id, uint256 const& h
     return node;
 }
 
-
-void SHAMap::returnNode (SHAMapTreeNode::pointer& node, bool modify)
+void SHAMap::returnNode(SHAMapTreeNode::pointer& node, bool modify)
 {
-    // make sure the node is suitable for the intended operation (copy on write)
-    assert (node->isValid ());
-    assert (node->getSeq () <= mSeq);
+	// make sure the node is suitable for the intended operation (copy on write)
+	assert(node->isValid());
+	assert(node->getSeq() <= mSeq);
 
-    if (node && modify && (node->getSeq () != mSeq))
-    {
-        // have a CoW
-        assert (node->getSeq () < mSeq);
-        assert (mState != smsImmutable);
+	if (node && modify && (node->getSeq() != mSeq))
+	{
+		// have a CoW
+		assert(node->getSeq() < mSeq);
+		assert(mState != smsImmutable);
 
-        node = boost::make_shared<SHAMapTreeNode> (*node, mSeq); // here's to the new node, same as the old node
-        assert (node->isValid ());
+		node = boost::make_shared<SHAMapTreeNode>(*node, mSeq); // here's to the new node, same as the old node
+		assert(node->isValid());
 
-        mTNByID.replace (*node, node);
+		mTNByID.replace(*node, node);
 
-        if (node->isRoot ())
-            root = node;
+		if (node->isRoot())
+			root = node;
 
-        if (mDirtyNodes)
-            mDirtyNodes->insert (*node);
-    }
+		if (mDirtyNodes)
+			mDirtyNodes->insert(*node);
+	}
 }
+
 
 void SHAMap::trackNewNode (SHAMapTreeNode::pointer& node)
 {

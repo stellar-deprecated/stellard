@@ -49,9 +49,9 @@ std::unique_ptr<Transactor> Transactor::makeTransactor (
         return std::unique_ptr<Transactor> (
             new AccountSetTransactor (txn, params, engine));
 
-    case ttACCOUNT_DELETE:
-        return std::unique_ptr<Transactor>(
-            new AccountDeleteTransactor (txn, params, engine));
+    // LATER: case ttACCOUNT_DELETE:
+    //    return std::unique_ptr<Transactor>(
+    //        new AccountDeleteTransactor (txn, params, engine));
 
     case ttREGULAR_KEY_SET:
         return std::unique_ptr<Transactor> (
@@ -116,7 +116,7 @@ TER Transactor::payFee ()
         return temBAD_AMOUNT;
 
     // Only check fee is sufficient when the ledger is open.
-	if (isSetBit(mParams, tapOPEN_LEDGER) && 
+	if (is_bit_set(mParams, tapOPEN_LEDGER) &&
 		saPaid < mFeeDue && 
 		mTxn.getTxnType() != ttINFLATION)
     {
