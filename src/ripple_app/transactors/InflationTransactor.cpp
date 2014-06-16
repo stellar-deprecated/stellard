@@ -19,8 +19,8 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "InflationTransactor.h"
 
 #define INFLATION_FREQUENCY			(60*60*24*7)  // every 7 days
-//inflation is 0.000817609695 per 30 days, or 1% a year
-#define INFLATION_RATE_TRILLIONTHS      817630000L
+//inflation is .000190721 per 7 days, or 1% a year
+#define INFLATION_RATE_TRILLIONTHS      190721000L
 #define TRILLION                    1000000000000L
 #define INFLATION_WIN_MIN_PERCENT	  15000000000L   // 1.5%
 #define INFLATION_NUM_WINNERS		50

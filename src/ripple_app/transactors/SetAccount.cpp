@@ -263,7 +263,7 @@ TER AccountSetTransactor::doApply ()
         RippleAddress aInflationDest = mTxn.getFieldAccount(sfInflationDest);
 
 		if ( !aInflationDest.isSet() ){
-			WriteLog(lsINFO, AccountSetTransactor) << "AccountSet: Removing inflation destination.";
+			m_journal.debug << "AccountSet: Removing inflation destination.";
 
 			mTxnAccount->makeFieldAbsent(sfInflationDest);
 		}
@@ -271,12 +271,12 @@ TER AccountSetTransactor::doApply ()
 		{
 			if (!mEngine->getLedger()->hasAccount(aInflationDest))
 			{
-				WriteLog(lsINFO, AccountSetTransactor) << "AccountSet: Inflation destination account doesn't exist.";
+				m_journal.debug << "AccountSet: Inflation destination account doesn't exist.";
 
 				return temDST_NEEDED;
 			}
 
-			WriteLog(lsINFO, AccountSetTransactor) << "AccountSet: Set inflation destination account.";
+			m_journal.debug << "AccountSet: Set inflation destination account.";
 
 			mTxnAccount->setFieldAccount(sfInflationDest, aInflationDest);
 		}

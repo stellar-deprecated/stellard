@@ -27,6 +27,7 @@
 #include "SetRegularKey.h"
 #include "SetTrust.h"
 #include "InflationTransactor.h"
+#include "AccountDeleteTransactor.h"
 
 namespace ripple {
 

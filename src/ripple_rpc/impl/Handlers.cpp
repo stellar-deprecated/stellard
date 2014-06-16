@@ -31,6 +31,7 @@
 #include "../handlers/Feature.cpp"
 #include "../handlers/FetchInfo.cpp"
 #include "../handlers/GetCounts.cpp"
+#include "../handlers/Inflate.cpp"
 #include "../handlers/Ledger.cpp"
 #include "../handlers/LedgerAccept.cpp"
 #include "../handlers/LedgerCleaner.cpp"
