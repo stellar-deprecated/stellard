@@ -165,7 +165,9 @@ runUnitTests (std::string pattern, std::string format)
 int run (int argc, char** argv)
 {
     // Make sure that we have the right OpenSSL and Boost libraries.
-    version::checkLibraryVersions();
+#ifndef WIN32 
+	version::checkLibraryVersions();
+#endif
 
     FatalErrorReporter reporter;
 

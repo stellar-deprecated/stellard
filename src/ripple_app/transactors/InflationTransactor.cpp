@@ -17,6 +17,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 //==============================================================================
 #include "InflationTransactor.h"
+#include <boost/multiprecision/cpp_int.hpp>
 
 #define INFLATION_FREQUENCY			(60*60*24*7)  // every 7 days
 //inflation is .000190721 per 7 days, or 1% a year
@@ -41,24 +42,16 @@ namespace ripple {
 		return p1.second > p2.second;
 	}
 
-	/* TODO: need a big int implementation
-	uint64 bigIntegerToUint64(beast::BigInteger& bigInt){
-		uint64 res = bigInt.getBitRangeAsInt(0, 32) + ( ((uint64)bigInt.getBitRangeAsInt(32, 32)) << 32 );
-
-		return res;
-	}
-	*/
-
 	SETUP_LOG(InflationTransactor)
 
 
 
 	TER InflationTransactor::doApply()
 	{
-		WriteLog(lsWARNING, InflationTransactor) << "InflationTransactor::doApply()";
+		WriteLog(lsWARNING, InflationTransactor) << "InflationTransactor::doApply() ****************************** ";
 
 		TER terResult = tesSUCCESS;
-		/*
+		
 		// make sure it is time to apply inflation
 		// make sure the seq number of this inflation transaction is correct
 
@@ -112,25 +105,39 @@ namespace ripple {
 
 				item = votingLedgerItems->peekNextItem(item->getTag());
 			}
+
+			
 			// sort the votes
 			std::vector< std::pair<uint160, uint64> > sortedVotes;
 			copy(voteTally.begin(), voteTally.end(), back_inserter(sortedVotes));
 
+			// TEMP: debug
+			typedef std::pair< uint160, uint64 > vote_pair;
+			BOOST_FOREACH(vote_pair& vote, sortedVotes)
+			{
+				RippleAddress tempAddr;
+				tempAddr.setAccountID(vote.first);
+				WriteLog(lsWARNING, InflationTransactor) << "votesGotten: " << vote.second << " addr: " << tempAddr.ToString();
+			}
+
 			sort(sortedVotes.begin(), sortedVotes.end(), voteSorter);
 
+			boost::multiprecision::cpp_int minBalance( mEngine->getLedger()->getTotalCoins());
+			boost::multiprecision::cpp_int minWinMultiplier( INFLATION_WIN_MIN_PERCENT );
+			boost::multiprecision::cpp_int inflRateDivider( TRILLION );
 			
-			beast::BigInteger minBalance{ (int64)mEngine->getLedger()->getTotalCoins() };
-			beast::BigInteger minWinMultiplier{ (int64)INFLATION_WIN_MIN_PERCENT };
-			beast::BigInteger inflRateDivider{ (int64)TRILLION };
-
 			minBalance *= minWinMultiplier;
 			minBalance /= inflRateDivider;
+
+			WriteLog(lsWARNING, InflationTransactor) << "minBalance: " << minBalance ;
 
 			uint64 totalVoted = 0;
 			int maxIndex = MIN(INFLATION_NUM_WINNERS, sortedVotes.size());
 			for (int n = 0; n < maxIndex; n++)
 			{
-				beast::BigInteger votesGotten{ (int64)sortedVotes[n].second };
+				boost::multiprecision::cpp_int votesGotten( sortedVotes[n].second );
+
+				WriteLog(lsWARNING, InflationTransactor) << "votesGotten: " << votesGotten;
 
 				if (votesGotten > minBalance)
 				{
@@ -155,10 +162,9 @@ namespace ripple {
 			}
 
 
-			// TODO: Is there better way to cast uint64 to signed int64? (There is no constructor using uint64)
-			beast::BigInteger biCoinsToDole      { (int64) mEngine->getLedger()->getTotalCoins() }; 
-			beast::BigInteger inflRateMultiplier { (int64) INFLATION_RATE_TRILLIONTHS };
-			beast::BigInteger poolFee            { (int64) mEngine->getLedger()->getFeePool() };
+			boost::multiprecision::cpp_int biCoinsToDole( mEngine->getLedger()->getTotalCoins() );
+			boost::multiprecision::cpp_int inflRateMultiplier( INFLATION_RATE_TRILLIONTHS );
+			boost::multiprecision::cpp_int poolFee( mEngine->getLedger()->getFeePool() );
 
 			/// coinsToDole = totalCoins * INFLATION_RATE + feePool
 			biCoinsToDole *= inflRateMultiplier;
@@ -166,19 +172,19 @@ namespace ripple {
 			biCoinsToDole += poolFee;
 
 
-			beast::BigInteger biTotalVoted { (int64)totalVoted };
+			boost::multiprecision::cpp_int biTotalVoted( totalVoted );
 
-			WriteLog(lsWARNING, InflationTransactor) << "totalVoted: " << totalVoted;
+			WriteLog(lsWARNING, InflationTransactor) << "totalVoted: " << totalVoted << " bi:" << biTotalVoted << " coinsToDole: " << biCoinsToDole;
 
 			
 			for (int n = 0; n < maxIndex; n++)
 			{
 				/// coinsDoled = coinToDole * ( votes / totalVoted )
-				beast::BigInteger biCoinsDoled { (int64)sortedVotes[n].second }; 
+				boost::multiprecision::cpp_int biCoinsDoled( sortedVotes[n].second );
 				biCoinsDoled *= biCoinsToDole;
 				biCoinsDoled /= biTotalVoted;
 
-				uint64 coinsDoled = bigIntegerToUint64(biCoinsDoled);
+				uint64 coinsDoled = static_cast<uint64>(biCoinsDoled);
 
 				WriteLog(lsWARNING, InflationTransactor) << "coinsDoled: " << coinsDoled;
 
@@ -189,6 +195,12 @@ namespace ripple {
 					mEngine->entryModify(account);
 					account->setFieldAmount(sfBalance, account->getFieldAmount(sfBalance) + coinsDoled);
 					mEngine->getLedger()->inflateCoins(coinsDoled);
+				}
+				else
+				{
+					RippleAddress tempAddr;
+					tempAddr.setAccountID(sortedVotes[n].first);
+					WriteLog(lsERROR, InflationTransactor) << "Inflation dest account not found: " << tempAddr.ToString();
 				}
 			}
 
@@ -202,7 +214,7 @@ namespace ripple {
 			return temUNKNOWN;
 		}
 
-		*/
+		
 
 		return terResult;
 	}

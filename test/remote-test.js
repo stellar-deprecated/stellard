@@ -129,45 +129,12 @@ suite('Remote functions', function() {
     })
     .once('success', function (r) {
       //console.log("account_root: %s", JSON.stringify(r));
-      // Need to verify account and balance.
+      // TODO: Need to verify account and balance.
       done();
     })
     .submit();
   });
 
-  test('create account final', function(done) {
-    var self = this;
-    var got_proposed;
-    var got_success;
-
-    var root_id = $.remote.account('root')._account_id;
-
-    $.remote.request_subscribe().accounts(root_id).request();
-
-    var transaction = $.remote.transaction()
-    .payment('root', 'alice', "10000.0")
-    .once('error', done)
-    .once('submitted', function (m) {
-      // console.log("proposed: %s", JSON.stringify(m));
-      // buster.assert.equals(m.result, 'terNO_DST_INSUF_XRP');
-      assert.strictEqual(m.engine_result, 'tesSUCCESS');
-    })
-    .once('proposed', function() {
-      got_proposed = true;
-      $.remote.ledger_accept();
-    })
-    .once('success', function (r) {
-      // console.log("create_account: %s", JSON.stringify(r));
-      got_success = true;
-    })
-    .once('final', function (m) {
-      // console.log("final: %s", JSON.stringify(m));
-      assert(got_success);
-      assert(got_proposed);
-      done();
-    });
-    transaction.submit();
-  });
 });
 
 //vim:sw=2:sts=2:ts=8:et
