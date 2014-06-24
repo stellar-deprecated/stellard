@@ -1,5 +1,6 @@
 var async     = require("async");
 var assert    = require('assert');
+var bigint    = require("BigInt");
 var Amount    = require("stellar-lib").Amount;
 var Remote    = require("stellar-lib").Remote;
 var Server    = require("./server").Server;
@@ -26,6 +27,7 @@ suite('Inflation', function() {
     var TOTAL_COINS = 100000000000;
     var INFLATION_RATE = 0.000190721;
     var INFLATION_ROUND = DUST_MULTIPLIER * TOTAL_COINS * INFLATION_RATE;
+    var INT_SIZE_BITS = 256;
 
     setup(function(done) {
         testutils.build_setup().call($, done);
@@ -50,32 +52,51 @@ suite('Inflation', function() {
             else if(n==7) var next=3;
             else var next=1;
 
-            accountObjects[n]={ name:''+n, targetBalance: (DUST_MULTIPLIER*100000000*(n+1)), voteFor:''+next};
-            accountObjects[n].balance=''+accountObjects[n].targetBalance;
-            accountObjects[n].targetBalance -= tx_fee;
-            accountObjects[n].votes=0;
+            var bnBalance = bigint.int2bigInt((n+1)*100000000, INT_SIZE_BITS, 0);
+            bnBalance = bigint.mult(bnBalance, bigint.int2bigInt(DUST_MULTIPLIER, INT_SIZE_BITS, 0));
+            var bnTargetBalance = bigint.sub(bnBalance,bigint.int2bigInt(tx_fee, INT_SIZE_BITS, 0));
+
+            accountObjects[n]={ name:''+n, targetBalance: bnTargetBalance , voteFor:''+next};
+            accountObjects[n].balance=''+bigint.bigInt2str(bnBalance,10);
+            //console.log("total:"+bigint.bigInt2str(accountObjects[n].targetBalance,10));
+            accountObjects[n].votes = bigint.int2bigInt(0,INT_SIZE_BITS,0);
         }
 
 
         for(var n=0; n<12; n++)
         {
-            accountObjects[ accountObjects[n].voteFor ].votes +=accountObjects[n].targetBalance;
+            var votes = accountObjects[ accountObjects[n].voteFor ].votes;
+            votes = bigint.add(accountObjects[n].targetBalance, votes);
+            accountObjects[ accountObjects[n].voteFor ].votes = votes;
         }
 
-        var winBasis=  accountObjects[0].votes+accountObjects[1].votes;
+        var winBasis=  bigint.add(accountObjects[0].votes, accountObjects[1].votes);
 
-        var prizePool=INFLATION_ROUND+tx_fee*24;
+        var totalFees = tx_fee*24;
+        var coinsToDole = (DUST_MULTIPLIER * TOTAL_COINS - totalFees) * INFLATION_RATE;
+        var prizePool= bigint.str2bigInt( Math.floor(coinsToDole+totalFees).toString(), 10);
 
 
-        console.log("pp: "+prizePool/DUST_MULTIPLIER);
-        console.log("v0: "+accountObjects[0].votes/DUST_MULTIPLIER);
-        console.log("v1: "+accountObjects[1].votes/DUST_MULTIPLIER);
-        console.log("v2: "+accountObjects[2].votes/DUST_MULTIPLIER);
-        console.log("v3: "+accountObjects[3].votes/DUST_MULTIPLIER);
-        console.log("v4: "+accountObjects[4].votes/DUST_MULTIPLIER);
+        var prod = bigint.mult(accountObjects[0].votes, prizePool);
+        var res  = bigint.dup(prod);
+        var reminder = bigint.dup(prod);
 
-        accountObjects[0].targetBalance += (accountObjects[0].votes/winBasis)*prizePool;
-        accountObjects[1].targetBalance += (accountObjects[1].votes/winBasis)*prizePool;
+        bigint.divide_( prod , winBasis, res, reminder);
+        accountObjects[0].targetBalance = bigint.add(accountObjects[0].targetBalance, res);
+        console.log("div0: "+bigint.bigInt2str(res,10));
+
+
+
+        prod = bigint.mult(accountObjects[1].votes, prizePool);
+        res  = bigint.dup(prod);
+        reminder = bigint.dup(prod);
+
+        console.log("prod:"+bigint.bigInt2str(prod,10));
+        console.log("winBasis:"+bigint.bigInt2str(winBasis,10));
+
+        bigint.divide_( prod , winBasis, res, reminder);
+        console.log("div1: "+bigint.bigInt2str(res,10));
+        accountObjects[1].targetBalance = bigint.add(accountObjects[1].targetBalance, res);
 
 
 
@@ -134,13 +155,15 @@ suite('Inflation', function() {
                     $.remote.requestAccountBalance($.remote.account(account.name)._account_id, 'current', null)
                         .on('success', function (m) {
 
-
-                            console.log('target balance('+account.name+'): '+account.targetBalance/DUST_MULTIPLIER+' vs '+m.node.Balance/DUST_MULTIPLIER);
+                            var balance = Number( bigint.bigInt2str(account.targetBalance,10));
+                            //console.log("num:"+bigint.bigInt2str(account.targetBalance,10));
+                            console.log('target balance('+account.name+'): '+balance/DUST_MULTIPLIER+' vs '+m.node.Balance/DUST_MULTIPLIER);
                             //console.log('target votes('+account.name+'): '+account.votes/DUST_MULTIPLIER+' vs '+m.node.Balance/DUST_MULTIPLIER);
 
 
                             // TODO: a bit lame but will be annoying to get the libraries to produce the exact same result
                             //assert( Math.abs((m.node.Balance - account.targetBalance)/account.targetBalance) <.0001 );
+                            assert(balance==m.node.Balance);
                             callback();
                         }).request();
                 },wfCB);
