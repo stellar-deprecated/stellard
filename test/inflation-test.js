@@ -26,8 +26,80 @@ suite('Inflation', function() {
     var DUST_MULTIPLIER= 1000000;
     var TOTAL_COINS = 100000000000;
     var INFLATION_RATE = 0.000190721;
-    var INFLATION_ROUND = DUST_MULTIPLIER * TOTAL_COINS * INFLATION_RATE;
+    //not exactly correct
+    //var INFLATION_ROUND = DUST_MULTIPLIER * TOTAL_COINS * INFLATION_RATE;
+    var INFLATION_WIN_MIN_PERMIL = 15;
+    var INFLATION_WIN_MIN_VOTES = TOTAL_COINS / 1000 * INFLATION_WIN_MIN_PERMIL;
+    var INFLATION_NUM_WINNERS = 50;
     var INT_SIZE_BITS = 256;
+
+    function makeTestAccounts(accNum, accBalanceFun, accVoteFun, tx_fee){
+
+        var accountObjects=[];
+        for(var n=0; n<accNum; n++)
+        {
+            var bnBalance = bigint.int2bigInt(accBalanceFun(n), INT_SIZE_BITS, 0);
+            bnBalance = bigint.mult(bnBalance, bigint.int2bigInt(DUST_MULTIPLIER, INT_SIZE_BITS, 0));
+            var bnTargetBalance = bigint.sub(bnBalance,bigint.int2bigInt(tx_fee, INT_SIZE_BITS, 0));
+
+            accountObjects[n]={ name:''+n, targetBalance: bnTargetBalance , voteFor:''+accVoteFun(n)};
+            accountObjects[n].balance=''+bigint.bigInt2str(bnBalance,10);
+            accountObjects[n].balanceInt=parseInt(accountObjects[n].balance);
+            accountObjects[n].votes = 0;
+        }
+
+
+        for(var n=0; n<accNum; n++)
+            accountObjects[ accountObjects[n].voteFor ].votes += parseInt( bigint.bigInt2str(accountObjects[n].targetBalance,10) );
+
+
+        var winningAccountsNum = 0;
+        var winningAccounts = [];
+        var minVotes = INFLATION_WIN_MIN_VOTES*DUST_MULTIPLIER;
+
+        var sortedAccounts = accountObjects.slice().sort( function(a,b){return b.votes - a.votes} );
+
+        for(var n=0; n<accNum && winningAccountsNum<INFLATION_NUM_WINNERS; n++){
+            if( sortedAccounts[n].votes > minVotes ) {
+                winningAccounts[winningAccountsNum++] = sortedAccounts[n];
+            }
+            else
+                break;
+        }
+
+
+        //no account over min threshold
+        if(winningAccountsNum == 0)
+            for(var n=0; n<accNum && winningAccountsNum<INFLATION_NUM_WINNERS; n++){
+                winningAccounts[winningAccountsNum++] = sortedAccounts[n];
+            }
+
+        console.log("winning accounts: "+winningAccountsNum);
+
+        var winBasis = 0;
+
+        for(var n=0; n<winningAccountsNum; n++){
+            winBasis += winningAccounts[n].votes;
+        }
+
+        var bnWinBasis = bigint.str2bigInt(winBasis.toString(), 10);
+        var totalFees = tx_fee*accNum*2;
+        var coinsToDole = (DUST_MULTIPLIER * TOTAL_COINS - totalFees) * INFLATION_RATE;
+        var prizePool= bigint.str2bigInt( Math.floor(coinsToDole+totalFees).toString(), 10);
+
+
+        for(var n=0; n<winningAccountsNum; n++){
+            var votes = bigint.str2bigInt( winningAccounts[n].votes.toString(), 10 );
+            var prod = bigint.mult( votes, prizePool);
+            var res  = bigint.dup(prod);
+            var reminder = bigint.dup(prod);
+
+            bigint.divide_( prod , bnWinBasis, res, reminder);
+            winningAccounts[n].targetBalance = bigint.add(winningAccounts[n].targetBalance, res);
+        }
+
+        return accountObjects;
+    };
 
     setup(function(done) {
         testutils.build_setup().call($, done);
@@ -38,66 +110,22 @@ suite('Inflation', function() {
     });
 
     // Two guys get over threshold
-    test('Inflation #4 - two guys over threshold', function(done) {
+    test('Inflation #1 - two guys over threshold', function(done) {
         var self = this;
-        var start_balance = 10000000000;
         var tx_fee = 12; //TODO: get tx fee
 
+        var voteFunc = function(n){
+            if(n<6) return 0;
+            else if(n==6) return 2;
+            else if(n==7) return 3;
+            else return 1;
+        };
 
-        var accountObjects=[];
-        for(var n=0; n<12; n++)
-        {
-            if(n<6)var next=0;
-            else if(n==6) var next=2;
-            else if(n==7) var next=3;
-            else var next=1;
+        var balanceFunc = function(n){
+            return (n+1)*100000000;
+        };
 
-            var bnBalance = bigint.int2bigInt((n+1)*100000000, INT_SIZE_BITS, 0);
-            bnBalance = bigint.mult(bnBalance, bigint.int2bigInt(DUST_MULTIPLIER, INT_SIZE_BITS, 0));
-            var bnTargetBalance = bigint.sub(bnBalance,bigint.int2bigInt(tx_fee, INT_SIZE_BITS, 0));
-
-            accountObjects[n]={ name:''+n, targetBalance: bnTargetBalance , voteFor:''+next};
-            accountObjects[n].balance=''+bigint.bigInt2str(bnBalance,10);
-            //console.log("total:"+bigint.bigInt2str(accountObjects[n].targetBalance,10));
-            accountObjects[n].votes = bigint.int2bigInt(0,INT_SIZE_BITS,0);
-        }
-
-
-        for(var n=0; n<12; n++)
-        {
-            var votes = accountObjects[ accountObjects[n].voteFor ].votes;
-            votes = bigint.add(accountObjects[n].targetBalance, votes);
-            accountObjects[ accountObjects[n].voteFor ].votes = votes;
-        }
-
-        var winBasis=  bigint.add(accountObjects[0].votes, accountObjects[1].votes);
-
-        var totalFees = tx_fee*24;
-        var coinsToDole = (DUST_MULTIPLIER * TOTAL_COINS - totalFees) * INFLATION_RATE;
-        var prizePool= bigint.str2bigInt( Math.floor(coinsToDole+totalFees).toString(), 10);
-
-
-        var prod = bigint.mult(accountObjects[0].votes, prizePool);
-        var res  = bigint.dup(prod);
-        var reminder = bigint.dup(prod);
-
-        bigint.divide_( prod , winBasis, res, reminder);
-        accountObjects[0].targetBalance = bigint.add(accountObjects[0].targetBalance, res);
-        console.log("div0: "+bigint.bigInt2str(res,10));
-
-
-
-        prod = bigint.mult(accountObjects[1].votes, prizePool);
-        res  = bigint.dup(prod);
-        reminder = bigint.dup(prod);
-
-        console.log("prod:"+bigint.bigInt2str(prod,10));
-        console.log("winBasis:"+bigint.bigInt2str(winBasis,10));
-
-        bigint.divide_( prod , winBasis, res, reminder);
-        console.log("div1: "+bigint.bigInt2str(res,10));
-        accountObjects[1].targetBalance = bigint.add(accountObjects[1].targetBalance, res);
-
+        var accountObjects=makeTestAccounts(12, balanceFunc, voteFunc, tx_fee);
 
 
         var steps = [
@@ -156,13 +184,8 @@ suite('Inflation', function() {
                         .on('success', function (m) {
 
                             var balance = Number( bigint.bigInt2str(account.targetBalance,10));
-                            //console.log("num:"+bigint.bigInt2str(account.targetBalance,10));
                             console.log('target balance('+account.name+'): '+balance/DUST_MULTIPLIER+' vs '+m.node.Balance/DUST_MULTIPLIER);
-                            //console.log('target votes('+account.name+'): '+account.votes/DUST_MULTIPLIER+' vs '+m.node.Balance/DUST_MULTIPLIER);
 
-
-                            // TODO: a bit lame but will be annoying to get the libraries to produce the exact same result
-                            //assert( Math.abs((m.node.Balance - account.targetBalance)/account.targetBalance) <.0001 );
                             assert(balance==m.node.Balance);
                             callback();
                         }).request();
@@ -177,53 +200,22 @@ suite('Inflation', function() {
     });
 
     // When no one gets over the min %
-    // so choose the top 6 guys
-    test('Inflation #3 - no one over min', function(done) {
+    // so choose the top 50 guys (or all 12 in this case)
+    test('Inflation #2 - no one over min', function(done) {
         var self = this;
-        var start_balance = 10000000000;
         var tx_fee = 12; //TODO: get tx fee
 
-        var accountObjects=[];
-        for(var n=0; n<12; n++)
-        {
-            accountObjects[n]={ name:''+n, targetBalance: (DUST_MULTIPLIER*1000*(n+1)), voteFor:''+(n+1)};
-            accountObjects[n].balance=''+accountObjects[n].targetBalance;
-            accountObjects[n].targetBalance -= tx_fee;
-        }
+        var voteFun = function(n){
+            if(n==11) return 0;
+            return n+1;
+        };
 
-        var prizePool=INFLATION_ROUND+tx_fee*24;
-        console.log("pp: "+prizePool);
-        var winBasis=accountObjects[6].targetBalance+accountObjects[11].targetBalance+accountObjects[10].targetBalance+
-            accountObjects[9].targetBalance+accountObjects[8].targetBalance+accountObjects[7].targetBalance+
-            accountObjects[5].targetBalance;
-/*
-        console.log("winBasis: "+winBasis);
-        var pp=(accountObjects[11].targetBalance/winBasis)*prizePool+(accountObjects[6].targetBalance/winBasis)*prizePool
-            +(accountObjects[7].targetBalance/winBasis)*prizePool+(accountObjects[8].targetBalance/winBasis)*prizePool
-            +(accountObjects[9].targetBalance/winBasis)*prizePool+(accountObjects[10].targetBalance/winBasis)*prizePool;
+        var balanceFun = function(n){
+            return (n+1)*1000;
+        };
 
-        console.log("pp: "+pp);
-*/
-        accountObjects[0].targetBalance=accountObjects[0].targetBalance+(accountObjects[11].targetBalance/winBasis)*prizePool;
-        accountObjects[11].targetBalance=accountObjects[11].targetBalance+(accountObjects[10].targetBalance/winBasis)*prizePool;
-        accountObjects[10].targetBalance=accountObjects[10].targetBalance+(accountObjects[9].targetBalance/winBasis)*prizePool;
-        accountObjects[9].targetBalance=accountObjects[9].targetBalance+(accountObjects[8].targetBalance/winBasis)*prizePool;
-        accountObjects[8].targetBalance=accountObjects[8].targetBalance+(accountObjects[7].targetBalance/winBasis)*prizePool;
-        accountObjects[7].targetBalance=accountObjects[7].targetBalance+(accountObjects[6].targetBalance/winBasis)*prizePool;
-        accountObjects[6].targetBalance=accountObjects[6].targetBalance+(accountObjects[5].targetBalance/winBasis)*prizePool;
-/*
-        console.log("0: "+accountObjects[0].targetBalance);
-        console.log("7: "+accountObjects[7].targetBalance);
-        console.log("8: "+accountObjects[8].targetBalance);
-        console.log("9: "+accountObjects[9].targetBalance);
-        console.log("10: "+accountObjects[10].targetBalance);
-        console.log("11: "+accountObjects[11].targetBalance);
-
-
-
-        console.log("sum balance:"+(accountObjects[0].targetBalance+accountObjects[7].targetBalance+accountObjects[8].targetBalance+accountObjects[9].targetBalance+accountObjects[10].targetBalance+accountObjects[11].targetBalance));
-*/
-        accountObjects[11].voteFor='0';
+        var accountObjects=makeTestAccounts(12, balanceFun, voteFun, tx_fee);
+        
 
         var steps = [
 
@@ -281,10 +273,10 @@ suite('Inflation', function() {
                         .on('success', function (m) {
 
 
-                            console.log('target('+account.name+'): '+account.targetBalance+' vs '+m.node.Balance);
+                            var balance = Number( bigint.bigInt2str(account.targetBalance,10));
+                            console.log('target('+account.name+'): '+balance+' vs '+m.node.Balance);
 
-                            // TODO: a bit lame but will be annoying to get the libraries to produce the exact same result
-                            assert( Math.abs((m.node.Balance - account.targetBalance)/account.targetBalance) <.0001 );
+                            assert(m.node.Balance == balance);
                             callback();
                         }).request();
                 },wfCB);
@@ -296,6 +288,10 @@ suite('Inflation', function() {
             done();
         });
     });
+
+
+
+
 
 /*
     test("Inflation to another account", function (done) {
