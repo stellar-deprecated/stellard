@@ -25,7 +25,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define TRILLION                    1000000000000L
 #define INFLATION_WIN_MIN_PERCENT	  15000000000L   // 1.5%
 #define INFLATION_NUM_WINNERS		50
-#define INFLATION_START_TIME		(1397088000-946684800) // seconds since 1/1/2000
+#define INFLATION_START_TIME		(1403900503-946684800) // seconds since 1/1/2000  start july 1st
 #ifndef MIN
 #define MIN(x,y)  ((x)<(y) ? (x) : (y))
 #endif

@@ -18,7 +18,8 @@
   "devDependencies": {
     "coffee-script": "~1.6.3",
     "mocha": "~1.13.0",
-	"BigInt": "~5.4.5"
+	"BigInt": "~5.4.5",
+      "superagent": "*"
   },
 
   "scripts": {
