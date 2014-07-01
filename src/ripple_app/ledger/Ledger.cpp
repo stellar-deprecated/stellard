@@ -278,6 +278,8 @@ void Ledger::setRaw (Serializer& s, bool hasPrefix)
 
     mLedgerSeq =        sit.get32 ();
     mTotCoins =         sit.get64 ();
+	mFeePool =			sit.get64();
+	mInflationSeq =		sit.get32();
     mParentHash =       sit.get256 ();
     mTransHash =        sit.get256 ();
     mAccountHash =      sit.get256 ();
@@ -300,6 +302,8 @@ void Ledger::addRaw (Serializer& s) const
 {
     s.add32 (mLedgerSeq);
     s.add64 (mTotCoins);
+	s.add64(mFeePool);
+	s.add32(mInflationSeq);
     s.add256 (mParentHash);
     s.add256 (mTransHash);
     s.add256 (mAccountHash);
