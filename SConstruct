@@ -473,7 +473,6 @@ stellard = env.Program('build/stellard', OBJECT_FILES)
 tags    = env.CTags('tags', TAG_SRCS)
 
 Default(stellard, tags)
-Default(rippled, tags)
 
 #-------------------------------------------------------------------------------
 
