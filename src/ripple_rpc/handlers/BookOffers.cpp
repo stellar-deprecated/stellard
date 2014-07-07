@@ -33,12 +33,12 @@ inline bool is_not_xrp (UnsignedInteger const& value)
 
 inline uint160 const& xrp_issuer ()
 {
-    return ACCOUNT_XRP;
+    return ACCOUNT_STR;
 }
 
 inline uint160 const& xrp_currency ()
 {
-    return CURRENCY_XRP;
+    return CURRENCY_STR;
 }
 
 inline uint160 const& neutral_issuer ()
@@ -133,11 +133,11 @@ Json::Value RPCHandler::doBookOffers (Json::Value params, Resource::Charge& load
 
     if (is_xrp (pay_currency) && ! is_xrp (pay_issuer))
         return RPC::make_error (rpcSRC_ISR_MALFORMED,
-            "Unneeded field 'taker_pays.issuer' for XRP currency specification.");
+            "Unneeded field 'taker_pays.issuer' for STR currency specification.");
 
     if (is_not_xrp (pay_currency) && is_xrp (pay_issuer))
         return RPC::make_error (rpcSRC_ISR_MALFORMED,
-            "Invalid field 'taker_pays.issuer', expected non-XRP issuer.");
+            "Invalid field 'taker_pays.issuer', expected non-STR issuer.");
 
     uint160 get_issuer;
 
@@ -163,11 +163,11 @@ Json::Value RPCHandler::doBookOffers (Json::Value params, Resource::Charge& load
 
     if (is_xrp (get_currency) && ! is_xrp (get_issuer))
         return RPC::make_error (rpcDST_ISR_MALFORMED,
-            "Unneeded field 'taker_gets.issuer' for XRP currency specification.");
+            "Unneeded field 'taker_gets.issuer' for STR currency specification.");
 
     if (is_not_xrp (get_currency) && is_xrp (get_issuer))
         return RPC::make_error (rpcDST_ISR_MALFORMED,
-            "Invalid field 'taker_gets.issuer', expected non-XRP issuer.");
+            "Invalid field 'taker_gets.issuer', expected non-STR issuer.");
 
     RippleAddress raTakerID;
 

@@ -59,7 +59,7 @@ Interpreter::Interpreter ()
     mFunctionTable[CANCEL_OP] = new SubOp ();
     mFunctionTable[BLOCK_OP] = new SubOp ();
     mFunctionTable[BLOCK_END_OP] = new SubOp ();
-    mFunctionTable[SEND_XRP_OP] = new SendXRPOp ();
+    mFunctionTable[SEND_STR_OP] = new SendSTROp ();
     /*
     mFunctionTable[SEND_OP]=new SendOp();
     mFunctionTable[REMOVE_CONTRACT_OP]=new SubOp();
@@ -76,7 +76,7 @@ Interpreter::Interpreter ()
     mFunctionTable[GET_LEDGER_TIME_OP]=new SubOp();
     mFunctionTable[GET_LEDGER_NUM_OP]=new SubOp();
     mFunctionTable[GET_RAND_FLOAT_OP]=new SubOp();
-    mFunctionTable[GET_XRP_ESCROWED_OP]=new SubOp();
+    mFunctionTable[GET_STR_ESCROWED_OP]=new SubOp();
     mFunctionTable[GET_RIPPLE_ESCROWED_OP]=new SubOp();
     mFunctionTable[GET_RIPPLE_ESCROWED_CURRENCY_OP]=new SubOp();
     mFunctionTable[GET_RIPPLE_ESCROWED_ISSUER]=new GetRippleEscrowedIssuerOp();

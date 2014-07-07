@@ -69,11 +69,11 @@ private:
 
     enum PaymentType
     {
-        pt_XRP_to_XRP,
-        pt_XRP_to_nonXRP,
-        pt_nonXRP_to_XRP,
-        pt_nonXRP_to_same,
-        pt_nonXRP_to_nonXRP
+        pt_STR_to_STR,
+        pt_STR_to_nonSTR,
+        pt_nonSTR_to_STR,
+        pt_nonSTR_to_same,
+        pt_nonSTR_to_nonSTR
     };
 
     enum NodeType
@@ -81,7 +81,7 @@ private:
         nt_SOURCE,       // The source account with an issuer account, if required
         nt_ACCOUNTS,     // Accounts that connect from this source/currency
         nt_BOOKS,        // Order books that connect to this currency
-        nt_XRP_BOOK,     // The order book from this currency to XRP
+        nt_STR_BOOK,     // The order book from this currency to STR
         nt_DEST_BOOK,    // The order book to the destination currency/issuer
         nt_DESTINATION   // The destination account only
     };
@@ -133,7 +133,7 @@ private:
 
     static const std::uint32_t afADD_ACCOUNTS = 0x001;  // Add ripple paths
     static const std::uint32_t afADD_BOOKS    = 0x002;  // Add order books
-    static const std::uint32_t afOB_XRP       = 0x010;  // Add order book to XRP only
+    static const std::uint32_t afOB_STR       = 0x010;  // Add order book to STR only
     static const std::uint32_t afOB_LAST      = 0x040;  // Must link to destination currency
     static const std::uint32_t afAC_LAST      = 0x080;  // Destination account only
 };
@@ -141,12 +141,12 @@ private:
 boost::unordered_set<uint160> usAccountDestCurrencies
         (const RippleAddress& raAccountID,
         RippleLineCache::ref cache,
-        bool includeXRP);
+        bool includeSTR);
 
 boost::unordered_set<uint160> usAccountSourceCurrencies
         (const RippleAddress& raAccountID,
         RippleLineCache::ref lrLedger,
-        bool includeXRP);
+        bool includeSTR);
 
 } // ripple
 

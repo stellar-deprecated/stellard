@@ -61,10 +61,10 @@ static inline const uint160& get_u160_one ()
 }
 
 // VFALCO TODO replace these with language constructs
-#define CURRENCY_XRP        get_u160_zero()
+#define CURRENCY_STR        get_u160_zero()
 #define CURRENCY_ONE        get_u160_one()                  // Used as a place holder.
-#define CURRENCY_BAD        uint160(0x5852500000000000)     // Do not allow XRP as an IOU currency.
-#define ACCOUNT_XRP         get_u160_zero()
+#define CURRENCY_BAD        uint160(0x5852500000000000)     // Do not allow STR as an IOU currency.
+#define ACCOUNT_STR         get_u160_zero()
 #define ACCOUNT_ONE         get_u160_one()                  // Used as a place holder.
 
 //------------------------------------------------------------------------------
@@ -582,7 +582,7 @@ public:
         return mValue ? (mIsNegative ? -1 : 1) : 0;
     }
 
-    // When the currency is XRP, the value in raw units. S=signed
+    // When the currency is STR, the value in raw units. S=signed
     std::uint64_t getNValue () const
     {
         if (!mIsNative) throw std::runtime_error ("not native");
@@ -785,11 +785,11 @@ public:
 
 private:
     uint160 mCurrency;      // Compared by ==. Always update mIsNative.
-    uint160 mIssuer;        // Not compared by ==. 0 for XRP.
+    uint160 mIssuer;        // Not compared by ==. 0 for STR.
 
     std::uint64_t  mValue;
     int            mOffset;
-    bool           mIsNative;      // Always !mCurrency. Native is XRP.
+    bool           mIsNative;      // Always !mCurrency. Native is STR.
     bool           mIsNegative;
 
     void canonicalize ();

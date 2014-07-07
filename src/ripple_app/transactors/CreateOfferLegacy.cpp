@@ -370,7 +370,7 @@ TER ClassicOfferCreateTransactor::takeOffers (
     saTakerGot = STAmount (saTakerGets.getCurrency (), saTakerGets.getIssuer ());
     bUnfunded = false;
 
-    // TODO: need to track the synthesized book (source->XRP + XRP->target)
+    // TODO: need to track the synthesized book (source->STR + STR->target)
     //       here as well.
     OrderBookIterator directBookIter (lesActive,
         saTakerPays.getCurrency(), saTakerPays.getIssuer(),
@@ -397,7 +397,7 @@ TER ClassicOfferCreateTransactor::takeOffers (
         // We have a crossing offer to consider.
 
         // TODO Must consider the synthesized orderbook instead of just the
-        // direct one (i.e. look at A->XRP->B)
+        // direct one (i.e. look at A->STR->B)
         SLE::pointer sleOffer = directBookIter.getCurrentOffer ();
 
         if (!sleOffer)
@@ -574,8 +574,8 @@ TER ClassicOfferCreateTransactor::takeOffers (
                 // Distribute funds. The sends charge appropriate fees
                 // which are implied by offer.
 
-                // TODO Adjust for synthetic transfers - pay into A->XRP
-                // and pay out of XRP->B
+                // TODO Adjust for synthetic transfers - pay into A->STR
+                // and pay out of STR->B
 
                 // Offer owner pays taker.
                 terResult = lesActive.accountSend (
@@ -584,7 +584,7 @@ TER ClassicOfferCreateTransactor::takeOffers (
                 if (tesSUCCESS == terResult)
                 {
                     // TODO: in the synthesized case, pay from B to the original taker
-                    // Taker -> A -> XRP -> B -> ... -> Taker
+                    // Taker -> A -> STR -> B -> ... -> Taker
 
                     // Taker pays offer owner.
                     terResult   = lesActive.accountSend (
@@ -753,7 +753,7 @@ TER ClassicOfferCreateTransactor::doApply ()
     else if (saTakerPays.isNative () && saTakerGets.isNative ())
     {
         m_journal.warning <<
-            "Malformed offer: XRP for XRP";
+            "Malformed offer: STR for STR";
 
         terResult   = temBAD_OFFER;
     }
@@ -771,7 +771,7 @@ TER ClassicOfferCreateTransactor::doApply ()
 
         terResult   = temREDUNDANT;
     }
-    // FIXME: XRP is not a bad currency, not not allowed as IOU
+    // FIXME: STR is not a bad currency, not not allowed as IOU
     else if (CURRENCY_BAD == uPaysCurrency || CURRENCY_BAD == uGetsCurrency)
     {
         m_journal.warning <<
@@ -839,7 +839,7 @@ TER ClassicOfferCreateTransactor::doApply ()
         bHaveExpiration &&
         (mEngine->getLedger ()->getParentCloseTimeNC () >= uExpiration);
 
-    // If all is well and this isn't an offer to XRP, then we make sure we are
+    // If all is well and this isn't an offer to STR, then we make sure we are
     // authorized to hold what the taker will pay.
     if (tesSUCCESS == terResult && !saTakerPays.isNative () && !bExpired)
     {
