@@ -853,13 +853,13 @@ suite('Inflation', function() {
             .once('submitted', function (m) {
                 // Transaction got an error.
                 // console.log("proposed: %s", JSON.stringify(m));
-                assert.strictEqual(m.engine_result, 'tecNO_DST_INSUF_XRP');
+                assert.strictEqual(m.engine_result, 'tecNO_DST_INSUF_STR');
                 got_proposed  = true;
                 $.remote.ledger_accept();    // Move it along.
             })
             .once('final', function (m) {
                 // console.log("final: %s", JSON.stringify(m, undefined, 2));
-                assert.strictEqual(m.engine_result, 'tecNO_DST_INSUF_XRP');
+                assert.strictEqual(m.engine_result, 'tecNO_DST_INSUF_STR');
                 done();
             })
             .submit();
