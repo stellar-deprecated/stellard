@@ -1,14 +1,12 @@
-#rippled - Ripple P2P server
+#stellard - Stellar P2P server
 
-##[![Build Status](https://travis-ci.org/ripple/rippled.png?branch=develop)](https://travis-ci.org/ripple/rippled)
-
-This is the repository for Ripple's `rippled`, reference P2P server.
+This is the repository for Stellar's `stellard`, reference P2P server.
 
 ###Build instructions:
-* https://ripple.com/wiki/Rippled_build_instructions
+* https://wiki.gostellar.org/Stellard_build_instructions
 
 ###Setup instructions:
-* https://ripple.com/wiki/Rippled_setup_instructions
+* https://wiki.gostellar.org/Stellard_setup_instructions
 
 ### Repository Contents
 
@@ -32,10 +30,13 @@ README for more details.
 #### ./test
 Javascript / Mocha tests.
 
+#### Running tests
+mocha test/*-test.js
+
 ## License
-Ripple is open source and permissively licensed under the ISC license. See the
+Stellar is open source and permissively licensed under the ISC license. See the
 LICENSE file for more details.
 
 ###For more information:
-* https://ripple.com
-* https://ripple.com/wiki
+* https://www.gostellar.org
+* https://wiki.gostellar.org

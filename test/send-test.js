@@ -17,7 +17,7 @@ suite('Sending', function() {
     testutils.build_teardown().call($, done);
   });
 
-  test("send XRP to non-existent account with insufficient fee", function (done) {
+  test("send STR to non-existent account with insufficient fee", function (done) {
     var self    = this;
     var ledgers = 20;
     var got_proposed;
@@ -27,13 +27,13 @@ suite('Sending', function() {
     .once('submitted', function (m) {
       // Transaction got an error.
       // console.log("proposed: %s", JSON.stringify(m));
-      assert.strictEqual(m.engine_result, 'tecNO_DST_INSUF_XRP');
+      assert.strictEqual(m.engine_result, 'tecNO_DST_INSUF_STR');
       got_proposed  = true;
       $.remote.ledger_accept();    // Move it along.
     })
     .once('final', function (m) {
       // console.log("final: %s", JSON.stringify(m, undefined, 2));
-      assert.strictEqual(m.engine_result, 'tecNO_DST_INSUF_XRP');
+      assert.strictEqual(m.engine_result, 'tecNO_DST_INSUF_STR');
       done();
     })
     .submit();
