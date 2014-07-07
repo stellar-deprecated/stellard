@@ -127,7 +127,7 @@ function build_setup(opts, host) {
         data.server.once('exited', function () {
           // If know the remote, tell it server is gone.
           if (self.remote) {
-            self.remote.server_fatal();
+            self.remote.setServerFatal();
           }
         });
 
