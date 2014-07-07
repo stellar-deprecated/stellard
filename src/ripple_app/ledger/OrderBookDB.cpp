@@ -66,7 +66,7 @@ static void updateHelper (SLE::ref entry,
     boost::unordered_set< uint256 >& seen,
     ripple::unordered_map< RippleAsset, std::vector<OrderBook::pointer> >& destMap,
     ripple::unordered_map< RippleAsset, std::vector<OrderBook::pointer> >& sourceMap,
-    boost::unordered_set< RippleAsset >& XRPBooks,
+    boost::unordered_set< RippleAsset >& STRBooks,
     int& books)
 {
     if ((entry->getType () == ltDIR_NODE) && (entry->isFieldPresent (sfExchangeRate)) &&
@@ -88,7 +88,7 @@ static void updateHelper (SLE::ref entry,
             sourceMap[RippleAssetRef (ci, ii)].push_back (book);
             destMap[RippleAssetRef (co, io)].push_back (book);
             if (co.isZero())
-                XRPBooks.insert(RippleAssetRef (ci, ii));
+                STRBooks.insert(RippleAssetRef (ci, ii));
             ++books;
         }
     }
@@ -99,7 +99,7 @@ void OrderBookDB::update (Ledger::pointer ledger)
     boost::unordered_set< uint256 > seen;
     ripple::unordered_map< RippleAsset, std::vector<OrderBook::pointer> > destMap;
     ripple::unordered_map< RippleAsset, std::vector<OrderBook::pointer> > sourceMap;
-    boost::unordered_set< RippleAsset > XRPBooks;
+    boost::unordered_set< RippleAsset > STRBooks;
 
     WriteLog (lsDEBUG, OrderBookDB) << "OrderBookDB::update>";
 
@@ -109,7 +109,7 @@ void OrderBookDB::update (Ledger::pointer ledger)
     try
     {
         ledger->visitStateItems(BIND_TYPE(&updateHelper, P_1, boost::ref(seen), boost::ref(destMap),
-            boost::ref(sourceMap), boost::ref(XRPBooks), boost::ref(books)));
+            boost::ref(sourceMap), boost::ref(STRBooks), boost::ref(books)));
     }
     catch (const SHAMapMissingNode&)
     {
@@ -123,7 +123,7 @@ void OrderBookDB::update (Ledger::pointer ledger)
     {
         ScopedLockType sl (mLock);
 
-        mXRPBooks.swap(XRPBooks);
+        mSTRBooks.swap(STRBooks);
         mSourceMap.swap(sourceMap);
         mDestMap.swap(destMap);
     }
@@ -133,14 +133,14 @@ void OrderBookDB::update (Ledger::pointer ledger)
 void OrderBookDB::addOrderBook(const uint160& ci, const uint160& co,
     const uint160& ii, const uint160& io)
 {
-    bool toXRP = co.isZero();
+    bool toSTR = co.isZero();
     ScopedLockType sl (mLock);
 
-    if (toXRP)
-    { // We don't want to search through all the to-XRP or from-XRP order books!
+    if (toSTR)
+    { // We don't want to search through all the to-STR or from-STR order books!
         BOOST_FOREACH(OrderBook::ref ob, mSourceMap[RippleAssetRef(ci, ii)])
         {
-            if (ob->getCurrencyOut().isZero ()) // also to XRP
+            if (ob->getCurrencyOut().isZero ()) // also to STR
                 return;
         }
     }
@@ -159,8 +159,8 @@ void OrderBookDB::addOrderBook(const uint160& ci, const uint160& co,
 
     mSourceMap[RippleAssetRef (ci, ii)].push_back (book);
     mDestMap[RippleAssetRef (co, io)].push_back (book);
-    if (toXRP)
-        mXRPBooks.insert(RippleAssetRef (ci, ii));
+    if (toSTR)
+        mSTRBooks.insert(RippleAssetRef (ci, ii));
 }
 
 // return list of all orderbooks that want this issuerID and currencyID
@@ -177,11 +177,11 @@ void OrderBookDB::getBooksByTakerPays (RippleIssuer const& issuerID, RippleCurre
         bookRet.clear ();
 }
 
-bool OrderBookDB::isBookToXRP(RippleIssuer const& issuerID, RippleCurrency const& currencyID)
+bool OrderBookDB::isBookToSTR(RippleIssuer const& issuerID, RippleCurrency const& currencyID)
 {
     ScopedLockType sl (mLock);
 
-    return mXRPBooks.count(RippleAssetRef(currencyID, issuerID)) > 0;
+    return mSTRBooks.count(RippleAssetRef(currencyID, issuerID)) > 0;
 }
 
 // return list of all orderbooks that give this issuerID and currencyID

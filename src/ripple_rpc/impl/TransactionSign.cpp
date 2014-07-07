@@ -140,7 +140,7 @@ static Json::Value signPayment(
 
         if (saSendMax.isNative () && amount.isNative ())
             return RPC::make_error (rpcINVALID_PARAMS,
-                "Cannot build XRP to XRP paths.");
+                "Cannot build STR to STR paths.");
 
         {
             LegacyPathFind lpf (role == Config::ADMIN);

@@ -873,7 +873,7 @@ TER RippleCalc::calcNodeDeliverFwd (
             STAmount&       saTakerGets     = pnCur.saTakerGets;
 
             const STAmount  saInFeeRate
-                = !uPrvCurrencyID                   // XRP.
+                = !uPrvCurrencyID                   // STR.
                   || uInAccountID == uPrvIssuerID   // Sender is issuer.
                   || uOfrOwnerID == uPrvIssuerID    // Reciever is issuer.
                   ? saOne                           // No fee.
@@ -963,7 +963,7 @@ TER RippleCalc::calcNodeDeliverFwd (
             {
                 // ? --> OFFER --> account
                 // Input fees: vary based upon the consumed offer's owner.
-                // Output fees: none as XRP or the destination account is the
+                // Output fees: none as STR or the destination account is the
                 // issuer.
 
                 saOutPassAct    = saOutPassMax;
@@ -978,7 +978,7 @@ TER RippleCalc::calcNodeDeliverFwd (
                     << " saOutPassAct=" << saOutPassAct
                     << " saOutFunded=%s" << saOutFunded;
 
-                // Output: Debit offer owner, send XRP or non-XPR to next
+                // Output: Debit offer owner, send STR or non-XPR to next
                 // account.
                 terResult   = mActiveLedger.accountSend (
                     uOfrOwnerID, uNxtAccountID, saOutPassAct);
@@ -1035,7 +1035,7 @@ TER RippleCalc::calcNodeDeliverFwd (
                 // Do outbound debiting.
                 // Send to issuer/limbo total amount including fees (issuer gets
                 // fees).
-                auto id = !!uCurCurrencyID ? uCurIssuerID : ACCOUNT_XRP;
+                auto id = !!uCurCurrencyID ? uCurIssuerID : ACCOUNT_STR;
                 auto outPassTotal = saOutPassAct + saOutPassFees;
                 mActiveLedger.accountSend (uOfrOwnerID, id, outPassTotal);
 
@@ -1063,11 +1063,11 @@ TER RippleCalc::calcNodeDeliverFwd (
             // Credit offer owner from in issuer/limbo (input transfer fees left
             // with owner).  Don't attempt to have someone credit themselves, it
             // is redundant.
-            if (!uPrvCurrencyID                 // Always credit XRP from limbo.
-                || uInAccountID != uOfrOwnerID) // Never send non-XRP to the
+            if (!uPrvCurrencyID                 // Always credit STR from limbo.
+                || uInAccountID != uOfrOwnerID) // Never send non-STR to the
                                                 // same account.
             {
-                auto id = !!uPrvCurrencyID ? uInAccountID : ACCOUNT_XRP;
+                auto id = !!uPrvCurrencyID ? uInAccountID : ACCOUNT_STR;
                 terResult = mActiveLedger.accountSend (
                     id, uOfrOwnerID, saInPassAct);
 
@@ -1415,7 +1415,7 @@ TER RippleCalc::calcNodeAccountRev (
 
     const uint160& uCurrencyID = pnCur.uCurrencyID;
 
-    // XXX Don't look up quality for XRP
+    // XXX Don't look up quality for STR
     const std::uint32_t uQualityIn = uNode
         ? mActiveLedger.rippleQualityIn (
             uCurAccountID, uPrvAccountID, uCurrencyID)
@@ -1844,9 +1844,9 @@ TER RippleCalc::calcNodeAccountRev (
 // Then, compute current node's output for next node.
 // - Current node: specify what to push through to next.
 // - Output to next node is computed as input minus quality or transfer fee.
-// - If next node is an offer and output is non-XRP then we are the issuer and
+// - If next node is an offer and output is non-STR then we are the issuer and
 //   do not need to push funds.
-// - If next node is an offer and output is XRP then we need to deliver funds to
+// - If next node is an offer and output is STR then we need to deliver funds to
 //   limbo.
 TER RippleCalc::calcNodeAccountFwd (
     const unsigned int uNode,   // 0 <= uNode <= uLast
@@ -2094,7 +2094,7 @@ TER RippleCalc::calcNodeAccountFwd (
 
         if (uNode)
         {
-            // Non-XRP, current node is the issuer.
+            // Non-STR, current node is the issuer.
             WriteLog (lsTRACE, RippleCalc)
                 << "calcNodeAccountFwd: account --> ACCOUNT --> offer";
 
@@ -2146,12 +2146,12 @@ TER RippleCalc::calcNodeAccountFwd (
                 saCurDeliverAct = std::min (saCurDeliverAct,
                                             psCur.saInReq - psCur.saInAct);
 
-                // Limit XRP by available. No limit for non-XRP as issuer.
+                // Limit STR by available. No limit for non-STR as issuer.
                 if (uCurrencyID.isZero ())
                     saCurDeliverAct = std::min (
                         saCurDeliverAct,
-                        mActiveLedger.accountHolds (uCurAccountID, CURRENCY_XRP,
-                                                ACCOUNT_XRP));
+                        mActiveLedger.accountHolds (uCurAccountID, CURRENCY_STR,
+                                                ACCOUNT_STR));
 
             }
 
@@ -2164,12 +2164,12 @@ TER RippleCalc::calcNodeAccountFwd (
             }
             else if (!!uCurrencyID)
             {
-                // Non-XRP, current node is the issuer.
+                // Non-STR, current node is the issuer.
                 // We could be delivering to multiple accounts, so we don't know
                 // which ripple balance will be adjusted.  Assume just issuing.
 
                 WriteLog (lsTRACE, RippleCalc)
-                    << "calcNodeAccountFwd: ^ --> ACCOUNT -- !XRP --> offer";
+                    << "calcNodeAccountFwd: ^ --> ACCOUNT -- !STR --> offer";
 
                 // As the issuer, would only issue.
                 // Don't need to actually deliver. As from delivering leave in
@@ -2179,11 +2179,11 @@ TER RippleCalc::calcNodeAccountFwd (
             else
             {
                 WriteLog (lsTRACE, RippleCalc)
-                    << "calcNodeAccountFwd: ^ --> ACCOUNT -- XRP --> offer";
+                    << "calcNodeAccountFwd: ^ --> ACCOUNT -- STR --> offer";
 
-                // Deliver XRP to limbo.
+                // Deliver STR to limbo.
                 terResult = mActiveLedger.accountSend (
-                    uCurAccountID, ACCOUNT_XRP, saCurDeliverAct);
+                    uCurAccountID, ACCOUNT_STR, saCurDeliverAct);
             }
         }
     }
@@ -2455,14 +2455,14 @@ TER RippleCalc::rippleCalc (
     STAmount&       saDstAmountAct,         // <-- The computed output amount.
     std::vector<PathState::pointer>&  vpsExpanded,
     // Issuer:
-    //      XRP: ACCOUNT_XRP
-    //  non-XRP: uSrcAccountID (for any issuer) or another account with trust
+    //      STR: ACCOUNT_STR
+    //  non-STR: uSrcAccountID (for any issuer) or another account with trust
     //           node.
     const STAmount&     saMaxAmountReq,             // --> -1 = no limit.
 
     // Issuer:
-    //      XRP: ACCOUNT_XRP
-    //  non-XRP: uDstAccountID (for any issuer) or another account with trust
+    //      STR: ACCOUNT_STR
+    //  non-STR: uDstAccountID (for any issuer) or another account with trust
     //           node.
     const STAmount&     saDstAmountReq,
 
@@ -2505,7 +2505,7 @@ TER RippleCalc::rippleCalc (
     {
         // Build a default path.  Use saDstAmountReq and saMaxAmountReq to imply
         // nodes.
-        // XXX Might also make a XRP bridge by default.
+        // XXX Might also make a STR bridge by default.
 
         PathState::pointer pspDirect = boost::make_shared<PathState> (
             saDstAmountReq, saMaxAmountReq);

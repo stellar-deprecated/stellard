@@ -50,7 +50,7 @@ bool STAmount::issuerFromString (uint160& uDstIssuer, const std::string& sIssuer
     return bSuccess;
 }
 
-// --> sCurrency: "", "XRP", or three letter ISO code.
+// --> sCurrency: "", "STR", or three letter ISO code.
 bool STAmount::currencyFromString (uint160& uDstCurrency, const std::string& sCurrency)
 {
     bool    bSuccess    = true;
@@ -160,11 +160,11 @@ STAmount::STAmount (SField::ref n, const Json::Value& v)
     if (mIsNative)
     {
         if (v.isObject ())
-            throw std::runtime_error ("XRP may not be specified as an object");
+            throw std::runtime_error ("STR may not be specified as an object");
     }
     else
     {
-        // non-XRP
+        // non-STR
         if (!currencyFromString (mCurrency, currency.asString ()))
             throw std::runtime_error ("invalid currency");
 
@@ -367,7 +367,7 @@ bool STAmount::setFullValue (const std::string& sAmount, const std::string& sCur
     // Stamps not must have an issuer.
     if (mIsNative && !mIssuer.isZero ())
     {
-        WriteLog (lsINFO, STAmount) << "Issuer specified for XRP: " << sIssuer;
+        WriteLog (lsINFO, STAmount) << "Issuer specified for STR: " << sIssuer;
 
         return false;
     }
@@ -1429,7 +1429,7 @@ public:
 
         unexpected (STAmount (310).getText () != "310", "STAmount fail");
 
-        unexpected (STAmount::createHumanCurrency (uint160 ()) != "XRP", "cHC(XRP)");
+        unexpected (STAmount::createHumanCurrency (uint160 ()) != "STR", "cHC(STR)");
 
         uint160 c;
         unexpected (!STAmount::currencyFromString (c, "USD"), "create USD currency");
@@ -1586,13 +1586,13 @@ public:
         unexpected (STAmount::multiply (STAmount (CURRENCY_ONE, ACCOUNT_ONE, 20), STAmount (3), CURRENCY_ONE, ACCOUNT_ONE).getText () != "60",
             "STAmount multiply fail 1");
 
-        unexpected (STAmount::multiply (STAmount (CURRENCY_ONE, ACCOUNT_ONE, 20), STAmount (3), uint160 (), ACCOUNT_XRP).getText () != "60",
+        unexpected (STAmount::multiply (STAmount (CURRENCY_ONE, ACCOUNT_ONE, 20), STAmount (3), uint160 (), ACCOUNT_STR).getText () != "60",
             "STAmount multiply fail 2");
 
         unexpected (STAmount::multiply (STAmount (20), STAmount (3), CURRENCY_ONE, ACCOUNT_ONE).getText () != "60",
             "STAmount multiply fail 3");
 
-        unexpected (STAmount::multiply (STAmount (20), STAmount (3), uint160 (), ACCOUNT_XRP).getText () != "60",
+        unexpected (STAmount::multiply (STAmount (20), STAmount (3), uint160 (), ACCOUNT_STR).getText () != "60",
             "STAmount multiply fail 4");
 
         if (STAmount::divide (STAmount (CURRENCY_ONE, ACCOUNT_ONE, 60), STAmount (3), CURRENCY_ONE, ACCOUNT_ONE).getText () != "20")
@@ -1607,13 +1607,13 @@ public:
             pass ();
         }
 
-        unexpected (STAmount::divide (STAmount (CURRENCY_ONE, ACCOUNT_ONE, 60), STAmount (3), uint160 (), ACCOUNT_XRP).getText () != "20",
+        unexpected (STAmount::divide (STAmount (CURRENCY_ONE, ACCOUNT_ONE, 60), STAmount (3), uint160 (), ACCOUNT_STR).getText () != "20",
             "STAmount divide fail");
 
         unexpected (STAmount::divide (STAmount (CURRENCY_ONE, ACCOUNT_ONE, 60), STAmount (CURRENCY_ONE, ACCOUNT_ONE, 3), CURRENCY_ONE, ACCOUNT_ONE).getText () != "20",
             "STAmount divide fail");
 
-        unexpected (STAmount::divide (STAmount (CURRENCY_ONE, ACCOUNT_ONE, 60), STAmount (CURRENCY_ONE, ACCOUNT_ONE, 3), uint160 (), ACCOUNT_XRP).getText () != "20",
+        unexpected (STAmount::divide (STAmount (CURRENCY_ONE, ACCOUNT_ONE, 60), STAmount (CURRENCY_ONE, ACCOUNT_ONE, 3), uint160 (), ACCOUNT_STR).getText () != "20",
             "STAmount divide fail");
 
         STAmount a1 (CURRENCY_ONE, ACCOUNT_ONE, 60), a2 (CURRENCY_ONE, ACCOUNT_ONE, 10, -1);

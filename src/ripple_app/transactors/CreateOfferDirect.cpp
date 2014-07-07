@@ -323,7 +323,7 @@ TER DirectOfferCreateTransactor::doApply ()
     else if (saTakerPays.isNative () && saTakerGets.isNative ())
     {
         m_journal.warning <<
-            "Malformed offer: XRP for XRP";
+            "Malformed offer: STR for STR";
 
         terResult   = temBAD_OFFER;
     }
@@ -341,7 +341,7 @@ TER DirectOfferCreateTransactor::doApply ()
 
         terResult = temREDUNDANT;
     }
-    // We don't allow a non-native currency to use the currency code XRP.
+    // We don't allow a non-native currency to use the currency code STR.
     else if (CURRENCY_BAD == uPaysCurrency || CURRENCY_BAD == uGetsCurrency)
     {
         m_journal.warning <<
@@ -410,7 +410,7 @@ TER DirectOfferCreateTransactor::doApply ()
         return tesSUCCESS;
     }
 
-    // If all is well and this isn't an offer to XRP, then we make sure we are
+    // If all is well and this isn't an offer to STR, then we make sure we are
     // authorized to hold what the taker will pay.
     if (tesSUCCESS == terResult && !saTakerPays.isNative ())
     {

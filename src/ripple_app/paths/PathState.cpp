@@ -20,7 +20,7 @@
 namespace ripple {
 
 // TODO:
-// - Do automatic bridging via XRP.
+// - Do automatic bridging via STR.
 //
 // OPTIMIZE: When calculating path increment, note if increment consumes all liquidity. No need to revisit path in the future if
 // all liquidity is used.
@@ -120,7 +120,7 @@ bool PathState::lessPriority (PathState& lhs, PathState& rhs)
 // - A node names it's output.
 // - A ripple nodes output issuer must be the node's account or the next node's account.
 // - Offers can only go directly to another offer if the currency and issuer are an exact match.
-// - Real issuers must be specified for non-XRP.
+// - Real issuers must be specified for non-STR.
 TER PathState::pushImply (
     const uint160& uAccountID,  // --> Delivering to this account.
     const uint160& uCurrencyID, // --> Delivering this currency.
@@ -142,16 +142,16 @@ TER PathState::pushImply (
                           !!uCurrencyID
                           ? STPathElement::typeCurrency | STPathElement::typeIssuer
                           : STPathElement::typeCurrency,
-                          ACCOUNT_XRP,                    // Placeholder for offers.
+                          ACCOUNT_STR,                    // Placeholder for offers.
                           uCurrencyID,                    // The offer's output is what is now wanted.
                           uIssuerID);
     }
 
     const Node&  pnBck       = vpnNodes.back ();
 
-    // For ripple, non-XRP, ensure the issuer is on at least one side of the transaction.
+    // For ripple, non-STR, ensure the issuer is on at least one side of the transaction.
     if (tesSUCCESS == terResult
-            && !!uCurrencyID                                // Not XRP.
+            && !!uCurrencyID                                // Not STR.
             && (pnBck.uAccountID != uIssuerID               // Previous is not issuing own IOUs.
                 && uAccountID != uIssuerID))                // Current is not receiving own IOUs.
     {
@@ -207,7 +207,7 @@ TER PathState::pushNode (
     }
     else if (bIssuer && !pnCur.uCurrencyID)
     {
-        WriteLog (lsDEBUG, RippleCalc) << "pushNode: issuer specified for XRP.";
+        WriteLog (lsDEBUG, RippleCalc) << "pushNode: issuer specified for STR.";
 
         terResult   = temBAD_PATH;
     }
@@ -232,7 +232,7 @@ TER PathState::pushNode (
                               ? uIssuerID
                               : !!pnCur.uCurrencyID
                               ? uAccountID
-                              : ACCOUNT_XRP;
+                              : ACCOUNT_STR;
         pnCur.saRevRedeem   = STAmount (pnCur.uCurrencyID, uAccountID);
         pnCur.saRevIssue    = STAmount (pnCur.uCurrencyID, uAccountID);
         pnCur.saRevDeliver  = STAmount (pnCur.uCurrencyID, pnCur.uIssuerID);
@@ -258,7 +258,7 @@ TER PathState::pushNode (
             terResult   = pushImply (
                               pnCur.uAccountID,                                   // Current account.
                               pnCur.uCurrencyID,                                  // Wanted currency.
-                              !!pnCur.uCurrencyID ? uAccountID : ACCOUNT_XRP);    // Account as wanted issuer.
+                              !!pnCur.uCurrencyID ? uAccountID : ACCOUNT_STR);    // Account as wanted issuer.
 
             // Note: pnPrv may no longer be the immediately previous node.
         }
@@ -349,7 +349,7 @@ TER PathState::pushNode (
                               ? !!pnPrv.uIssuerID
                               ? pnPrv.uIssuerID   // Default to previous issuer
                               : pnPrv.uAccountID  // Or previous account if no previous issuer.
-                      : ACCOUNT_XRP;
+                      : ACCOUNT_STR;
         pnCur.saRateMax     = saZero;
         pnCur.saRevDeliver  = STAmount (pnCur.uCurrencyID, pnCur.uIssuerID);
         pnCur.saFwdDeliver  = pnCur.saRevDeliver;
@@ -367,7 +367,7 @@ TER PathState::pushNode (
 
             // Insert intermediary issuer account if needed.
             terResult   = pushImply (
-                ACCOUNT_XRP, // Rippling, but offers don't have an account.
+                ACCOUNT_STR, // Rippling, but offers don't have an account.
                 pnPrv.uCurrencyID,
                 pnPrv.uIssuerID);
         }
@@ -400,7 +400,7 @@ void PathState::setExpanded (
 
     const uint160   uOutCurrencyID  = saOutReq.getCurrency ();
     const uint160   uOutIssuerID    = saOutReq.getIssuer ();
-    const uint160   uSenderIssuerID = !!uMaxCurrencyID ? uSenderID : ACCOUNT_XRP;   // Sender is always issuer for non-XRP.
+    const uint160   uSenderIssuerID = !!uMaxCurrencyID ? uSenderID : ACCOUNT_STR;   // Sender is always issuer for non-STR.
 
     WriteLog (lsTRACE, RippleCalc) << "setExpanded> " << spSourcePath.getJson (0);
 
@@ -408,12 +408,12 @@ void PathState::setExpanded (
 
     terStatus   = tesSUCCESS;
 
-    // XRP with issuer is malformed.
+    // STR with issuer is malformed.
     if ((!uMaxCurrencyID && !!uMaxIssuerID) || (!uOutCurrencyID && !!uOutIssuerID))
         terStatus   = temBAD_PATH;
 
     // Push sending node.
-    // For non-XRP, issuer is always sending account.
+    // For non-STR, issuer is always sending account.
     // - Trying to expand, not-compact.
     // - Every issuer will be traversed through.
     if (tesSUCCESS == terStatus)
@@ -434,7 +434,7 @@ void PathState::setExpanded (
             && uMaxIssuerID != uSenderIssuerID)                 // Issuer was not same as sender.
     {
         // May have an implied account node.
-        // - If it was XRP, then issuers would have matched.
+        // - If it was STR, then issuers would have matched.
 
         // Figure out next node properties for implied node.
         const uint160   uNxtCurrencyID  = spSourcePath.size ()
@@ -446,7 +446,7 @@ void PathState::setExpanded (
                                           ? uOutIssuerID == uReceiverID
                                           ? uReceiverID
                                           : uOutIssuerID                      // Use implied node.
-                                  : ACCOUNT_XRP;
+                                  : ACCOUNT_STR;
 
         WriteLog (lsDEBUG, RippleCalc) << "setExpanded: implied check:" <<
             " uMaxIssuerID=" << RippleAddress::createHumanAccountID (uMaxIssuerID) <<
@@ -455,7 +455,7 @@ void PathState::setExpanded (
             " uNxtAccountID=" << RippleAddress::createHumanAccountID (uNxtAccountID);
 
         // Can't just use push implied, because it can't compensate for next account.
-        if (!uNxtCurrencyID                         // Next is XRP, offer next. Must go through issuer.
+        if (!uNxtCurrencyID                         // Next is STR, offer next. Must go through issuer.
                 || uMaxCurrencyID != uNxtCurrencyID // Next is different currency, offer next...
                 || uMaxIssuerID != uNxtAccountID)   // Next is not implied issuer
         {
@@ -489,7 +489,7 @@ void PathState::setExpanded (
     const Node&  pnPrv           = vpnNodes.back ();
 
     if (tesSUCCESS == terStatus
-            && !!uOutCurrencyID                         // Next is not XRP
+            && !!uOutCurrencyID                         // Next is not STR
             && uOutIssuerID != uReceiverID              // Out issuer is not receiver
             && (pnPrv.uCurrencyID != uOutCurrencyID     // Previous will be an offer.
                 || pnPrv.uAccountID != uOutIssuerID))   // Need the implied issuer.
@@ -566,13 +566,13 @@ void PathState::setExpanded (
 // - Can pack some elements into other elements.
 //
 // Rules:
-// - SendMax if not specified, defaults currency to send and if not sending XRP defaults issuer to sender.
+// - SendMax if not specified, defaults currency to send and if not sending STR defaults issuer to sender.
 // - All paths start with the sender account.
 //   - Currency and issuer is from SendMax.
 // - All paths end with the destination account.
 //
 // Optimization:
-// - An XRP output implies an offer node or destination node is next.
+// - An STR output implies an offer node or destination node is next.
 // - A change in currency implies an offer node.
 // - A change in issuer...
 void PathState::setCanonical (
@@ -632,7 +632,7 @@ void PathState::setCanonical (
         {
         }
 
-        if (uMaxCurrencyID)                         // Not sending XRP.
+        if (uMaxCurrencyID)                         // Not sending STR.
         {
             // Node 1 must be an account.
 
@@ -700,7 +700,7 @@ void PathState::setCanonical (
         {
             // Currently at an account.
 
-            // Output is non-XRP and issuer is account.
+            // Output is non-STR and issuer is account.
             if (!!pnCur.uCurrencyID && pnCur.uIssuerID == pnCur.uAccountID)
             {
                 // Account issues itself.

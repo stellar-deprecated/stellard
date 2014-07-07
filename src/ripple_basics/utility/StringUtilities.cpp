@@ -363,7 +363,7 @@ public:
         // Check for things which contain some or only invalid characters
         testUnHexFailure ("123X");
         testUnHexFailure ("V");
-        testUnHexFailure ("XRP");
+        testUnHexFailure ("STR");
     }
 
     void testParseUrl ()

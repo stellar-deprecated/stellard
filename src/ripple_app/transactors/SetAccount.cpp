@@ -34,8 +34,8 @@ TER AccountSetTransactor::doApply ()
     bool bClearRequireDest = (uTxFlags & tfOptionalDestTag) || (uClearFlag == asfRequireDest);
     bool bSetRequireAuth   = (uTxFlags & tfRequireAuth) || (uSetFlag == asfRequireAuth);
     bool bClearRequireAuth = (uTxFlags & tfOptionalAuth) || (uClearFlag == asfRequireAuth);
-    bool bSetDisallowXRP   = (uTxFlags & tfDisallowXRP) || (uSetFlag == asfDisallowXRP);
-    bool bClearDisallowXRP = (uTxFlags & tfAllowXRP) || (uClearFlag == asfDisallowXRP);
+    bool bSetDisallowSTR   = (uTxFlags & tfDisallowSTR) || (uSetFlag == asfDisallowSTR);
+    bool bClearDisallowSTR = (uTxFlags & tfAllowSTR) || (uClearFlag == asfDisallowSTR);
 
     if (uTxFlags & tfAccountSetMask)
     {
@@ -95,25 +95,25 @@ TER AccountSetTransactor::doApply ()
     }
 
     //
-    // DisallowXRP
+    // DisallowSTR
     //
 
-    if (bSetDisallowXRP && bClearDisallowXRP)
+    if (bSetDisallowSTR && bClearDisallowSTR)
     {
         m_journal.trace << "Malformed transaction: Contradictory flags set.";
         return temINVALID_FLAG;
     }
 
-    if (bSetDisallowXRP && !is_bit_set (uFlagsIn, lsfDisallowXRP))
+    if (bSetDisallowSTR && !is_bit_set (uFlagsIn, lsfDisallowSTR))
     {
-        m_journal.trace << "Set lsfDisallowXRP.";
-        uFlagsOut   |= lsfDisallowXRP;
+        m_journal.trace << "Set lsfDisallowSTR.";
+        uFlagsOut   |= lsfDisallowSTR;
     }
 
-    if (bClearDisallowXRP && is_bit_set (uFlagsIn, lsfDisallowXRP))
+    if (bClearDisallowSTR && is_bit_set (uFlagsIn, lsfDisallowSTR))
     {
-        m_journal.trace << "Clear lsfDisallowXRP.";
-        uFlagsOut   &= ~lsfDisallowXRP;
+        m_journal.trace << "Clear lsfDisallowSTR.";
+        uFlagsOut   &= ~lsfDisallowSTR;
     }
 
     //

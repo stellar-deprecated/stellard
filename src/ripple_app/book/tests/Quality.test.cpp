@@ -225,7 +225,7 @@ public:
         {
             Quality q (0x5d048191fb9130daull);      // 126836389.7680090
             Amounts const value (
-                amount(349469768),                  // 349.469768 XRP
+                amount(349469768),                  // 349.469768 STR
                 raw (2755280000000000ull, -15));    // 2.75528
             Amount const limit (
                 raw (4131113916555555, -16));       // .4131113916555555

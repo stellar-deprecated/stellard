@@ -210,7 +210,7 @@ Json::Value RPCHandler::doRipplePathFind (Json::Value params, Resource::Charge& 
                     ? uSrcIssuerID      // Use specifed issuer.
                     : !!uSrcCurrencyID  // Default to source account.
                     ? raSrc.getAccountID ()
-                    : ACCOUNT_XRP,
+                    : ACCOUNT_STR,
                     1);
                 saMaxAmount.negate ();
 

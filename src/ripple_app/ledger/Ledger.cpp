@@ -278,6 +278,8 @@ void Ledger::setRaw (Serializer& s, bool hasPrefix)
 
     mLedgerSeq =        sit.get32 ();
     mTotCoins =         sit.get64 ();
+	mFeePool =			sit.get64();
+	mInflationSeq =		sit.get32();
     mParentHash =       sit.get256 ();
     mTransHash =        sit.get256 ();
     mAccountHash =      sit.get256 ();
@@ -300,6 +302,8 @@ void Ledger::addRaw (Serializer& s) const
 {
     s.add32 (mLedgerSeq);
     s.add64 (mTotCoins);
+	s.add64(mFeePool);
+	s.add32(mInflationSeq);
     s.add256 (mParentHash);
     s.add256 (mTransHash);
     s.add256 (mAccountHash);
@@ -1065,7 +1069,7 @@ Json::Value Ledger::getJson (int options)
         ledger[jss::closed] = false;
     }
 
-    if (mTransactionMap && (bFull || is_bit_set (options, LEDGER_JSON_DUMP_TXRP)))
+    if (mTransactionMap && (bFull || is_bit_set (options, LEDGER_JSON_DUMP_TSTR)))
     {
         Json::Value& txns = (ledger[jss::transactions] = Json::arrayValue);
         SHAMapTreeNode::TNType type;
@@ -1628,7 +1632,7 @@ std::vector<uint256> Ledger::getLedgerAmendments ()
     return usAmendments;
 }
 
-// XRP to XRP not allowed.
+// STR to STR not allowed.
 // Currencies must have appropriate issuer.
 // Currencies or accounts must differ.
 bool Ledger::isValidBook (const uint160& uTakerPaysCurrency, const uint160& uTakerPaysIssuerID,
@@ -1636,30 +1640,30 @@ bool Ledger::isValidBook (const uint160& uTakerPaysCurrency, const uint160& uTak
 {
     if (uTakerPaysCurrency.isZero ())
     {
-        // XRP in
+        // STR in
 
-        if (uTakerPaysIssuerID.isNonZero ())    // XRP cannot have an issuer
+        if (uTakerPaysIssuerID.isNonZero ())    // STR cannot have an issuer
             return false;
 
-        if (uTakerGetsCurrency.isZero ())       // XRP to XRP not allowed
+        if (uTakerGetsCurrency.isZero ())       // STR to STR not allowed
             return false;
 
-        if (uTakerGetsIssuerID.isZero ())       // non-XRP must have issuer
+        if (uTakerGetsIssuerID.isZero ())       // non-STR must have issuer
             return false;
 
         return true;
     }
 
-    // non-XRP in
-    if (uTakerPaysIssuerID.isZero ())           // non-XRP must have issuer
+    // non-STR in
+    if (uTakerPaysIssuerID.isZero ())           // non-STR must have issuer
         return false;
 
-    if (uTakerGetsCurrency.isZero ())           // non-XRP to XRP
+    if (uTakerGetsCurrency.isZero ())           // non-STR to STR
     {
-        if (uTakerGetsIssuerID.isNonZero ())    // XRP cannot have issuer
+        if (uTakerGetsIssuerID.isNonZero ())    // STR cannot have issuer
             return false;
     }
-    else                                        // non-XRP to non-XRP
+    else                                        // non-STR to non-STR
     {
         if ((uTakerPaysCurrency == uTakerGetsCurrency) && (uTakerGetsIssuerID == uTakerPaysIssuerID))
             return false;                       // Input and output cannot be identical

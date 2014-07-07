@@ -366,8 +366,8 @@ OverlayImpl::onPrepare ()
 
     // If no IPs are specified, use the Ripple Labs round robin
     // pool to get some servers to insert into the boot cache. 
-    if (bootstrapIps.empty ())
-        bootstrapIps.push_back ("r.ripple.com 51235");
+    //if (bootstrapIps.empty ())
+      //  bootstrapIps.push_back ("r.ripple.com 51235");
 
     if (!bootstrapIps.empty ())
     {

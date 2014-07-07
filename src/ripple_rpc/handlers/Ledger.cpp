@@ -53,7 +53,7 @@ Json::Value RPCHandler::doLedger (Json::Value params, Resource::Charge& loadType
     bool    bExpand         = params.isMember ("expand") && params["expand"].asBool ();
     int     iOptions        = (bFull ? LEDGER_JSON_FULL : 0)
                               | (bExpand ? LEDGER_JSON_EXPAND : 0)
-                              | (bTransactions ? LEDGER_JSON_DUMP_TXRP : 0)
+                              | (bTransactions ? LEDGER_JSON_DUMP_TSTR : 0)
                               | (bAccounts ? LEDGER_JSON_DUMP_STATE : 0);
 
     if (bFull || bAccounts)

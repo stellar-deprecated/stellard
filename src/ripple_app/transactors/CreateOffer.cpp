@@ -53,7 +53,7 @@ std::unique_ptr <Transactor> make_OfferCreateTransactor (
     STAmount const& amount_in = txn.getFieldAmount (sfTakerPays);
     STAmount const& amount_out = txn.getFieldAmount (sfTakerGets);
     
-    // Autobridging is only in effect when an offer does not involve XRP
+    // Autobridging is only in effect when an offer does not involve STR
     if (!amount_in.isNative() && !amount_out.isNative ())
     {
         // no autobridging transactor exists yet - we create a regular, direct
