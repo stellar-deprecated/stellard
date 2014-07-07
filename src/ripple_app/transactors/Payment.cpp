@@ -41,7 +41,7 @@ TER PaymentTransactor::doApply ()
                                         saDstAmount < zero);
     uint160 const uSrcCurrency = saMaxAmount.getCurrency ();
     uint160 const uDstCurrency = saDstAmount.getCurrency ();
-    bool const bXRPDirect = uSrcCurrency.isZero () && uDstCurrency.isZero ();
+    bool const bSTRDirect = uSrcCurrency.isZero () && uDstCurrency.isZero ();
 
     m_journal.trace <<
         "saMaxAmount=" << saMaxAmount.getFullText () <<
@@ -103,40 +103,40 @@ TER PaymentTransactor::doApply ()
 
         return temREDUNDANT_SEND_MAX;
     }
-    else if (bXRPDirect && bMax)
+    else if (bSTRDirect && bMax)
     {
         m_journal.trace <<
-            "Malformed transaction: SendMax specified for XRP to XRP.";
+            "Malformed transaction: SendMax specified for STR to STR.";
 
-        return temBAD_SEND_XRP_MAX;
+        return temBAD_SEND_STR_MAX;
     }
-    else if (bXRPDirect && bPaths)
+    else if (bSTRDirect && bPaths)
     {
         m_journal.trace <<
-            "Malformed transaction: Paths specified for XRP to XRP.";
+            "Malformed transaction: Paths specified for STR to STR.";
 
-        return temBAD_SEND_XRP_PATHS;
+        return temBAD_SEND_STR_PATHS;
     }
-    else if (bXRPDirect && bPartialPayment)
+    else if (bSTRDirect && bPartialPayment)
     {
         m_journal.trace <<
-            "Malformed transaction: Partial payment specified for XRP to XRP.";
+            "Malformed transaction: Partial payment specified for STR to STR.";
 
-        return temBAD_SEND_XRP_PARTIAL;
+        return temBAD_SEND_STR_PARTIAL;
     }
-    else if (bXRPDirect && bLimitQuality)
+    else if (bSTRDirect && bLimitQuality)
     {
         m_journal.trace <<
-            "Malformed transaction: Limit quality specified for XRP to XRP.";
+            "Malformed transaction: Limit quality specified for STR to STR.";
 
-        return temBAD_SEND_XRP_LIMIT;
+        return temBAD_SEND_STR_LIMIT;
     }
-    else if (bXRPDirect && bNoRippleDirect)
+    else if (bSTRDirect && bNoRippleDirect)
     {
         m_journal.trace <<
-            "Malformed transaction: No ripple direct specified for XRP to XRP.";
+            "Malformed transaction: No ripple direct specified for STR to STR.";
 
-        return temBAD_SEND_XRP_NO_DIRECT;
+        return temBAD_SEND_STR_NO_DIRECT;
     }
 
     SLE::pointer sleDst (mEngine->entryCache (
@@ -174,7 +174,7 @@ TER PaymentTransactor::doApply ()
 
             // Another transaction could create the account and then this
             // transaction would succeed.
-            return tecNO_DST_INSUF_XRP;
+            return tecNO_DST_INSUF_STR;
         }
 
         // Create the account.
@@ -248,7 +248,7 @@ TER PaymentTransactor::doApply ()
     }
     else
     {
-        // Direct XRP payment.
+        // Direct STR payment.
 
         std::uint32_t const uOwnerCount (mTxnAccount->getFieldU32 (sfOwnerCount));
         std::uint64_t const uReserve (mEngine->getLedger ()->getReserve (uOwnerCount));
