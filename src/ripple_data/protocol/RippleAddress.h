@@ -54,6 +54,8 @@ private:
 
     bool    mIsValid;
 
+	bool verifySignature(uint256 const& hash, Blob const& vchSig) const;
+
 public:
     RippleAddress ();
 

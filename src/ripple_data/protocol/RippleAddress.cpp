@@ -166,9 +166,15 @@ void RippleAddress::setNodePublic (Blob const& vPublic)
     SetData (VER_NODE_PUBLIC, vPublic);
 }
 
-bool RippleAddress::verifyNodePublic (uint256 const& hash, Blob const& vchSig, ECDSA) const
+bool RippleAddress::verifyNodePublic(uint256 const& hash, Blob const& vchSig, ECDSA) const
 {
-    if (getNodePublic().size() != crypto_sign_PUBLICKEYBYTES
+	assert(nVersion == VER_NODE_PUBLIC); // TODO: this nVersion stuff is BS
+	return(verifySignature(hash, vchSig);
+}
+
+bool RippleAddress::verifySignature(uint256 const& hash, Blob const& vchSig) const
+{
+	if (vchData.size() != crypto_sign_PUBLICKEYBYTES
         || vchSig.size () != crypto_sign_BYTES)
       return false;
 
@@ -180,7 +186,7 @@ bool RippleAddress::verifyNodePublic (uint256 const& hash, Blob const& vchSig, E
     unsigned long long ignored_len;
     return crypto_sign_open (ignored_buf, &ignored_len,
 			     signed_buf, sizeof (signed_buf),
-			     getNodePublic().data()) == 0;
+				 vchData.data()) == 0;
 }
 
 bool RippleAddress::verifyNodePublic (uint256 const& hash, const std::string& strSig, ECDSA fullyCanonical) const
@@ -447,24 +453,30 @@ void RippleAddress::setAccountPublic (const RippleAddress& generator, int seq)
     setAccountPublic (pubkey.GetPubKey ());
 }
 
-bool RippleAddress::accountPublicVerify (uint256 const& uHash, Blob const& vucSig, ECDSA fullyCanonical) const
+bool RippleAddress::verifyNodePublic(uint256 const& hash, Blob const& vchSig, ECDSA fullyCanonical) const
 {
-    CKey        ckPublic;
+	CKey    pubkey = CKey();
+	bool    bVerified;
 
-    bool        bVerified = isCanonicalECDSASig (vucSig, fullyCanonical);
+	bVerified = isCanonicalECDSASig(vchSig, fullyCanonical);
 
-    if (bVerified && !ckPublic.SetPubKey (getAccountPublic ()))
-    {
-        // Bad private key.
-        WriteLog (lsWARNING, RippleAddress) << "accountPublicVerify: Bad private key.";
-        bVerified   = false;
-    }
-    else
-    {
-        bVerified   = ckPublic.Verify (uHash, vucSig);
-    }
+	if (bVerified && !pubkey.SetPubKey(getNodePublic()))
+	{
+		// Failed to set public key.
+		bVerified = false;
+	}
+	else
+	{
+		bVerified = pubkey.Verify(hash, vchSig);
+	}
 
-    return bVerified;
+	return bVerified;
+}
+
+bool RippleAddress::accountPublicVerify (uint256 const& uHash, Blob const& vucSig, ECDSA) const
+{
+	assert(nVersion == VER_ACCOUNT_PUBLIC);
+	return(verifySignature(uHash, vucSig));
 }
 
 RippleAddress RippleAddress::createAccountID (const uint160& uiAccountID)
