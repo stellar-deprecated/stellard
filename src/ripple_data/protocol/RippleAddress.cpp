@@ -18,6 +18,7 @@
 //==============================================================================
 
 #include "../../beast/beast/unit_test/suite.h"
+#include <sodium.h>
 
 namespace ripple {
 
@@ -165,24 +166,21 @@ void RippleAddress::setNodePublic (Blob const& vPublic)
     SetData (VER_NODE_PUBLIC, vPublic);
 }
 
-bool RippleAddress::verifyNodePublic (uint256 const& hash, Blob const& vchSig, ECDSA fullyCanonical) const
+bool RippleAddress::verifyNodePublic (uint256 const& hash, Blob const& vchSig, ECDSA) const
 {
-    CKey    pubkey  = CKey ();
-    bool    bVerified;
+    if (getNodePublic().size() != crypto_sign_PUBLICKEYBYTES
+        || vchSig.size () != crypto_sign_BYTES)
+      return false;
 
-    bVerified = isCanonicalECDSASig (vchSig, fullyCanonical);
+    unsigned char signed_buf[crypto_sign_BYTES + hash.bytes];
+    memcpy (signed_buf, vchSig.data(), crypto_sign_BYTES);
+    memcpy (signed_buf+crypto_sign_BYTES, hash.data(), hash.bytes);
 
-    if (bVerified && !pubkey.SetPubKey (getNodePublic ()))
-    {
-        // Failed to set public key.
-        bVerified   = false;
-    }
-    else
-    {
-        bVerified   = pubkey.Verify (hash, vchSig);
-    }
-
-    return bVerified;
+    unsigned char ignored_buf[hash.bytes];
+    unsigned long long ignored_len;
+    return crypto_sign_open (ignored_buf, &ignored_len,
+			     signed_buf, sizeof (signed_buf),
+			     getNodePublic().data()) == 0;
 }
 
 bool RippleAddress::verifyNodePublic (uint256 const& hash, const std::string& strSig, ECDSA fullyCanonical) const

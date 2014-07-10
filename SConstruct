@@ -99,6 +99,8 @@ else:
 env.ParseConfig('pkg-config --static --cflags --libs openssl')
 # Use protobuf
 env.ParseConfig('pkg-config --static --cflags --libs protobuf')
+# Use libsodium
+env.ParseConfig('pkg-config --static --cflags --libs libsodium')
 
 # Beast uses kvm on FreeBSD
 if FreeBSD:

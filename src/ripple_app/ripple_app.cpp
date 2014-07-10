@@ -27,6 +27,8 @@
 #include <boost/optional.hpp>
 #include <boost/version.hpp>
 
+#include <sodium.h>
+
 #include "ripple_app.h"
 
 #include "../ripple_net/ripple_net.h"
@@ -123,6 +125,11 @@ int main (int argc, char** argv)
 
     static_assert (BOOST_VERSION >= 105500,
         "Boost version 1.55 or later is required to compile rippled");
+
+    if (sodium_init() == -1) {
+        std::cerr << "sodium_init failed\n";
+        return 1;
+    }
         
     //
     // These debug heap calls do nothing in release or non Visual Studio builds.
