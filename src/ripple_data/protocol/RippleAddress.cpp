@@ -169,7 +169,7 @@ void RippleAddress::setNodePublic (Blob const& vPublic)
 bool RippleAddress::verifyNodePublic(uint256 const& hash, Blob const& vchSig, ECDSA) const
 {
 	assert(nVersion == VER_NODE_PUBLIC); // TODO: this nVersion stuff is BS
-	return(verifySignature(hash, vchSig);
+	return(verifySignature(hash, vchSig));
 }
 
 bool RippleAddress::verifySignature(uint256 const& hash, Blob const& vchSig) const
