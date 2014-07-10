@@ -281,12 +281,16 @@ void RippleAddress::setNodePrivate (uint256 hash256)
 
 void RippleAddress::signNodePrivate (uint256 const& hash, Blob& vchSig) const
 {
-    CKey    ckPrivKey;
+    unsigned char out[crypto_sign_BYTES + hash.bytes];
+    unsigned long long len;
+    const unsigned char *key = vchData.data();
 
-    ckPrivKey.SetPrivateKeyU (getNodePrivate ());
+    crypto_sign(out, &len, 
+    		(unsigned char*) hash.begin (), hash.size (),
+		key);
 
-    if (!ckPrivKey.Sign (hash, vchSig))
-        throw std::runtime_error ("Signing failed.");
+    vchSig.resize(crypto_sign_BYTES);
+    memcpy (&vchSig[0], out, crypto_sign_BYTES);
 }
 
 //
@@ -545,22 +549,9 @@ void RippleAddress::setAccountPrivate (const RippleAddress& naGenerator, const R
 
 bool RippleAddress::accountPrivateSign (uint256 const& uHash, Blob& vucSig) const
 {
-    CKey        ckPrivate;
-    bool        bResult;
+    signNodePrivate (uHash, vucSig);
 
-    if (!ckPrivate.SetPrivateKeyU (getAccountPrivate ()))
-    {
-        // Bad private key.
-        WriteLog (lsWARNING, RippleAddress) << "accountPrivateSign: Bad private key.";
-        bResult = false;
-    }
-    else
-    {
-        bResult = ckPrivate.Sign (uHash, vucSig);
-        CondLog (!bResult, lsWARNING, RippleAddress) << "accountPrivateSign: Signing failed.";
-    }
-
-    return bResult;
+    return true; // XXX signing never fails
 }
 
 Blob RippleAddress::accountPrivateEncrypt (const RippleAddress& naPublicTo, Blob const& vucPlainText) const
