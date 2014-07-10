@@ -453,29 +453,9 @@ void RippleAddress::setAccountPublic (const RippleAddress& generator, int seq)
     setAccountPublic (pubkey.GetPubKey ());
 }
 
-bool RippleAddress::verifyNodePublic(uint256 const& hash, Blob const& vchSig, ECDSA fullyCanonical) const
-{
-	CKey    pubkey = CKey();
-	bool    bVerified;
-
-	bVerified = isCanonicalECDSASig(vchSig, fullyCanonical);
-
-	if (bVerified && !pubkey.SetPubKey(getNodePublic()))
-	{
-		// Failed to set public key.
-		bVerified = false;
-	}
-	else
-	{
-		bVerified = pubkey.Verify(hash, vchSig);
-	}
-
-	return bVerified;
-}
-
 bool RippleAddress::accountPublicVerify (uint256 const& uHash, Blob const& vucSig, ECDSA) const
 {
-	assert(nVersion == VER_ACCOUNT_PUBLIC);
+	assert(nVersion == VER_ACCOUNT_PUBLIC);  // TODO: get rid of this nVersion BS
 	return(verifySignature(uHash, vucSig));
 }
 
