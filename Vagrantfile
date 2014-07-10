@@ -29,7 +29,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     pgrep stellard | xargs kill -INT
 
     # start service
-    ln -nfs /stellard-src/vagrant/upstart.conf /etc/init/stellard.conf
+    cp /stellard-src/vagrant/upstart.conf /etc/init/stellard.conf
     initctl reload-configuration
     service stellard start
   EOS
