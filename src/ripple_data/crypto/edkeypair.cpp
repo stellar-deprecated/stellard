@@ -13,7 +13,7 @@ namespace ripple {
 		memcpy(seed, passPhrase.begin(), 16);
 		memcpy(seed+16, passPhrase.begin(), 16); 
 
-		if (!crypto_box_seed_keypair(&(mPublicKey[0]), &mPrivateKey[0], (unsigned char*)&seed))
+		if (crypto_box_seed_keypair(&(mPublicKey[0]), &mPrivateKey[0], (unsigned char*)&seed)==-1)
 		{
 			throw key_error("EdKeyPair::EdKeyPair(const uint128& passPhrase) failed");
 		}
