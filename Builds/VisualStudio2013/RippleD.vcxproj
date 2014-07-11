@@ -19,6 +19,37 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\libsodium\src\libsodium\crypto_sign\crypto_sign.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libsodium\src\libsodium\crypto_stream\crypto_stream.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libsodium\src\libsodium\crypto_verify\64\ref\verify_64.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libsodium\src\libsodium\crypto_verify\64\verify_64_api.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libsodium\src\libsodium\randombytes\randombytes.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libsodium\src\libsodium\sodium\compat.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libsodium\src\libsodium\sodium\core.c">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">c:/code/libsodium/include;c:/code/boost_1_55_0;C:\code\OpenSSL-64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libsodium\src\libsodium\sodium\runtime.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libsodium\src\libsodium\sodium\utils.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libsodium\src\libsodium\sodium\version.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\src\ripple\beast\ripple_beast.cpp" />
     <ClCompile Include="..\..\src\ripple\beast\ripple_beastc.c" />
     <ClCompile Include="..\..\src\ripple\common\impl\KeyCache.cpp">
@@ -2525,13 +2556,13 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <OpenMPSupport>false</OpenMPSupport>
-      <AdditionalIncludeDirectories>../../../libsodium/include;c:/code/boost_1_55_0;C:\code\OpenSSL-64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../../libsodium/include;C:\code\libsodium\include\sodium;c:/code/boost_1_55_0;C:\code\OpenSSL-64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>libsodium.lib;ssleay32MT.lib;libeay32MT.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>c:/code/boost_1_55_0/stage/lib;C:\code\OpenSSL-64\lib64;C:\code\libsodium\x64\Debug\v120\static</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>c:/code/boost_1_55_0/stage/lib;C:\code\OpenSSL-64\lib64;C:\code\libsodium\x64\Debug\v120\dynamic</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

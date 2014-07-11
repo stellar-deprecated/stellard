@@ -340,6 +340,9 @@
     <Filter Include="[0] Libraries\libsodium">
       <UniqueIdentifier>{4e6221aa-4ed7-44ce-a334-e28ee8e1af3a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="[0] Libraries\libsodium\code">
+      <UniqueIdentifier>{16646c2b-531d-4719-ae49-45ae15446183}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\ripple_basics\containers\RangeSet.cpp">
@@ -1742,6 +1745,36 @@
     </ClCompile>
     <ClCompile Include="..\..\src\ripple_data\crypto\edkeypair.cpp">
       <Filter>[2] Old Ripple\ripple_data\crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libsodium\src\libsodium\sodium\compat.c">
+      <Filter>[0] Libraries\libsodium\code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libsodium\src\libsodium\sodium\core.c">
+      <Filter>[0] Libraries\libsodium\code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libsodium\src\libsodium\sodium\runtime.c">
+      <Filter>[0] Libraries\libsodium\code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libsodium\src\libsodium\sodium\utils.c">
+      <Filter>[0] Libraries\libsodium\code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libsodium\src\libsodium\sodium\version.c">
+      <Filter>[0] Libraries\libsodium\code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libsodium\src\libsodium\randombytes\randombytes.c">
+      <Filter>[0] Libraries\libsodium\code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libsodium\src\libsodium\crypto_verify\64\verify_64_api.c">
+      <Filter>[0] Libraries\libsodium\code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libsodium\src\libsodium\crypto_verify\64\ref\verify_64.c">
+      <Filter>[0] Libraries\libsodium\code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libsodium\src\libsodium\crypto_stream\crypto_stream.c">
+      <Filter>[0] Libraries\libsodium\code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libsodium\src\libsodium\crypto_sign\crypto_sign.c">
+      <Filter>[0] Libraries\libsodium\code</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

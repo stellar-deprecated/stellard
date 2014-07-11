@@ -161,7 +161,7 @@ public:
     }
 
     // Create a deterministic public key from a public generator.
-    static RippleAddress createAccountPublic (const RippleAddress& naGenerator, int iSeq);
+    static RippleAddress createAccountPublic (const RippleAddress& naGenerator, int iSeq=0);
 
     //
     // Accounts Private
