@@ -42,6 +42,9 @@ uint128 CKey::PassPhraseToKey (const std::string& passPhrase)
 // <-- private root generator + public root generator
 EC_KEY* CKey::GenerateRootDeterministicKey (const uint128& seed)
 {
+    // TODO: use crypto_sign_seed_keypair
+    // seed is 32 bytes
+
     BN_CTX* ctx = BN_CTX_new ();
 
     if (!ctx) return nullptr;
