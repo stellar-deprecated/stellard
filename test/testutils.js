@@ -10,12 +10,14 @@ var server      = { };
 function get_config() {
   var cfg = require(__dirname + '/config-example');
 
+
   // See if the person testing wants to override the configuration by creating a
   // file called test/config.js.
   try {
     cfg = extend({}, cfg, require(__dirname + '/config'));
   } catch (e) { }
 
+    //console.log('',cfg);
   return cfg;
 };
 

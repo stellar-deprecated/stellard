@@ -85,28 +85,29 @@ Server.prototype._serverSpawnSync = function() {
   var args  = [
     "-a",
     "-v",
-    "--conf=rippled.cfg"
+    "--conf="+this.configPath()
   ];
 
   var options = {
     cwd: this.serverPath(),
+    //  cwd: this.config.rippled_path,
     env: process.env,
     stdio: this.quiet ? 'pipe': 'inherit'
   };
 
+    //console.log("options: ",options);
   // Spawn in standalone mode for now.
   this.child = child.spawn(this.config.rippled_path, args, options);
 
   if (!this.quiet)
-    console.log("server: start %s: %s --conf=%s",
+    console.log("server: start %s: %s %s",
                 this.child.pid,
                 this.config.rippled_path,
-                args.join(" "),
-                this.configPath());
+                args.join(" "));
   
   
   var stderr = [];
-  self.child.stderr.on('data', function(buf) { stderr.push(buf); });
+  if(self.child.stderr) self.child.stderr.on('data', function(buf) { stderr.push(buf); });
 
   // By default, just log exits.
   this.child.on('exit', function(code, signal) {
