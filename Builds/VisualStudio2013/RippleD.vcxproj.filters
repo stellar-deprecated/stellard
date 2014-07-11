@@ -381,15 +381,6 @@
     <ClCompile Include="..\..\src\ripple_data\crypto\Base58Data.cpp">
       <Filter>[2] Old Ripple\ripple_data\crypto</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple_data\crypto\CKey.cpp">
-      <Filter>[2] Old Ripple\ripple_data\crypto</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple_data\crypto\CKeyDeterministic.cpp">
-      <Filter>[2] Old Ripple\ripple_data\crypto</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple_data\crypto\CKeyECIES.cpp">
-      <Filter>[2] Old Ripple\ripple_data\crypto</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\ripple_data\crypto\RFC1751.cpp">
       <Filter>[2] Old Ripple\ripple_data\crypto</Filter>
     </ClCompile>
@@ -1800,9 +1791,6 @@
       <Filter>[2] Old Ripple\ripple_core\functional</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\ripple_data\crypto\Base58Data.h">
-      <Filter>[2] Old Ripple\ripple_data\crypto</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ripple_data\crypto\CKey.h">
       <Filter>[2] Old Ripple\ripple_data\crypto</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\ripple_data\crypto\RFC1751.h">

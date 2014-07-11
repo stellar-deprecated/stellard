@@ -1182,18 +1182,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple_data\crypto\CKey.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple_data\crypto\CKeyDeterministic.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple_data\crypto\CKeyECIES.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\..\src\ripple_data\crypto\edkeypair.cpp" />
     <ClCompile Include="..\..\src\ripple_data\crypto\RFC1751.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -2289,7 +2277,6 @@
     <ClInclude Include="..\..\src\ripple_core\nodestore\tests\TestBase.h" />
     <ClInclude Include="..\..\src\ripple_core\ripple_core.h" />
     <ClInclude Include="..\..\src\ripple_data\crypto\Base58Data.h" />
-    <ClInclude Include="..\..\src\ripple_data\crypto\CKey.h" />
     <ClInclude Include="..\..\src\ripple_data\crypto\edkeypair.h" />
     <ClInclude Include="..\..\src\ripple_data\crypto\RFC1751.h" />
     <ClInclude Include="..\..\src\ripple_data\protocol\BuildInfo.h" />
@@ -2544,7 +2531,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>libsodium.lib;ssleay32MT.lib;libeay32MT.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>c:/code/boost_1_55_0/stage/lib;C:\code\OpenSSL-64\lib64;C:\code\libsodium\msvc2013\Debug\x64</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>c:/code/boost_1_55_0/stage/lib;C:\code\OpenSSL-64\lib64;C:\code\libsodium\x64\Debug\v120\static</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

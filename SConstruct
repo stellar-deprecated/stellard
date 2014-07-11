@@ -281,6 +281,11 @@ COMPILED_FILES.extend([
     'src/ripple_websocket/ripple_websocket.cpp'
     ])
 
+# restoring sanity
+COMPILED_FILES.extend([
+    'src/ripple_data/crypto/edkeypair.cpp'
+    ])
+
 #
 #
 #-------------------------------------------------------------------------------
