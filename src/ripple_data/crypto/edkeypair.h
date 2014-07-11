@@ -21,13 +21,13 @@ namespace ripple {
 		Blob mPublicKey;
 
 	public:
-		EdKeyPair(const uint128& passPhrase);
+		EdKeyPair(const uint256& passPhrase);
 
 
 
 		Blob GetPubKey() const {  return(mPublicKey); };
 
-		static uint128 PassPhraseToKey(const std::string& passPhrase);
+		static uint256 PassPhraseToKey(const std::string& passPhrase);
 
 		void GetPrivateKeyU(uint256& privKey);
 	};

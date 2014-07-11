@@ -389,9 +389,9 @@ void RippleAddress::setAccountID (const uint160& hash160)
 // AccountPublic
 //
 
-RippleAddress RippleAddress::createAccountPublic (const RippleAddress& naGenerator, int )
+RippleAddress RippleAddress::createAccountPublic (const RippleAddress& seed, int )
 {
-	EdKeyPair       ckPub(naGenerator.getSeed());
+	EdKeyPair       ckPub(seed.getSeed());
     RippleAddress   naNew;
 
     naNew.setAccountPublic (ckPub.GetPubKey ());
@@ -657,7 +657,7 @@ RippleAddress RippleAddress::createGeneratorPublic (const RippleAddress& naSeed)
 // Seed
 //
 
-uint128 RippleAddress::getSeed () const
+uint256 RippleAddress::getSeed() const
 {
     switch (nVersion)
     {
@@ -665,7 +665,7 @@ uint128 RippleAddress::getSeed () const
         throw std::runtime_error ("unset source - getSeed");
 
     case VER_FAMILY_SEED:
-        return uint128 (vchData);
+		return uint256(vchData);
 
     default:
         throw std::runtime_error (str (boost::format ("bad source: %d") % int (nVersion)));
@@ -684,7 +684,7 @@ std::string RippleAddress::humanSeed1751 () const
         std::string strHuman;
         std::string strLittle;
         std::string strBig;
-        uint128 uSeed   = getSeed ();
+		uint256 uSeed = getSeed();
 
         strLittle.assign (uSeed.begin (), uSeed.end ());
 
@@ -723,7 +723,7 @@ int RippleAddress::setSeed1751 (const std::string& strHuman1751)
     if (1 == iResult)
     {
         Blob    vchLittle (strKey.rbegin (), strKey.rend ());
-        uint128     uSeed (vchLittle);
+		uint256     uSeed(vchLittle);
 
         setSeed (uSeed);
     }
@@ -742,7 +742,7 @@ bool RippleAddress::setSeedGeneric (const std::string& strText)
 {
     RippleAddress   naTemp;
     bool            bResult = true;
-    uint128         uSeed;
+	uint256         uSeed;
 
     if (strText.empty ()
             || naTemp.setAccountID (strText)
@@ -776,17 +776,17 @@ bool RippleAddress::setSeedGeneric (const std::string& strText)
     return bResult;
 }
 
-void RippleAddress::setSeed (uint128 hash128)
+void RippleAddress::setSeed(uint256 seed)
 {
     mIsValid = true;
 
-    SetData (VER_FAMILY_SEED, hash128);
+    SetData (VER_FAMILY_SEED, seed);
 }
 
 void RippleAddress::setSeedRandom ()
 {
     // XXX Maybe we should call MakeNewKey
-    uint128 key;
+	uint256 key;
 
     RandomNumbers::getInstance ().fillBytes (key.begin (), key.size ());
 

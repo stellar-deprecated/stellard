@@ -160,8 +160,8 @@ public:
         return createAccountPublic (vPublic).humanAccountPublic ();
     }
 
-    // Create a deterministic public key from a public generator.
-    static RippleAddress createAccountPublic (const RippleAddress& naGenerator, int iSeq=0);
+    // Create a public key from a private seed
+    static RippleAddress createAccountPublic (const RippleAddress& seed, int iSeq=0);
 
     //
     // Accounts Private
@@ -211,7 +211,7 @@ public:
     //
     // Seeds
     // Clients must disallow recognizable entries from being seeds.
-    uint128 getSeed () const;
+	uint256 getSeed() const;
 
     std::string humanSeed () const;
     std::string humanSeed1751 () const;
@@ -219,7 +219,7 @@ public:
     bool setSeed (const std::string& strSeed);
     int setSeed1751 (const std::string& strHuman1751);
     bool setSeedGeneric (const std::string& strText);
-    void setSeed (uint128 hash128);
+	void setSeed(uint256 seed);
     void setSeedRandom ();
 
     static RippleAddress createSeedRandom ();
