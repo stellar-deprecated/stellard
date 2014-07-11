@@ -1194,6 +1194,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\src\ripple_data\crypto\edkeypair.cpp" />
     <ClCompile Include="..\..\src\ripple_data\crypto\RFC1751.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -1833,6 +1834,59 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\libsodium\include\sodium\core.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_aead_chacha20poly1305.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_auth.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_auth_hmacsha256.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_auth_hmacsha512.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_auth_hmacsha512256.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_box.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_box_curve25519xsalsa20poly1305.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_core_hsalsa20.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_core_salsa20.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_core_salsa2012.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_core_salsa208.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_generichash.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_generichash_blake2b.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_hash.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_hash_sha256.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_hash_sha512.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_int32.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_int64.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_onetimeauth.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_onetimeauth_poly1305.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_pwhash_scryptsalsa208sha256.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_scalarmult.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_scalarmult_curve25519.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_secretbox.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_secretbox_xsalsa20poly1305.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_shorthash.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_shorthash_siphash24.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_sign.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_sign_ed25519.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_sign_edwards25519sha512batch.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_stream.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_stream_aes128ctr.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_stream_aes256estream.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_stream_chacha20.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_stream_salsa20.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_stream_salsa2012.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_stream_salsa208.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_stream_xsalsa20.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_uint16.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_uint32.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_uint64.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_uint8.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_verify_16.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_verify_32.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\crypto_verify_64.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\export.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\randombytes.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\randombytes_salsa20_random.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\randombytes_sysrandom.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\runtime.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\utils.h" />
+    <ClInclude Include="..\..\..\libsodium\include\sodium\version.h" />
     <ClInclude Include="..\..\src\BeastConfig.h" />
     <ClInclude Include="..\..\src\ripple\algorithm\api\CycledSet.h" />
     <ClInclude Include="..\..\src\ripple\algorithm\api\DecayingSample.h" />
@@ -2236,6 +2290,7 @@
     <ClInclude Include="..\..\src\ripple_core\ripple_core.h" />
     <ClInclude Include="..\..\src\ripple_data\crypto\Base58Data.h" />
     <ClInclude Include="..\..\src\ripple_data\crypto\CKey.h" />
+    <ClInclude Include="..\..\src\ripple_data\crypto\edkeypair.h" />
     <ClInclude Include="..\..\src\ripple_data\crypto\RFC1751.h" />
     <ClInclude Include="..\..\src\ripple_data\protocol\BuildInfo.h" />
     <ClInclude Include="..\..\src\ripple_data\protocol\FieldNames.h" />

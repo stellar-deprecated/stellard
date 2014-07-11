@@ -69,6 +69,8 @@ Json::Value accountFromString (Ledger::ref lrLedger, RippleAddress& naAccount,
         }
         else
         {
+			assert(0);
+			/* TEMP
             // Found master public key.
             Blob    vucCipher               = sleGen->getFieldVL (sfGenerator);
             Blob    vucMasterGenerator      = naRegular0Private.accountPrivateDecrypt (naRegular0Public, vucCipher);
@@ -79,6 +81,7 @@ Json::Value accountFromString (Ledger::ref lrLedger, RippleAddress& naAccount,
             }
 
             naGenerator.setGenerator (vucMasterGenerator);
+			*/
         }
 
         bIndex  = !iIndex;

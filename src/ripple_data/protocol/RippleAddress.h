@@ -144,6 +144,8 @@ public:
 
     bool accountPublicVerify (uint256 const& uHash, Blob const& vucSig, ECDSA mustBeFullyCanonical) const;
 
+	Blob accountPrivateDecrypt(const RippleAddress& naPublicFrom, Blob const& vucCipherText) const;
+
     static RippleAddress createAccountPublic (Blob const& vPublic)
     {
         RippleAddress   naNew;
@@ -174,12 +176,6 @@ public:
     void setAccountPrivate (const RippleAddress& naGenerator, const RippleAddress& naSeed, int seq);
 
     bool accountPrivateSign (uint256 const& uHash, Blob& vucSig) const;
-
-    // Encrypt a message.
-    Blob accountPrivateEncrypt (const RippleAddress& naPublicTo, Blob const& vucPlainText) const;
-
-    // Decrypt a message.
-    Blob accountPrivateDecrypt (const RippleAddress& naPublicFrom, Blob const& vucCipherText) const;
 
     static RippleAddress createAccountPrivate (const RippleAddress& naGenerator, const RippleAddress& naSeed, int iSeq);
 
@@ -214,7 +210,7 @@ public:
 
     //
     // Seeds
-    // Clients must disallow reconizable entries from being seeds.
+    // Clients must disallow recognizable entries from being seeds.
     uint128 getSeed () const;
 
     std::string humanSeed () const;

@@ -80,7 +80,7 @@ std::string RippleAddress::humanAddressType () const
 
 RippleAddress RippleAddress::createNodePublic (const RippleAddress& naSeed)
 {
-    CKey            ckSeed (naSeed.getSeed ());
+    EdKeyPair ckSeed (naSeed.getSeed ());
     RippleAddress   naNew;
 
     // YYY Should there be a GetPubKey() equiv that returns a uint256?
@@ -204,7 +204,7 @@ RippleAddress RippleAddress::createNodePrivate (const RippleAddress& naSeed)
 {
     uint256         uPrivKey;
     RippleAddress   naNew;
-    CKey            ckSeed (naSeed.getSeed ());
+    EdKeyPair       ckSeed (naSeed.getSeed ());
 
     ckSeed.GetPrivateKeyU (uPrivKey);
 
@@ -389,9 +389,9 @@ void RippleAddress::setAccountID (const uint160& hash160)
 // AccountPublic
 //
 
-RippleAddress RippleAddress::createAccountPublic (const RippleAddress& naGenerator, int iSeq)
+RippleAddress RippleAddress::createAccountPublic (const RippleAddress& naGenerator, int )
 {
-    CKey            ckPub (naGenerator, iSeq);
+	EdKeyPair       ckPub(naGenerator.getSeed());
     RippleAddress   naNew;
 
     naNew.setAccountPublic (ckPub.GetPubKey ());
@@ -450,9 +450,9 @@ void RippleAddress::setAccountPublic (Blob const& vPublic)
     SetData (VER_ACCOUNT_PUBLIC, vPublic);
 }
 
-void RippleAddress::setAccountPublic (const RippleAddress& generator, int seq)
+void RippleAddress::setAccountPublic (const RippleAddress& generator, int )
 {
-    CKey    pubkey  = CKey (generator, seq);
+	EdKeyPair pubkey(generator.getSeed());
 
     setAccountPublic (pubkey.GetPubKey ());
 }
@@ -538,6 +538,8 @@ void RippleAddress::setAccountPrivate (uint256 hash256)
 
 void RippleAddress::setAccountPrivate (const RippleAddress& naGenerator, const RippleAddress& naSeed, int seq)
 {
+	assert(0);
+	/*
     CKey    ckPubkey    = CKey (naSeed.getSeed ());
     CKey    ckPrivkey   = CKey (naGenerator, ckPubkey.GetSecretBN (), seq);
     uint256 uPrivKey;
@@ -545,6 +547,8 @@ void RippleAddress::setAccountPrivate (const RippleAddress& naGenerator, const R
     ckPrivkey.GetPrivateKeyU (uPrivKey);
 
     setAccountPrivate (uPrivKey);
+
+	*/
 }
 
 bool RippleAddress::accountPrivateSign (uint256 const& uHash, Blob& vucSig) const
@@ -554,43 +558,15 @@ bool RippleAddress::accountPrivateSign (uint256 const& uHash, Blob& vucSig) cons
     return true; // XXX signing never fails
 }
 
-Blob RippleAddress::accountPrivateEncrypt (const RippleAddress& naPublicTo, Blob const& vucPlainText) const
-{
-    CKey                        ckPrivate;
-    CKey                        ckPublic;
-    Blob    vucCipherText;
 
-    if (!ckPublic.SetPubKey (naPublicTo.getAccountPublic ()))
-    {
-        // Bad public key.
-        WriteLog (lsWARNING, RippleAddress) << "accountPrivateEncrypt: Bad public key.";
-    }
-    else if (!ckPrivate.SetPrivateKeyU (getAccountPrivate ()))
-    {
-        // Bad private key.
-        WriteLog (lsWARNING, RippleAddress) << "accountPrivateEncrypt: Bad private key.";
-    }
-    else
-    {
-        try
-        {
-            vucCipherText = ckPrivate.encryptECIES (ckPublic, vucPlainText);
-        }
-        catch (...)
-        {
-            nothing ();
-        }
-    }
-
-    return vucCipherText;
-}
 
 Blob RippleAddress::accountPrivateDecrypt (const RippleAddress& naPublicFrom, Blob const& vucCipherText) const
 {
-    CKey                        ckPrivate;
-    CKey                        ckPublic;
-    Blob    vucPlainText;
 
+    Blob    vucPlainText;
+	assert(0);
+
+	/* TEMP 
     if (!ckPublic.SetPubKey (naPublicFrom.getAccountPublic ()))
     {
         // Bad public key.
@@ -612,6 +588,7 @@ Blob RippleAddress::accountPrivateDecrypt (const RippleAddress& naPublicFrom, Bl
             nothing ();
         }
     }
+	*/
 
     return vucPlainText;
 }
@@ -668,7 +645,7 @@ void RippleAddress::setGenerator (Blob const& vPublic)
 
 RippleAddress RippleAddress::createGeneratorPublic (const RippleAddress& naSeed)
 {
-    CKey            ckSeed (naSeed.getSeed ());
+    EdKeyPair  ckSeed (naSeed.getSeed ());
     RippleAddress   naNew;
 
     naNew.setGenerator (ckSeed.GetPubKey ());
@@ -793,7 +770,7 @@ bool RippleAddress::setSeedGeneric (const std::string& strText)
     else
     {
         // Log::out() << "Creating seed from pass phrase.";
-        setSeed (CKey::PassPhraseToKey (strText));
+        setSeed (EdKeyPair::PassPhraseToKey (strText));
     }
 
     return bResult;
@@ -894,13 +871,7 @@ public:
         expect (!naAccountPublic0.accountPublicVerify (uHash, vucTextSig, ECDSA::not_strict), "Anti-verify failed.");
         expect (!naAccountPublic0.accountPublicVerify (uHash, vucTextSig, ECDSA::strict), "Anti-verify failed.");
 
-        // Check account encryption.
-        Blob vucTextCipher
-            = naAccountPrivate0.accountPrivateEncrypt (naAccountPublic1, vucTextSrc);
-        Blob vucTextRecovered
-            = naAccountPrivate1.accountPrivateDecrypt (naAccountPublic0, vucTextCipher);
-
-        expect (vucTextSrc == vucTextRecovered, "Encrypt-decrypt failed.");
+       
     }
 };
 
