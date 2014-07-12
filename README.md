@@ -8,6 +8,16 @@ This is the repository for Stellar's `stellard`, reference P2P server.
 ###Setup instructions:
 * https://wiki.gostellar.org/Stellard_setup_instructions
 
+### Vagrant (you're very own testnet)
+
+1.  Install vagrant (http://www.vagrantup.com/)
+2.  run `vagrant up`
+3.  There is no step 3.
+
+You now have a running testnet accessible on ports 9001 (websocket) and 9002 (rpc).  It will not connect to other instances and will have it's own ledger set.
+
+NOTE: running `vagrant provision` will reset your ledger, starting you over from scratch
+
 ### Repository Contents
 
 #### ./bin

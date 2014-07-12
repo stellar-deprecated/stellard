@@ -7,7 +7,7 @@ var config    = testutils.init_config();
 suite('Standalone server startup', function() {
   test('server start and stop', function(done) {
     var cfg = extend({}, config.default_server_config, config.servers.alpha);
-    var alpha = Server.from_config("alpha", cfg);
+    var alpha = Server.from_config("alpha", cfg, config.verbose);
     alpha.on('started', function () {
       alpha.on('stopped', function () {
         done();

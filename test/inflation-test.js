@@ -3,6 +3,7 @@ var assert    = require('assert');
 var bigint    = require("BigInt");
 var Amount    = require("stellar-lib").Amount;
 var Remote    = require("stellar-lib").Remote;
+var Request    = require("stellar-lib").Request;
 var Server    = require("./server").Server;
 var testutils = require("./testutils");
 var config    = testutils.init_config();
@@ -172,8 +173,9 @@ suite('Inflation', function() {
                         .inflation_dest($.remote.account(account.voteFor)._account_id)
                         .on('submitted', function (m) {
                             if (m.engine_result === 'tesSUCCESS') {
+                                $.remote.once('ledger_closed', function(ledger_closed, ledger_index) { callback(); } );
                                 $.remote.ledger_accept();    // Move it along.
-                                callback(null);
+
                             } else {
                                 console.log('',m);
                                 callback(new Error(m.engine_result));
@@ -191,8 +193,9 @@ suite('Inflation', function() {
                     .inflation($.remote.account('root')._account_id, 1)
                     .on('submitted', function (m) {
                         if (m.engine_result === 'tesSUCCESS') {
+                            $.remote.once('ledger_closed', function(ledger_closed, ledger_index) { callback(); } );
                             $.remote.ledger_accept();    // Move it along.
-                            callback(null);
+
                         } else {
                             callback(new Error(m.engine_result));
                         }
@@ -273,8 +276,8 @@ suite('Inflation', function() {
                         .inflation_dest($.remote.account(account.voteFor)._account_id)
                         .on('submitted', function (m) {
                             if (m.engine_result === 'tesSUCCESS') {
+                                $.remote.once('ledger_closed', function(ledger_closed, ledger_index) { callback(); } );
                                 $.remote.ledger_accept();    // Move it along.
-                                callback(null);
                             } else {
                                 console.log('',m);
                                 callback(new Error(m.engine_result));
@@ -292,8 +295,8 @@ suite('Inflation', function() {
                     .inflation($.remote.account('root')._account_id, 1)
                     .on('submitted', function (m) {
                         if (m.engine_result === 'tesSUCCESS') {
+                            $.remote.once('ledger_closed', function(ledger_closed, ledger_index) { callback(); } );
                             $.remote.ledger_accept();    // Move it along.
-                            callback(null);
                         } else {
                             callback(new Error(m.engine_result));
                         }
@@ -377,8 +380,8 @@ suite('Inflation', function() {
                         .inflation_dest($.remote.account(account.voteFor)._account_id)
                         .on('submitted', function (m) {
                             if (m.engine_result === 'tesSUCCESS') {
+                                $.remote.once('ledger_closed', function(ledger_closed, ledger_index) { callback(); } );
                                 $.remote.ledger_accept();    // Move it along.
-                                callback(null);
                             } else {
                                 console.log('',m);
                                 callback(new Error(m.engine_result));
@@ -396,8 +399,8 @@ suite('Inflation', function() {
                     .inflation($.remote.account('root')._account_id, 1)
                     .on('submitted', function (m) {
                         if (m.engine_result === 'tesSUCCESS') {
+                            $.remote.once('ledger_closed', function(ledger_closed, ledger_index) { callback(); } );
                             $.remote.ledger_accept();    // Move it along.
-                            callback(null);
                         } else {
                             callback(new Error(m.engine_result));
                         }
@@ -448,9 +451,10 @@ suite('Inflation', function() {
                     .inflation($.remote.account('root')._account_id, 2)
                     .on('submitted', function (m) {
                         if (m.engine_result === 'tesSUCCESS') {
+                            $.remote.once('ledger_closed', function(ledger_closed, ledger_index) { callback(); } );
                             $.remote.ledger_accept();    // Move it along.
-                            callback(null);
                         } else {
+                            console.log('error: %s', JSON.stringify(m));
                             callback(new Error(m.engine_result));
                         }
                     })
@@ -531,8 +535,8 @@ suite('Inflation', function() {
                         .inflation_dest($.remote.account(account.voteFor)._account_id)
                         .on('submitted', function (m) {
                             if (m.engine_result === 'tesSUCCESS') {
+                                $.remote.once('ledger_closed', function(ledger_closed, ledger_index) { callback(); } );
                                 $.remote.ledger_accept();    // Move it along.
-                                callback(null);
                             } else {
                                 console.log('',m);
                                 callback(new Error(m.engine_result));
@@ -603,8 +607,8 @@ suite('Inflation', function() {
                         .inflation_dest($.remote.account(account.voteFor)._account_id)
                         .on('submitted', function (m) {
                             if (m.engine_result === 'tesSUCCESS') {
+                                $.remote.once('ledger_closed', function(ledger_closed, ledger_index) { callback(); } );
                                 $.remote.ledger_accept();    // Move it along.
-                                callback(null);
                             } else {
                                 console.log('',m);
                                 callback(new Error(m.engine_result));
@@ -724,8 +728,8 @@ suite('Inflation', function() {
                         .inflation_dest($.remote.account(account.voteFor)._account_id)
                         .on('submitted', function (m) {
                             if (m.engine_result === 'tesSUCCESS') {
+                                $.remote.once('ledger_closed', function(ledger_closed, ledger_index) { callback(); } );
                                 $.remote.ledger_accept();    // Move it along.
-                                callback(null);
                             } else {
                                 console.log('',m);
                                 callback(new Error(m.engine_result));
@@ -794,8 +798,8 @@ suite('Inflation', function() {
                     .inflation($.remote.account('root')._account_id, 2)
                     .on('submitted', function (m) {
                         if (m.engine_result === 'tesSUCCESS') {
+                            $.remote.once('ledger_closed', function(ledger_closed, ledger_index) { callback(); } );
                             $.remote.ledger_accept();    // Move it along.
-                            callback(null);
                         } else {
                             callback(new Error(m.engine_result));
                         }
