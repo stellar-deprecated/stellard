@@ -789,7 +789,7 @@ public:
 		
 
 		testBase58(RippleAddress::VER_NODE_PUBLIC,'n');
-		testBase58(RippleAddress::VER_NODE_PRIVATE, 'v');
+		testBase58(RippleAddress::VER_NODE_PRIVATE, 'h');
 		testBase58(RippleAddress::VER_ACCOUNT_PUBLIC, 'p');
 		testBase58(RippleAddress::VER_ACCOUNT_PRIVATE, 'h');
 		testBase58(RippleAddress::VER_SEED,'s');

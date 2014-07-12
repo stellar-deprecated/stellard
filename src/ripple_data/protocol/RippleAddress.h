@@ -48,12 +48,12 @@ public:
 	typedef enum
 	{
 		VER_NONE = 1,
-		VER_NODE_PUBLIC = 9,  // n
-		VER_NODE_PRIVATE = 107, //v
+		VER_NODE_PUBLIC = 122,  // n
+		VER_NODE_PRIVATE = 102, //h
 		VER_ACCOUNT_ID = 0, // g
-		VER_ACCOUNT_PUBLIC = 5, //p 
-		VER_ACCOUNT_PRIVATE = 8, //h
-		VER_SEED = 3 // s
+		VER_ACCOUNT_PUBLIC = 67, //p 
+		VER_ACCOUNT_PRIVATE = 101, //h
+		VER_SEED = 33 // s
 	} VersionEncoding;
 
     RippleAddress ();
