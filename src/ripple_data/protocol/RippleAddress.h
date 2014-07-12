@@ -45,17 +45,15 @@ private:
 	bool verifySignature(uint256 const& hash, Blob const& vchSig) const;
 
 public:
-	// gsphnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCr65jkm8oFqi1tuvAxyz
-	// 5=B 9=J 12=Q
 	typedef enum
 	{
 		VER_NONE = 1,
-		VER_NODE_PUBLIC = 2,
-		VER_NODE_PRIVATE = 3,
-		VER_ACCOUNT_ID = 0,
-		VER_ACCOUNT_PUBLIC = 60, //
-		VER_ACCOUNT_PRIVATE = 4,
-		VER_SEED = 33 //
+		VER_NODE_PUBLIC = 9,  // n
+		VER_NODE_PRIVATE = 107, //v
+		VER_ACCOUNT_ID = 0, // g
+		VER_ACCOUNT_PUBLIC = 5, //p 
+		VER_ACCOUNT_PRIVATE = 8, //h
+		VER_SEED = 3 // s
 	} VersionEncoding;
 
     RippleAddress ();

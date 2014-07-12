@@ -755,16 +755,29 @@ RippleAddress RippleAddress::createSeedGeneric (const std::string& strText)
 
 class RippleAddress_test : public beast::unit_test::suite
 {
-	void testBase58(RippleAddress::VersionEncoding type,char first)
+	void testBase58(int type,char first)
 	{
-		Blob vchData;
-		vchData.resize(32);
-		for (int i = 0; i < 32; i++) vchData[i] = 60;
+
+		RippleAddress naSeed;
+		naSeed.setSeedGeneric("masterpassphrase");
+		naSeed.nVersion = type;
+		std::string human = naSeed.ToString();
+
+		Log::out() << type << " :  " << human;
+		expect(human[0] == first, human);
+
+		/*
+
+		Blob vchData(32);
+		for (int i = 0; i < 32; i++) vchData[i] = rand();
+		Log::out() << vchData.size();
+
 		Blob vch(1, type);
 		vch.insert(vch.end(), vchData.begin(), vchData.end());
 		std::string human = Base58::encodeWithCheck(vch);
 		Log::out() << type << " :  " << human;
 		expect(human[0] == first, human);
+		*/
 	}
 
 public:
@@ -773,7 +786,7 @@ public:
         // Construct a seed.
         RippleAddress naSeed;
 		
-		// gsphnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCr65jkm8oFqi1tuvAxyz
+		
 
 		testBase58(RippleAddress::VER_NODE_PUBLIC,'n');
 		testBase58(RippleAddress::VER_NODE_PRIVATE, 'v');
@@ -799,12 +812,6 @@ public:
 
         naNodePrivate.signNodePrivate (uHash, vucTextSig);
         expect (naNodePublic.verifyNodePublic (uHash, vucTextSig, ECDSA::strict), "Verify failed.");
-
-   
-     
- 
-       
-
        
     }
 };
