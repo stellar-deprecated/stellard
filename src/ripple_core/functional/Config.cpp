@@ -18,6 +18,7 @@
 //==============================================================================
 
 #include "../../beast/modules/beast_core/text/LexicalCast.h"
+#include "../ripple_data/crypto/edkeypair.h"
 
 namespace ripple {
 
@@ -490,8 +491,9 @@ void Config::load ()
 
                 if (VALIDATION_SEED.isValid ())
                 {
-                    VALIDATION_PUB = RippleAddress::createNodePublic (VALIDATION_SEED);
-                    VALIDATION_PRIV = RippleAddress::createNodePrivate (VALIDATION_SEED);
+					EdKeyPair pair(VALIDATION_SEED.getSeed());
+					VALIDATION_PUB.setNodePublic(pair.mPublicKey);
+					VALIDATION_PRIV.setNodePrivate(pair.mPrivateKey);
                 }
             }
 
@@ -501,8 +503,11 @@ void Config::load ()
 
                 if (NODE_SEED.isValid ())
                 {
-                    NODE_PUB = RippleAddress::createNodePublic (NODE_SEED);
-                    NODE_PRIV = RippleAddress::createNodePrivate (NODE_SEED);
+					EdKeyPair pair(NODE_SEED.getSeed());
+					VALIDATION_PUB.setNodePublic(pair.mPublicKey);
+					VALIDATION_PRIV.setNodePrivate(pair.mPrivateKey);
+
+                   
                 }
             }
 

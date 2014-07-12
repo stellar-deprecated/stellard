@@ -100,7 +100,6 @@ public:
     void setNodePrivate (uint256 hash256);
     void signNodePrivate (uint256 const& hash, Blob& vchSig) const;
 
-    static RippleAddress createNodePrivate (const RippleAddress& naSeed);
 
     //
     // Accounts IDs
@@ -168,6 +167,7 @@ public:
     //
     uint256 getAccountPrivate () const;
 
+	static std::string RippleAddress::human(Blob& blob, VersionEncoding type);
     std::string humanAccountPrivate () const;
 
     bool setAccountPrivate (const std::string& strPrivate);
@@ -201,10 +201,8 @@ public:
 	uint256 getSeed() const;
 
     std::string humanSeed () const;
-    std::string humanSeed1751 () const;
 
     bool setSeed (const std::string& strSeed);
-    int setSeed1751 (const std::string& strHuman1751);
     bool setSeedGeneric (const std::string& strText);
 	void setSeed(uint256 seed);
     void setSeedRandom ();

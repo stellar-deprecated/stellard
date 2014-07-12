@@ -41,10 +41,10 @@ Json::Value RPCHandler::doWalletPropose (Json::Value params, Resource::Charge& l
     Json::Value obj (Json::objectValue);
 
     obj["master_seed"]      = naSeed.humanSeed ();
-    obj["master_seed_hex"]  = to_string (naSeed.getSeed ());
     obj["account_id"]       = naAccount.humanAccountID ();
     obj["public_key"] = naAccount.humanAccountPublic();
 
+    obj["master_seed_hex"]  = to_string (naSeed.getSeed ());
     auto acct = naAccount.getAccountPublic();
     obj["public_key_hex"] = strHex(acct.begin(), acct.size());
 

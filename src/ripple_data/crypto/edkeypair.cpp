@@ -18,7 +18,7 @@ namespace ripple {
 
 
 	// <-- seed
-	uint256 EdKeyPair::PassPhraseToKey(const std::string& passPhrase)
+	uint256 EdKeyPair::passPhraseToKey(const std::string& passPhrase)
 	{
 		// TODO: Should we use the libsodium hashing here?
 		Serializer s;
@@ -30,7 +30,7 @@ namespace ripple {
 		return hash256;
 	}
 
-	void EdKeyPair::GetPrivateKeyU(uint256& privKey)
+	void EdKeyPair::getPrivateKeyU(uint256& privKey)
 	{
 		memcpy(privKey.begin(), &mPrivateKey[0], crypto_sign_ed25519_SECRETKEYBYTES);
 	}

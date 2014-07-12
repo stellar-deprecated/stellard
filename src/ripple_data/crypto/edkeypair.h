@@ -17,19 +17,20 @@ namespace ripple {
 
 	class EdKeyPair
 	{
+		
+	public:
 		Blob mPrivateKey;
 		Blob mPublicKey;
 
-	public:
 		EdKeyPair(const uint256& passPhrase);
 
 
 
-		Blob GetPubKey() const {  return(mPublicKey); };
+		Blob getPubKey() const {  return(mPublicKey); };
 
-		static uint256 PassPhraseToKey(const std::string& passPhrase);
+		static uint256 passPhraseToKey(const std::string& passPhrase);
 
-		void GetPrivateKeyU(uint256& privKey);
+		void getPrivateKeyU(uint256& privKey);
 	};
 
 }
