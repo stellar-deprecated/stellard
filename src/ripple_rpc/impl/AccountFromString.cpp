@@ -49,44 +49,8 @@ Json::Value accountFromString (Ledger::ref lrLedger, RippleAddress& naAccount,
     }
     else
     {
-        // We allow the use of the seeds to access #0.
-        // This is poor practice and merely for debuging convenience.
-        RippleAddress       naRegular0Public;
-        RippleAddress       naRegular0Private;
+		assert(0);
 
-        RippleAddress       naGenerator     = RippleAddress::createGeneratorPublic (naSeed);
-
-        naRegular0Public.setAccountPublic (naGenerator, 0);
-        naRegular0Private.setAccountPrivate (naGenerator, naSeed, 0);
-
-        //      uint160             uGeneratorID    = naRegular0Public.getAccountID();
-        SLE::pointer        sleGen          = netOps.getGenerator (lrLedger, naRegular0Public.getAccountID ());
-
-        if (!sleGen)
-        {
-            // Didn't find a generator map, assume it is a master generator.
-            nothing ();
-        }
-        else
-        {
-			assert(0);
-			/* TEMP
-            // Found master public key.
-            Blob    vucCipher               = sleGen->getFieldVL (sfGenerator);
-            Blob    vucMasterGenerator      = naRegular0Private.accountPrivateDecrypt (naRegular0Public, vucCipher);
-
-            if (vucMasterGenerator.empty ())
-            {
-                rpcError (rpcNO_GEN_DECRYPT);
-            }
-
-            naGenerator.setGenerator (vucMasterGenerator);
-			*/
-        }
-
-        bIndex  = !iIndex;
-
-        naAccount.setAccountPublic (naGenerator, iIndex);
     }
 
     return Json::Value (Json::objectValue);

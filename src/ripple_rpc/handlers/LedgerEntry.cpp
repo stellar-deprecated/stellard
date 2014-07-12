@@ -104,32 +104,6 @@ Json::Value RPCHandler::doLedgerEntry (Json::Value params, Resource::Charge& loa
             }
         }
     }
-    else if (params.isMember ("generator"))
-    {
-        RippleAddress   naGeneratorID;
-
-        if (!params["generator"].isObject ())
-        {
-            uNodeIndex.SetHex (params["generator"].asString ());
-        }
-        else if (!params["generator"].isMember ("regular_seed"))
-        {
-            jvResult["error"]   = "malformedRequest";
-        }
-        else if (!naGeneratorID.setSeedGeneric (params["generator"]["regular_seed"].asString ()))
-        {
-            jvResult["error"]   = "malformedAddress";
-        }
-        else
-        {
-            RippleAddress       na0Public;      // To find the generator's index.
-            RippleAddress       naGenerator = RippleAddress::createGeneratorPublic (naGeneratorID);
-
-            na0Public.setAccountPublic (naGenerator, 0);
-
-            uNodeIndex  = Ledger::getGeneratorIndex (na0Public.getAccountID ());
-        }
-    }
     else if (params.isMember ("offer"))
     {
         RippleAddress   naAccountID;

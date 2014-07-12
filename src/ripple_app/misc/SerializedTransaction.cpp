@@ -375,9 +375,9 @@ public:
     {
         RippleAddress seed;
         seed.setSeedRandom ();
-        RippleAddress generator = RippleAddress::createGeneratorPublic (seed);
-        RippleAddress publicAcct = RippleAddress::createAccountPublic (generator, 1);
-        RippleAddress privateAcct = RippleAddress::createAccountPrivate (generator, seed, 1);
+     
+        RippleAddress publicAcct = RippleAddress::createAccountPublic (seed);
+        RippleAddress privateAcct = RippleAddress::createAccountPrivate (seed);
 
         SerializedTransaction j (ttACCOUNT_SET);
         j.setSourceAccount (publicAcct);

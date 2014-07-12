@@ -1426,20 +1426,6 @@ SLE::pointer Ledger::getDirNode (uint256 const& uNodeIndex)
     return getASNodeI (uNodeIndex, ltDIR_NODE);
 }
 
-SLE::pointer Ledger::getGenerator(const uint160& uGeneratorID)
-{
-	return getASNodeI(getGeneratorIndex(uGeneratorID), ltGENERATOR_MAP);
-}
-
-uint256 Ledger::getGeneratorIndex(const uint160& uGeneratorID)
-{
-	Serializer  s(22);
-	
-	s.add16(spaceGenerator);   //  2
-	s.add160(uGeneratorID);    // 20
-	
-	return s.getSHA512Half();
-}
 
 //
 // Offer

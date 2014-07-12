@@ -163,9 +163,7 @@ public:
 
     virtual AccountState::pointer getAccountState (Ledger::ref lrLedger,
         const RippleAddress& accountID) = 0;
-    virtual SLE::pointer getGenerator (Ledger::ref lrLedger,
-        uint160 const& uGeneratorID) = 0;
-
+ 
     //--------------------------------------------------------------------------
     //
     // Directory functions

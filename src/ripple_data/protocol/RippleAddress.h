@@ -40,24 +40,26 @@ namespace ripple {
 class RippleAddress : public CBase58Data
 {
 private:
-    typedef enum
-    {
-        VER_NONE                = 1,
-        VER_NODE_PUBLIC         = 28,
-        VER_NODE_PRIVATE        = 32,
-        VER_ACCOUNT_ID          = 0,
-        VER_ACCOUNT_PUBLIC      = 35,
-        VER_ACCOUNT_PRIVATE     = 34,
-        VER_FAMILY_GENERATOR    = 41,
-        VER_FAMILY_SEED         = 33,
-    } VersionEncoding;
-
     bool    mIsValid;
 
 	bool verifySignature(uint256 const& hash, Blob const& vchSig) const;
 
 public:
+	// gsphnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCr65jkm8oFqi1tuvAxyz
+	// 5=B 9=J 12=Q
+	typedef enum
+	{
+		VER_NONE = 1,
+		VER_NODE_PUBLIC = 2,
+		VER_NODE_PRIVATE = 3,
+		VER_ACCOUNT_ID = 0,
+		VER_ACCOUNT_PUBLIC = 60, //
+		VER_ACCOUNT_PRIVATE = 4,
+		VER_SEED = 33 //
+	} VersionEncoding;
+
     RippleAddress ();
+	RippleAddress(const RippleAddress& naSeed,VersionEncoding type);
 
     // For public and private key, checks if they are legal.
     bool isValid () const
@@ -177,7 +179,7 @@ public:
 
     bool accountPrivateSign (uint256 const& uHash, Blob& vucSig) const;
 
-    static RippleAddress createAccountPrivate (const RippleAddress& naGenerator, const RippleAddress& naSeed, int iSeq);
+    static RippleAddress createAccountPrivate (const RippleAddress& naSeed);
 
     static RippleAddress createAccountPrivate (Blob const& vPrivate)
     {
@@ -192,22 +194,9 @@ public:
     {
         return createAccountPrivate (vPrivate).humanAccountPrivate ();
     }
+  
 
-    //
-    // Generators
-    // Use to generate a master or regular family.
-    //
-    Blob const& getGenerator () const;
-
-    std::string humanGenerator () const;
-
-    bool setGenerator (const std::string& strGenerator);
-    void setGenerator (Blob const& vPublic);
-    // void setGenerator(const RippleAddress& seed);
-
-    // Create generator for making public deterministic keys.
-    static RippleAddress createGeneratorPublic (const RippleAddress& naSeed);
-
+ 
     //
     // Seeds
     // Clients must disallow recognizable entries from being seeds.
