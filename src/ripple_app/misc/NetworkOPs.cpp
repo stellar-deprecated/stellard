@@ -193,8 +193,7 @@ public:
     //
 
     AccountState::pointer   getAccountState (Ledger::ref lrLedger, const RippleAddress& accountID);
-    SLE::pointer            getGenerator (Ledger::ref lrLedger, const uint160& uGeneratorID);
-
+  
     //
     // Directory functions
     //
@@ -1065,16 +1064,6 @@ AccountState::pointer NetworkOPsImp::getAccountState (Ledger::ref lrLedger, cons
     return lrLedger->getAccountState (accountID);
 }
 
-SLE::pointer NetworkOPsImp::getGenerator (Ledger::ref lrLedger, const uint160& uGeneratorID)
-{
-    if (!lrLedger)
-        return SLE::pointer ();
-
-    //JED return lrLedger->getGenerator (uGeneratorID);
-	//return SLE::pointer(); // JED
-
-	return lrLedger->getGenerator(uGeneratorID);
-}
 
 //
 // Directory functions

@@ -58,12 +58,9 @@
 
 #include "protocol/STParsedJSON.cpp"
 
-#include "crypto/CKey.h" // needs RippleAddress VFALCO TODO remove this dependency cycle
+#include "crypto/edkeypair.h" // needs RippleAddress VFALCO TODO remove this dependency cycle
 #include "crypto/RFC1751.h"
 
-#include "crypto/CKey.cpp"
-#include "crypto/CKeyDeterministic.cpp"
-#include "crypto/CKeyECIES.cpp"
 #include "crypto/Base58Data.cpp"
 #include "crypto/RFC1751.cpp"
 

@@ -20,6 +20,8 @@
 #ifndef RIPPLE_STRINGUTILITIES_H
 #define RIPPLE_STRINGUTILITIES_H
 
+#include "../ripple/types/api/ByteOrder.h"
+
 namespace ripple {
 
 // String utility functions.

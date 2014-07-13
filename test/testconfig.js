@@ -6,29 +6,29 @@
 exports.accounts = {
   // Users
   "alice" : {
-    'account' : "gG1QQv2nh2rg7RCZ1P8YYcBUKCCN633jCn",
+    'account' : "gfi2ZyAA1uMng7QFuMxYZ2Nk1ty1sR5e8G",
     'secret' : "alice",
   },
   "bob" : {
-    'account' : "gPMh7Pi9ct699iZUTWaytJUoHcJ7cryziK",
+    'account' : "gUK9iE1ZdTcPFM4dBYKzKpweHxU45vMouQ",
     'secret' : "bob",
   },
   "carol" : {
-    'account' : "gH4KEcG9dEwGwpn6AyoWK9cZPLL4RLSmWW",
+    'account' : "gfn9c5iEDHpJMUNL9nk3EGS4K9s2KSMwXa",
     'secret' : "carol",
   },
   "dan" : {
-    'account' : "gJ85Mok8YRNxSo7NnxKGgPuk29uAeZQqwZ",
+    'account' : "gDymgnedwrL3gnNtcREa5RFAT5bZPx7vyL",
     'secret' : "dan",
   },
 
   // Nexuses
   "bitstamp" : {
-    'account' : "g4jKmc2nQb5yEU6eycefiNKGHTU5NQJASx",
+    'account' : "gJs66qyhMs4ciSmcZPRPAqhqKo99rP5irX",
     'secret' : "bitstamp",
   },
   "mtgox" : {
-    'account' : "gGihwhaqU8r7ahwAvTq6iX5gvsfcbrZw6v",
+    'account' : "gpXe6fxP7ec5p1tncocYzp1FKNmJRaDJM5",
     'secret' : "mtgox",
   },
 
@@ -40,17 +40,17 @@ exports.accounts = {
 
   // Master account
   "root" : {
-    'account' : "gHb9CJAWyB4gj91VRWn96DkukG4bwdtyTh",
+    'account' : "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb",
     'secret' : "masterpassphrase",
   },
 
   // filler
     "0": {
-        'account' : "gKWv4SBSh4z6N17P9EjUwoBMtEWZstzSP9",
+        'account' : "gaLBK8GoXJJJ5cpsUNj27x4HYjCJYCKTfH",
         'secret' : "0",
     },
     "1": {
-        'account' : "gBayiNwjomzHtiJrCYVinWvkykgqmx8RQj",
+        'account' : "gG2xcNhjGtm6LKKei9DN9EonCgoVDMeLf6",
         'secret' : "1",
     },
     "2": {

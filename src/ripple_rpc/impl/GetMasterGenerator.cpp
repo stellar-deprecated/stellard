@@ -29,6 +29,8 @@ Json::Value getMasterGenerator (
     Ledger::ref lrLedger, const RippleAddress& naRegularSeed,
     RippleAddress& naMasterGenerator, NetworkOPs& netOps)
 {
+	assert(0);
+	/* TEMP
     RippleAddress       na0Public;      // To find the generator's index.
     RippleAddress       na0Private;     // To decrypt the master generator's cipher.
     RippleAddress       naGenerator = RippleAddress::createGeneratorPublic (naRegularSeed);
@@ -53,6 +55,8 @@ Json::Value getMasterGenerator (
     }
 
     naMasterGenerator.setGenerator (vucMasterGenerator);
+
+	*/
 
     return Json::Value (Json::objectValue);
 }

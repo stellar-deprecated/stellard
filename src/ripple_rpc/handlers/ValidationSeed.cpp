@@ -16,7 +16,7 @@
     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 //==============================================================================
-
+#include "../ripple_data/crypto/edkeypair.h"
 
 namespace ripple {
 
@@ -44,12 +44,13 @@ Json::Value RPCHandler::doValidationSeed (Json::Value params, Resource::Charge& 
     }
     else
     {
-        getConfig ().VALIDATION_PUB = RippleAddress::createNodePublic (getConfig ().VALIDATION_SEED);
-        getConfig ().VALIDATION_PRIV = RippleAddress::createNodePrivate (getConfig ().VALIDATION_SEED);
+		EdKeyPair keyPair(getConfig().VALIDATION_SEED.getSeed());
+
+		getConfig().VALIDATION_PUB.setNodePublic(keyPair.mPublicKey);
+		getConfig().VALIDATION_PRIV.setNodePrivate(keyPair.mPrivateKey);
 
         obj["validation_public_key"]    = getConfig ().VALIDATION_PUB.humanNodePublic ();
         obj["validation_seed"]          = getConfig ().VALIDATION_SEED.humanSeed ();
-        obj["validation_key"]           = getConfig ().VALIDATION_SEED.humanSeed1751 ();
     }
 
     return obj;

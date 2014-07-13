@@ -1105,8 +1105,8 @@ void ApplicationImp::startNewLedger ()
 {
     // New stuff.
     RippleAddress   rootSeedMaster      = RippleAddress::createSeedGeneric ("masterpassphrase");
-    RippleAddress   rootGeneratorMaster = RippleAddress::createGeneratorPublic (rootSeedMaster);
-    RippleAddress   rootAddress         = RippleAddress::createAccountPublic (rootGeneratorMaster, 0);
+    //RippleAddress   rootGeneratorMaster = RippleAddress::createGeneratorPublic (rootSeedMaster);
+	RippleAddress   rootAddress = RippleAddress::createAccountPublic(rootSeedMaster);
 
     // Print enough information to be able to claim root account.
     m_journal.info << "Root master seed: " << rootSeedMaster.humanSeed ();

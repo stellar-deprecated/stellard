@@ -336,12 +336,7 @@ public:
         return getAccountRootIndex (account.getAccountID ());
     }
 
-	//
-	// Generator Map functions
-	SLE::pointer getGenerator(const uint160 & uGeneratorID);
-	static uint256 getGeneratorIndex(const uint160 & uGeneratorID);
-
-
+	
     //
     // Order book functions
     //

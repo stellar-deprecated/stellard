@@ -27,6 +27,7 @@ namespace ripple {
 // }
 Json::Value RPCHandler::doWalletAccounts (Json::Value params, Resource::Charge& loadType, Application::ScopedLockType& masterLockHolder)
 {
+	/* TODO: fix this
     Ledger::pointer     lpLedger;
     Json::Value         jvResult    = RPC::lookupLedger (params, lpLedger, *mNetOps);
 
@@ -41,7 +42,7 @@ Json::Value RPCHandler::doWalletAccounts (Json::Value params, Resource::Charge& 
     }
 
     // Try the seed as a master seed.
-    RippleAddress   naMasterGenerator   = RippleAddress::createGeneratorPublic (naSeed);
+    RippleAddress   naMasterGenerator   = RippleAddress::createAccountPrivate (naSeed);
 
     Json::Value jsonAccounts    = RPC::accounts (lpLedger, naMasterGenerator, *mNetOps);
 
@@ -66,6 +67,8 @@ Json::Value RPCHandler::doWalletAccounts (Json::Value params, Resource::Charge& 
 
         return ret;
     }
+	*/
+	return(Json::Value());
 }
 
 } // ripple

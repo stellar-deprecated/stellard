@@ -37,6 +37,7 @@ Json::Value authorize (Ledger::ref lrLedger,
                        STAmount& saSrcBalance, const STAmount& saFee, AccountState::pointer& asSrc,
                        const RippleAddress& naVerifyGenerator, NetworkOPs& netOps)
 {
+	/* TODO: fix
     // Source/paying account must exist.
     asSrc   = netOps.getAccountState (lrLedger, naSrcAccountID);
 
@@ -117,6 +118,7 @@ Json::Value authorize (Ledger::ref lrLedger,
     {
         saSrcBalance -= saFee;
     }
+	*/
 
     return Json::Value ();
 }

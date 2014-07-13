@@ -286,12 +286,9 @@ Json::Value transactionSign (
             return rpcError (rpcSRC_ACT_NOT_FOUND);
     }
 
-    RippleAddress   naSecret = RippleAddress::createSeedGeneric (
-        params["secret"].asString ());
-    RippleAddress   naMasterGenerator = RippleAddress::createGeneratorPublic (
-        naSecret);
-    RippleAddress masterAccountPublic = RippleAddress::createAccountPublic (
-        naMasterGenerator, 0);
+    RippleAddress   naSecret = RippleAddress::createSeedGeneric (params["secret"].asString ());
+  
+	RippleAddress masterAccountPublic = RippleAddress::createAccountPublic(naSecret);
 
     if (verify)
     {
@@ -348,8 +345,7 @@ Json::Value transactionSign (
     }
 
     // FIXME: For performance, transactions should not be signed in this code path.
-    RippleAddress naAccountPrivate = RippleAddress::createAccountPrivate (
-        naMasterGenerator, naSecret, 0);
+    RippleAddress naAccountPrivate = RippleAddress::createAccountPrivate (naSecret);
 
     stpTrans->sign (naAccountPrivate);
 
@@ -416,8 +412,7 @@ public:
     void testAutoFillFees ()
     {
         RippleAddress rootSeedMaster      = RippleAddress::createSeedGeneric ("masterpassphrase");
-        RippleAddress rootGeneratorMaster = RippleAddress::createGeneratorPublic (rootSeedMaster);
-        RippleAddress rootAddress         = RippleAddress::createAccountPublic (rootGeneratorMaster, 0);
+		RippleAddress rootAddress = RippleAddress::createAccountPublic(rootSeedMaster);
         std::uint64_t startAmount (100000);
         Ledger::pointer ledger (boost::make_shared <Ledger> (
             rootAddress, startAmount));

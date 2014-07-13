@@ -40,9 +40,9 @@ TER WalletAddTransactor::doApply ()
     uint160 const uDstAccountID (naMasterPubKey.getAccountID ());
 
     // FIXME: This should be moved to the transaction's signature check logic and cached
-    if (!naMasterPubKey.accountPublicVerify (
+	if (!naMasterPubKey.verifySignature(
         Serializer::getSHA512Half (uAuthKeyID.begin (), uAuthKeyID.size ()), 
-        vucSignature, ECDSA::not_strict))
+        vucSignature))
     {
         m_journal.trace <<
             "Unauthorized: bad signature ";

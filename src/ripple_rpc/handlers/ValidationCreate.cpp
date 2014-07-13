@@ -43,7 +43,6 @@ Json::Value RPCHandler::doValidationCreate (Json::Value params, Resource::Charge
 
     obj["validation_public_key"]    = RippleAddress::createNodePublic (raSeed).humanNodePublic ();
     obj["validation_seed"]          = raSeed.humanSeed ();
-    obj["validation_key"]           = raSeed.humanSeed1751 ();
 
     return obj;
 }

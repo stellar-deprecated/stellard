@@ -18,6 +18,9 @@
 //==============================================================================
 
 #include "../../beast/beast/unit_test/suite.h"
+#include <sodium.h>
+#include "../ripple_data/crypto/StellarPrivateKey.h"
+#include "../ripple_data/crypto/StellarPublicKey.h"
 
 namespace ripple {
 
@@ -27,6 +30,11 @@ RippleAddress::RippleAddress ()
     : mIsValid (false)
 {
     nVersion = VER_NONE;
+}
+
+RippleAddress::RippleAddress(const RippleAddress& naSeed, VersionEncoding type)
+{
+	assert(0);
 }
 
 void RippleAddress::clear ()
@@ -63,11 +71,9 @@ std::string RippleAddress::humanAddressType () const
     case VER_ACCOUNT_PRIVATE:
         return "VER_ACCOUNT_PRIVATE";
 
-    case VER_FAMILY_GENERATOR:
-        return "VER_FAMILY_GENERATOR";
 
-    case VER_FAMILY_SEED:
-        return "VER_FAMILY_SEED";
+	case VER_SEED:
+        return "VER_SEED";
     }
 
     return "unknown";
@@ -79,11 +85,11 @@ std::string RippleAddress::humanAddressType () const
 
 RippleAddress RippleAddress::createNodePublic (const RippleAddress& naSeed)
 {
-    CKey            ckSeed (naSeed.getSeed ());
+    EdKeyPair ckSeed (naSeed.getSeed ());
     RippleAddress   naNew;
 
     // YYY Should there be a GetPubKey() equiv that returns a uint256?
-    naNew.setNodePublic (ckSeed.GetPubKey ());
+    naNew.setNodePublic (ckSeed.getPubKey ());
 
     return naNew;
 }
@@ -136,6 +142,15 @@ Blob const& RippleAddress::getNodePublic () const
     }
 }
 
+std::string RippleAddress::human(Blob& blob, VersionEncoding type)
+{
+	Blob vch(1, type);
+	
+	vch.insert(vch.end(), blob.begin(), blob.end());
+
+	return Base58::encodeWithCheck(vch);
+}
+
 std::string RippleAddress::humanNodePublic () const
 {
     switch (nVersion)
@@ -165,49 +180,82 @@ void RippleAddress::setNodePublic (Blob const& vPublic)
     SetData (VER_NODE_PUBLIC, vPublic);
 }
 
-bool RippleAddress::verifyNodePublic (uint256 const& hash, Blob const& vchSig, ECDSA fullyCanonical) const
+
+bool RippleAddress::verifySignature(uint256 const& hash, const std::string& strSig) const
 {
-    CKey    pubkey  = CKey ();
-    bool    bVerified;
-
-    bVerified = isCanonicalECDSASig (vchSig, fullyCanonical);
-
-    if (bVerified && !pubkey.SetPubKey (getNodePublic ()))
-    {
-        // Failed to set public key.
-        bVerified   = false;
-    }
-    else
-    {
-        bVerified   = pubkey.Verify (hash, vchSig);
-    }
-
-    return bVerified;
+	Blob vchSig(strSig.begin(), strSig.end());
+	return(verifySignature(hash, vchSig));
 }
 
-bool RippleAddress::verifyNodePublic (uint256 const& hash, const std::string& strSig, ECDSA fullyCanonical) const
+bool RippleAddress::verifySignature(uint256 const& hash, Blob const& vchSig) const
 {
-    Blob vchSig (strSig.begin (), strSig.end ());
+	if (vchData.size() != crypto_sign_PUBLICKEYBYTES
+        || vchSig.size () != crypto_sign_BYTES)
+		throw std::runtime_error("bad inputs to verifySignature");
+	/*
+	 unsigned char signed_buf[crypto_sign_BYTES + hash.bytes];
+	 memcpy (signed_buf, vchSig.data(), crypto_sign_BYTES);
+	 memcpy (signed_buf+crypto_sign_BYTES, hash.data(), hash.bytes);
 
-    return verifyNodePublic (hash, vchSig, fullyCanonical);
+	 unsigned char ignored_buf[hash.bytes];
+	 unsigned long long ignored_len;
+	 return crypto_sign_open (ignored_buf, &ignored_len,
+	 signed_buf, sizeof (signed_buf),
+	 vchData.data()) == 0;
+	*/
+
+    unsigned char signed_buf[crypto_sign_BYTES + hash.bytes];
+	memcpy(signed_buf , vchSig.data(), crypto_sign_BYTES);
+	memcpy(signed_buf + crypto_sign_BYTES, hash.data(), hash.bytes);
+	
+
+    unsigned char ignored_buf[hash.bytes];
+    unsigned long long ignored_len;
+    return crypto_sign_open (ignored_buf, &ignored_len,
+			     signed_buf, sizeof (signed_buf),
+				 vchData.data()) == 0;
 }
+
+/*
+void StellarPrivateKey::sign(uint256 const& message, Blob& retSignature) const
+{
+	unsigned char out[crypto_sign_BYTES + message.bytes];
+	unsigned long long len;
+	const unsigned char *key = mPair.mPrivateKey.data();
+
+	// contrary to the docs it puts the signature in front
+	crypto_sign(out, &len,
+		(unsigned char*)message.begin(), message.size(),
+		key);
+
+	retSignature.resize(crypto_sign_BYTES);
+	memcpy(&retSignature[0], out, crypto_sign_BYTES);
+}
+*/
+
+void RippleAddress::sign(uint256 const& message, Blob& retSignature) const
+{
+	assert(vchData.size() == 64);
+
+	unsigned char out[crypto_sign_BYTES + message.bytes];
+	unsigned long long len;
+	const unsigned char *key = vchData.data();
+
+	// contrary to the docs it puts the signature in front
+	crypto_sign(out, &len,
+		(unsigned char*)message.begin(), message.size(),
+		key);
+
+	retSignature.resize(crypto_sign_BYTES);
+	memcpy(&retSignature[0], out, crypto_sign_BYTES);
+}
+
 
 //
 // NodePrivate
 //
 
-RippleAddress RippleAddress::createNodePrivate (const RippleAddress& naSeed)
-{
-    uint256         uPrivKey;
-    RippleAddress   naNew;
-    CKey            ckSeed (naSeed.getSeed ());
 
-    ckSeed.GetPrivateKeyU (uPrivKey);
-
-    naNew.setNodePrivate (uPrivKey);
-
-    return naNew;
-}
 
 Blob const& RippleAddress::getNodePrivateData () const
 {
@@ -258,14 +306,18 @@ bool RippleAddress::setNodePrivate (const std::string& strPrivate)
 {
     mIsValid = SetString (strPrivate, VER_NODE_PRIVATE, Base58::getRippleAlphabet ());
 
+	if (mIsValid) mIsValid = (vchData.size() == crypto_sign_SECRETKEYBYTES);
+
     return mIsValid;
 }
 
 void RippleAddress::setNodePrivate (Blob const& vPrivate)
 {
     mIsValid = true;
+	
 
     SetData (VER_NODE_PRIVATE, vPrivate);
+	assert(vchData.size() == crypto_sign_SECRETKEYBYTES);
 }
 
 void RippleAddress::setNodePrivate (uint256 hash256)
@@ -273,17 +325,12 @@ void RippleAddress::setNodePrivate (uint256 hash256)
     mIsValid = true;
 
     SetData (VER_NODE_PRIVATE, hash256);
+	assert(vchData.size() == crypto_sign_SECRETKEYBYTES);
 }
 
-void RippleAddress::signNodePrivate (uint256 const& hash, Blob& vchSig) const
-{
-    CKey    ckPrivKey;
 
-    ckPrivKey.SetPrivateKeyU (getNodePrivate ());
 
-    if (!ckPrivKey.Sign (hash, vchSig))
-        throw std::runtime_error ("Signing failed.");
-}
+
 
 //
 // AccountID
@@ -381,12 +428,12 @@ void RippleAddress::setAccountID (const uint160& hash160)
 // AccountPublic
 //
 
-RippleAddress RippleAddress::createAccountPublic (const RippleAddress& naGenerator, int iSeq)
+RippleAddress RippleAddress::createAccountPublic (const RippleAddress& seed)
 {
-    CKey            ckPub (naGenerator, iSeq);
+	EdKeyPair       ckPub(seed.getSeed());
     RippleAddress   naNew;
 
-    naNew.setAccountPublic (ckPub.GetPubKey ());
+    naNew.setAccountPublic (ckPub.getPubKey ());
 
     return naNew;
 }
@@ -442,32 +489,14 @@ void RippleAddress::setAccountPublic (Blob const& vPublic)
     SetData (VER_ACCOUNT_PUBLIC, vPublic);
 }
 
-void RippleAddress::setAccountPublic (const RippleAddress& generator, int seq)
-{
-    CKey    pubkey  = CKey (generator, seq);
 
-    setAccountPublic (pubkey.GetPubKey ());
+void RippleAddress::setAccountPublic (const RippleAddress& seed )
+{
+	EdKeyPair pubkey(seed.getSeed());
+
+    setAccountPublic (pubkey.getPubKey ());
 }
 
-bool RippleAddress::accountPublicVerify (uint256 const& uHash, Blob const& vucSig, ECDSA fullyCanonical) const
-{
-    CKey        ckPublic;
-
-    bool        bVerified = isCanonicalECDSASig (vucSig, fullyCanonical);
-
-    if (bVerified && !ckPublic.SetPubKey (getAccountPublic ()))
-    {
-        // Bad private key.
-        WriteLog (lsWARNING, RippleAddress) << "accountPublicVerify: Bad private key.";
-        bVerified   = false;
-    }
-    else
-    {
-        bVerified   = ckPublic.Verify (uHash, vucSig);
-    }
-
-    return bVerified;
-}
 
 RippleAddress RippleAddress::createAccountID (const uint160& uiAccountID)
 {
@@ -482,11 +511,12 @@ RippleAddress RippleAddress::createAccountID (const uint160& uiAccountID)
 // AccountPrivate
 //
 
-RippleAddress RippleAddress::createAccountPrivate (const RippleAddress& naGenerator, const RippleAddress& naSeed, int iSeq)
+RippleAddress RippleAddress::createAccountPrivate (const RippleAddress& naSeed)
 {
     RippleAddress   naNew;
+	EdKeyPair pair(naSeed.getSeed());
 
-    naNew.setAccountPrivate (naGenerator, naSeed, iSeq);
+    naNew.setAccountPrivate (pair.mPrivateKey);
 
     return naNew;
 }
@@ -524,6 +554,7 @@ std::string RippleAddress::humanAccountPrivate () const
 bool RippleAddress::setAccountPrivate (const std::string& strPrivate)
 {
     mIsValid = SetString (strPrivate, VER_ACCOUNT_PRIVATE, Base58::getRippleAlphabet ());
+	if(mIsValid) mIsValid=(vchData.size() == crypto_sign_SECRETKEYBYTES);
 
     return mIsValid;
 }
@@ -533,6 +564,7 @@ void RippleAddress::setAccountPrivate (Blob const& vPrivate)
     mIsValid        = true;
 
     SetData (VER_ACCOUNT_PRIVATE, vPrivate);
+	assert(vchData.size() == crypto_sign_SECRETKEYBYTES);
 }
 
 void RippleAddress::setAccountPrivate (uint256 hash256)
@@ -540,10 +572,13 @@ void RippleAddress::setAccountPrivate (uint256 hash256)
     mIsValid = true;
 
     SetData (VER_ACCOUNT_PRIVATE, hash256);
+	assert(vchData.size() == crypto_sign_SECRETKEYBYTES);
 }
-
-void RippleAddress::setAccountPrivate (const RippleAddress& naGenerator, const RippleAddress& naSeed, int seq)
+/*
+void RippleAddress::setAccountPrivate (const RippleAddress& naGenerator, const RippleAddress& naSeed)
 {
+	assert(0);
+	
     CKey    ckPubkey    = CKey (naSeed.getSeed ());
     CKey    ckPrivkey   = CKey (naGenerator, ckPubkey.GetSecretBN (), seq);
     uint256 uPrivKey;
@@ -551,65 +586,21 @@ void RippleAddress::setAccountPrivate (const RippleAddress& naGenerator, const R
     ckPrivkey.GetPrivateKeyU (uPrivKey);
 
     setAccountPrivate (uPrivKey);
+
+	
 }
+*/
 
-bool RippleAddress::accountPrivateSign (uint256 const& uHash, Blob& vucSig) const
-{
-    CKey        ckPrivate;
-    bool        bResult;
 
-    if (!ckPrivate.SetPrivateKeyU (getAccountPrivate ()))
-    {
-        // Bad private key.
-        WriteLog (lsWARNING, RippleAddress) << "accountPrivateSign: Bad private key.";
-        bResult = false;
-    }
-    else
-    {
-        bResult = ckPrivate.Sign (uHash, vucSig);
-        CondLog (!bResult, lsWARNING, RippleAddress) << "accountPrivateSign: Signing failed.";
-    }
 
-    return bResult;
-}
-
-Blob RippleAddress::accountPrivateEncrypt (const RippleAddress& naPublicTo, Blob const& vucPlainText) const
-{
-    CKey                        ckPrivate;
-    CKey                        ckPublic;
-    Blob    vucCipherText;
-
-    if (!ckPublic.SetPubKey (naPublicTo.getAccountPublic ()))
-    {
-        // Bad public key.
-        WriteLog (lsWARNING, RippleAddress) << "accountPrivateEncrypt: Bad public key.";
-    }
-    else if (!ckPrivate.SetPrivateKeyU (getAccountPrivate ()))
-    {
-        // Bad private key.
-        WriteLog (lsWARNING, RippleAddress) << "accountPrivateEncrypt: Bad private key.";
-    }
-    else
-    {
-        try
-        {
-            vucCipherText = ckPrivate.encryptECIES (ckPublic, vucPlainText);
-        }
-        catch (...)
-        {
-            nothing ();
-        }
-    }
-
-    return vucCipherText;
-}
 
 Blob RippleAddress::accountPrivateDecrypt (const RippleAddress& naPublicFrom, Blob const& vucCipherText) const
 {
-    CKey                        ckPrivate;
-    CKey                        ckPublic;
-    Blob    vucPlainText;
 
+    Blob    vucPlainText;
+	assert(0);
+
+	/* TEMP 
     if (!ckPublic.SetPubKey (naPublicFrom.getAccountPublic ()))
     {
         // Bad public key.
@@ -631,116 +622,33 @@ Blob RippleAddress::accountPrivateDecrypt (const RippleAddress& naPublicFrom, Bl
             nothing ();
         }
     }
+	*/
 
     return vucPlainText;
 }
 
-//
-// Generators
-//
 
-Blob const& RippleAddress::getGenerator () const
-{
-    // returns the public generator
-    switch (nVersion)
-    {
-    case VER_NONE:
-        throw std::runtime_error ("unset source - getGenerator");
-
-    case VER_FAMILY_GENERATOR:
-        // Do nothing.
-        return vchData;
-
-    default:
-        throw std::runtime_error (str (boost::format ("bad source: %d") % int (nVersion)));
-    }
-}
-
-std::string RippleAddress::humanGenerator () const
-{
-    switch (nVersion)
-    {
-    case VER_NONE:
-        throw std::runtime_error ("unset source - humanGenerator");
-
-    case VER_FAMILY_GENERATOR:
-        return ToString ();
-
-    default:
-        throw std::runtime_error (str (boost::format ("bad source: %d") % int (nVersion)));
-    }
-}
-
-bool RippleAddress::setGenerator (const std::string& strGenerator)
-{
-    mIsValid = SetString (strGenerator, VER_FAMILY_GENERATOR, Base58::getRippleAlphabet ());
-
-    return mIsValid;
-}
-
-void RippleAddress::setGenerator (Blob const& vPublic)
-{
-    mIsValid        = true;
-
-    SetData (VER_FAMILY_GENERATOR, vPublic);
-}
-
-RippleAddress RippleAddress::createGeneratorPublic (const RippleAddress& naSeed)
-{
-    CKey            ckSeed (naSeed.getSeed ());
-    RippleAddress   naNew;
-
-    naNew.setGenerator (ckSeed.GetPubKey ());
-
-    return naNew;
-}
 
 //
 // Seed
 //
 
-uint128 RippleAddress::getSeed () const
+uint256 RippleAddress::getSeed() const
 {
     switch (nVersion)
     {
     case VER_NONE:
         throw std::runtime_error ("unset source - getSeed");
 
-    case VER_FAMILY_SEED:
-        return uint128 (vchData);
+	case VER_SEED:
+		return uint256(vchData);
 
     default:
         throw std::runtime_error (str (boost::format ("bad source: %d") % int (nVersion)));
     }
 }
 
-std::string RippleAddress::humanSeed1751 () const
-{
-    switch (nVersion)
-    {
-    case VER_NONE:
-        throw std::runtime_error ("unset source - humanSeed1751");
 
-    case VER_FAMILY_SEED:
-    {
-        std::string strHuman;
-        std::string strLittle;
-        std::string strBig;
-        uint128 uSeed   = getSeed ();
-
-        strLittle.assign (uSeed.begin (), uSeed.end ());
-
-        strBig.assign (strLittle.rbegin (), strLittle.rend ());
-
-        RFC1751::getEnglishFromKey (strHuman, strBig);
-
-        return strHuman;
-    }
-
-    default:
-        throw std::runtime_error (str (boost::format ("bad source: %d") % int (nVersion)));
-    }
-}
 
 std::string RippleAddress::humanSeed () const
 {
@@ -749,7 +657,7 @@ std::string RippleAddress::humanSeed () const
     case VER_NONE:
         throw std::runtime_error ("unset source - humanSeed");
 
-    case VER_FAMILY_SEED:
+	case VER_SEED:
         return ToString ();
 
     default:
@@ -757,25 +665,10 @@ std::string RippleAddress::humanSeed () const
     }
 }
 
-int RippleAddress::setSeed1751 (const std::string& strHuman1751)
-{
-    std::string strKey;
-    int         iResult = RFC1751::getKeyFromEnglish (strKey, strHuman1751);
-
-    if (1 == iResult)
-    {
-        Blob    vchLittle (strKey.rbegin (), strKey.rend ());
-        uint128     uSeed (vchLittle);
-
-        setSeed (uSeed);
-    }
-
-    return iResult;
-}
 
 bool RippleAddress::setSeed (const std::string& strSeed)
 {
-    mIsValid = SetString (strSeed, VER_FAMILY_SEED, Base58::getRippleAlphabet ());
+	mIsValid = SetString(strSeed, VER_SEED, Base58::getRippleAlphabet());
 
     return mIsValid;
 }
@@ -784,7 +677,7 @@ bool RippleAddress::setSeedGeneric (const std::string& strText)
 {
     RippleAddress   naTemp;
     bool            bResult = true;
-    uint128         uSeed;
+	uint256         uSeed;
 
     if (strText.empty ()
             || naTemp.setAccountID (strText)
@@ -804,31 +697,26 @@ bool RippleAddress::setSeedGeneric (const std::string& strText)
         // Log::out() << "Recognized seed.";
         nothing ();
     }
-    else if (1 == setSeed1751 (strText))
-    {
-        // Log::out() << "Recognized 1751 seed.";
-        nothing ();
-    }
     else
     {
         // Log::out() << "Creating seed from pass phrase.";
-        setSeed (CKey::PassPhraseToKey (strText));
+        setSeed (EdKeyPair::passPhraseToKey (strText));
     }
 
     return bResult;
 }
 
-void RippleAddress::setSeed (uint128 hash128)
+void RippleAddress::setSeed(uint256 seed)
 {
     mIsValid = true;
 
-    SetData (VER_FAMILY_SEED, hash128);
+	SetData(VER_SEED, seed);
 }
 
 void RippleAddress::setSeedRandom ()
 {
     // XXX Maybe we should call MakeNewKey
-    uint128 key;
+	uint256 key;
 
     RandomNumbers::getInstance ().fillBytes (key.begin (), key.size ());
 
@@ -855,71 +743,120 @@ RippleAddress RippleAddress::createSeedGeneric (const std::string& strText)
 
 //------------------------------------------------------------------------------
 
+
 class RippleAddress_test : public beast::unit_test::suite
 {
+	void testBase58(int type,char first)
+	{
+		Blob vchData(32);
+		for (int i = 0; i < 32; i++) vchData[i] = rand();
+		//Log::out() << vchData.size();
+
+		Blob vch(1, type);
+		vch.insert(vch.end(), vchData.begin(), vchData.end());
+		std::string human = Base58::encodeWithCheck(vch);
+		//Log::out() << type << " :  " << human;
+		expect(human[0] == first, human);
+	}
+
 public:
     void run()
     {
-        // Construct a seed.
-        RippleAddress naSeed;
+		testBase58(RippleAddress::VER_NODE_PUBLIC, 'n');
+		testBase58(RippleAddress::VER_NODE_PRIVATE, 'h');
+		testBase58(RippleAddress::VER_ACCOUNT_PUBLIC, 'p');
+		testBase58(RippleAddress::VER_ACCOUNT_PRIVATE, 'h');
+		testBase58(RippleAddress::VER_SEED, 's');
 
-        expect (naSeed.setSeedGeneric ("masterpassphrase"));
-        expect (naSeed.humanSeed () == "snoPBgXtMeMyMHUVTrbuqAfr1SUTb", naSeed.humanSeed ());
+		// check pass phrase
+		std::string strPass("masterpassphrase");
+		std::string strBase58Seed("s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN");
+		std::string strBase58NodePublic("nfbbWHgJqzqfH1cfRpMdPRkJ19cxTsdHkBtz1SLJJQfyf9Ax6vd");
+		std::string strBase58AccountPublic("pGreoXKYybde1keKZwDCv8m5V1kT6JH37pgnTUVzdMkdygTixG8");
+			
+		AccountPrivateKey accountPrivateKey;
+		NodePrivateKey nodePrivateKey;
 
-        // Create node public/private key pair
-        RippleAddress naNodePublic    = RippleAddress::createNodePublic (naSeed);
-        RippleAddress naNodePrivate   = RippleAddress::createNodePrivate (naSeed);
+		accountPrivateKey.fromPassPhrase(strPass);
+		nodePrivateKey.fromPassPhrase(strPass);
 
-        expect (naNodePublic.humanNodePublic () == "n94a1u4jAz288pZLtw6yFWVbi89YamiC6JBXPVUj5zmExe5fTVr9", naNodePublic.humanNodePublic ());
-        expect (naNodePrivate.humanNodePrivate () == "pnen77YEeUd4fFKG7iycBWcwKpTaeFRkW2WFostaATy1DSupwXe", naNodePrivate.humanNodePrivate ());
+		expect(accountPrivateKey.base58Seed() == "s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN", accountPrivateKey.base58Seed());
+		expect(accountPrivateKey.base58AccountID() == "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb", accountPrivateKey.base58AccountID());
+		expect(accountPrivateKey.base58PublicKey() == strBase58AccountPublic, accountPrivateKey.base58PublicKey());
+		expect(nodePrivateKey.base58PublicKey() == strBase58NodePublic, nodePrivateKey.base58PublicKey());
 
-        // Check node signing.
-        Blob vucTextSrc = strCopy ("Hello, nurse!");
-        uint256 uHash   = Serializer::getSHA512Half (vucTextSrc);
-        Blob vucTextSig;
 
-        naNodePrivate.signNodePrivate (uHash, vucTextSig);
-        expect (naNodePublic.verifyNodePublic (uHash, vucTextSig, ECDSA::strict), "Verify failed.");
+		Blob sig;
+		uint256 message;
+		accountPrivateKey.sign(message, sig);
 
-        // Construct a public generator from the seed.
-        RippleAddress   naGenerator     = RippleAddress::createGeneratorPublic (naSeed);
+		StellarPublicKey publicKey(accountPrivateKey.getPublicKey(), RippleAddress::VER_NODE_PUBLIC);
+		expect(publicKey.verifySignature(message, sig), "Signature didn't verify");
+		expect(publicKey.getAccountID() == accountPrivateKey.getAccountID(), "Account Id's mis match");
+		expect(publicKey.base58AccountID() == accountPrivateKey.base58AccountID(), "Account Id's mis match");
 
-        expect (naGenerator.humanGenerator () == "fhuJKghSDzV2SkjLn9qbwm5AaRmgxDPfFsHDCP6yfDZWcxDFz4mt", naGenerator.humanGenerator ());
+		
+		AccountPrivateKey privateKey2;
+		privateKey2.fromString(strBase58Seed); // key from base58seed
+		expect(privateKey2.base58Seed() == "s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN", privateKey2.base58Seed());
+		expect(privateKey2.base58AccountID() == "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb", privateKey2.base58AccountID());
+		expect(privateKey2.base58PublicKey() == strBase58AccountPublic, privateKey2.base58PublicKey());
+		privateKey2.sign(message, sig);
+		expect(publicKey.verifySignature(message, sig), "Signature didn't verify"); // check with the previous pubkey
 
-        // Create account #0 public/private key pair.
-        RippleAddress   naAccountPublic0    = RippleAddress::createAccountPublic (naGenerator, 0);
-        RippleAddress   naAccountPrivate0   = RippleAddress::createAccountPrivate (naGenerator, naSeed, 0);
+		// check random
 
-        expect (naAccountPublic0.humanAccountID () == "gHb9CJAWyB4gj91VRWn96DkukG4bwdtyTh", naAccountPublic0.humanAccountID ());
-        expect (naAccountPublic0.humanAccountPublic () == "aBQG8RQAzjs1eTKFEAQXg2rS4utcDiEC9wmi7pfUPTi27VCahwrw", naAccountPublic0.humanAccountPublic ());
-        expect (naAccountPrivate0.humanAccountPrivate () == "p9JfM6HHi64m6mvB6v5k7G2b1cXzGmYiCNJf6GHPKvFTWdeRVjh", naAccountPrivate0.humanAccountPrivate ());
+		/// ======= OLD ====
 
-        // Create account #1 public/private key pair.
-        RippleAddress   naAccountPublic1    = RippleAddress::createAccountPublic (naGenerator, 1);
-        RippleAddress   naAccountPrivate1   = RippleAddress::createAccountPrivate (naGenerator, naSeed, 1);
+		// Construct a seed.
+		RippleAddress naSeed;
 
-        expect (naAccountPublic1.humanAccountID () == "g4bYF7SLUMD7QrSLLprJx38WJSY12ViRjP", naAccountPublic1.humanAccountID ());
-        expect (naAccountPublic1.humanAccountPublic () == "aBPXpTfuLy1Bhk3HnGTTAqnovpKWQ23NpFMNkAF6F1Atr5vDyPgw", naAccountPublic1.humanAccountPublic ());
-        expect (naAccountPrivate1.humanAccountPrivate () == "p9JEm822LMgzJii1k7TvdphfENTp6G5jg253Xa5gkzUWVg8orQt", naAccountPrivate1.humanAccountPrivate ());
+		expect(naSeed.setSeedGeneric("masterpassphrase"));
+		expect(naSeed.humanSeed() == "s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN", naSeed.humanSeed());
 
-        // Check account signing.
-        expect (naAccountPrivate0.accountPrivateSign (uHash, vucTextSig), "Signing failed.");
-        expect (naAccountPublic0.accountPublicVerify (uHash, vucTextSig, ECDSA::strict), "Verify failed.");
-        expect (!naAccountPublic1.accountPublicVerify (uHash, vucTextSig, ECDSA::not_strict), "Anti-verify failed.");
-        expect (!naAccountPublic1.accountPublicVerify (uHash, vucTextSig, ECDSA::strict), "Anti-verify failed.");
+		// Create node public/private key pair
+		RippleAddress naNodePublic = RippleAddress::createNodePublic(naSeed);
+		expect(naNodePublic.verifySignature(message, sig), "Signature didn't verify");
+		expect(naNodePublic.humanNodePublic() == strBase58NodePublic, naNodePublic.humanNodePublic());
 
-        expect (naAccountPrivate1.accountPrivateSign (uHash, vucTextSig), "Signing failed.");
-        expect (naAccountPublic1.accountPublicVerify (uHash, vucTextSig, ECDSA::strict), "Verify failed.");
-        expect (!naAccountPublic0.accountPublicVerify (uHash, vucTextSig, ECDSA::not_strict), "Anti-verify failed.");
-        expect (!naAccountPublic0.accountPublicVerify (uHash, vucTextSig, ECDSA::strict), "Anti-verify failed.");
+		naNodePublic.setNodePublic(strBase58NodePublic);
+		expect(naNodePublic.verifySignature(message, sig), "Signature didn't verify");
+		expect(naNodePublic.humanNodePublic() == strBase58NodePublic, naNodePublic.humanNodePublic());
 
-        // Check account encryption.
-        Blob vucTextCipher
-            = naAccountPrivate0.accountPrivateEncrypt (naAccountPublic1, vucTextSrc);
-        Blob vucTextRecovered
-            = naAccountPrivate1.accountPrivateDecrypt (naAccountPublic0, vucTextCipher);
+		RippleAddress naAccountPublic = RippleAddress::createAccountPublic(naSeed);
+		expect(naAccountPublic.humanAccountID() == "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb", naAccountPublic.humanAccountID());
+		expect(naAccountPublic.verifySignature(message, sig), "Signature didn't verify");
+		expect(naAccountPublic.humanAccountPublic() == strBase58AccountPublic, naAccountPublic.humanAccountPublic());
 
-        expect (vucTextSrc == vucTextRecovered, "Encrypt-decrypt failed.");
+		naAccountPublic.setAccountPublic(strBase58AccountPublic);
+		expect(naAccountPublic.humanAccountID() == "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb", naAccountPublic.humanAccountID());
+		expect(naAccountPublic.verifySignature(message, sig), "Signature didn't verify");
+		expect(naAccountPublic.humanAccountPublic() == strBase58AccountPublic, naAccountPublic.humanAccountPublic());
+
+		Blob rippleSig;
+		RippleAddress naAccountPrivate = RippleAddress::createAccountPrivate(naSeed);
+		naAccountPrivate.sign(message, rippleSig);
+		expect(rippleSig==sig, "Signature don't match");
+
+
+
+
+		/*
+		RippleAddress naNodePrivate = RippleAddress::createNodePrivate(naSeed);
+		expect(naNodePrivate.humanNodePrivate() == "pnen77YEeUd4fFKG7iycBWcwKpTaeFRkW2WFostaATy1DSupwXe", naNodePrivate.humanNodePrivate());
+
+		// Check node signing.
+		Blob vucTextSrc = strCopy("Hello, nurse!");
+		uint256 uHash = Serializer::getSHA512Half(vucTextSrc);
+		Blob vucTextSig;
+
+		naNodePrivate.signNodePrivate(uHash, vucTextSig);
+		expect(naNodePublic.verifyNodePublic(uHash, vucTextSig, ECDSA::strict), "Verify failed.");
+		*/
+
+
+       
+       
     }
 };
 
@@ -930,61 +867,7 @@ class RippleIdentifier_test : public beast::unit_test::suite
 public:
     void run ()
     {
-        testcase ("Seed");
-        RippleAddress seed;
-        expect (seed.setSeedGeneric ("masterpassphrase"));
-        expect (seed.humanSeed () == "snoPBgXtMeMyMHUVTrbuqAfr1SUTb", seed.humanSeed ());
 
-        testcase ("RipplePublicKey");
-        RippleAddress deprecatedPublicKey (RippleAddress::createNodePublic (seed));
-        expect (deprecatedPublicKey.humanNodePublic () ==
-            "n94a1u4jAz288pZLtw6yFWVbi89YamiC6JBXPVUj5zmExe5fTVr9",
-                deprecatedPublicKey.humanNodePublic ());
-        RipplePublicKey publicKey (deprecatedPublicKey);
-        expect (publicKey.to_string() == deprecatedPublicKey.humanNodePublic(),
-            publicKey.to_string());
-
-        testcase ("RipplePrivateKey");
-        RippleAddress deprecatedPrivateKey (RippleAddress::createNodePrivate (seed));
-        expect (deprecatedPrivateKey.humanNodePrivate () ==
-            "pnen77YEeUd4fFKG7iycBWcwKpTaeFRkW2WFostaATy1DSupwXe",
-                deprecatedPrivateKey.humanNodePrivate ());
-        RipplePrivateKey privateKey (deprecatedPrivateKey);
-        expect (privateKey.to_string() == deprecatedPrivateKey.humanNodePrivate(),
-            privateKey.to_string());
-
-        testcase ("Generator");
-        RippleAddress generator (RippleAddress::createGeneratorPublic (seed));
-        expect (generator.humanGenerator () ==
-            "fhuJKghSDzV2SkjLn9qbwm5AaRmgxDPfFsHDCP6yfDZWcxDFz4mt",
-                generator.humanGenerator ());
-
-        testcase ("RippleAccountID");
-        RippleAddress deprecatedAccountPublicKey (
-            RippleAddress::createAccountPublic (generator, 0));
-        expect (deprecatedAccountPublicKey.humanAccountID () ==
-            "gHb9CJAWyB4gj91VRWn96DkukG4bwdtyTh",
-                deprecatedAccountPublicKey.humanAccountID ());
-        RippleAccountID accountID (deprecatedAccountPublicKey);
-        expect (accountID.to_string() ==
-            deprecatedAccountPublicKey.humanAccountID(),
-                accountID.to_string());
-
-        testcase ("RippleAccountPublicKey");
-        expect (deprecatedAccountPublicKey.humanAccountPublic () ==
-            "aBQG8RQAzjs1eTKFEAQXg2rS4utcDiEC9wmi7pfUPTi27VCahwrw",
-                deprecatedAccountPublicKey.humanAccountPublic ());
-
-        testcase ("RippleAccountPrivateKey");
-        RippleAddress deprecatedAccountPrivateKey (
-            RippleAddress::createAccountPrivate (generator, seed, 0));
-        expect (deprecatedAccountPrivateKey.humanAccountPrivate () ==
-            "p9JfM6HHi64m6mvB6v5k7G2b1cXzGmYiCNJf6GHPKvFTWdeRVjh",
-                deprecatedAccountPrivateKey.humanAccountPrivate ());
-        RippleAccountPrivateKey accountPrivateKey (deprecatedAccountPrivateKey);
-        expect (accountPrivateKey.to_string() ==
-            deprecatedAccountPrivateKey.humanAccountPrivate(),
-                privateKey.to_string());
     }
 };
 

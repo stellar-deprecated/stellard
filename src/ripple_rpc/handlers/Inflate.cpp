@@ -33,10 +33,9 @@ namespace ripple {
 		uint32 inflationSeq = getApp().getLedgerMaster().getClosedLedger()->getInflationSeq();
 		params["tx_json"]["TransactionType"] = "Inflation";
 		params["tx_json"]["InflateSeq"] = inflationSeq;
-		params["tx_json"]["Account"] = "gHb9CJAWyB4gj91VRWn96DkukG4bwdtyTh";
+		params["tx_json"]["Account"] = "gJgtFgEAtBbv9t6poqAy2sQHL95i6VvnD4";
 		params["tx_json"]["Fee"] = "0";
-		//params["tx_json"]["SigningPubKey"] = "0";
-		params["secret"] = "snoPBgXtMeMyMHUVTrbuqAfr1SUTb";
+		params["secret"] = "s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN";
 
 		return RPC::transactionSign(params, true, true, masterLockHolder, *mNetOps, mRole);
 	}

@@ -24,7 +24,7 @@
 
 namespace ripple {
 
-class CKey; // forward declaration
+//class CKey; // forward declaration
 
 class Serializer
 {

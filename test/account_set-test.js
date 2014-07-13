@@ -22,9 +22,11 @@ suite('Account set', function() {
       function (callback) {
         self.what = "Set InflationDest.";
 
+          console.log(config.accounts.root.account);
+
         $.remote.transaction()
-        .account_set("root")
-		.inflation_dest($.remote.account('root')._account_id)
+        .account_set(config.accounts.root.account)
+		.inflation_dest(config.accounts.root.account)
         .on('submitted', function (m) {
           //console.log("proposed: %s", JSON.stringify(m));
           if (m.engine_result === 'tesSUCCESS') {

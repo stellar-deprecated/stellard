@@ -16,6 +16,7 @@
     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 //==============================================================================
+#include "../ripple_data/crypto/edkeypair.h"
 
 namespace ripple {
 
@@ -28,7 +29,6 @@ void LocalCredentials::start ()
 {
     // We need our node identity before we begin networking.
     // - Allows others to identify if they have connected multiple times.
-    // - Determines our CAS routing and responsibilities.
     // - This is not our validation identity.
     if (!nodeIdentityLoad ())
     {
@@ -84,8 +84,8 @@ bool LocalCredentials::nodeIdentityCreate ()
     // Generate the public and private key
     //
     RippleAddress   naSeed          = RippleAddress::createSeedRandom ();
-    RippleAddress   naNodePublic    = RippleAddress::createNodePublic (naSeed);
-    RippleAddress   naNodePrivate   = RippleAddress::createNodePrivate (naSeed);
+	EdKeyPair       keyPair(naSeed.getSeed());
+    
 
     // Make new key.
 #ifdef CREATE_NEW_DH_PARAMS
@@ -108,8 +108,8 @@ bool LocalCredentials::nodeIdentityCreate ()
 
     DeprecatedScopedLock sl (getApp().getWalletDB ()->getDBLock ());
     db->executeSQL (str (boost::format ("INSERT INTO NodeIdentity (PublicKey,PrivateKey,Dh512,Dh1024) VALUES ('%s','%s',%s,%s);")
-                         % naNodePublic.humanNodePublic ()
-                         % naNodePrivate.humanNodePrivate ()
+                         % RippleAddress::human(keyPair.mPublicKey,RippleAddress::VER_NODE_PUBLIC)
+                         % RippleAddress::human(keyPair.mPrivateKey,RippleAddress::VER_ACCOUNT_PRIVATE)
                          % sqlEscape (strDh512)
                          % sqlEscape (strDh1024)));
     // XXX Check error result.

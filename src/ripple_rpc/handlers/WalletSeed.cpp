@@ -24,6 +24,7 @@ namespace ripple {
 // }
 Json::Value RPCHandler::doWalletSeed (Json::Value params, Resource::Charge& loadType, Application::ScopedLockType& masterLockHolder)
 {
+	/* TODO: fix
     RippleAddress   raSeed;
     bool            bSecret = params.isMember ("secret");
 
@@ -52,5 +53,7 @@ Json::Value RPCHandler::doWalletSeed (Json::Value params, Resource::Charge& load
 
         return obj;
     }
+	*/
+	return(Json::Value());
 }
 } // ripple

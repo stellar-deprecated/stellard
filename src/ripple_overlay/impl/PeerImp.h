@@ -1303,7 +1303,7 @@ private:
             return false;
 
         Blob vchSig;
-        getApp().getLocalCredentials ().getNodePrivate ().signNodePrivate (m_secureCookie, vchSig);
+        getApp().getLocalCredentials ().getNodePrivate ().sign (m_secureCookie, vchSig);
 
         protocol::TMHello h;
 
@@ -1390,7 +1390,7 @@ private:
         {
             m_journal.info << "Hello: Disconnect: Bad node public key.";
         }
-        else if (!m_nodePublicKey.verifyNodePublic (m_secureCookie, packet.nodeproof (), ECDSA::not_strict))
+		else if (!m_nodePublicKey.verifySignature(m_secureCookie, packet.nodeproof()))
         {
             // Unable to verify they have private key for claimed public key.
             m_journal.info << "Hello: Disconnect: Failed to verify session.";

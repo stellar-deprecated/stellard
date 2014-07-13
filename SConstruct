@@ -99,6 +99,8 @@ else:
 env.ParseConfig('pkg-config --static --cflags --libs openssl')
 # Use protobuf
 env.ParseConfig('pkg-config --static --cflags --libs protobuf')
+# Use libsodium
+env.ParseConfig('pkg-config --static --cflags --libs libsodium')
 
 # Beast uses kvm on FreeBSD
 if FreeBSD:
@@ -277,6 +279,11 @@ COMPILED_FILES.extend([
     'src/ripple_overlay/ripple_overlay.cpp',
     'src/ripple_rpc/ripple_rpc.cpp',
     'src/ripple_websocket/ripple_websocket.cpp'
+    ])
+
+# restoring sanity
+COMPILED_FILES.extend([
+    'src/ripple_data/crypto/edkeypair.cpp'
     ])
 
 #
