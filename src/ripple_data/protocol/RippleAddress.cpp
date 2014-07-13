@@ -216,19 +216,38 @@ bool RippleAddress::verifySignature(uint256 const& hash, Blob const& vchSig) con
 				 vchData.data()) == 0;
 }
 
-void RippleAddress::sign(uint256 const& hash, Blob& vchSig) const
+/*
+void StellarPrivateKey::sign(uint256 const& message, Blob& retSignature) const
 {
-	unsigned char out[crypto_sign_BYTES + hash.bytes];
+	unsigned char out[crypto_sign_BYTES + message.bytes];
+	unsigned long long len;
+	const unsigned char *key = mPair.mPrivateKey.data();
+
+	// contrary to the docs it puts the signature in front
+	crypto_sign(out, &len,
+		(unsigned char*)message.begin(), message.size(),
+		key);
+
+	retSignature.resize(crypto_sign_BYTES);
+	memcpy(&retSignature[0], out, crypto_sign_BYTES);
+}
+*/
+
+void RippleAddress::sign(uint256 const& message, Blob& retSignature) const
+{
+	assert(vchData.size() == 64);
+
+	unsigned char out[crypto_sign_BYTES + message.bytes];
 	unsigned long long len;
 	const unsigned char *key = vchData.data();
 
 	// contrary to the docs it puts the signature in front
 	crypto_sign(out, &len,
-		(unsigned char*)hash.begin(), hash.size(),
+		(unsigned char*)message.begin(), message.size(),
 		key);
 
-	vchSig.resize(crypto_sign_BYTES);
-	memcpy(&vchSig[0], out, crypto_sign_BYTES);
+	retSignature.resize(crypto_sign_BYTES);
+	memcpy(&retSignature[0], out, crypto_sign_BYTES);
 }
 
 
@@ -287,14 +306,18 @@ bool RippleAddress::setNodePrivate (const std::string& strPrivate)
 {
     mIsValid = SetString (strPrivate, VER_NODE_PRIVATE, Base58::getRippleAlphabet ());
 
+	if (mIsValid) mIsValid = (vchData.size() == crypto_sign_SECRETKEYBYTES);
+
     return mIsValid;
 }
 
 void RippleAddress::setNodePrivate (Blob const& vPrivate)
 {
     mIsValid = true;
+	
 
     SetData (VER_NODE_PRIVATE, vPrivate);
+	assert(vchData.size() == crypto_sign_SECRETKEYBYTES);
 }
 
 void RippleAddress::setNodePrivate (uint256 hash256)
@@ -302,6 +325,7 @@ void RippleAddress::setNodePrivate (uint256 hash256)
     mIsValid = true;
 
     SetData (VER_NODE_PRIVATE, hash256);
+	assert(vchData.size() == crypto_sign_SECRETKEYBYTES);
 }
 
 
@@ -490,8 +514,9 @@ RippleAddress RippleAddress::createAccountID (const uint160& uiAccountID)
 RippleAddress RippleAddress::createAccountPrivate (const RippleAddress& naSeed)
 {
     RippleAddress   naNew;
+	EdKeyPair pair(naSeed.getSeed());
 
-    naNew.setAccountPrivate (naSeed.getSeed());
+    naNew.setAccountPrivate (pair.mPrivateKey);
 
     return naNew;
 }
@@ -529,6 +554,7 @@ std::string RippleAddress::humanAccountPrivate () const
 bool RippleAddress::setAccountPrivate (const std::string& strPrivate)
 {
     mIsValid = SetString (strPrivate, VER_ACCOUNT_PRIVATE, Base58::getRippleAlphabet ());
+	if(mIsValid) mIsValid=(vchData.size() == crypto_sign_SECRETKEYBYTES);
 
     return mIsValid;
 }
@@ -538,6 +564,7 @@ void RippleAddress::setAccountPrivate (Blob const& vPrivate)
     mIsValid        = true;
 
     SetData (VER_ACCOUNT_PRIVATE, vPrivate);
+	assert(vchData.size() == crypto_sign_SECRETKEYBYTES);
 }
 
 void RippleAddress::setAccountPrivate (uint256 hash256)
@@ -545,6 +572,7 @@ void RippleAddress::setAccountPrivate (uint256 hash256)
     mIsValid = true;
 
     SetData (VER_ACCOUNT_PRIVATE, hash256);
+	assert(vchData.size() == crypto_sign_SECRETKEYBYTES);
 }
 /*
 void RippleAddress::setAccountPrivate (const RippleAddress& naGenerator, const RippleAddress& naSeed)
@@ -769,31 +797,38 @@ public:
 
 		/// ======= OLD ====
 
-		// check pass phrase
-		std::string pass("masterpassphrase");
-		StellarPrivateKey privateKey(pass, RippleAddress::VER_ACCOUNT_PRIVATE);
+		// Construct a seed.
+		RippleAddress naSeed;
 
-		expect(privateKey.base58Seed() == "s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN", privateKey.base58Seed());
-		expect(privateKey.base58Account() == "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb", privateKey.base58Account());
-		//expect(privateKey.hexPublicKey() == "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb", privateKey.hexPublicKey());
+		expect(naSeed.setSeedGeneric("masterpassphrase"));
+		expect(naSeed.humanSeed() == "s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN", naSeed.humanSeed());
 
+		// Create node public/private key pair
+		RippleAddress naNodePublic = RippleAddress::createAccountPublic(naSeed);
+		expect(naNodePublic.humanAccountID() == "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb", naNodePublic.humanAccountID());
 		
-		Blob sig;
-		uint256 message;
-		privateKey.sign(message, sig);
+		expect(naNodePublic.verifySignature(message, sig), "Signature didn't verify");
 
-		StellarPublicKey publicKey(privateKey.getPublicKey(), RippleAddress::VER_NODE_PUBLIC);
-		expect(publicKey.verifySignature(message, sig), "Signature didn't verify");
+		Blob rippleSig;
+		RippleAddress naAccountPrivate = RippleAddress::createAccountPrivate(naSeed);
+		naAccountPrivate.sign(message, rippleSig);
+		expect(rippleSig==sig, "Signature don't match");
 
-		std::string base58Seed("s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN");
-		StellarPrivateKey privateKey2(base58Seed); // key from base58seed
-		expect(privateKey2.base58Seed() == "s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN", privateKey2.base58Seed());
-		expect(privateKey2.base58Account() == "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb", privateKey2.base58Account());
-		privateKey2.sign(message, sig);
-		expect(publicKey.verifySignature(message, sig), "Signature didn't verify"); // check with the previous pubkey
 
-		// check random
 
+
+		/*
+		RippleAddress naNodePrivate = RippleAddress::createNodePrivate(naSeed);
+		expect(naNodePrivate.humanNodePrivate() == "pnen77YEeUd4fFKG7iycBWcwKpTaeFRkW2WFostaATy1DSupwXe", naNodePrivate.humanNodePrivate());
+
+		// Check node signing.
+		Blob vucTextSrc = strCopy("Hello, nurse!");
+		uint256 uHash = Serializer::getSHA512Half(vucTextSrc);
+		Blob vucTextSig;
+
+		naNodePrivate.signNodePrivate(uHash, vucTextSig);
+		expect(naNodePublic.verifyNodePublic(uHash, vucTextSig, ECDSA::strict), "Verify failed.");
+		*/
 
 
        

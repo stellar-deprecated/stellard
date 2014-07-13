@@ -133,18 +133,14 @@ void printHelp (const po::options_description& desc)
 
 //------------------------------------------------------------------------------
 
-static
-void
-setupConfigForUnitTests (Config* config)
+static void setupConfigForUnitTests (Config* config)
 {
     config->nodeDatabase = parseDelimitedKeyValueString ("type=memory");
     config->ephemeralNodeDatabase = beast::StringPairArray ();
     config->importNodeDatabase = beast::StringPairArray ();
 }
 
-static
-int
-runUnitTests (std::string pattern, std::string format)
+static int runUnitTests (std::string pattern, std::string format)
 {
     // Config needs to be set up before creating Application
     setupConfigForUnitTests (&getConfig ());

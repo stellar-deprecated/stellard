@@ -12,6 +12,7 @@ namespace ripple
 
 	class StellarPrivateKey
 	{
+	protected:
 		Blob mSeed;
 		EdKeyPair mPair;
 		RippleAddress::VersionEncoding mType;
@@ -35,6 +36,12 @@ namespace ripple
 		uint160 getAccountID() const;
 		Blob& getPublicKey(){ return(mPair.mPublicKey); }
 		bool isValid(){ return(mType != RippleAddress::VER_NONE); }
+	};
+
+	class NodePrivateKey : StellarPrivateKey
+	{
+	public:
+
 	};
 }
 
