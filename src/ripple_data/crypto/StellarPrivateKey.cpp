@@ -1,4 +1,3 @@
-
 #include "StellarPrivateKey.h"
 #include <sodium.h>
 #include "../ripple/sslutil/api/HashUtilities.h"
@@ -13,10 +12,10 @@ can come from:
 
 namespace ripple
 {
-	
+
 
 	//create from the void!
-	StellarPrivateKey::StellarPrivateKey(RippleAddress::VersionEncoding type) 
+	StellarPrivateKey::StellarPrivateKey(RippleAddress::VersionEncoding type)
 	{
 		mType = type;
 		mSeed.resize(crypto_sign_SEEDBYTES);
@@ -39,21 +38,21 @@ namespace ripple
 		s.secureErase();
 
 		memcpy(&mSeed[0], hash256.data(), crypto_sign_SEEDBYTES);
-		
+
 		mPair.setSeed(mSeed);
 	}
 
 	// create from a base58 encoded seed
-	StellarPrivateKey::StellarPrivateKey(std::string& base58seed) 
+	StellarPrivateKey::StellarPrivateKey(std::string& base58seed)
 	{
 		mSeed.resize(crypto_sign_SEEDBYTES);
 
 		Blob vchTemp;
-		Base58::decodeWithCheck(base58seed.c_str(), vchTemp, Base58::getRippleAlphabet() );
+		Base58::decodeWithCheck(base58seed.c_str(), vchTemp, Base58::getRippleAlphabet());
 
-		if (vchTemp.empty() && 
+		if (vchTemp.empty() &&
 			vchTemp.size() == crypto_sign_SEEDBYTES + 1 &&
-			vchTemp[0]==RippleAddress::VER_SEED)
+			vchTemp[0] == RippleAddress::VER_SEED)
 		{
 			mType = RippleAddress::VER_NONE;
 			return;
@@ -64,11 +63,15 @@ namespace ripple
 		mPair.setSeed(mSeed);
 	}
 
-	
+	uint160 StellarPrivateKey::getAccountID() const
+	{
+		return Hash160(mPair.mPublicKey);
+	}
+
 	// create accountID from this seed and base58 encode it
 	std::string StellarPrivateKey::base58Account() const
 	{
-		uint160 account=Hash160(mPair.mPublicKey);
+		uint160 account = getAccountID();
 
 		Blob vch(1, RippleAddress::VER_ACCOUNT_ID);
 
@@ -76,6 +79,15 @@ namespace ripple
 
 		return Base58::encodeWithCheck(vch);
 
+	}
+
+	std::string StellarPrivateKey::base58PublicKey(RippleAddress::VersionEncoding type) const
+	{
+		Blob vch(1, type);
+
+		vch.insert(vch.end(), mPair.mPublicKey.begin(), mPair.mPublicKey.end());
+
+		return Base58::encodeWithCheck(vch);
 	}
 
 	std::string StellarPrivateKey::base58Seed() const

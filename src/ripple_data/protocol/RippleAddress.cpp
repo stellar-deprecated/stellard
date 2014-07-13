@@ -748,6 +748,35 @@ public:
 		expect(privateKey.base58Account() == "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb", privateKey.base58Account());
 		//expect(privateKey.hexPublicKey() == "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb", privateKey.hexPublicKey());
 
+
+		Blob sig;
+		uint256 message;
+		privateKey.sign(message, sig);
+
+		StellarPublicKey publicKey(privateKey.getPublicKey(), RippleAddress::VER_NODE_PUBLIC);
+		expect(publicKey.verifySignature(message, sig), "Signature didn't verify");
+		expect(publicKey.getAccountID() == privateKey.getAccountID(), "Account Id's mis match");
+		expect(publicKey.base58Account() == privateKey.base58Account(), "Account Id's mis match");
+
+		std::string base58Seed("s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN");
+		StellarPrivateKey privateKey2(base58Seed); // key from base58seed
+		expect(privateKey2.base58Seed() == "s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN", privateKey2.base58Seed());
+		expect(privateKey2.base58Account() == "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb", privateKey2.base58Account());
+		privateKey2.sign(message, sig);
+		expect(publicKey.verifySignature(message, sig), "Signature didn't verify"); // check with the previous pubkey
+
+		// check random
+
+		/// ======= OLD ====
+
+		// check pass phrase
+		std::string pass("masterpassphrase");
+		StellarPrivateKey privateKey(pass, RippleAddress::VER_ACCOUNT_PRIVATE);
+
+		expect(privateKey.base58Seed() == "s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN", privateKey.base58Seed());
+		expect(privateKey.base58Account() == "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb", privateKey.base58Account());
+		//expect(privateKey.hexPublicKey() == "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb", privateKey.hexPublicKey());
+
 		
 		Blob sig;
 		uint256 message;
