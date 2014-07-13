@@ -828,7 +828,7 @@ public:
 		expect(naAccountPublic.verifySignature(message, sig), "Signature didn't verify");
 		expect(naAccountPublic.humanAccountPublic() == strBase58AccountPublic, naAccountPublic.humanAccountPublic());
 
-		naAccountPublic.setNodePublic(strBase58AccountPublic);
+		naAccountPublic.setAccountPublic(strBase58AccountPublic);
 		expect(naAccountPublic.humanAccountID() == "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb", naAccountPublic.humanAccountID());
 		expect(naAccountPublic.verifySignature(message, sig), "Signature didn't verify");
 		expect(naAccountPublic.humanAccountPublic() == strBase58AccountPublic, naAccountPublic.humanAccountPublic());
