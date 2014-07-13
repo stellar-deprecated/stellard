@@ -1218,6 +1218,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\src\ripple_data\crypto\StellarPrivateKey.cpp" />
+    <ClCompile Include="..\..\src\ripple_data\crypto\StellarPublicKey.cpp" />
     <ClCompile Include="..\..\src\ripple_data\protocol\BuildInfo.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -2310,6 +2312,8 @@
     <ClInclude Include="..\..\src\ripple_data\crypto\Base58Data.h" />
     <ClInclude Include="..\..\src\ripple_data\crypto\edkeypair.h" />
     <ClInclude Include="..\..\src\ripple_data\crypto\RFC1751.h" />
+    <ClInclude Include="..\..\src\ripple_data\crypto\StellarPrivateKey.h" />
+    <ClInclude Include="..\..\src\ripple_data\crypto\StellarPublicKey.h" />
     <ClInclude Include="..\..\src\ripple_data\protocol\BuildInfo.h" />
     <ClInclude Include="..\..\src\ripple_data\protocol\FieldNames.h" />
     <ClInclude Include="..\..\src\ripple_data\protocol\HashPrefix.h" />

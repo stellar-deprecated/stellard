@@ -63,7 +63,7 @@ void SerializedValidation::sign (uint256& signingHash, const RippleAddress& raPr
 
     signingHash = getSigningHash ();
     Blob signature;
-    raPriv.signNodePrivate (signingHash, signature);
+    raPriv.sign (signingHash, signature);
     setFieldVL (sfSignature, signature);
 }
 
@@ -100,7 +100,7 @@ bool SerializedValidation::isValid (uint256 const& signingHash) const
                                             ECDSA::strict : ECDSA::not_strict;
         RippleAddress   raPublicKey = RippleAddress::createNodePublic (getFieldVL (sfSigningPubKey));
         return raPublicKey.isValid () &&
-            raPublicKey.verifyNodePublic (signingHash, getFieldVL (sfSignature), fullyCanonical);
+			raPublicKey.verifySignature(signingHash, getFieldVL(sfSignature));
     }
     catch (...)
     {

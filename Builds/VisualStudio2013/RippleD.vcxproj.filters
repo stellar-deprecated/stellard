@@ -1776,6 +1776,12 @@
     <ClCompile Include="..\..\..\libsodium\src\libsodium\crypto_sign\crypto_sign.c">
       <Filter>[0] Libraries\libsodium\code</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\ripple_data\crypto\StellarPublicKey.cpp">
+      <Filter>[2] Old Ripple\ripple_data\crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ripple_data\crypto\StellarPrivateKey.cpp">
+      <Filter>[2] Old Ripple\ripple_data\crypto</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\ripple_basics\containers\RangeSet.h">
@@ -3566,6 +3572,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\libsodium\include\sodium\version.h">
       <Filter>[0] Libraries\libsodium</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\ripple_data\crypto\StellarPublicKey.h">
+      <Filter>[2] Old Ripple\ripple_data\crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\ripple_data\crypto\StellarPrivateKey.h">
+      <Filter>[2] Old Ripple\ripple_data\crypto</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

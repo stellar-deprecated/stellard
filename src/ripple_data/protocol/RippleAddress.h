@@ -42,7 +42,7 @@ class RippleAddress : public CBase58Data
 private:
     bool    mIsValid;
 
-	bool verifySignature(uint256 const& hash, Blob const& vchSig) const;
+	
 
 public:
 	typedef enum
@@ -80,8 +80,7 @@ public:
 
     bool setNodePublic (const std::string& strPublic);
     void setNodePublic (Blob const& vPublic);
-    bool verifyNodePublic (uint256 const& hash, Blob const& vchSig, ECDSA mustBeFullyCanonical) const;
-    bool verifyNodePublic (uint256 const& hash, const std::string& strSig, ECDSA mustBeFullyCanonical) const;
+	
 
     static RippleAddress createNodePublic (const RippleAddress& naSeed);
     static RippleAddress createNodePublic (Blob const& vPublic);
@@ -98,7 +97,7 @@ public:
     bool setNodePrivate (const std::string& strPrivate);
     void setNodePrivate (Blob const& vPrivate);
     void setNodePrivate (uint256 hash256);
-    void signNodePrivate (uint256 const& hash, Blob& vchSig) const;
+    void sign (uint256 const& hash, Blob& vchSig) const;
 
 
     //
@@ -139,9 +138,7 @@ public:
 
     bool setAccountPublic (const std::string& strPublic);
     void setAccountPublic (Blob const& vPublic);
-    void setAccountPublic (const RippleAddress& generator, int seq);
-
-    bool accountPublicVerify (uint256 const& uHash, Blob const& vucSig, ECDSA mustBeFullyCanonical) const;
+    void setAccountPublic (const RippleAddress& generator);
 
 	Blob accountPrivateDecrypt(const RippleAddress& naPublicFrom, Blob const& vucCipherText) const;
 
@@ -160,7 +157,7 @@ public:
     }
 
     // Create a public key from a private seed
-    static RippleAddress createAccountPublic (const RippleAddress& seed, int iSeq=0);
+    static RippleAddress createAccountPublic (const RippleAddress& seed);
 
     //
     // Accounts Private
@@ -173,9 +170,9 @@ public:
     bool setAccountPrivate (const std::string& strPrivate);
     void setAccountPrivate (Blob const& vPrivate);
     void setAccountPrivate (uint256 hash256);
-    void setAccountPrivate (const RippleAddress& naGenerator, const RippleAddress& naSeed, int seq);
+    void setAccountPrivate (const RippleAddress& naGenerator, const RippleAddress& naSeed);
 
-    bool accountPrivateSign (uint256 const& uHash, Blob& vucSig) const;
+   
 
     static RippleAddress createAccountPrivate (const RippleAddress& naSeed);
 
@@ -193,7 +190,8 @@ public:
         return createAccountPrivate (vPrivate).humanAccountPrivate ();
     }
   
-
+	bool verifySignature(uint256 const& hash, const std::string& strSig) const;
+	bool verifySignature(uint256 const& hash, Blob const& vchSig) const;
  
     //
     // Seeds

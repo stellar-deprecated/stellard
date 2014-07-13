@@ -20,6 +20,9 @@
 #ifndef RIPPLE_TYPES_BYTEORDER_H
 #define RIPPLE_TYPES_BYTEORDER_H
 
+#include "../beast/beast/config/PlatformConfig.h"
+#include <stdint.h>
+
 namespace ripple {
 
 // Routines for converting endianness
@@ -27,6 +30,7 @@ namespace ripple {
 // Reference: http://www.mail-archive.com/licq-commits@googlegroups.com/msg02334.html
 
 #if BEAST_WIN32
+
 extern uint64_t htobe64 (uint64_t value);
 extern uint64_t be64toh (uint64_t value);
 extern uint32_t htobe32 (uint32_t value);

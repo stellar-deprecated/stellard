@@ -22,9 +22,11 @@ namespace ripple {
 		Blob mPrivateKey;
 		Blob mPublicKey;
 
+		EdKeyPair();
 		EdKeyPair(const uint256& passPhrase);
+		EdKeyPair(const Blob& seed);
 
-
+		void setSeed(const Blob& seed);
 
 		Blob getPubKey() const {  return(mPublicKey); };
 

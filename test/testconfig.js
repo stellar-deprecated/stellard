@@ -40,7 +40,7 @@ exports.accounts = {
 
   // Master account
   "root" : {
-    'account' : "gHb9CJAWyB4gj91VRWn96DkukG4bwdtyTh",
+    'account' : "gJgtFgEAtBbv9t6poqAy2sQHL95i6VvnD4",
     'secret' : "masterpassphrase",
   },
 

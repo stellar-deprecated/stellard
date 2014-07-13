@@ -87,7 +87,7 @@ uint256 LedgerProposal::computeSuppressionID (
 
 bool LedgerProposal::checkSign (const std::string& signature, uint256 const& signingHash)
 {
-    return mPublicKey.verifyNodePublic (signingHash, signature, ECDSA::not_strict);
+	return mPublicKey.verifySignature(signingHash, signature);
 }
 
 bool LedgerProposal::changePosition (uint256 const& newPosition, std::uint32_t closeTime)
@@ -112,10 +112,8 @@ Blob LedgerProposal::sign (void)
 {
     Blob ret;
 
-    mPrivateKey.signNodePrivate (getSigningHash (), ret);
-    // XXX If this can fail, find out sooner.
-    // if (!mPrivateKey.signNodePrivate(getSigningHash(), ret))
-    //  throw std::runtime_error("unable to sign proposal");
+    mPrivateKey.sign (getSigningHash (), ret);
+    
 
     mSuppression = computeSuppressionID (mCurrentHash, mPreviousLedger, mProposeSeq,
         mCloseTime, mPublicKey.getNodePublic (), ret);

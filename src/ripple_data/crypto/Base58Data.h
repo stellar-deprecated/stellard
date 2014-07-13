@@ -67,6 +67,7 @@ protected:
     }
 
 public:
+
 	unsigned char nVersion;
 
     bool SetString (std::string const& str, unsigned char version,

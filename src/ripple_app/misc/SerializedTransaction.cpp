@@ -185,7 +185,7 @@ Blob SerializedTransaction::getSignature () const
 void SerializedTransaction::sign (const RippleAddress& naAccountPrivate)
 {
     Blob signature;
-    naAccountPrivate.accountPrivateSign (getSigningHash (), signature);
+    naAccountPrivate.sign(getSigningHash (), signature);
     setFieldVL (sfTxnSignature, signature);
 }
 
@@ -223,7 +223,7 @@ bool SerializedTransaction::checkSign (const RippleAddress& naAccountPublic) con
     {
         const ECDSA fullyCanonical = (getFlags() & tfFullyCanonicalSig) ?
                                               ECDSA::strict : ECDSA::not_strict;
-        return naAccountPublic.accountPublicVerify (getSigningHash (), getFieldVL (sfTxnSignature), fullyCanonical);
+        return naAccountPublic.verifySignature (getSigningHash (), getFieldVL (sfTxnSignature));
     }
     catch (...)
     {

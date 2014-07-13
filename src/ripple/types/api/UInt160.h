@@ -25,6 +25,8 @@
 #ifndef RIPPLE_TYPES_UINT160_H_INCLUDED
 #define RIPPLE_TYPES_UINT160_H_INCLUDED
 
+#include <boost/functional/hash.hpp>
+
 #include "base_uint.h"
 #include "strHex.h"
 

@@ -37,7 +37,7 @@ Json::Value accounts (
     {
         RippleAddress       naAccount;
 
-        naAccount.setAccountPublic (naMasterGenerator, uIndex++);
+        naAccount.setAccountPublic (naMasterGenerator);
 
         AccountState::pointer as    = netOps.getAccountState (lrLedger, naAccount);
 

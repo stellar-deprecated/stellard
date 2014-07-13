@@ -4,15 +4,32 @@
 
 namespace ripple {
 
-	EdKeyPair::EdKeyPair(const uint256& passPhrase)
+	EdKeyPair::EdKeyPair()
 	{
 		mPublicKey.resize(crypto_sign_ed25519_PUBLICKEYBYTES);
 		mPrivateKey.resize(crypto_sign_ed25519_SECRETKEYBYTES);
-	
+	}
 
-		if (crypto_box_seed_keypair(&(mPublicKey[0]), &mPrivateKey[0], passPhrase.begin()) == -1)
+	EdKeyPair::EdKeyPair(const Blob& seed) : EdKeyPair()
+	{
+		setSeed(seed);
+	}
+
+	EdKeyPair::EdKeyPair(const uint256& passPhrase) : EdKeyPair()
+	{
+		if (crypto_sign_seed_keypair(&(mPublicKey[0]), &mPrivateKey[0], passPhrase.begin()) == -1)
 		{
 			throw key_error("EdKeyPair::EdKeyPair(const uint128& passPhrase) failed");
+		}
+	}
+
+	void EdKeyPair::setSeed(const Blob& seed)
+	{
+		if (seed.size() != 32) throw key_error("EdKeyPair::EdKeyPair wrong sized blob");
+
+		if (crypto_sign_seed_keypair(&(mPublicKey[0]), &mPrivateKey[0], &seed[0]) == -1)
+		{
+			throw key_error("EdKeyPair::EdKeyPair(const uint128& seed) failed");
 		}
 	}
 
