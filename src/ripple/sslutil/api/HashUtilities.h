@@ -19,6 +19,7 @@
 
 #ifndef RIPPLE_SSLUTIL_HASHUTILITIES_H_INCLUDED
 #define RIPPLE_SSLUTIL_HASHUTILITIES_H_INCLUDED
+#include <openssl/sha.h>
 
 namespace ripple {
 

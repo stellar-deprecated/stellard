@@ -238,6 +238,13 @@ else:
     COMPILED_FILES.extend (['src/ripple/beast/ripple_beast.cpp'])
 COMPILED_FILES.extend (['src/ripple/beast/ripple_beastc.c'])
 
+# restoring sanity
+COMPILED_FILES.extend([
+    'src/ripple_data/crypto/EdKeyPair.cpp',
+	'src/ripple_data/crypto/StellarPrivateKey.cpp',
+	'src/ripple_data/crypto/StellarPublicKey.cpp',
+    ])
+
 # ------------------------------
 # New-style Ripple unity sources
 #
@@ -282,12 +289,7 @@ COMPILED_FILES.extend([
     'src/ripple_websocket/ripple_websocket.cpp'
     ])
 
-# restoring sanity
-COMPILED_FILES.extend([
-    'src/ripple_data/crypto/EdKeyPair.cpp',
-	'src/ripple_data/crypto/StellarPrivateKey.cpp',
-	'src/ripple_data/crypto/StellarPublicKey.cpp',
-    ])
+
 
 #
 #

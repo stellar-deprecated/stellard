@@ -25,6 +25,8 @@
 #ifndef RIPPLE_TYPES_BASE_UINT_H_INCLUDED
 #define RIPPLE_TYPES_BASE_UINT_H_INCLUDED
 
+#include <assert.h>
+
 #include "Blob.h"
 #include "strHex.h"
 #include "ByteOrder.h"
