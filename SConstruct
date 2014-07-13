@@ -283,7 +283,9 @@ COMPILED_FILES.extend([
 
 # restoring sanity
 COMPILED_FILES.extend([
-    'src/ripple_data/crypto/edkeypair.cpp'
+    'src/ripple_data/crypto/edkeypair.cpp',
+	'src/ripple_data/crypto/StellarPrivateKey.cpp',
+	'src/ripple_data/crypto/StellarPublicKey.cpp',
     ])
 
 #
