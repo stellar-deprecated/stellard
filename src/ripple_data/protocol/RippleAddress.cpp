@@ -769,27 +769,38 @@ public:
 		testBase58(RippleAddress::VER_SEED, 's');
 
 		// check pass phrase
-		std::string pass("masterpassphrase");
-		StellarPrivateKey privateKey(pass, RippleAddress::VER_ACCOUNT_PRIVATE);
+		std::string strPass("masterpassphrase");
+		std::string strBase58Seed("s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN");
+		std::string strBase58NodePublic("nfbbWHgJqzqfH1cfRpMdPRkJ19cxTsdHkBtz1SLJJQfyf9Ax6vd");
+		std::string strBase58AccountPublic("pGreoXKYybde1keKZwDCv8m5V1kT6JH37pgnTUVzdMkdygTixG8");
+			
+		AccountPrivateKey accountPrivateKey;
+		NodePrivateKey nodePrivateKey;
 
-		expect(privateKey.base58Seed() == "s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN", privateKey.base58Seed());
-		expect(privateKey.base58Account() == "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb", privateKey.base58Account());
-		//expect(privateKey.hexPublicKey() == "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb", privateKey.hexPublicKey());
+		accountPrivateKey.fromPassPhrase(strPass);
+		nodePrivateKey.fromPassPhrase(strPass);
+
+		expect(accountPrivateKey.base58Seed() == "s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN", accountPrivateKey.base58Seed());
+		expect(accountPrivateKey.base58AccountID() == "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb", accountPrivateKey.base58AccountID());
+		expect(accountPrivateKey.base58PublicKey() == strBase58AccountPublic, accountPrivateKey.base58PublicKey());
+		expect(nodePrivateKey.base58PublicKey() == strBase58NodePublic, nodePrivateKey.base58PublicKey());
 
 
 		Blob sig;
 		uint256 message;
-		privateKey.sign(message, sig);
+		accountPrivateKey.sign(message, sig);
 
-		StellarPublicKey publicKey(privateKey.getPublicKey(), RippleAddress::VER_NODE_PUBLIC);
+		StellarPublicKey publicKey(accountPrivateKey.getPublicKey(), RippleAddress::VER_NODE_PUBLIC);
 		expect(publicKey.verifySignature(message, sig), "Signature didn't verify");
-		expect(publicKey.getAccountID() == privateKey.getAccountID(), "Account Id's mis match");
-		expect(publicKey.base58Account() == privateKey.base58Account(), "Account Id's mis match");
+		expect(publicKey.getAccountID() == accountPrivateKey.getAccountID(), "Account Id's mis match");
+		expect(publicKey.base58AccountID() == accountPrivateKey.base58AccountID(), "Account Id's mis match");
 
-		std::string base58Seed("s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN");
-		StellarPrivateKey privateKey2(base58Seed); // key from base58seed
+		
+		AccountPrivateKey privateKey2;
+		privateKey2.fromString(strBase58Seed); // key from base58seed
 		expect(privateKey2.base58Seed() == "s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN", privateKey2.base58Seed());
-		expect(privateKey2.base58Account() == "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb", privateKey2.base58Account());
+		expect(privateKey2.base58AccountID() == "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb", privateKey2.base58AccountID());
+		expect(privateKey2.base58PublicKey() == strBase58AccountPublic, privateKey2.base58PublicKey());
 		privateKey2.sign(message, sig);
 		expect(publicKey.verifySignature(message, sig), "Signature didn't verify"); // check with the previous pubkey
 
@@ -804,10 +815,23 @@ public:
 		expect(naSeed.humanSeed() == "s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN", naSeed.humanSeed());
 
 		// Create node public/private key pair
-		RippleAddress naNodePublic = RippleAddress::createAccountPublic(naSeed);
-		expect(naNodePublic.humanAccountID() == "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb", naNodePublic.humanAccountID());
-		
+		RippleAddress naNodePublic = RippleAddress::createNodePublic(naSeed);
 		expect(naNodePublic.verifySignature(message, sig), "Signature didn't verify");
+		expect(naNodePublic.humanNodePublic() == strBase58NodePublic, naNodePublic.humanNodePublic());
+
+		naNodePublic.setNodePublic(strBase58NodePublic);
+		expect(naNodePublic.verifySignature(message, sig), "Signature didn't verify");
+		expect(naNodePublic.humanNodePublic() == strBase58NodePublic, naNodePublic.humanNodePublic());
+
+		RippleAddress naAccountPublic = RippleAddress::createAccountPublic(naSeed);
+		expect(naAccountPublic.humanAccountID() == "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb", naAccountPublic.humanAccountID());
+		expect(naAccountPublic.verifySignature(message, sig), "Signature didn't verify");
+		expect(naAccountPublic.humanAccountPublic() == strBase58AccountPublic, naAccountPublic.humanAccountPublic());
+
+		naAccountPublic.setNodePublic(strBase58AccountPublic);
+		expect(naAccountPublic.humanAccountID() == "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb", naAccountPublic.humanAccountID());
+		expect(naAccountPublic.verifySignature(message, sig), "Signature didn't verify");
+		expect(naAccountPublic.humanAccountPublic() == strBase58AccountPublic, naAccountPublic.humanAccountPublic());
 
 		Blob rippleSig;
 		RippleAddress naAccountPrivate = RippleAddress::createAccountPrivate(naSeed);

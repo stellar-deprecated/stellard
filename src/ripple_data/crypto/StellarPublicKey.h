@@ -31,7 +31,7 @@ namespace ripple
 		bool verifySignature(uint256 const& hash, Blob const& vchSig) const;
 		bool verifySignature(uint256 const& hash, const std::string& strSig) const;
 
-		std::string base58Account() const;
+		std::string base58AccountID() const;
 		std::string base58Key() const;
 	};
 }

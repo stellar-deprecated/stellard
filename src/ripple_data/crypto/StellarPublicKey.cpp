@@ -36,7 +36,7 @@ namespace ripple
 	}
 
 	// create accountID from this seed and base58 encode it
-	std::string StellarPublicKey::base58Account() const
+	std::string StellarPublicKey::base58AccountID() const
 	{
 		uint160 account = getAccountID();
 
@@ -90,6 +90,8 @@ namespace ripple
 
 
 	}
+
+	
 
 
 }
