@@ -25,6 +25,7 @@
 #ifndef RIPPLE_TYPES_BASE_UINT_H_INCLUDED
 #define RIPPLE_TYPES_BASE_UINT_H_INCLUDED
 
+#include <string.h>
 #include <assert.h>
 
 #include "Blob.h"
