@@ -853,7 +853,7 @@ public:
 		expect(rippleSig == sig, "Signature don't match");
 
 
-		std::string strPrivateKey("");
+		std::string strPrivateKey("ssQMHypYAPSPgniSyvJQccuL1dJUbXJWVgAPV5QcAuBVEWsZTVQwffsnwTY6Mivoy3NRSVR28ZaCW74F67VSq4VRC4zY1XR");
 		expect(naNodePrivate.humanNodePrivate() == strPrivateKey, naNodePrivate.humanNodePrivate());
 		
 		expect(naNodePrivate.setNodePrivate(strPrivateKey),"couldn't create private node");

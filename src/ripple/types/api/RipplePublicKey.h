@@ -20,13 +20,15 @@
 #ifndef RIPPLE_TYPES_RIPPLEPUBLICKEY_H_INCLUDED
 #define RIPPLE_TYPES_RIPPLEPUBLICKEY_H_INCLUDED
 
+#include <sodium.h>
 #include "CryptoIdentifier.h"
 #include "IdentifierType.h"
+
 
 namespace ripple {
 
 class RipplePublicKeyTraits
-    : public CryptoIdentifier <33, 28, true>
+    : public CryptoIdentifier <crypto_sign_PUBLICKEYBYTES, 122, true>
 {
 public:
     template <typename Other>
