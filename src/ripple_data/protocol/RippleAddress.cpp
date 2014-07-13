@@ -521,6 +521,16 @@ RippleAddress RippleAddress::createAccountPrivate (const RippleAddress& naSeed)
     return naNew;
 }
 
+RippleAddress RippleAddress::createNodePrivate(const RippleAddress& naSeed)
+{
+	RippleAddress   naNew;
+	EdKeyPair pair(naSeed.getSeed());
+
+	naNew.setNodePrivate(pair.mPrivateKey);
+
+	return naNew;
+}
+
 uint256 RippleAddress::getAccountPrivate () const
 {
     switch (nVersion)
@@ -837,6 +847,19 @@ public:
 		RippleAddress naAccountPrivate = RippleAddress::createAccountPrivate(naSeed);
 		naAccountPrivate.sign(message, rippleSig);
 		expect(rippleSig==sig, "Signature don't match");
+
+		RippleAddress naNodePrivate = RippleAddress::createNodePrivate(naSeed);
+		naNodePrivate.sign(message, rippleSig);
+		expect(rippleSig == sig, "Signature don't match");
+
+
+		std::string strPrivateKey("");
+		expect(naNodePrivate.humanNodePrivate() == strPrivateKey, naNodePrivate.humanNodePrivate());
+		
+		expect(naNodePrivate.setNodePrivate(strPrivateKey),"couldn't create private node");
+		expect(naNodePrivate.humanNodePrivate() == strPrivateKey, naNodePrivate.humanNodePrivate());
+		naNodePrivate.sign(message, rippleSig);
+		expect(rippleSig == sig, "Signature don't match");
 
 
 

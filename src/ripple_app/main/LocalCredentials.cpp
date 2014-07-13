@@ -109,7 +109,7 @@ bool LocalCredentials::nodeIdentityCreate ()
     DeprecatedScopedLock sl (getApp().getWalletDB ()->getDBLock ());
     db->executeSQL (str (boost::format ("INSERT INTO NodeIdentity (PublicKey,PrivateKey,Dh512,Dh1024) VALUES ('%s','%s',%s,%s);")
                          % RippleAddress::human(keyPair.mPublicKey,RippleAddress::VER_NODE_PUBLIC)
-                         % RippleAddress::human(keyPair.mPrivateKey,RippleAddress::VER_ACCOUNT_PRIVATE)
+                         % RippleAddress::human(keyPair.mPrivateKey,RippleAddress::VER_NODE_PRIVATE)
                          % sqlEscape (strDh512)
                          % sqlEscape (strDh1024)));
     // XXX Check error result.

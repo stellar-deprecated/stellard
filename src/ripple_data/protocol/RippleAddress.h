@@ -158,7 +158,7 @@ public:
 
     // Create a public key from a private seed
     static RippleAddress createAccountPublic (const RippleAddress& seed);
-
+	static RippleAddress createNodePrivate(const RippleAddress& naSeed);
     //
     // Accounts Private
     //
