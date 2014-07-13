@@ -18,7 +18,7 @@
 //==============================================================================
 
 #include "../../beast/modules/beast_core/text/LexicalCast.h"
-#include "../ripple_data/crypto/edkeypair.h"
+#include "../ripple_data/crypto/EdKeyPair.h"
 
 namespace ripple {
 

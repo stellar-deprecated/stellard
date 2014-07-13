@@ -1,5 +1,5 @@
 
-#include "edkeypair.h"
+#include "EdKeyPair.h"
 #include <sodium.h>
 
 namespace ripple {

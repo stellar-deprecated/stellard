@@ -16,7 +16,7 @@
     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 //==============================================================================
-#include "../ripple_data/crypto/edkeypair.h"
+#include "../ripple_data/crypto/EdKeyPair.h"
 
 namespace ripple {
 

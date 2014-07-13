@@ -210,6 +210,7 @@ env['PRINT_CMD_LINE_FUNC'] = print_cmd_line
 #
 INCLUDE_PATHS = [
     '.',
+	'src',
     'src/leveldb',
     'src/leveldb/port',
     'src/leveldb/include',
