@@ -15,12 +15,24 @@ namespace ripple
 
 	class StellarPublicKey : public CBase58Data
 	{
+		bool    mIsValid;
 	public:
-		StellarPublicKey(Blob& publicKey, RippleAddress::VersionEncoding type);
-		StellarPublicKey(std::string& hexKey, RippleAddress::VersionEncoding type);
+		StellarPublicKey(); 
+
+		StellarPublicKey(const Blob& publicKey, RippleAddress::VersionEncoding type);
+		StellarPublicKey(const std::string& base58Key, RippleAddress::VersionEncoding type);
+
+		bool setKey(const std::string& base58Key, RippleAddress::VersionEncoding type);
+
+		void clear();
+
+		uint160 getAccountID() const;
 
 		bool verifySignature(uint256 const& hash, Blob const& vchSig) const;
 		bool verifySignature(uint256 const& hash, const std::string& strSig) const;
+
+		std::string base58Account() const;
+		std::string base58Key() const;
 	};
 }
 

@@ -27,6 +27,7 @@
 #include "../../ripple_data/protocol/RippleAddress.h"
 
 #include "../../beast/beast/net/IPEndpoint.h"
+#include "../ripple_data/crypto/StellarPublicKey.h"
 
 namespace ripple {
 
@@ -58,7 +59,7 @@ public:
     //
 
     virtual ShortId getShortId () const = 0;
-    virtual const RippleAddress& getNodePublic () const = 0;
+	virtual const StellarPublicKey& getNodePublic() const = 0;
     virtual Json::Value json () = 0;
     virtual bool isInCluster () const = 0;
     virtual std::string getClusterNodeName() const = 0;

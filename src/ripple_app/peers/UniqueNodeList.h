@@ -20,6 +20,8 @@
 #ifndef RIPPLE_UNIQUENODELIST_H_INCLUDED
 #define RIPPLE_UNIQUENODELIST_H_INCLUDED
 
+#include "../ripple_data/crypto/StellarPublicKey.h"
+
 namespace ripple {
 
 class UniqueNodeList : public beast::Stoppable
@@ -61,8 +63,8 @@ public:
     virtual void nodeScore () = 0;
 
     virtual bool nodeInUNL (const RippleAddress& naNodePublic) = 0;
-    virtual bool nodeInCluster (const RippleAddress& naNodePublic) = 0;
-    virtual bool nodeInCluster (const RippleAddress& naNodePublic, std::string& name) = 0;
+	virtual bool nodeInCluster(const StellarPublicKey& naNodePublic) = 0;
+	virtual bool nodeInCluster(const StellarPublicKey& naNodePublic, std::string& name) = 0;
     virtual bool nodeUpdate (const RippleAddress& naNodePublic, ClusterNodeStatus const& cnsStatus) = 0;
     virtual std::map<RippleAddress, ClusterNodeStatus> getClusterStatus () = 0;
     virtual std::uint32_t getClusterFee () = 0;

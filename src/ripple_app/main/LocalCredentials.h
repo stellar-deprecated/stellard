@@ -19,6 +19,7 @@
 
 #ifndef RIPPLE_LOCALCREDENTIALS_H
 #define RIPPLE_LOCALCREDENTIALS_H
+#include "../ripple_data/crypto/StellarPrivateKey.h"
 
 namespace ripple {
 
@@ -32,12 +33,7 @@ public:
     // - Maintain peer connectivity through validation and peer management.
     void start ();
 
-    RippleAddress const& getNodePublic () const
-    {
-        return mNodePublicKey;
-    }
-
-    RippleAddress const& getNodePrivate () const
+    StellarPrivateKey const& getNodePrivate () const
     {
         return mNodePrivateKey;
     }
@@ -59,8 +55,8 @@ private:
 private:
     boost::recursive_mutex mLock;
 
-    RippleAddress   mNodePublicKey;
-    RippleAddress   mNodePrivateKey;
+    //RippleAddress   mNodePublicKey;
+	StellarPrivateKey   mNodePrivateKey;
 
     LedgerIndex mLedger; // ledger we last synched to
 };

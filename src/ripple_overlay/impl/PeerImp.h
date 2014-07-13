@@ -28,6 +28,7 @@
 #include "../ripple/peerfinder/ripple_peerfinder.h"
 #include "../ripple_app/misc/ProofOfWork.h"
 #include "../ripple_app/misc/ProofOfWorkFactory.h"
+#include "../ripple_data/crypto/StellarPublicKey.h"
 
 // VFALCO This is unfortunate. Comment this out and
 //        just include what is needed.
@@ -171,7 +172,7 @@ public:
     State           m_state;          // Current state
     bool            m_detaching;      // True if detaching.
     bool            m_clusterNode;    // True if peer is a node in our cluster
-    RippleAddress   m_nodePublicKey;  // Node public key of peer.
+    StellarPublicKey   m_nodePublicKey;  // Node public key of peer.
     std::string     m_nodeName;
 
     // Both sides of the peer calculate this value and verify that it matches
@@ -360,9 +361,11 @@ public:
                 m_socket->cancel ();
             }
 
+			/* JED: Need to figure why we are doing this
             // VFALCO TODO Stop doing this.
             if (m_nodePublicKey.isValid ())
                 m_nodePublicKey.clear ();       // Be idempotent.
+			*/
         }
     }
 
@@ -621,7 +624,7 @@ public:
         return m_shortId;
     }
 
-    const RippleAddress& getNodePublic () const
+    const StellarPublicKey& getNodePublic () const
     {
         return m_nodePublicKey;
     }
@@ -1311,7 +1314,7 @@ private:
         h.set_protoversionmin (BuildInfo::getMinimumProtocol().toPacked ());
         h.set_fullversion (BuildInfo::getFullVersionString ());
         h.set_nettime (getApp().getOPs ().getNetworkTimeNC ());
-        h.set_nodepublic (getApp().getLocalCredentials ().getNodePublic ().humanNodePublic ());
+		h.set_nodepublic(getApp().getLocalCredentials().getNodePrivate().base58PublicKey(RippleAddress::VER_NODE_PUBLIC));
         h.set_nodeproof (&vchSig[0], vchSig.size ());
         h.set_ipv4port (getConfig ().peerListeningPort);
         h.set_testnet (false);
@@ -1386,7 +1389,7 @@ private:
                               "Peer expects " << reqVersion <<
                               " and we run " << curVersion << "]";
         }
-        else if (!m_nodePublicKey.setNodePublic (packet.nodepublic ()))
+        else if (!m_nodePublicKey.setKey (packet.nodepublic (),RippleAddress::VER_NODE_PUBLIC))
         {
             m_journal.info << "Hello: Disconnect: Bad node public key.";
         }
@@ -1398,7 +1401,7 @@ private:
         else
         {
             // Successful connection.
-            m_journal.info << "Hello: Connect: " << m_nodePublicKey.humanNodePublic ();
+            m_journal.info << "Hello: Connect: " << m_nodePublicKey.base58Key ();
 
             if ((protocol != BuildInfo::getCurrentProtocol()) &&
                 m_journal.active(beast::Journal::Severity::kInfo))

@@ -16,6 +16,7 @@
     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 //==============================================================================
+#include "../ripple_data/crypto/StellarPublicKey.h"
 
 namespace ripple {
 
@@ -35,12 +36,13 @@ TER WalletAddTransactor::doApply ()
     Blob const vucSignature = mTxn.getFieldVL (sfSignature);
 
     uint160 const uAuthKeyID (mTxn.getFieldAccount160 (sfRegularKey));
-    RippleAddress const naMasterPubKey (
-        RippleAddress::createAccountPublic (vucPubKey));
-    uint160 const uDstAccountID (naMasterPubKey.getAccountID ());
+
+    StellarPublicKey publicKey(vucPubKey,RippleAddress::VER_ACCOUNT_PUBLIC);
+
+	uint160 const uDstAccountID(publicKey.getAccountID());
 
     // FIXME: This should be moved to the transaction's signature check logic and cached
-	if (!naMasterPubKey.verifySignature(
+	if (!publicKey.verifySignature(
         Serializer::getSHA512Half (uAuthKeyID.begin (), uAuthKeyID.size ()), 
         vucSignature))
     {

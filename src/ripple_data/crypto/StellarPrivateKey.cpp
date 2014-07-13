@@ -64,11 +64,15 @@ namespace ripple
 		mPair.setSeed(mSeed);
 	}
 
+	uint160 StellarPrivateKey::getAccountID() const
+	{
+		return Hash160(mPair.mPublicKey);
+	}
 	
 	// create accountID from this seed and base58 encode it
 	std::string StellarPrivateKey::base58Account() const
 	{
-		uint160 account=Hash160(mPair.mPublicKey);
+		uint160 account=getAccountID();
 
 		Blob vch(1, RippleAddress::VER_ACCOUNT_ID);
 
@@ -76,6 +80,15 @@ namespace ripple
 
 		return Base58::encodeWithCheck(vch);
 
+	}
+
+	std::string StellarPrivateKey::base58PublicKey(RippleAddress::VersionEncoding type) const
+	{
+		Blob vch(1, type);
+
+		vch.insert(vch.end(), mPair.mPublicKey.begin(), mPair.mPublicKey.end());
+
+		return Base58::encodeWithCheck(vch);
 	}
 
 	std::string StellarPrivateKey::base58Seed() const

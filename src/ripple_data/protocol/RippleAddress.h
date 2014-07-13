@@ -97,7 +97,7 @@ public:
     bool setNodePrivate (const std::string& strPrivate);
     void setNodePrivate (Blob const& vPrivate);
     void setNodePrivate (uint256 hash256);
-    void sign (uint256 const& hash, Blob& vchSig) const;
+    // void sign (uint256 const& hash, Blob& vchSig) const;
 
 
     //
@@ -190,8 +190,8 @@ public:
         return createAccountPrivate (vPrivate).humanAccountPrivate ();
     }
   
-	bool verifySignature(uint256 const& hash, const std::string& strSig) const;
-	bool verifySignature(uint256 const& hash, Blob const& vchSig) const;
+	//bool verifySignature(uint256 const& hash, const std::string& strSig) const;
+	//bool verifySignature(uint256 const& hash, Blob const& vchSig) const;
  
     //
     // Seeds

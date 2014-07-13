@@ -340,7 +340,7 @@ public:
 
     //--------------------------------------------------------------------------
 
-    bool nodeInCluster (const RippleAddress& naNodePublic)
+    bool nodeInCluster (const StellarPublicKey& naNodePublic)
     {
         ScopedUNLLockType sl (mUNLLock);
         return m_clusterNodes.end () != m_clusterNodes.find (naNodePublic);
@@ -348,7 +348,7 @@ public:
 
     //--------------------------------------------------------------------------
 
-    bool nodeInCluster (const RippleAddress& naNodePublic, std::string& name)
+	bool nodeInCluster(const StellarPublicKey& naNodePublic, std::string& name)
     {
         ScopedUNLLockType sl (mUNLLock);
         std::map<RippleAddress, ClusterNodeStatus>::iterator it = m_clusterNodes.find (naNodePublic);

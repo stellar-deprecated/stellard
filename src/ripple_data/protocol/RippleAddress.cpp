@@ -180,7 +180,7 @@ void RippleAddress::setNodePublic (Blob const& vPublic)
     SetData (VER_NODE_PUBLIC, vPublic);
 }
 
-
+/*
 bool RippleAddress::verifySignature(uint256 const& hash, const std::string& strSig) const
 {
 	Blob vchSig(strSig.begin(), strSig.end());
@@ -192,17 +192,7 @@ bool RippleAddress::verifySignature(uint256 const& hash, Blob const& vchSig) con
 	if (vchData.size() != crypto_sign_PUBLICKEYBYTES
         || vchSig.size () != crypto_sign_BYTES)
 		throw std::runtime_error("bad inputs to verifySignature");
-	/*
-	 unsigned char signed_buf[crypto_sign_BYTES + hash.bytes];
-	 memcpy (signed_buf, vchSig.data(), crypto_sign_BYTES);
-	 memcpy (signed_buf+crypto_sign_BYTES, hash.data(), hash.bytes);
 
-	 unsigned char ignored_buf[hash.bytes];
-	 unsigned long long ignored_len;
-	 return crypto_sign_open (ignored_buf, &ignored_len,
-	 signed_buf, sizeof (signed_buf),
-	 vchData.data()) == 0;
-	*/
 
     unsigned char signed_buf[crypto_sign_BYTES + hash.bytes];
 	memcpy(signed_buf , vchSig.data(), crypto_sign_BYTES);
@@ -230,7 +220,7 @@ void RippleAddress::sign(uint256 const& hash, Blob& vchSig) const
 	vchSig.resize(crypto_sign_BYTES);
 	memcpy(&vchSig[0], out, crypto_sign_BYTES);
 }
-
+*/
 
 //
 // NodePrivate
@@ -755,6 +745,8 @@ public:
 
 		StellarPublicKey publicKey(privateKey.getPublicKey(), RippleAddress::VER_NODE_PUBLIC);
 		expect(publicKey.verifySignature(message, sig), "Signature didn't verify");
+		expect(publicKey.getAccountID() == privateKey.getAccountID(), "Account Id's mis match");
+		expect(publicKey.base58Account() == privateKey.base58Account(), "Account Id's mis match");
 
 		std::string base58Seed("s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN");
 		StellarPrivateKey privateKey2(base58Seed); // key from base58seed

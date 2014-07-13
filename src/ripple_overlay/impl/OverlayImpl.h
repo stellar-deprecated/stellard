@@ -27,6 +27,7 @@
 #include "../../ripple/peerfinder/api/Callback.h"
 #include "../../ripple/peerfinder/api/Manager.h"
 #include "../../ripple/resource/api/Manager.h"
+#include "../ripple_data/crypto/StellarPublicKey.h"
 
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl/context.hpp>
@@ -53,8 +54,7 @@ public:
     typedef std::unordered_map <PeerFinder::Slot::ptr,
         boost::weak_ptr <PeerImp>> PeersBySlot;
 
-    typedef boost::unordered_map <
-        RippleAddress, Peer::ptr> PeerByPublicKey;
+    typedef boost::unordered_map <StellarPublicKey, Peer::ptr> PeerByPublicKey;
 
     typedef std::unordered_map <
         Peer::ShortId, Peer::ptr> PeerByShortId;
