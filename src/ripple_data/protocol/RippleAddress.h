@@ -164,7 +164,7 @@ public:
     //
     uint256 getAccountPrivate () const;
 
-	static std::string RippleAddress::human(Blob& blob, VersionEncoding type);
+	static std::string human(Blob& blob, VersionEncoding type);
     std::string humanAccountPrivate () const;
 
     bool setAccountPrivate (const std::string& strPrivate);
