@@ -99,8 +99,11 @@ else:
 env.ParseConfig('pkg-config --static --cflags --libs openssl')
 # Use protobuf
 env.ParseConfig('pkg-config --static --cflags --libs protobuf')
-# Use libsodium
-env.ParseConfig('pkg-config --static --cflags --libs libsodium')
+
+# HACK: Use libsodium statically
+libsodium_dir = os.popen('pkg-config --libs-only-L libsodium').read().strip()[2:]
+libsodium_path = libsodium_dir + '/libsodium' + env['LIBSUFFIX']
+env.Append(LIBS = [File(libsodium_path)])
 
 # Beast uses kvm on FreeBSD
 if FreeBSD:
