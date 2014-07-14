@@ -12,6 +12,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     apt-get update
     apt-get -y upgrade
     apt-get -y install git scons ctags pkg-config protobuf-compiler libprotobuf-dev libssl-dev python-software-properties libboost1.55-all-dev nodejs
+
+    # build libsodium
+    wget https://download.libsodium.org/libsodium/releases/libsodium-0.6.0.tar.gz
+    tar -xzvf libsodium-0.6.0.tar.gz
+    cd libsodium-0.6.0
+    ./configure && make && sudo make install
+
+    # build stellard
     cd /stellard-src
     scons
 
