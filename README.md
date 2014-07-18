@@ -3,12 +3,9 @@
 This is the repository for Stellar's `stellard`, reference P2P server.
 
 ###Build instructions:
-* https://wiki.gostellar.org/Stellard_build_instructions
+* https://wiki.gostellar.org/index.php?title=Building_Stellard
 
-###Setup instructions:
-* https://wiki.gostellar.org/Stellard_setup_instructions
-
-### Vagrant (you're very own testnet)
+### Vagrant (your very own testnet)
 
 1.  Install vagrant (http://www.vagrantup.com/)
 2.  run `vagrant up`
