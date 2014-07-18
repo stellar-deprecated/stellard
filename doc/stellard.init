@@ -1,26 +1,26 @@
 #!/bin/sh
 
 ### BEGIN INIT INFO
-# Provides:          ripple
+# Provides:          stellar
 # Required-Start:    $local_fs $remote_fs $network $syslog
 # Required-Stop:     $local_fs $remote_fs $network $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: starts the ripple network node
-# Description:       starts rippled using start-stop-daemon
+# Short-Description: starts the stellar network node
+# Description:       starts stellard using start-stop-daemon
 ### END INIT INFO
 
 set -e
 
-NAME=rippled
-USER="rippled"
-GROUP="rippled"
+NAME=stellard
+USER="stellard"
+GROUP="stellard"
 PIDFILE=/var/run/$NAME.pid
-DAEMON=/usr/local/sbin/rippled
-DAEMON_OPTS="--conf /etc/ripple/rippled.cfg"
+DAEMON=/usr/local/sbin/stellard
+DAEMON_OPTS="--conf /etc/stellar/stellard.cfg"
 NET_OPTS="--net $DAEMON_OPTS"
-LOGDIR="/var/log/rippled"
-DBDIR="/var/db/rippled/db/hyperldb"
+LOGDIR="/var/log/stellard"
+DBDIR="/var/db/stellard/db/hyperldb"
 
 export PATH="${PATH:+$PATH:}/usr/sbin:/sbin"
 
@@ -94,7 +94,7 @@ case "$1" in
         # this entry.
         shift
 
-        # Pass the remainder of the argument vector to rippled.
+        # Pass the remainder of the argument vector to stellard.
         $DAEMON $DAEMON_OPTS "$@"
         echo "."
         ;;

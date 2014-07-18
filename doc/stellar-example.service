@@ -1,0 +1,10 @@
+[Unit]
+Description=Stellar Peer-to-Peer Network Daemon
+ 
+[Service]
+Type=simple
+User=nobody
+ExecStart=/usr/bin/stellard --conf=/etc/stellard/stellard.cfg
+ 
+[Install]
+WantedBy=multi-user.target

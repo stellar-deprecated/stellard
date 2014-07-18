@@ -64,8 +64,7 @@ public:
     #endif
     }
 
-    Factory*
-    find (std::string const& name) const
+    Factory* find (std::string const& name) const
     {
         for (List::const_iterator iter (m_list.begin ());
             iter != m_list.end (); ++iter)
@@ -74,8 +73,7 @@ public:
         return nullptr;
     }
 
-    static void
-    missing_backend ()
+    static void missing_backend ()
     {
         throw std::runtime_error (
             "Your rippled.cfg is missing a [node_db] entry, "
