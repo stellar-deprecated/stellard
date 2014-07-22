@@ -826,7 +826,7 @@ public:
             {   "proof_solve",          &RPCParser::parseProofSolve,            1,  1   },
             {   "proof_verify",         &RPCParser::parseProofVerify,           2,  4   },
             {   "random",               &RPCParser::parseAsIs,                  0,  0   },
-            {   "ripple_path_find",     &RPCParser::parseRipplePathFind,        1,  2   },
+            {   "static_path_find",     &RPCParser::parseRipplePathFind,        1,  2   },
             {   "sign",                 &RPCParser::parseSignSubmit,            2,  3   },
             {   "sms",                  &RPCParser::parseSMS,                   1,  1   },
             {   "submit",               &RPCParser::parseSignSubmit,            1,  3   },
