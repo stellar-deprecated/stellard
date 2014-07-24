@@ -852,7 +852,7 @@ public:
             {   "internal",             &RPCParser::parseInternal,              1,  -1  },
 
             // Evented methods
-            {   "path_find",            &RPCParser::parseEvented,               -1, -1  },
+            {   "find_path",            &RPCParser::parseEvented,               -1, -1  },
             {   "subscribe",            &RPCParser::parseEvented,               -1, -1  },
             {   "unsubscribe",          &RPCParser::parseEvented,               -1, -1  },
         };
