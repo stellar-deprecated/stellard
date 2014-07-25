@@ -262,13 +262,13 @@ Json::Value RPCHandler::doRipplePathFind (Json::Value params, Resource::Charge& 
 
                     STPathSet   spsCanonical;
 
-                    // Reuse the expanded as it would need to be calcuated anyway to produce the canonical.
+                    // Reuse the expanded as it would need to be calculated anyway to produce the canonical.
                     // (At least unless we make a direct canonical.)
                     // RippleCalc::setCanonical(spsCanonical, vpsExpanded, false);
 
                     jvEntry["source_amount"]    = saMaxAmountAct.getJson (0);
                     //                  jvEntry["paths_expanded"]   = vpsExpanded.getJson(0);
-                    jvEntry["paths_canonical"]  = Json::arrayValue; // spsCanonical.getJson(0);
+                    // jvEntry["paths_canonical"]  = Json::arrayValue; // spsCanonical.getJson(0);
                     jvEntry["paths_computed"]   = spsComputed.getJson (0);
 
                     jvArray.append (jvEntry);

@@ -3,7 +3,7 @@
 This is the repository for Stellar's `stellard`, reference P2P server.
 
 ###Build instructions:
-* https://wiki.gostellar.org/index.php?title=Building_Stellard
+* https://wiki.gostellar.org/Building_Stellard
 
 ### Vagrant (your very own testnet)
 
