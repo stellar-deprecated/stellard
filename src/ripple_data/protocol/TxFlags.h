@@ -60,9 +60,6 @@ const std::uint32_t tfAccountSetMask       = ~ (tfUniversal | TxFlag::requireDes
 // AccountSet SetFlag/ClearFlag values
 const std::uint32_t asfRequireDest         = 1;
 const std::uint32_t asfRequireAuth         = 2;
-const std::uint32_t asfDisallowSTR         = 3;
-const std::uint32_t asfDisableMaster       = 4;
-const std::uint32_t asfAccountTxnID        = 5;
 
 // OfferCreate flags:
 const std::uint32_t tfPassive              = 0x00010000;

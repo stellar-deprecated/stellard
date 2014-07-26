@@ -19,18 +19,6 @@
 
 namespace ripple {
 
-std::uint64_t RegularKeySetTransactor::calculateBaseFee ()
-{
-    if ( mTxnAccount
-            && (! (mTxnAccount->getFlags () & lsfPasswordSpent))
-            && (mSigningPubKey.getAccountID () == mTxnAccountID))
-    {
-        // flag is armed and they signed with the right account
-        return 0;
-    }
-
-    return Transactor::calculateBaseFee ();
-}
 
 
 TER RegularKeySetTransactor::doApply ()
@@ -43,11 +31,6 @@ TER RegularKeySetTransactor::doApply ()
             "Malformed transaction: Invalid flags set.";
 
         return temINVALID_FLAG;
-    }
-
-    if (mFeeDue == zero)
-    {
-        mTxnAccount->setFlag (lsfPasswordSpent);
     }
 
     if (mTxn.isFieldPresent (sfRegularKey))
