@@ -111,11 +111,7 @@ void printHelp (const po::options_description& desc)
     cerr << "     unl_reset" << endl;
     cerr << "     validation_create [<seed>|<pass_phrase>|<key>]" << endl;
     cerr << "     validation_seed [<seed>|<pass_phrase>|<key>]" << endl;
-    cerr << "     wallet_add <regular_seed> <paying_account> <master_seed> [<initial_funds>] [<account_annotation>]" << endl;
-    cerr << "     wallet_accounts <seed>" << endl;
-    cerr << "     wallet_claim <master_seed> <regular_seed> [<source_tag>] [<account_annotation>]" << endl;
-    cerr << "     wallet_seed [<seed>|<passphrase>|<passkey>]" << endl;
-    cerr << "     wallet_propose [<passphrase>]" << endl;
+    cerr << "     create_keys [<passphrase>]" << endl;
 
     // Transaction helpers (that were removed):
     //  cerr << "     account_domain_set <seed> <paying_account> [<domain>]" << endl;

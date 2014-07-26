@@ -113,8 +113,7 @@ Json::Value RPCHandler::doSubscribe (Json::Value params, Resource::Charge& loadT
                 {
                     mNetOps->subTransactions (ispSub);
                 }
-                else if (streamName == "transactions_proposed"
-                         || streamName == "rt_transactions") // DEPRECATED
+                else if (streamName == "transactions_rt" ) 
                 {
                     mNetOps->subRTTransactions (ispSub);
                 }
@@ -130,9 +129,7 @@ Json::Value RPCHandler::doSubscribe (Json::Value params, Resource::Charge& loadT
         }
     }
 
-    std::string strAccountsProposed = params.isMember ("accounts_proposed")
-                                      ? "accounts_proposed"
-                                      : "rt_accounts";                                    // DEPRECATED
+	std::string strAccountsProposed = params.isMember("accounts_rt");
 
     if (!params.isMember (strAccountsProposed))
     {
