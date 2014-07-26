@@ -44,7 +44,7 @@ TER AccountSetTransactor::doApply ()
     }
 
     //
-    // RequireAuth
+    // RequireAuth (if this issuer needs to allow others to hold its IOUs)
     //
 
     if (bSetRequireAuth && bClearRequireAuth)
@@ -97,7 +97,7 @@ TER AccountSetTransactor::doApply ()
     //
     // DisallowSTR
     //
-
+	/*
     if (bSetDisallowSTR && bClearDisallowSTR)
     {
         m_journal.trace << "Malformed transaction: Contradictory flags set.";
@@ -115,11 +115,11 @@ TER AccountSetTransactor::doApply ()
         m_journal.trace << "Clear lsfDisallowSTR.";
         uFlagsOut   &= ~lsfDisallowSTR;
     }
-
+	*/
     //
     // DisableMaster
     //
-
+	/*
     if ((uSetFlag == asfDisableMaster) && (uClearFlag == asfDisableMaster))
     {
         m_journal.trace << "Malformed transaction: Contradictory flags set.";
@@ -140,11 +140,11 @@ TER AccountSetTransactor::doApply ()
         m_journal.trace << "Clear lsfDisableMaster.";
         uFlagsOut   &= ~lsfDisableMaster;
     }
-
+	*/
     //
     // Track transaction IDs signed by this account in its root
     //
-
+	/*
     if ((uSetFlag == asfAccountTxnID) && (uClearFlag != asfAccountTxnID) && !mTxnAccount->isFieldPresent (sfAccountTxnID))
     {
         m_journal.trace << "Set AccountTxnID";
@@ -156,11 +156,11 @@ TER AccountSetTransactor::doApply ()
         m_journal.trace << "Clear AccountTxnID";
         mTxnAccount->makeFieldAbsent (sfAccountTxnID);
     }
-
+	*/
     //
     // EmailHash
     //
-
+	/*
     if (mTxn.isFieldPresent (sfEmailHash))
     {
         uint128     uHash   = mTxn.getFieldH128 (sfEmailHash);
@@ -176,11 +176,11 @@ TER AccountSetTransactor::doApply ()
             mTxnAccount->setFieldH128 (sfEmailHash, uHash);
         }
     }
-
+	*/
     //
     // WalletLocator
     //
-
+	/*
     if (mTxn.isFieldPresent (sfWalletLocator))
     {
         uint256     uHash   = mTxn.getFieldH256 (sfWalletLocator);
@@ -196,11 +196,11 @@ TER AccountSetTransactor::doApply ()
             mTxnAccount->setFieldH256 (sfWalletLocator, uHash);
         }
     }
-
+	*/
     //
     // MessageKey
     //
-
+	/*
     if (mTxn.isFieldPresent (sfMessageKey))
     {
         Blob    vucPublic   = mTxn.getFieldVL (sfMessageKey);
@@ -224,11 +224,11 @@ TER AccountSetTransactor::doApply ()
             mTxnAccount->setFieldVL (sfMessageKey, vucPublic);
         }
     }
-
+	*/
     //
     // Domain
     //
-
+	/*
     if (mTxn.isFieldPresent (sfDomain))
     {
         Blob    vucDomain   = mTxn.getFieldVL (sfDomain);
@@ -252,7 +252,7 @@ TER AccountSetTransactor::doApply ()
             mTxnAccount->setFieldVL (sfDomain, vucDomain);
         }
     }
-
+	*/
 
     //
     // InflationDest

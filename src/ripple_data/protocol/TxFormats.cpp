@@ -22,11 +22,6 @@ namespace ripple {
 TxFormats::TxFormats ()
 {
     add ("AccountSet", ttACCOUNT_SET)
-            << SOElement (sfEmailHash,       SOE_OPTIONAL)
-            << SOElement (sfWalletLocator,   SOE_OPTIONAL)
-            << SOElement (sfWalletSize,      SOE_OPTIONAL)
-            << SOElement (sfMessageKey,      SOE_OPTIONAL)
-            << SOElement (sfDomain,          SOE_OPTIONAL)
             << SOElement (sfTransferRate,    SOE_OPTIONAL)
             << SOElement (sfSetFlag,         SOE_OPTIONAL)
             << SOElement (sfClearFlag,       SOE_OPTIONAL)
