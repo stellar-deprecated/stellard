@@ -129,7 +129,9 @@ Json::Value RPCHandler::doSubscribe (Json::Value params, Resource::Charge& loadT
         }
     }
 
-	std::string strAccountsProposed = params.isMember("accounts_rt");
+    std::string strAccountsProposed = params.isMember ("accounts_rt")
+                                      ? "accounts_proposed"
+                                      : "rt_accounts";                                    // DEPRECATED
 
     if (!params.isMember (strAccountsProposed))
     {
