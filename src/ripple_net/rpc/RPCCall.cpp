@@ -270,53 +270,18 @@ private:
     Json::Value parseBookOffers (const Json::Value& jvParams)
     {
         Json::Value     jvRequest (Json::objectValue);
+		Json::Reader    reader;
 
-        Json::Value     jvTakerPays = jvParseCurrencyIssuer (jvParams[0u].asString ());
-        Json::Value     jvTakerGets = jvParseCurrencyIssuer (jvParams[1u].asString ());
+		if (reader.parse(jvParams[0u].asString(), jvRequest))
+		{
+			if (!jvRequest.isObject())
+				return rpcError(rpcINVALID_PARAMS);
+			
 
-        if (isRpcError (jvTakerPays))
-        {
-            return jvTakerPays;
-        }
-        else
-        {
-            jvRequest["taker_pays"] = jvTakerPays;
-        }
+			return jvRequest;
+		}
 
-        if (isRpcError (jvTakerGets))
-        {
-            return jvTakerGets;
-        }
-        else
-        {
-            jvRequest["taker_gets"] = jvTakerGets;
-        }
-
-        if (jvParams.size () >= 3)
-        {
-            jvRequest["issuer"] = jvParams[2u].asString ();
-        }
-
-        if (jvParams.size () >= 4 && !jvParseLedger (jvRequest, jvParams[3u].asString ()))
-            return jvRequest;
-
-        if (jvParams.size () >= 5)
-        {
-            int     iLimit  = jvParams[5u].asInt ();
-
-            if (iLimit > 0)
-                jvRequest["limit"]  = iLimit;
-        }
-
-        if (jvParams.size () >= 6 && jvParams[5u].asInt ())
-        {
-            jvRequest["proof"]  = true;
-        }
-
-        if (jvParams.size () == 7)
-            jvRequest["marker"] = jvParams[6u];
-
-        return jvRequest;
+		return rpcError(rpcINVALID_PARAMS);
     }
 
     // connect <ip> [port]
@@ -801,7 +766,7 @@ public:
             {   "account_lines",        &RPCParser::parseAccountLines,          1,  3   },
             {   "account_offers",       &RPCParser::parseAccountItems,          1,  2   },
             {   "account_tx",           &RPCParser::parseAccountTransactions,   1,  8   },
-            {   "book_offers",          &RPCParser::parseBookOffers,            2,  7   },
+            {   "book_offers",          &RPCParser::parseBookOffers,            1,  1   },
             {   "connect",              &RPCParser::parseConnect,               1,  2   },
             {   "consensus_info",       &RPCParser::parseAsIs,                  0,  0   },
             {   "feature",              &RPCParser::parseFeature,               0,  2   },
@@ -812,16 +777,13 @@ public:
             {   "ledger_accept",        &RPCParser::parseAsIs,                  0,  0   },
             {   "ledger_closed",        &RPCParser::parseAsIs,                  0,  0   },
             {   "ledger_current",       &RPCParser::parseAsIs,                  0,  0   },
-    //      {   "ledger_entry",         &RPCParser::parseLedgerEntry,          -1, -1   },
             {   "ledger_header",        &RPCParser::parseLedgerId,              1,  1   },
             {   "log_level",            &RPCParser::parseLogLevel,              0,  2   },
             {   "logrotate",            &RPCParser::parseAsIs,                  0,  0   },
-    //      {   "nickname_info",        &RPCParser::parseNicknameInfo,          1,  1   },
             {   "owner_info",           &RPCParser::parseAccountItems,          1,  2   },
             {   "peers",                &RPCParser::parseAsIs,                  0,  0   },
             {   "ping",                 &RPCParser::parseAsIs,                  0,  0   },
             {   "print",                &RPCParser::parseAsIs,                  0,  1   },
-    //      {   "profile",              &RPCParser::parseProfile,               1,  9   },
             {   "proof_create",         &RPCParser::parseProofCreate,           0,  2   },
             {   "proof_solve",          &RPCParser::parseProofSolve,            1,  1   },
             {   "proof_verify",         &RPCParser::parseProofVerify,           2,  4   },
@@ -833,7 +795,6 @@ public:
             {   "server_info",          &RPCParser::parseAsIs,                  0,  0   },
             {   "server_state",         &RPCParser::parseAsIs,                  0,  0   },
             {   "stop",                 &RPCParser::parseAsIs,                  0,  0   },
-    //      {   "transaction_entry",    &RPCParser::parseTransactionEntry,     -1,  -1  },
             {   "tx",                   &RPCParser::parseTx,                    1,  2   },
             {   "tx_account",           &RPCParser::parseTxAccount,             1,  7   },
             {   "tx_history",           &RPCParser::parseTxHistory,             1,  1   },

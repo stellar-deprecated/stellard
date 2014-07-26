@@ -301,7 +301,7 @@ std::string JSONRPCRequest (const std::string& strMethod, const Json::Value& par
     request[jss::params] = params;
     request[jss::id] = id;
 	Json::StyledWriter writer;
-    return writer.write (request) + "\n";
+    return writer.write (request);
 }
 
 std::string JSONRPCReply (const Json::Value& result, const Json::Value& error, const Json::Value& id)
@@ -311,7 +311,7 @@ std::string JSONRPCReply (const Json::Value& result, const Json::Value& error, c
     //reply["error"]=error;
     //reply["id"]=id;
 	Json::StyledWriter writer;
-    return writer.write (reply) + "\n";
+    return writer.write (reply);
 }
 
 void ErrorReply (std::ostream& stream, const Json::Value& objError, const Json::Value& id)
