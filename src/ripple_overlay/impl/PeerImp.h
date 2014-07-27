@@ -148,7 +148,7 @@ public:
 
     beast::Journal m_journal;
 
-    // A unique identifier (up to a restart of rippled) for this particular
+    // A unique identifier (up to a restart of stellard) for this particular
     // peer instance. A peer that disconnects will, upon reconnection, get a
     // new ID.
     ShortId m_shortId;

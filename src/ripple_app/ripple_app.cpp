@@ -115,16 +115,16 @@ int main (int argc, char** argv)
                             __GNUC_PATCHLEVEL__;
 
     static_assert (gccver >= 40801,
-        "GCC version 4.8.1 or later is required to compile rippled.");
+        "GCC version 4.8.1 or later is required to compile stellard.");
 #endif
 
 #ifdef _MSC_VER
     static_assert (_MSC_VER >= 1800,
-        "Visual Studio 2013 or later is required to compile rippled.");
+        "Visual Studio 2013 or later is required to compile stellard.");
 #endif
 
     static_assert (BOOST_VERSION >= 105500,
-        "Boost version 1.55 or later is required to compile rippled");
+        "Boost version 1.55 or later is required to compile stellard");
 
     if (sodium_init() == -1) {
         std::cerr << "sodium_init failed\n";

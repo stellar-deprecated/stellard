@@ -30,7 +30,7 @@ protected:
 public:
     enum ValidatorSource
     {
-        vsConfig    = 'C',  // rippled.cfg
+        vsConfig    = 'C',  // stellard.cfg
         vsInbound   = 'I',
         vsManual    = 'M',
         vsReferral  = 'R',

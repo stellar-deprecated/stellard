@@ -105,7 +105,7 @@ public:
         // This replaces CONFIG_FILE_NAME
         static char const* getConfigFileName ()
         {
-            return "rippled.cfg";
+            return "stellard.cfg";
         }
 
         static char const* getDatabaseDirName ()
@@ -207,7 +207,7 @@ public:
     beast::URL getValidatorsURL () const;
 
     // DEPRECATED
-    boost::filesystem::path     VALIDATORS_FILE;        // As specifed in rippled.cfg.
+    boost::filesystem::path     VALIDATORS_FILE;        // As specified in stellard.cfg.
 
     //--------------------------------------------------------------------------
 
@@ -278,7 +278,7 @@ public:
     */
     int peerPROXYListeningPort;
 
-    /** List of Validators entries from rippled.cfg */
+    /** List of Validators entries from stellard.cfg */
     std::vector <std::string> validators;
 
 private:
@@ -307,7 +307,7 @@ public:
     /** Parameters for the main NodeStore database.
 
         This is 1 or more strings of the form <key>=<value>
-        The 'type' and 'path' keys are required, see rippled-example.cfg
+        The 'type' and 'path' keys are required, see stellard-example.cfg
 
         @see Database
     */
@@ -351,9 +351,9 @@ public:
     std::string                 VALIDATORS_SITE;        // Where to find validators.txt on the Internet.
     std::string                 VALIDATORS_URI;         // URI of validators.txt.
     std::string                 VALIDATORS_BASE;        // Name
-    std::vector<std::string>    IPS;                    // Peer IPs from rippled.cfg.
-    std::vector<std::string>    IPS_FIXED;              // Fixed Peer IPs from rippled.cfg.
-    std::vector<std::string>    SNTP_SERVERS;           // SNTP servers from rippled.cfg.
+    std::vector<std::string>    IPS;                    // Peer IPs from stellard.cfg.
+    std::vector<std::string>    IPS_FIXED;              // Fixed Peer IPs from stellard.cfg.
+    std::vector<std::string>    SNTP_SERVERS;           // SNTP servers from stellard.cfg.
 
     enum StartUpType
     {

@@ -160,7 +160,7 @@ def print_cmd_line_worker(item, fmt, cmd):
     global BuildLogFile
 
     if not BuildLogFile:
-        BuildLogFile = open('rippled-build.log', 'w')
+        BuildLogFile = open('stellard-build.log', 'w')
 
     if BuildLogFile:
         wrapper = textwrap.TextWrapper()
@@ -178,7 +178,7 @@ def print_cmd_line(s, target, src, env):
     target = (''.join([str(x) for x in target]))
     source = (''.join([str(x) for x in src]))
 
-    if ('build/rippled' == target):
+    if ('build/stellard' == target):
         print_cmd_line_worker(target, "%s\n", s)
     elif ('tags' == target):
         sys.stdout.write("    Generating tags")
@@ -368,7 +368,7 @@ https://ripple.com/wiki/Ubuntu_build_instructions#Ubuntu_versions_older_than_13.
 
 if not USING_CLANG:
     if (int(GCC_VERSION[0]) == 4 and int(GCC_VERSION[1]) < 8):
-        print "\n\033[91mTo compile rippled using GCC you need version 4.8.1 or later.\033[0m\n"
+        print "\n\033[91mTo compile stellard using GCC you need version 4.8.1 or later.\033[0m\n"
 
         if Ubuntu:
           print "For information how to update your GCC, please visit:"
@@ -393,11 +393,11 @@ TravisBuild = (os.environ.get('TRAVIS', '0') == 'true') and \
 
 RippleRepository = False
 
-# Determine if we're building against the main ripple repo or a developer repo
+# Determine if we're building against the main stellar repo or a developer repo
 if TravisBuild:
     Slug = os.environ.get('TRAVIS_REPO_SLUG', '')
 
-    if (Slug.find ("ripple/") == 0):
+    if (Slug.find ("stellar/") == 0):
         RippleRepository = True
 
 if TravisBuild:

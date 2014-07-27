@@ -179,11 +179,11 @@
 //------------------------------------------------------------------------------
 
 // These control whether or not certain functionality gets
-// compiled into the resulting rippled executable
+// compiled into the resulting stellard executable
 
 /** Config: RIPPLE_ROCKSDB_AVAILABLE
     Controls whether or not the RocksDB database back-end is compiled into
-    rippled. RocksDB requires a relatively modern C++ compiler (tested with
+    stellard. RocksDB requires a relatively modern C++ compiler (tested with
     gcc versions 4.8.1 and later) that supports some C++11 features.
 */
 #ifndef   RIPPLE_ROCKSDB_AVAILABLE

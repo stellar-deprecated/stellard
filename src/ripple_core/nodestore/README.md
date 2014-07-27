@@ -4,7 +4,7 @@
 ## Introduction
 
 The NodeStore provides an interface that stores, in a persistent database, the collection of
-NodeObject that rippled uses as its primary representation of ledger items.
+NodeObject that stellard uses as its primary representation of ledger items.
 
 ## Module directory structure
 

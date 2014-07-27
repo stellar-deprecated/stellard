@@ -3,7 +3,7 @@
 ## Introduction
 
 The _Ripple payment network_ consists of a collection of _peers_ running the
-**rippled software**. Each peer maintains multiple outgoing connections and
+**stellard software**. Each peer maintains multiple outgoing connections and
 optional incoming connections to other peers. These connections are made over
 both the public Internet and private local area networks. This network defines
 a fully connected directed graph of nodes. Peers send and receive messages to

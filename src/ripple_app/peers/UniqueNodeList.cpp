@@ -479,7 +479,7 @@ public:
             bLoaded = nodeLoad (getConfig ().VALIDATORS_BASE);
         }
 
-        // Always load from rippled.cfg
+        // Always load from stellard.cfg
         if (!getConfig ().validators.empty ())
         {
             RippleAddress   naInvalid;  // Don't want a referrer on added entries.

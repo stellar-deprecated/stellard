@@ -364,11 +364,6 @@ OverlayImpl::onPrepare ()
 
     auto bootstrapIps (getConfig ().IPS);
 
-    // If no IPs are specified, use the Ripple Labs round robin
-    // pool to get some servers to insert into the boot cache. 
-    //if (bootstrapIps.empty ())
-      //  bootstrapIps.push_back ("r.ripple.com 51235");
-
     if (!bootstrapIps.empty ())
     {
         m_resolver.resolve (bootstrapIps,
@@ -388,7 +383,7 @@ OverlayImpl::onPrepare ()
             });
     }
 
-    // Add the ips_fixed from the rippled.cfg file
+    // Add the ips_fixed from the stellard.cfg file
     if (! getConfig ().RUN_STANDALONE && !getConfig ().IPS_FIXED.empty ())
     {
         m_resolver.resolve (getConfig ().IPS_FIXED,

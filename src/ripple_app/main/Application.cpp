@@ -861,7 +861,7 @@ public:
 #if 1
         {
             std::vector <std::string> const& strings (getConfig().validators);
-            m_validators->addStrings ("rippled.cfg", strings);
+            m_validators->addStrings ("stellard.cfg", strings);
         }
 #endif
 

@@ -278,7 +278,7 @@ void InboundLedger::addPeers ()
 
     if (vSize == 0)
     {
-        WriteLog (lsERROR, InboundLedger) << 
+        WriteLog (lsWARNING, InboundLedger) << 
             "No peers to add for ledger acquisition";
         return;
     }
