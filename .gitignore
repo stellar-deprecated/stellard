@@ -77,3 +77,5 @@ My Amplifier XE Results - RippleD
 rippled-build.log
 .vagrant/
 vagrant/debug.log
+vagrant/debug-private-ledger.log
+vagrant/debug-public-ledger.log

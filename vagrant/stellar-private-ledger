@@ -3,4 +3,4 @@
 #helper script to make it easier to run commands against the latest stellard
 #build inside vagrant
 
-exec /stellard-src/build/stellard --conf=/stellard-src/vagrant/stellard.cfg $@
+exec /stellard-src/build/stellard --conf=/stellard-src/vagrant/stellard-private-ledger.cfg $@

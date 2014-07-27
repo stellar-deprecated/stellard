@@ -1,0 +1,6 @@
+#! /usr/bin/env bash
+
+#helper script to make it easier to run commands against the latest stellard
+#build inside vagrant
+
+exec /stellard-src/build/stellard --conf=/stellard-src/vagrant/stellard-public-ledger.cfg $@
