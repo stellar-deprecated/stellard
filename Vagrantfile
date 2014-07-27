@@ -6,6 +6,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.network "forwarded_port", guest: 9001, host: 9001
   config.vm.network "forwarded_port", guest: 9002, host: 9002
+  config.vm.network "forwarded_port", guest: 9101, host: 9101
+  config.vm.network "forwarded_port", guest: 9102, host: 9102
 
   config.vm.provision "shell", inline: <<-EOS
     add-apt-repository -y ppa:boost-latest/ppa 
@@ -27,8 +29,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     mkdir -p /var/lib/stellard
 
     # add helper script
-    ln -nfs /stellard-src/vagrant/stellar /usr/local/bin/stellar
-    chmod a+x /usr/local/bin/stellar
+    ln -nfs /stellard-src/vagrant/stellar-private-ledger /usr/local/bin/stellar-private-ledger
+    chmod a+x /stellard-src/vagrant/stellar-private-ledger
+    ln -nfs /stellard-src/vagrant/stellar-public-ledger /usr/local/bin/stellar-public-ledger
+    chmod a+x /stellard-src/vagrant/stellar-public-ledger
 
     # start the new ledger
     echo "starting new ledger"
@@ -37,9 +41,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     pgrep stellard | xargs kill -INT
 
     # start service
-    cp /stellard-src/vagrant/upstart.conf /etc/init/stellard.conf
+    cp /stellard-src/vagrant/upstart-private-ledger.conf /etc/init/stellard-private-ledger.conf
+    cp /stellard-src/vagrant/upstart-public-ledger.conf /etc/init/stellard-public-ledger.conf
     initctl reload-configuration
-    service stellard start
+    service stellard-private-ledger start
+    service stellard-public-ledger start
   EOS
 
   config.vm.synced_folder "./", "/stellard-src"
