@@ -3,7 +3,7 @@
 This is the repository for Stellar's `stellard`, reference P2P server.
 
 ###Build instructions:
-* https://wiki.gostellar.org/Building_Stellard
+* https://wiki.stellar.org/Building_Stellard
 
 ### Vagrant (your very own testnet)
 
@@ -46,5 +46,5 @@ Stellar is open source and permissively licensed under the ISC license. See the
 LICENSE file for more details.
 
 ###For more information:
-* https://www.gostellar.org
-* https://wiki.gostellar.org
+* https://www.stellar.org
+* https://wiki.stellar.org
