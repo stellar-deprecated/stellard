@@ -18,7 +18,7 @@ NOTE: running `vagrant provision` will reset your ledger, starting you over from
 ### Repository Contents
 
 #### ./bin
-Scripts and data files for Ripple integrators.
+Scripts and data files for Stellar integrators.
 
 #### ./build
 Intermediate and final build outputs.
