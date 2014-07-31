@@ -6,6 +6,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <DisableSpecificWarnings>4018;4244;4267</DisableSpecificWarnings>
+      <PreprocessorDefinitions>SODIUM_STATIC=1;_VARIADIC_MAX=10;_WIN32_WINNT=0x0600;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup />
