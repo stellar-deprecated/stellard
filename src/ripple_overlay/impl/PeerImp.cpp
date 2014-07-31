@@ -596,7 +596,7 @@ namespace ripple {
 
 		for (int i = 0; i < packet.nodeids().size(); ++i)
 		{
-			SHAMapNode mn(packet.nodeids(i).data(), packet.nodeids(i).size());
+			SHAMapNodeID mn(packet.nodeids(i).data(), packet.nodeids(i).size());
 
 			if (!mn.isValid())
 			{
@@ -605,7 +605,7 @@ namespace ripple {
 				return;
 			}
 
-			std::vector<SHAMapNode> nodeIDs;
+			std::vector<SHAMapNodeID> nodeIDs;
 			std::list< Blob > rawNodes;
 
 			try
@@ -614,7 +614,7 @@ namespace ripple {
 				{
 					assert(nodeIDs.size() == rawNodes.size());
 					m_journal.trace << "getNodeFat got " << rawNodes.size() << " nodes";
-					std::vector<SHAMapNode>::iterator nodeIDIterator;
+					std::vector<SHAMapNodeID>::iterator nodeIDIterator;
 					std::list< Blob >::iterator rawNodeIterator;
 
 					for (nodeIDIterator = nodeIDs.begin(), rawNodeIterator = rawNodes.begin();
@@ -968,7 +968,7 @@ namespace ripple {
 
 		protocol::TMLedgerData& packet = *pPacket;
 
-		std::list<SHAMapNode> nodeIDs;
+		std::list<SHAMapNodeID> nodeIDs;
 		std::list< Blob > nodeData;
 		for (int i = 0; i < packet.nodes().size(); ++i)
 		{
@@ -981,7 +981,7 @@ namespace ripple {
 				return;
 			}
 
-			nodeIDs.push_back(SHAMapNode(node.nodeid().data(), node.nodeid().size()));
+			nodeIDs.push_back(SHAMapNodeID(node.nodeid().data(), node.nodeid().size()));
 			nodeData.push_back(Blob(node.nodedata().begin(), node.nodedata().end()));
 		}
 

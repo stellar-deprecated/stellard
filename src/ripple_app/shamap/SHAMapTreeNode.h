@@ -20,6 +20,9 @@
 #ifndef RIPPLE_SHAMAPTREENODE_H
 #define RIPPLE_SHAMAPTREENODE_H
 
+#include "../ripple_app/shamap/SHAMapNodeID.h"
+#include "../ripple_basics/utility/CountedObject.h"
+
 namespace ripple {
 
 class SHAMap;
@@ -32,8 +35,7 @@ enum SHANodeFormat
 };
 
 class SHAMapTreeNode
-    : public SHAMapNode
-    , public CountedObject <SHAMapTreeNode>
+    : public CountedObject <SHAMapTreeNode>
 {
 public:
     static char const* getCountedObjectName () { return "SHAMapTreeNode"; }
@@ -51,14 +53,16 @@ public:
     };
 
 public:
-    SHAMapTreeNode (std::uint32_t seq, const SHAMapNode & nodeID); // empty node
+    SHAMapTreeNode (const SHAMapTreeNode&) = delete;
+    SHAMapTreeNode& operator= (const SHAMapTreeNode&) = delete;
+
+    SHAMapTreeNode (std::uint32_t seq); // empty node
     SHAMapTreeNode (const SHAMapTreeNode & node, std::uint32_t seq); // copy node from older tree
-    SHAMapTreeNode (const SHAMapNode & nodeID, SHAMapItem::ref item, TNType type,
-                    std::uint32_t seq);
+    SHAMapTreeNode (SHAMapItem::ref item, TNType type, std::uint32_t seq);
 
     // raw node functions
-    SHAMapTreeNode (const SHAMapNode & id, Blob const & data, std::uint32_t seq,
-                    SHANodeFormat format, uint256 const & hash, bool hashValid);
+    SHAMapTreeNode (Blob const & data, std::uint32_t seq,
+                    SHANodeFormat format, uint256 const& hash, bool hashValid);
     void addRaw (Serializer&, SHANodeFormat format);
 
     virtual bool isPopulated () const
@@ -73,12 +77,7 @@ public:
     }
     void setSeq (std::uint32_t s)
     {
-        mAccessSeq = mSeq = s;
-    }
-    void touch (std::uint32_t s)
-    {
-        if (mSeq != 0)
-            mAccessSeq = s;
+        mSeq = s;
     }
     uint256 const& getNodeHash () const
     {
@@ -99,10 +98,10 @@ public:
     {
         return mType == tnINNER;
     }
-    bool isInBounds () const
+    bool isInBounds (SHAMapNodeID const &id) const
     {
         // Nodes at depth 64 must be leaves
-        return (!isInner() || (getDepth() < 64));
+        return (!isInner() || (id.getDepth() < 64));
     }
     bool isValid () const
     {
@@ -126,7 +125,13 @@ public:
     {
         return !mItem;
     }
-    bool setChildHash (int m, uint256 const & hash);
+
+    // We are modifying the child hash
+    bool setChild (int m, uint256 const& hash, boost::shared_ptr<SHAMapTreeNode> const& child);
+
+    // We are sharing/unsharing the child
+    void shareChild (int m, boost::shared_ptr<SHAMapTreeNode> const& child);
+
     bool isEmptyBranch (int m) const
     {
         return (mIsBranch & (1 << m)) == 0;
@@ -143,10 +148,12 @@ public:
     // item node function
     bool hasItem () const
     {
-        return !!mItem;
+        return bool(mItem);
     }
     SHAMapItem::ref peekItem ()
-    { // CAUTION: Do not modify the item
+    {
+        // CAUTION: Do not modify the item TODO(tom): a comment in the code does
+        // nothing - this should return a const reference.
         return mItem;
     }
     bool setItem (SHAMapItem::ref i, TNType type);
@@ -169,27 +176,33 @@ public:
         mFullBelow = true;
     }
 
-    virtual void dump ();
-    virtual std::string getString () const;
+    virtual void dump (SHAMapNodeID const&);
+    virtual std::string getString (SHAMapNodeID const&) const;
+
+    SHAMapTreeNode* getChildPointer (int branch);
+    SHAMapTreeNode::pointer getChild (int branch);
+    void canonicalizeChild (int branch, SHAMapTreeNode::pointer& node);
 
 private:
-    // VFALCO TODO derive from Uncopyable
-    SHAMapTreeNode (const SHAMapTreeNode&); // no implementation
-    SHAMapTreeNode& operator= (const SHAMapTreeNode&); // no implementation
 
     // VFALCO TODO remove the use of friend
     friend class SHAMap;
 
-    uint256             mHash;
-    uint256             mHashes[16];  // hashes of the nodes under this one
-    SHAMapItem::pointer mItem;
-    std::uint32_t       mSeq, mAccessSeq;
-    TNType              mType;
-    int                 mIsBranch;   // bitfield that says if the branch at bit i is there or not
-    bool                mFullBelow;
+    uint256                 mHash;
+    uint256                 mHashes[16];
+    SHAMapTreeNode::pointer mChildren[16];
+    SHAMapItem::pointer     mItem;
+    std::uint32_t           mSeq;
+    TNType                  mType;
+    int                     mIsBranch;
+    bool                    mFullBelow;
 
     bool updateHash ();
+
+    static std::mutex       childLock;
 };
+
+using TreeNodeCache = TaggedCache <uint256, SHAMapTreeNode>;
 
 } // ripple
 

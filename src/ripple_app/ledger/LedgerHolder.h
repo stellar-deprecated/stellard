@@ -22,7 +22,7 @@
 
 namespace ripple {
 
-// Can std::atomic<std::shared_ptr>> make this lock free?
+// Can std::atomic<boost::shared_ptr>> make this lock free?
 
 /** Hold a ledger in a thread-safe way.
 */

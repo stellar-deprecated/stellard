@@ -33,24 +33,10 @@ class SHAMapMissingNode : public std::runtime_error
 {
 public:
     SHAMapMissingNode (SHAMapType t,
-                       SHAMapNode const& nodeID,
                        uint256 const& nodeHash)
         : std::runtime_error ("SHAMapMissingNode")
         , mType (t)
-        , mNodeID (nodeID)
         , mNodeHash (nodeHash)
-    {
-    }
-
-    SHAMapMissingNode (SHAMapType t,
-                       SHAMapNode const& nodeID,
-                       uint256 const& nodeHash,
-                       uint256 const& targetIndex)
-        : std::runtime_error (nodeID.getString ())
-        , mType (t)
-        , mNodeID (nodeID)
-        , mNodeHash (nodeHash)
-        , mTargetIndex (targetIndex)
     {
     }
 
@@ -58,19 +44,9 @@ public:
     {
     }
 
-    void setTargetNode (uint256 const& tn)
-    {
-        mTargetIndex = tn;
-    }
-
     SHAMapType getMapType () const
     {
         return mType;
-    }
-
-    SHAMapNode const& getNodeID () const
-    {
-        return mNodeID;
     }
 
     uint256 const& getNodeHash () const
@@ -78,21 +54,9 @@ public:
         return mNodeHash;
     }
 
-    uint256 const& getTargetIndex () const
-    {
-        return mTargetIndex;
-    }
-
-    bool hasTargetIndex () const
-    {
-        return !mTargetIndex.isZero ();
-    }
-
 private:
     SHAMapType mType;
-    SHAMapNode mNodeID;
     uint256 mNodeHash;
-    uint256 mTargetIndex;
 };
 
 extern std::ostream& operator<< (std::ostream&, SHAMapMissingNode const&);
