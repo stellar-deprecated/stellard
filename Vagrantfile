@@ -21,7 +21,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # This looks a bit funny, but we want to avoid touching any files if we've already
     # built this version of libsodium. And we need to make sure we don't behave badly
     # if we get killed in the middle of this.
-    libsodium=libsodium-0.6.0
+    libsodium=libsodium-1.0.0
     if [[ ! -f $libsodium/.stellard.stamp ]]; then
         if ! wget -nv -O $libsodium.download https://download.libsodium.org/libsodium/releases/$libsodium.tar.gz; then
             # download failed?

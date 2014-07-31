@@ -192,62 +192,20 @@ bool RippleAddress::verifySignature(uint256 const& hash, Blob const& vchSig) con
 	if (vchData.size() != crypto_sign_PUBLICKEYBYTES
         || vchSig.size () != crypto_sign_BYTES)
 		throw std::runtime_error("bad inputs to verifySignature");
-	/*
-	 unsigned char signed_buf[crypto_sign_BYTES + hash.bytes];
-	 memcpy (signed_buf, vchSig.data(), crypto_sign_BYTES);
-	 memcpy (signed_buf+crypto_sign_BYTES, hash.data(), hash.bytes);
 
-	 unsigned char ignored_buf[hash.bytes];
-	 unsigned long long ignored_len;
-	 return crypto_sign_open (ignored_buf, &ignored_len,
-	 signed_buf, sizeof (signed_buf),
-	 vchData.data()) == 0;
-	*/
-
-    unsigned char signed_buf[crypto_sign_BYTES + hash.bytes];
-	memcpy(signed_buf , vchSig.data(), crypto_sign_BYTES);
-	memcpy(signed_buf + crypto_sign_BYTES, hash.data(), hash.bytes);
-	
-
-    unsigned char ignored_buf[hash.bytes];
-    unsigned long long ignored_len;
-    return crypto_sign_open (ignored_buf, &ignored_len,
-			     signed_buf, sizeof (signed_buf),
-				 vchData.data()) == 0;
+    return crypto_sign_verify_detached(vchSig.data(),
+			     hash.data(), hash.bytes, vchData.data()) == 0;
 }
-
-/*
-void StellarPrivateKey::sign(uint256 const& message, Blob& retSignature) const
-{
-	unsigned char out[crypto_sign_BYTES + message.bytes];
-	unsigned long long len;
-	const unsigned char *key = mPair.mPrivateKey.data();
-
-	// contrary to the docs it puts the signature in front
-	crypto_sign(out, &len,
-		(unsigned char*)message.begin(), message.size(),
-		key);
-
-	retSignature.resize(crypto_sign_BYTES);
-	memcpy(&retSignature[0], out, crypto_sign_BYTES);
-}
-*/
 
 void RippleAddress::sign(uint256 const& message, Blob& retSignature) const
 {
 	assert(vchData.size() == 64);
 
-	unsigned char out[crypto_sign_BYTES + message.bytes];
-	unsigned long long len;
 	const unsigned char *key = vchData.data();
-
-	// contrary to the docs it puts the signature in front
-	crypto_sign(out, &len,
+	retSignature.resize(crypto_sign_BYTES);
+	crypto_sign_detached(&retSignature[0], NULL,
 		(unsigned char*)message.begin(), message.size(),
 		key);
-
-	retSignature.resize(crypto_sign_BYTES);
-	memcpy(&retSignature[0], out, crypto_sign_BYTES);
 }
 
 

@@ -65,29 +65,9 @@ namespace ripple
 		if (vchData.size() != crypto_sign_PUBLICKEYBYTES
 			|| vchSig.size() != crypto_sign_BYTES)
 			throw std::runtime_error("bad inputs to verifySignature");
-		/*
-		unsigned char signed_buf[crypto_sign_BYTES + hash.bytes];
-		memcpy (signed_buf, vchSig.data(), crypto_sign_BYTES);
-		memcpy (signed_buf+crypto_sign_BYTES, hash.data(), hash.bytes);
 
-		unsigned char ignored_buf[hash.bytes];
-		unsigned long long ignored_len;
-		return crypto_sign_open (ignored_buf, &ignored_len,
-		signed_buf, sizeof (signed_buf),
-		vchData.data()) == 0;
-		*/
-
-		unsigned char signed_buf[crypto_sign_BYTES + hash.bytes];
-		memcpy(signed_buf, vchSig.data(), crypto_sign_BYTES);
-		memcpy(signed_buf + crypto_sign_BYTES, hash.data(), hash.bytes);
-
-
-		unsigned char ignored_buf[hash.bytes];
-		unsigned long long ignored_len;
-		return crypto_sign_open(ignored_buf, &ignored_len,
-			signed_buf, sizeof (signed_buf),
-			vchData.data()) == 0;
-
+		return crypto_sign_verify_detached(vchSig.data(),
+			hash.data(), hash.bytes, vchData.data()) == 0;
 
 	}
 
