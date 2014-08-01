@@ -21,6 +21,3 @@ RUN ln -nfs /stellard-src/vagrant/stellar-private-ledger /usr/local/bin/stellar-
 RUN chmod a+x /stellard-src/vagrant/stellar-private-ledger
 RUN ln -nfs /stellard-src/vagrant/stellar-public-ledger /usr/local/bin/stellar-public-ledger
 RUN chmod a+x /stellard-src/vagrant/stellar-public-ledger
-
-# start the new ledger
-RUN (stellar 2>/dev/null &); sleep 10 && pgrep stellard | xargs kill -INT
