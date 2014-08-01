@@ -63,7 +63,7 @@ Json::Value RPCHandler::doAccountTx (Json::Value params, Resource::Charge& loadT
         std::int64_t iLedgerMax  = params.isMember ("ledger_index_max") ? params["ledger_index_max"].asInt () : -1;
 
 
-        uLedgerMin  = iLedgerMin == -1 ? uValidatedMin : iLedgerMin;
+        uLedgerMin  = iLedgerMin == -1 ? 0 : iLedgerMin;
         uLedgerMax  = iLedgerMax == -1 ? uValidatedMax : iLedgerMax;
 
         if (uLedgerMax < uLedgerMin)
@@ -79,7 +79,8 @@ Json::Value RPCHandler::doAccountTx (Json::Value params, Resource::Charge& loadT
         if (!l)
             return ret;
 
-        uLedgerMin = uLedgerMax = l->getLedgerSeq ();
+		uLedgerMin = 0;
+		uLedgerMax = l->getLedgerSeq ();
     }
 
     Json::Value resumeToken;
