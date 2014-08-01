@@ -82,7 +82,7 @@ Json::Value RPCHandler::doAccountTxOld (Json::Value params, Resource::Charge& lo
             return rpcError (rpcLGR_IDXS_INVALID);
         }
 
-        uLedgerMin  = iLedgerMin == -1 ? uValidatedMin : iLedgerMin;
+        uLedgerMin  = iLedgerMin == -1 ? 0 : iLedgerMin;
         uLedgerMax  = iLedgerMax == -1 ? uValidatedMax : iLedgerMax;
 
         if (uLedgerMax < uLedgerMin)
@@ -98,7 +98,8 @@ Json::Value RPCHandler::doAccountTxOld (Json::Value params, Resource::Charge& lo
         if (!l)
             return ret;
 
-        uLedgerMin = uLedgerMax = l->getLedgerSeq ();
+		uLedgerMin = 0;
+		uLedgerMax = l->getLedgerSeq ();
     }
 
     int count = 0;
