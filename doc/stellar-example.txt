@@ -1,7 +1,7 @@
 #
 # Sample stellar.txt
 #
-# More information: https://wiki.gostellar.org/Stellar.txt
+# More information: https://wiki.stellar.org/Stellar.txt
 #
 # Publishing this file allows a site to declare in a trustworthy manor stellar
 # associated information.
@@ -123,4 +123,4 @@ loss
 192.168.0.5
 
 [validators]
-gostellar.org
+stellar.org
