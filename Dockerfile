@@ -3,7 +3,7 @@ MAINTAINER Daniel Watkins <daniel@daniel-watkins.co.uk>
 
 RUN apt-get update
 RUN apt-get -y upgrade
-RUN apt-get -y install git scons ctags pkg-config protobuf-compiler libprotobuf-dev libssl-dev python-software-properties libboost1.55-all-dev nodejs build-essential
+RUN apt-get -y install git scons ctags pkg-config protobuf-compiler libprotobuf-dev libssl-dev python-software-properties libboost1.55-all-dev nodejs build-essential npm
 
 # build libsodium
 ADD https://download.libsodium.org/libsodium/releases/libsodium-0.6.0.tar.gz libsodium-0.6.0.tar.gz
@@ -11,7 +11,7 @@ RUN tar zxf libsodium-0.6.0.tar.gz && cd libsodium-0.6.0 && ./configure && make 
 
 # build stellard
 ADD . /stellard-src
-RUN cd /stellard-src && scons
+RUN cd /stellard-src && scons && npm install
 
 # setup data dir
 RUN mkdir -p /var/lib/stellard
