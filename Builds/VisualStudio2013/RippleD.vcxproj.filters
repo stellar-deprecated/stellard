@@ -3587,9 +3587,6 @@
     <None Include="..\..\doc\CodingStyle.md">
       <Filter>%28Notes%29</Filter>
     </None>
-    <None Include="..\..\doc\rippled-example.cfg">
-      <Filter>[3] doc</Filter>
-    </None>
     <None Include="..\..\doc\Doxyfile">
       <Filter>[3] doc</Filter>
     </None>
@@ -3710,5 +3707,22 @@
     <CustomBuild Include="..\..\src\ripple\proto\ripple.proto">
       <Filter>[1] Ripple\proto</Filter>
     </CustomBuild>
+    <None Include="..\..\doc\stellard.init">
+      <Filter>[3] doc</Filter>
+    </None>
+    <None Include="..\..\doc\stellard-example.cfg">
+      <Filter>[3] doc</Filter>
+    </None>
+    <None Include="..\..\doc\stellar-example.service">
+      <Filter>[3] doc</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\doc\stellar-example.txt">
+      <Filter>[3] doc</Filter>
+    </Text>
+    <Text Include="..\..\doc\validators-example.txt">
+      <Filter>[3] doc</Filter>
+    </Text>
   </ItemGroup>
 </Project>

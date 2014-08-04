@@ -185,7 +185,7 @@ private:
     SHAMapItem::pointer mItem;
     std::uint32_t       mSeq, mAccessSeq;
     TNType              mType;
-    int                 mIsBranch;   // JED: why is this an int and not a bool? I think it is a bitfield that says if the branch at bit i is there or not
+    int                 mIsBranch;   // bitfield that says if the branch at bit i is there or not
     bool                mFullBelow;
 
     bool updateHash ();

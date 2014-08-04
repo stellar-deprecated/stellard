@@ -115,7 +115,7 @@ char const* BuildInfo::getFullVersionString ()
         {
             beast::String s;
             
-            s << "Ripple-" << getVersionString ();
+            s << "Stellar-" << getVersionString ();
 
             fullVersionString = s.toStdString ();
         }

@@ -2446,7 +2446,9 @@
     <None Include="..\..\doc\CheatSheet.md" />
     <None Include="..\..\doc\CodingStyle.md" />
     <None Include="..\..\doc\Doxyfile" />
-    <None Include="..\..\doc\rippled-example.cfg" />
+    <None Include="..\..\doc\stellar-example.service" />
+    <None Include="..\..\doc\stellard-example.cfg" />
+    <None Include="..\..\doc\stellard.init" />
     <None Include="..\..\LICENSE" />
     <None Include="..\..\src\ripple\algorithm\README.md" />
     <None Include="..\..\src\ripple\algorithm\TODO.md" />
@@ -2500,6 +2502,10 @@
     <None Include="..\..\src\ripple_rpc\README.md" />
     <None Include="..\..\src\ripple_rpc\TODO.md" />
     <None Include="..\QtCreator\rippled.pro" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\doc\stellar-example.txt" />
+    <Text Include="..\..\doc\validators-example.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B7F39ECD-473C-484D-BC34-31F8362506A5}</ProjectGuid>

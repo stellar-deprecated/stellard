@@ -333,8 +333,7 @@ OverlayImpl::disconnect (PeerFinder::Slot::ptr const& slot, bool graceful)
 //
 //--------------------------------------------------------------------------
 
-void
-OverlayImpl::onPrepare ()
+void OverlayImpl::onPrepare ()
 {
     PeerFinder::Config config;
 
