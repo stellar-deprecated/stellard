@@ -33,6 +33,7 @@
 #define RIPPLE_TYPES_BASE58_H
 
 #include <iterator>
+#include <string>
 #include <type_traits>
 
 #include "Blob.h"
