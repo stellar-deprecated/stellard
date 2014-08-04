@@ -7,7 +7,7 @@ RUN apt-get -y install git scons ctags pkg-config protobuf-compiler libprotobuf-
 
 # build libsodium
 ADD https://download.libsodium.org/libsodium/releases/libsodium-0.6.0.tar.gz libsodium-0.6.0.tar.gz
-RUN tar zxf libsodium-0.6.0.tar.gz && cd libsodium-0.6.0 && ./configure && make && sudo make install
+RUN tar zxf libsodium-0.6.0.tar.gz && cd libsodium-0.6.0 && ./configure && make && make install
 
 # build stellard
 ADD . /stellard-src
