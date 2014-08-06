@@ -45,6 +45,17 @@ namespace ripple {
 	SETUP_LOG(InflationTransactor)
 
 
+	TER InflationTransactor::checkSig()
+	{
+		return tesSUCCESS;
+	}
+
+	TER InflationTransactor::payFee()
+	{
+		STAmount saPaid = mTxn.getTransactionFee();
+		if (saPaid.)
+		return tesSUCCESS;
+	}
 
 	TER InflationTransactor::doApply()
 	{

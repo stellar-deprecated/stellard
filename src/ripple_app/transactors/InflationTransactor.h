@@ -27,6 +27,9 @@ namespace ripple {
 	public:
 		InflationTransactor(const SerializedTransaction& txn, TransactionEngineParams params, TransactionEngine* engine) : Transactor(txn, params, engine) {}
 
+		TER checkSig();
+		TER payFee();
+
 		TER doApply();
 	};
 
