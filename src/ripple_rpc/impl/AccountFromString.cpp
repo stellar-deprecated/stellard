@@ -49,7 +49,7 @@ Json::Value accountFromString (Ledger::ref lrLedger, RippleAddress& naAccount,
     }
     else
     {
-		assert(0);
+		rpcError(rpcACT_MALFORMED);
 
     }
 
