@@ -364,7 +364,7 @@ env.Append(CXXFLAGS = ['-O3', '-fno-strict-aliasing', '-pthread', '-Wno-invalid-
 env.Append(CXXFLAGS = ['-frtti'])
 
 UBUNTU_GCC_48_INSTALL_STEPS = '''
-https://ripple.com/wiki/Ubuntu_build_instructions#Ubuntu_versions_older_than_13.10_:_Install_gcc_4.8'''
+https://wiki.stellar.org/Ubuntu_Build_Instructions#Ubuntu_versions_older_than_13.10_:_Install_gcc_4.8'''
 
 if not USING_CLANG:
     if (int(GCC_VERSION[0]) == 4 and int(GCC_VERSION[1]) < 8):
