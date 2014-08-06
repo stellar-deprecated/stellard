@@ -86,7 +86,7 @@ public:
         add (rpcNO_CURRENT,            "noCurrent",         "Current ledger is unavailable.");
         add (rpcNO_EVENTS,             "noEvents",          "Current transport does not support events.");
         add (rpcNO_GEN_DECRYPT,        "noGenDecrypt",      "Password failed to decrypt master public generator.");
-        add (rpcNO_NETWORK,            "noNetwork",         "Not synced to Ripple network.");
+        add (rpcNO_NETWORK,            "noNetwork",         "Not synced to Stellar network.");
         add (rpcNO_PATH,               "noPath",            "Unable to find a ripple path.");
         add (rpcNO_PERMISSION,         "noPermission",      "You don't have permission for this command.");
         add (rpcNO_PF_REQUEST,         "noPathRequest",     "No pathfinding request in progress.");

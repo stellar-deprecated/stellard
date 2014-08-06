@@ -47,6 +47,11 @@ Json::Value accountFromString (Ledger::ref lrLedger, RippleAddress& naAccount,
     {
         return rpcError (rpcBAD_SEED);
     }
+    else
+    {
+		rpcError(rpcACT_MALFORMED);
+
+    }
 
     return Json::Value (Json::objectValue);
 }
