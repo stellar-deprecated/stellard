@@ -10,15 +10,30 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.network "forwarded_port", guest: 9102, host: 9102
 
   config.vm.provision "shell", inline: <<-EOS
-    add-apt-repository -y ppa:boost-latest/ppa 
-    apt-get update
+    set -e
+
+    add-apt-repository -y ppa:boost-latest/ppa
+    apt-get update || true
     apt-get -y upgrade
     apt-get -y install git scons ctags pkg-config protobuf-compiler libprotobuf-dev libssl-dev python-software-properties libboost1.55-all-dev nodejs
 
     # build libsodium
-    wget https://download.libsodium.org/libsodium/releases/libsodium-0.6.0.tar.gz
-    tar -xzvf libsodium-0.6.0.tar.gz
-    cd libsodium-0.6.0
+    # This looks a bit funny, but we want to avoid touching any files if we've already
+    # built this version of libsodium. And we need to make sure we don't behave badly
+    # if we get killed in the middle of this.
+    libsodium=libsodium-0.6.0
+    if [[ ! -f $libsodium/.stellard.stamp ]]; then
+        if ! wget -nv -O $libsodium.download https://download.libsodium.org/libsodium/releases/$libsodium.tar.gz; then
+            # download failed?
+            rm -f $libsodium.download
+            exit 1
+        fi
+        mv -f $libsodium.download $libsodium.tar.gz
+        tar -xzvf $libsodium.tar.gz
+        # the stamp file says we finished untarring successfully
+        touch $libsodium/.stellard.stamp
+    fi
+    cd $libsodium
     ./configure && make && sudo make install
 
     # build stellard
