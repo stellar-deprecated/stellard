@@ -25,6 +25,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     cd /stellard-src
     scons
 
+    # shut down any existing stellard upstart jobs
+    initctl emit stellard-reprovision
+
     # setup data dir
     mkdir -p /var/lib/stellard
 
@@ -44,8 +47,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     cp /stellard-src/vagrant/upstart-private-ledger.conf /etc/init/stellard-private-ledger.conf
     cp /stellard-src/vagrant/upstart-public-ledger.conf /etc/init/stellard-public-ledger.conf
     initctl reload-configuration
-    service stellard-private-ledger start
-    service stellard-public-ledger start
+    initctl start stellard-private-ledger
+    initctl start stellard-public-ledger
   EOS
 
   config.vm.synced_folder "./", "/stellard-src"
