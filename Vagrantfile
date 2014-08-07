@@ -36,7 +36,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     # start the new ledger
     echo "starting new ledger"
-    (stellar 2>/dev/null &)
+    (stellar-private-ledger --start --fg 2>/dev/null &)
     sleep 10
     pgrep stellard | xargs kill -INT
 
