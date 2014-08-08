@@ -693,8 +693,20 @@ Reader::decodeNumber ( Token& token )
         if ( c < '0'  ||  c > '9' )
             return addError ( "'" + std::string ( token.start_, token.end_ ) + "' is not a number.", token );
 
-        if ( value >= threshold )
-            return decodeDouble ( token );
+        if ( value >= threshold ) // expected 99.9999999% false
+			if ( value > threshold )
+				return decodeDouble ( token );
+			else
+			{   // value == treshold, need to determine whether last digit overflows value
+
+				// we can't add because of possible overflow so we will deduct. 
+				// MaxUInt >= val + c  <==> MaxUint - c >= val
+				Json::UInt diff = Value::maxUInt - Value::UInt(c - '0');
+
+				if ( diff < value * 10 )
+					return decodeDouble(token);
+				//else we're good
+			}
 
         value = value * 10 + Value::UInt (c - '0');
     }
