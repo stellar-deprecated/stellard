@@ -32,22 +32,7 @@ namespace ripple {
 // operator to copy the field name breaks the use of copy assignment just to copy values,
 // which is used in the transaction engine code.
 
-// VFALCO TODO Remove this unused enum
-/*
-enum PathFlags
-{
-    PF_END              = 0x00,     // End of current path & path list.
-    PF_BOUNDARY         = 0xFF,     // End of current path & new path follows.
 
-    PF_ACCOUNT          = 0x01,
-    PF_OFFER            = 0x02,
-
-    PF_WANTED_CURRENCY  = 0x10,
-    PF_WANTED_ISSUER    = 0x20,
-    PF_REDEEM           = 0x40,
-    PF_ISSUE            = 0x80,
-};
-*/
 
 // VFALCO TODO make these non static or otherwise clean constants.
 static const uint160 u160_zero (0), u160_one (1);
@@ -63,7 +48,7 @@ static inline const uint160& get_u160_one ()
 // VFALCO TODO replace these with language constructs
 #define CURRENCY_STR        get_u160_zero()
 #define CURRENCY_ONE        get_u160_one()                  // Used as a place holder.
-#define CURRENCY_BAD        uint160(0x5852500000000000)     // Do not allow STR as an IOU currency.
+#define CURRENCY_BAD        uint160(0x5354520000000000)     // Do not allow STR as an IOU currency.
 #define ACCOUNT_STR         get_u160_zero()
 #define ACCOUNT_ONE         get_u160_one()                  // Used as a place holder.
 
