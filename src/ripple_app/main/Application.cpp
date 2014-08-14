@@ -433,6 +433,22 @@ public:
         return m_io_latency_sampler.get ();
     }
 
+    int getWebsocketConnCount()
+    {
+        int total_count = 0;
+
+        if (m_wsPrivateDoor)
+            total_count += m_wsPrivateDoor->get_connection_count();
+        
+        if (m_wsPublicDoor)
+            total_count += m_wsPublicDoor->get_connection_count();
+
+        if (m_wsProxyDoor)
+            total_count += m_wsProxyDoor->get_connection_count();
+
+        return total_count;
+    }
+
     LedgerMaster& getLedgerMaster ()
     {
         return *m_ledgerMaster;

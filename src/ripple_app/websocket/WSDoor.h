@@ -34,6 +34,8 @@ public:
     static WSDoor* New (Resource::Manager& resourceManager,
         InfoSub::Source& source, std::string const& strIp,
             int iPort, bool bPublic, bool bProxy, boost::asio::ssl::context& ssl_context);
+
+    virtual int get_connection_count() = 0;
 };
 
 } // ripple

@@ -112,6 +112,7 @@ public:
     virtual DatabaseCon* getLedgerDB () = 0;
 
     virtual std::chrono::milliseconds getIOLatency () = 0;
+    virtual int getWebsocketConnCount() = 0;
 
     /** Retrieve the "wallet database"
 

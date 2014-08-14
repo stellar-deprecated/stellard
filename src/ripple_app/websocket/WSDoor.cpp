@@ -66,6 +66,16 @@ public:
         stopThread ();
     }
 
+    int get_connection_count()
+    {
+        auto handler = m_endpoint->get_handler();
+
+        if (handler != nullptr)
+            return handler->get_connection_count();
+
+        return 0;
+    }
+
 private:
     void run ()
     {

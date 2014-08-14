@@ -2310,6 +2310,8 @@ Json::Value NetworkOPsImp::getServerInfo (bool human, bool admin)
             info[jss::published_ledger] = lpPublished->getLedgerSeq();
     }
 
+    info[jss::websocket_connections] = getApp().getWebsocketConnCount();
+
     return info;
 }
 
