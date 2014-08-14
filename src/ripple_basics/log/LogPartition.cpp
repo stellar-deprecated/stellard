@@ -149,6 +149,7 @@ LogSeverity LogPartition::convertSeverity (beast::Journal::Severity level)
     case Journal::kInfo:    return lsINFO;
     case Journal::kWarning: return lsWARNING;
     case Journal::kError:   return lsERROR;
+	case Journal::kNone:    return lsNONE;
 
     default:
         bassertfalse;
@@ -169,6 +170,7 @@ beast::Journal::Severity LogPartition::convertLogSeverity (LogSeverity level)
     case lsINFO:    return Journal::kInfo;
     case lsWARNING: return Journal::kWarning;
     case lsERROR:   return Journal::kError;
+	case lsNONE:    return Journal::kNone;
     default:
         bassertfalse;
     case lsFATAL:

@@ -30,7 +30,8 @@ enum LogSeverity
     lsINFO      = 2,    // Server-level progress information, major operations
     lsWARNING   = 3,    // Conditions that warrant human attention, may indicate a problem
     lsERROR     = 4,    // A condition that indicates a problem
-    lsFATAL     = 5     // A severe condition that indicates a server problem
+    lsFATAL     = 5,    // A severe condition that indicates a server problem
+	lsNONE		= 6	    // Disable logs
 };
 
 } // ripple
