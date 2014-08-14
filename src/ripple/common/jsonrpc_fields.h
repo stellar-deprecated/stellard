@@ -163,6 +163,7 @@ JSS ( validation_quorum );
 JSS ( value );
 JSS ( waiting );
 JSS ( warning );
+JSS ( ws_connections );
 
 #undef JSS
 

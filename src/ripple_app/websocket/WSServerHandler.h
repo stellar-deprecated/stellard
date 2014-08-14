@@ -93,6 +93,11 @@ public:
         return mPublic;
     };
 
+    int get_connection_count() 
+    {
+        return mMap.size();
+    }
+
     static void ssend (connection_ptr cpClient, message_ptr mpMessage)
     {
         try

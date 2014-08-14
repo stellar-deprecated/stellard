@@ -597,6 +597,9 @@ struct endpoint_traits< endpoint<role, socket, logger> > {
          * @param old_handler A shared pointer to the new handler
          */
         virtual void on_unload(connection_ptr con, handler_ptr new_handler) {}
+    
+        /// Returns number of concurrent connections. 
+        virtual int get_connection_count() = 0;
     };
     
 };
