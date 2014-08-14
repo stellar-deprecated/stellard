@@ -137,6 +137,7 @@ JSS ( seq );
 JSS ( seqNum );
 JSS ( server_state );
 JSS ( server_status );
+JSS ( server_uptime );
 JSS ( stand_alone );
 JSS ( status );
 JSS ( success );

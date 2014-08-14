@@ -232,6 +232,7 @@ public:
     std::unique_ptr <ResolverAsio> m_resolver;
 
     io_latency_sampler m_io_latency_sampler;
+    const time_t m_startupTime = time(nullptr);
 
     //--------------------------------------------------------------------------
 
@@ -447,6 +448,18 @@ public:
             total_count += m_wsProxyDoor->get_connection_count();
 
         return total_count;
+    }
+
+    uint32_t getUptime()
+    {
+        time_t currentTime = time(nullptr);
+        
+        double uptime_sec = difftime (currentTime, m_startupTime);
+        
+        if (uptime_sec < 0)
+            uptime_sec = -uptime_sec;
+
+        return (uint32_t)uptime_sec;
     }
 
     LedgerMaster& getLedgerMaster ()

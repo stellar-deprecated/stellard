@@ -2311,6 +2311,7 @@ Json::Value NetworkOPsImp::getServerInfo (bool human, bool admin)
     }
 
     info[jss::websocket_connections] = getApp().getWebsocketConnCount();
+    info[jss::server_uptime] = Json::UInt( getApp().getUptime() );
 
     return info;
 }
