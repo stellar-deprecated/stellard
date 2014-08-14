@@ -100,6 +100,9 @@ std::string Log::severityToString (LogSeverity s)
     case lsFATAL:
         return "Fatal";
 
+	case lsNONE:
+		return "None";
+
     default:
         assert (false);
         return "Unknown";
@@ -125,6 +128,9 @@ LogSeverity Log::stringToSeverity (const std::string& s)
 
     if (boost::iequals (s, "fatal") || boost::iequals (s, "fatals"))
         return lsFATAL;
+
+	if (boost::iequals(s, "none") || boost::iequals(s, "disable"))
+		return lsNONE;
 
     return lsINVALID;
 }
