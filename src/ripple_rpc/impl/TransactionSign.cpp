@@ -175,7 +175,7 @@ static Json::Value signPayment(
 
 // VFALCO TODO This function should take a reference to the params, modify it
 //             as needed, and then there should be a separate function to
-//             submit the tranaction
+//             submit the transaction
 //
 Json::Value transactionSign (
     Json::Value params, bool bSubmit, bool bFailHard,
@@ -300,7 +300,7 @@ Json::Value transactionSign (
                 " : " << raSrcAddressID.humanAccountID ();
         if (raSrcAddressID.getAccountID () == account)
         {
-            if (sle.isFlag(lsfDisableMaster))
+			if (sle.isFlag(lsfDisableMaster) && "Inflation" != sType)
                 return rpcError (rpcMASTER_DISABLED);
         }
         else if (!sle.isFieldPresent(sfRegularKey) ||
