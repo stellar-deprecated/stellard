@@ -457,7 +457,7 @@ public:
         double uptime_sec = difftime (currentTime, m_startupTime);
         
         if (uptime_sec < 0)
-            uptime_sec = -uptime_sec;
+            uptime_sec = 0;
 
         return (uint32_t)uptime_sec;
     }
