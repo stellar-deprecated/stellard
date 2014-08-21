@@ -223,14 +223,14 @@ std::string STAmount::createHumanCurrency (const uint160& uCurrency)
 {
     static uint160 const sIsoBits ("FFFFFFFFFFFFFFFFFFFFFFFF000000FFFFFFFFFF");
 
-	// Characters we are willing to include the ASCII representation
-	// of a three-letter currency code
-	static std::string legalASCIICurrencyCharacters =
-		"abcdefghijklmnopqrstuvwxyz"
-		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-		"0123456789"
-		"<>(){}[]|?!@#$%^&*";
-	
+    // Characters we are willing to include the ASCII representation
+    // of a three-letter currency code
+    static std::string legalASCIICurrencyCharacters =
+        "abcdefghijklmnopqrstuvwxyz"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "0123456789"
+        "<>(){}[]|?!@#$%^&*";
+    
     if (uCurrency.isZero ())
     {
         return SYSTEM_CURRENCY_CODE;
@@ -252,11 +252,11 @@ std::string STAmount::createHumanCurrency (const uint160& uCurrency)
 
         // Specifying the system currency code using ISO-style representation
         // is not allowed.
-		if ((iso != SYSTEM_CURRENCY_CODE) &&
-			(iso.find_first_not_of(legalASCIICurrencyCharacters) == std::string::npos))
-		{
+        if ((iso != SYSTEM_CURRENCY_CODE) &&
+            (iso.find_first_not_of(legalASCIICurrencyCharacters) == std::string::npos))
+        {
             return iso;
-		}
+        }
     }
 
     return to_string (uCurrency);
