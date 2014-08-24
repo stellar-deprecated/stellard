@@ -37,6 +37,9 @@ Json::Value RPCHandler::doAccountTx (Json::Value params, Resource::Charge& loadT
     int             limit       = params.isMember (jss::limit) ? params[jss::limit].asUInt () : -1;
     bool            bBinary     = params.isMember ("binary") && params["binary"].asBool ();
     bool            bForward    = params.isMember ("forward") && params["forward"].asBool ();
+	bool			showMeta = true;
+	if(params.isMember("meta")) showMeta= params["meta"].asBool();
+
     std::uint32_t   uLedgerMin;
     std::uint32_t   uLedgerMax;
     std::uint32_t   uValidatedMin;
@@ -112,7 +115,7 @@ Json::Value RPCHandler::doAccountTx (Json::Value params, Resource::Charge& loadT
 
                 std::uint32_t uLedgerIndex = std::get<2> (*it);
                 jvObj["tx_blob"]           = std::get<0> (*it);
-                jvObj["meta"]              = std::get<1> (*it);
+                if(showMeta) jvObj["meta"]              = std::get<1> (*it);
                 jvObj["ledger_index"]      = uLedgerIndex;
                 jvObj[jss::validated]      = bValidated && uValidatedMin <= uLedgerIndex && uValidatedMax >= uLedgerIndex;
 
@@ -134,7 +137,7 @@ Json::Value RPCHandler::doAccountTx (Json::Value params, Resource::Charge& loadT
                 {
                     std::uint32_t uLedgerIndex = it->second->getLgrSeq ();
 
-                    jvObj[jss::meta]        = it->second->getJson (0);
+                    if(showMeta) jvObj[jss::meta]        = it->second->getJson (0);
                     jvObj[jss::validated]   = bValidated && uValidatedMin <= uLedgerIndex && uValidatedMax >= uLedgerIndex;
                 }
 

@@ -2281,7 +2281,7 @@ private:
                     return;
 	            }
 
-	            m_journal.error << "We do not have the map our peer wants " 
+	            m_journal.warning << "We do not have the map our peer wants " 
 	                            << to_string (this);
 
 	            charge (Resource::feeInvalidRequest);
