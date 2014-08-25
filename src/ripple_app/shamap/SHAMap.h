@@ -37,18 +37,10 @@ The tree just has id's which we then have to look up in mTNbyID?
 
 there is some cache that we check when we are looking up items?
 
-What is the point of the tree?
 
 */
 
-enum SHAMapState
-{
-    smsModifying = 0,       // Objects can be added and removed (like an open ledger)
-    smsImmutable = 1,       // Map cannot be changed (like a closed ledger)
-    smsSynching = 2,        // Map's hash is locked in, valid nodes can be added (like a peer's closing ledger)
-    smsFloating = 3,        // Map is free to change hash (like a synching open ledger)
-    smsInvalid = 4,         // Map is known not to be valid (usually synching a corrupt ledger)
-};
+
 
 namespace std {
 
@@ -83,8 +75,8 @@ enum SHAMapState
     smsModifying = 0,       // Objects can be added and removed (like an open ledger)
     smsImmutable = 1,       // Map cannot be changed (like a closed ledger)
     smsSynching = 2,        // Map's hash is locked in, valid nodes can be added (like a peer's closing ledger)
-    smsFloating = 3,        // Map is free to change hash (like a synching open ledger)
-    smsInvalid = 4,         // Map is known not to be valid (usually synching a corrupt ledger)
+    smsFloating = 3,        // Map is free to change hash (like a syncing open ledger)
+    smsInvalid = 4,         // Map is known not to be valid (usually syncing a corrupt ledger)
 };
 
 /** A SHAMap is both a radix tree with a fan-out of 16 and a Merkle tree.
@@ -101,16 +93,18 @@ enum SHAMapState
     And a fan-out of 16 means that each node in the tree has at most 16 children.
     See https://en.wikipedia.org/wiki/Radix_tree
 
-    A Merkle tree is a tree where each non-leaf node is labelled with the hash
+    A Merkle tree is a tree where each non-leaf node is labeled with the hash
     of the combined labels of its children nodes.
 
     A key property of a Merkle tree is that testing for node inclusion is
     O(log(N)) where N is the number of nodes in the tree.
 
     See https://en.wikipedia.org/wiki/Merkle_tree
+
+	Here is a pretty good explanation:
+	https://github.com/ripple/ripple-lib-java/blob/master/ripple-core/src/main/java/com/ripple/core/types/shamap/README.md
  */
 class SHAMap
-//     : public CountedObject <SHAMap>
 {
 private:
     /** Function object which handles missing nodes. */
