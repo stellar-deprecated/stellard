@@ -506,7 +506,6 @@ Json::Value STPath::getJson (int) const
         int         iType   = it.getNodeType ();
 
         elem[jss::type]      = iType;
-        elem[jss::type_hex]  = strHex (iType);
 
         if (iType & STPathElement::typeAccount)
             elem[jss::account]  = RippleAddress::createHumanAccountID (it.getAccountID ());
