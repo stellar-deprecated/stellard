@@ -409,8 +409,9 @@ bool LedgerEntrySet::threadTx (const RippleAddress& threadTo, Ledger::ref ledger
 
     if (!sle)
     {
-        WriteLog (lsFATAL, LedgerEntrySet) << "Threading to non-existent account: " << threadTo.humanAccountID ();
-        assert (false);
+        /// Expected on account deletion. 
+        //WriteLog (lsFATAL, LedgerEntrySet) << "Threading to non-existent account: " << threadTo.humanAccountID ();
+        //assert (false);
         return false;
     }
 
