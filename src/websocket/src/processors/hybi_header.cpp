@@ -144,7 +144,7 @@ void hybi_header::set_payload_size(uint64_t size) {
             m_header[1] |= BASIC_PAYLOAD_64BIT_CODE;
         }
         m_payload_size = size;
-        *(reinterpret_cast<uint64_t*>(&m_header[BASIC_HEADER_LENGTH])) = zsutil::htonll(size);
+        *(reinterpret_cast<uint64_t*>(&m_header[BASIC_HEADER_LENGTH])) = (zsutil::htonll)(size);
     } else {
         throw processor::exception("set_payload_size called with value that was too large (>2^63)",processor::error::MESSAGE_TOO_BIG);
     }
@@ -265,7 +265,7 @@ void hybi_header::process_extended_header() {
     } else if (s == BASIC_PAYLOAD_64BIT_CODE) {
         // reinterpret the second eight bytes as a 64 bit integer in 
         // network byte order. Convert to host byte order and store.
-        m_payload_size = zsutil::ntohll(*(
+        m_payload_size = (zsutil::ntohll)(*(
             reinterpret_cast<uint64_t*>(&m_header[BASIC_HEADER_LENGTH])
         ));
         

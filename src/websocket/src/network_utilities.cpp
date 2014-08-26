@@ -29,7 +29,7 @@
 
 
 
-uint64_t zsutil::htonll(uint64_t src) { 
+uint64_t (zsutil::htonll)(uint64_t src) { 
     static int typ = TYP_INIT; 
     unsigned char c; 
     union { 
@@ -50,8 +50,8 @@ uint64_t zsutil::htonll(uint64_t src) {
     return x.ull; 
 }
 
-uint64_t zsutil::ntohll(uint64_t src) { 
-    return htonll(src);
+uint64_t (zsutil::ntohll)(uint64_t src) { 
+    return (htonll)(src);
 }
 
 std::string zsutil::lookup_ws_close_status_string(uint16_t code) {
