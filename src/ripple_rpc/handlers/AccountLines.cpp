@@ -96,8 +96,8 @@ Json::Value RPCHandler::doAccountLines (Json::Value params, Resource::Charge& lo
                 jPeer[jss::currency]      = saBalance.getHumanCurrency ();
                 jPeer[jss::limit]         = saLimit.getText ();
                 jPeer[jss::limit_peer]     = saLimitPeer.getText ();
-                jPeer[jss::quality_in]     = static_cast<Json::UInt> (line->getQualityIn ());
-                jPeer[jss::quality_out]    = static_cast<Json::UInt> (line->getQualityOut ());
+				if (line->getQualityIn()) jPeer[jss::quality_in] = static_cast<Json::UInt> (line->getQualityIn());
+				if (line->getQualityOut()) jPeer[jss::quality_out] = static_cast<Json::UInt> (line->getQualityOut());
                 if (line->getAuth())
                     jPeer[jss::authorized] = true;
                 if (line->getAuthPeer())
