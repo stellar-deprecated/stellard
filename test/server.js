@@ -153,11 +153,12 @@ Server.prototype.verbose = function () {
 Server.prototype.start = function (dontSpawn) {
   var self      = this;
 
-  if (!this.quiet) console.log("server: start: %s: %s", this.name, JSON.stringify(this.config));
-
+  if (!this.quiet) console.log("serverstart: %s %s", this.name, JSON.stringify(this.config));
+//console.log(dontSpawn);
+    dontSpawn=this.config.dontSpawn;
   this._makeBase(function (e) {
     if (e) throw e;
-    self._serverSpawnSync();
+    if(!dontSpawn) self._serverSpawnSync();
     self.emit('started');
   });
 

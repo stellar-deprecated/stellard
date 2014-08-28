@@ -822,7 +822,7 @@ private:
             getApp().getJobQueue ().getLoadEventAP (jtPEER, "Peer::read"));
 
         {
-            // An mtHELLO message must be the first message receiced by a peer
+            // An mtHELLO message must be the first message received by a peer
             // and it must be received *exactly* once during a connection; any
             // other scenario constitutes a protocol violation.
 

@@ -212,31 +212,45 @@ TER PaymentTransactor::doApply ()
         try
         {
             bool const openLedger = is_bit_set (mParams, tapOPEN_LEDGER);
-            bool const tooManyPaths = spsPaths.size () > MaxPathSize;
+			bool tooManyPaths = false;
+			if (spsPaths.size() > MaxPathSize) tooManyPaths = true;
+			else
+			{
+				for (auto const& path : spsPaths)
+				{
+					if (path.size() > MaxPathSize)
+					{
+						tooManyPaths = true;
+						break;
+					}
+				}
+			}
 
-            terResult = openLedger && tooManyPaths
-                        ? telBAD_PATH_COUNT // Too many paths for proposed ledger.
-                        : RippleCalc::rippleCalc (
-                              mEngine->view (),
-                              saMaxAmountAct,
-                              saDstAmountAct,
-                              vpsExpanded,
-                              saMaxAmount,
-                              saDstAmount,
-                              uDstAccountID,
-                              mTxnAccountID,
-                              spsPaths,
-                              bPartialPayment,
-                              bLimitQuality,
-                              bNoRippleDirect, // Always compute for finalizing ledger.
-                              false, // Not standalone, delete unfundeds.
-                              is_bit_set (mParams, tapOPEN_LEDGER));
+			
+			terResult = openLedger && tooManyPaths
+				? telBAD_PATH_COUNT // Too many paths for proposed ledger.
+				: RippleCalc::rippleCalc(
+				mEngine->view(),
+				saMaxAmountAct,
+				saDstAmountAct,
+				vpsExpanded,
+				saMaxAmount,
+				saDstAmount,
+				uDstAccountID,
+				mTxnAccountID,
+				spsPaths,
+				bPartialPayment,
+				bLimitQuality,
+				bNoRippleDirect, // Always compute for finalizing ledger.
+				false, // Not standalone, delete unfundeds.
+				is_bit_set(mParams, tapOPEN_LEDGER));
 
-            if (isTerRetry(terResult))
-                terResult = tecPATH_DRY;
+			if (isTerRetry(terResult))
+				terResult = tecPATH_DRY;
 
-            if ((tesSUCCESS == terResult) && (saDstAmountAct != saDstAmount))
-                mEngine->view().setDeliveredAmount (saDstAmountAct);
+			if ((tesSUCCESS == terResult) && (saDstAmountAct != saDstAmount))
+				mEngine->view().setDeliveredAmount(saDstAmountAct);
+			
         }
         catch (std::exception const& e)
         {

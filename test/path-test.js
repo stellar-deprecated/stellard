@@ -18,6 +18,9 @@ suite('Basic path finding', function() {
     testutils.build_teardown().call($, done);
   });
 
+
+
+
   test("no direct path, no intermediary -> no alternatives", function (done) {
       var self = this;
 
