@@ -259,7 +259,7 @@ function credit_limit(remote, src, amount, callback) {
     return callback(new Error('parse_error'));
   }
 
-  // console.log('credit_limit: parsed: %s', JSON.stringify(_m, undefined, 2));
+   //console.log('credit_limit: parsed: %s', JSON.stringify(_m, undefined, 2));
   var account_limit = _m[1];
   var quality_in    = _m[2];
   var quality_out   = _m[3];
@@ -269,12 +269,12 @@ function credit_limit(remote, src, amount, callback) {
   tx.ripple_line_set(src, account_limit, quality_in, quality_out)
 
   tx.once('proposed', function (m) {
-    // console.log('proposed: %s', JSON.stringify(m));
+     //console.log('proposed: %s', JSON.stringify(m));
     callback(m.engine_result === 'tesSUCCESS' ? null : new Error());
   });
 
   tx.once('error', function (m) {
-    // console.log('error: %s', JSON.stringify(m));
+    //console.log('error: %s', JSON.stringify(m));
     callback(m);
   });
 
@@ -323,6 +323,7 @@ function credit_limits(remote, balances, callback) {
   var limits = [ ];
 
   for (var src in balances) {
+
     prepare_tests(balances[src], function(amount) {
       limits.push({
         source: src,

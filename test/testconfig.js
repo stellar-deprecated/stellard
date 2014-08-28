@@ -28,14 +28,17 @@ exports.accounts = {
     'secret' : "bitstamp",
   },
   "mtgox" : {
-    'account' : "gpXe6fxP7ec5p1tncocYzp1FKNmJRaDJM5",
-    'secret' : "mtgox",
+    'account' : "gD1RB8jG5DTSEnjJ1PQyoHEWXGbGCfCLAZ",
+    'secret' : "sfHTRZFpsX7yc2VJLvhJzpzjiag5W6ofy9xgZSwuubcLhS1atmv",
   },
 
-  // Merchants
+    
+
+
+    // Merchants
   "amazon" : {
-    'account' : "ghheXqX7bDnXePJeMHhubDDvw2uUTtenPd",
-    'secret' : "amazon",
+    'account' : "gNnUkmdJwdHniGZewYDq9SVJURnTm6JuaP",
+    'secret' : "sfwR6TMGkCwptDvJaJSr6PEGGqFSMw6j5VwjTeAm6P3tmKFvcBA",
   },
 
   // Master account
