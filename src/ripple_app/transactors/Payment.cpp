@@ -174,7 +174,7 @@ TER PaymentTransactor::doApply ()
         {
             m_journal.trace <<
                 "Delay transaction: Destination account does not exist. " <<
-                "Insufficent payment to create account.";
+                "Insufficient payment to create account.";
 
             // Another transaction could create the account and then this
             // transaction would succeed.

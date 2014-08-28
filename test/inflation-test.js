@@ -138,7 +138,7 @@ suite('Inflation', function() {
         testutils.build_teardown().call($, done);
     });
 
-
+/*
     test('Inflation #1 - two guys over threshold', function(done) {
         var self = this;
         var tx_fee = 12; //TODO: get tx fee
@@ -845,7 +845,7 @@ suite('Inflation', function() {
             done();
         });
     });
-
+*/
 /*
     test("Inflation to another account", function (done) {
         var self    = this;

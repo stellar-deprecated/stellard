@@ -41,7 +41,7 @@ suite('Remote functions', function() {
 
       var request = $.remote.request_ledger_entry('account_root')
       .ledger_hash(r.ledger_hash)
-      .account_root("gHb9CJAWyB4gj91VRWn96DkukG4bwdtyTh");
+      .account_root("ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb");
 
       request.callback(function(err, r) {
         // console.log("account_root: %s", JSON.stringify(r));
@@ -94,24 +94,7 @@ suite('Remote functions', function() {
     })
   });
 
-  test('ledger_entry index', function(done) {
-    var self = this;
-
-    $.remote.request_ledger_hash(function(err, r) {
-      assert(!err);
-
-      var request = $.remote.request_ledger_entry('index')
-      .ledger_hash(r.ledger_hash)
-      .account_root("alice")
-      .index("2B6AC232AA4C4BE41BF49D2459FA4A0347E1B543A4C92FCEE0821C0201E2E9A8");
-
-      request.callback(function(err, r) {
-        assert(!err);
-        assert('node_binary' in r);
-        done();
-      });
-    })
-  });
+  
 
   test('create account', function(done) {
     var self = this;

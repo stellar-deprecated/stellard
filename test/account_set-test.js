@@ -22,7 +22,7 @@ suite('Account set', function() {
       function (callback) {
         self.what = "Set InflationDest.";
 
-          console.log(config.accounts.root.account);
+          //console.log(config.accounts.root.account);
 
         $.remote.transaction()
         .account_set(config.accounts.root.account)
@@ -192,75 +192,4 @@ suite('Account set', function() {
     });
   });
 
-  test('set DisallowSTR', function(done) {
-    var self = this;
-
-    var steps = [
-      function (callback) {
-        self.what = "Set DisallowSTR.";
-
-        $.remote.transaction()
-        .account_set("root")
-        .set_flags('DisallowSTR')
-        .on('submitted', function (m) {
-          //console.log("proposed: %s", JSON.stringify(m));
-          callback(m.engine_result === 'tesSUCCESS' ? null : new Error(m));
-        })
-        .submit();
-      },
-
-      function (callback) {
-        self.what = "Check DisallowSTR";
-
-        $.remote.request_account_flags('root', 'CURRENT')
-        .on('error', callback)
-        .on('success', function (m) {
-          var wrong = !(m.node.Flags & Remote.flags.account_root.DisallowSTR);
-
-          if (wrong) {
-            console.log("Set RequireDestTag: failed: %s", JSON.stringify(m));
-          }
-
-          callback(wrong ? new Error(m) : null);
-        })
-        .request();
-      },
-
-      function (callback) {
-        self.what = "Clear DisallowSTR.";
-
-        $.remote.transaction()
-        .account_set("root")
-        .set_flags('AllowSTR')
-        .on('submitted', function (m) {
-          //console.log("proposed: %s", JSON.stringify(m));
-
-          callback(m.engine_result === 'tesSUCCESS' ? null : new Error(m));
-        })
-        .submit();
-      },
-
-      function (callback) {
-        self.what = "Check AllowSTR";
-
-        $.remote.request_account_flags('root', 'CURRENT')
-        .on('error', callback)
-        .on('success', function (m) {
-          var wrong = !!(m.node.Flags & Remote.flags.account_root.DisallowSTR);
-
-          if (wrong) {
-            console.log("Clear DisallowSTR: failed: %s", JSON.stringify(m));
-          }
-
-          callback(wrong ? new Error(m) : null);
-        })
-        .request();
-      }
-    ]
-
-    async.waterfall(steps, function(err) {
-      assert(!err);
-      done();
-    });
-  });
 });

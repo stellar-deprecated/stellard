@@ -3,42 +3,9 @@ var assert    = require('assert');
 var Amount    = require("stellar-lib").Amount;
 var Remote    = require("stellar-lib").Remote;
 var Server    = require("./server").Server;
-var unirest   = require('unirest');
 var Promise   = require('bluebird');
 var testutils = require("./testutils");
 var config    = testutils.init_config();
-
-
-
-
-
-// takes an object or a string
-function rpc(tx)
-{
-    if(typeof tx != 'string') tx=JSON.stringify(tx);
-
-    return new Promise(function(resolve,reject){
-        var uri='http://'+config.servers.alpha.rpc_ip+':'+config.servers.alpha.rpc_port;
-        //console.log(uri);
-        unirest.post(uri)
-            .headers({ 'Accept': 'application/json' })
-            .send(tx)
-            .end(function (response) {
-
-                if(response && response.body && response.body.result) {
-                    if(response.body.result)
-                    {
-                        resolve(response.body.result);
-                    }
-                }else
-                {
-                    console.log("no response?");
-                    //console.log(response);
-                    reject("Error during RPC");
-                }
-            });
-    });
-}
 
 
 suite('Indirect ripple', function() {
@@ -127,7 +94,7 @@ suite('Indirect ripple', function() {
 
                 //console.log(tx);
 
-                rpc(tx).then(function(result){
+                testutils.rpc(config,tx).then(function(result){
                     if(result.engine_result!='telBAD_PATH_COUNT')
                     {
                         console.log(JSON.stringify(result));

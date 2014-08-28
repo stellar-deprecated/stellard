@@ -5,6 +5,9 @@ var Amount      = require('stellar-lib').Amount;
 var Remote      = require('stellar-lib').Remote;
 var Transaction = require('stellar-lib').Transaction;
 var Server      = require('./server').Server;
+var Promise     = require('bluebird');
+var unirest   = require('unirest');
+
 var server      = { };
 
 function get_config() {
@@ -538,6 +541,34 @@ function verify_owner_counts(remote, counts, callback) {
   async.every(tests, iterator, callback);
 };
 
+// takes an object or a string
+function rpc(config,tx)
+{
+    if(typeof tx != 'string') tx=JSON.stringify(tx);
+
+    return new Promise(function(resolve,reject){
+        var uri='http://'+config.servers.alpha.rpc_ip+':'+config.servers.alpha.rpc_port;
+        //console.log(uri);
+        unirest.post(uri)
+            .headers({ 'Accept': 'application/json' })
+            .send(tx)
+            .end(function (response) {
+
+                if(response && response.body && response.body.result) {
+                    if(response.body.result)
+                    {
+                        resolve(response.body.result);
+                    }
+                }else
+                {
+                    console.log("no response?");
+                    //console.log(response);
+                    reject("Error during RPC");
+                }
+            });
+    });
+}
+
 exports.account_dump            = account_dump;
 exports.build_setup             = build_setup;
 exports.build_teardown          = build_teardown;
@@ -558,6 +589,7 @@ exports.verify_offer            = verify_offer;
 exports.verify_offer_not_found  = verify_offer_not_found;
 exports.verify_owner_count      = verify_owner_count;
 exports.verify_owner_counts     = verify_owner_counts;
+exports.rpc                     = rpc;
 
 process.on('uncaughtException', function() {
   Object.keys(server).forEach(function(host) {
