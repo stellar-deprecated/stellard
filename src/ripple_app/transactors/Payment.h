@@ -24,19 +24,13 @@ namespace ripple {
 
 class PaymentTransactorLog;
 
-template <>
-char const*
-LogPartition::getPartitionName <PaymentTransactorLog> ()
+template <> char const* LogPartition::getPartitionName <PaymentTransactorLog> ()
 {
     return "Tx/Payment";
 }
 
-class PaymentTransactor 
-    : public Transactor
+class PaymentTransactor : public Transactor
 {
-    /* The largest number of paths we allow */
-    static std::size_t const MaxPathSize = 6;
-
 public:
     PaymentTransactor (
         SerializedTransaction const& txn,

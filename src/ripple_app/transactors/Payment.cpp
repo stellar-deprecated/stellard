@@ -19,6 +19,10 @@
 
 namespace ripple {
 
+	 
+#define MAX_PATH_SIZE 6
+#define MAX_NUM_PATHS 6
+
 TER PaymentTransactor::doApply ()
 {
     // Ripple if source or destination is non-native or if there are paths.
@@ -213,12 +217,12 @@ TER PaymentTransactor::doApply ()
         {
             bool const openLedger = is_bit_set (mParams, tapOPEN_LEDGER);
 			bool tooManyPaths = false;
-			if (spsPaths.size() > MaxPathSize) tooManyPaths = true;
+			if (spsPaths.size() > MAX_NUM_PATHS) tooManyPaths = true;
 			else
 			{
 				for (auto const& path : spsPaths)
 				{
-					if (path.size() > MaxPathSize)
+					if (path.size() > MAX_PATH_SIZE)
 					{
 						tooManyPaths = true;
 						break;
