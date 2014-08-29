@@ -445,11 +445,11 @@ function verify_balance(remote, src, amount_json, callback) {
       var valid_balance = account_balance.equals(amount_req, true);
 
       if (!valid_balance) {
-        //console.log('verify_balance: failed: %s vs %s / %s: %s',
-        //src,
-        //account_balance.to_text_full(),
-        //amount_req.to_text_full(),
-        //account_balance.not_equals_why(amount_req, true));
+        console.log('verify_balance failed: %s) looking for: %s  found: %s',
+        src,
+        amount_req.to_text_full(),
+        account_balance.to_text_full()
+        );
       }
 
       callback(valid_balance ? null : new Error());
@@ -471,6 +471,7 @@ function verify_balances(remote, balances, callback) {
   }
 
   async.every(tests, iterator, callback);
+
 };
 
 // --> owner: account
@@ -554,14 +555,20 @@ function rpc(config,tx)
             .send(tx)
             .end(function (response) {
 
-                if(response && response.body && response.body.result) {
+                if(response && response.body)
+                {
                     if(response.body.result)
                     {
                         resolve(response.body.result);
+                    }else
+                    {
+                        console.log("response: "+response.body);
+                        //console.log(response);
+                        reject("Error during RPC");
                     }
                 }else
                 {
-                    console.log("no response?");
+                    console.log("no response?: "+tx+JSON.stringify(response));
                     //console.log(response);
                     reject("Error during RPC");
                 }

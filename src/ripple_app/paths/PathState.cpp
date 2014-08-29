@@ -360,7 +360,14 @@ TER PathState::pushNode (
 
             terResult   = temBAD_PATH;
         }
-        else if (!!pnPrv.uAccountID)
+		else if( pnPrv.uCurrencyID == pnCur.uCurrencyID &&
+				 pnPrv.uIssuerID == pnCur.uIssuerID)
+		{
+			WriteLog(lsDEBUG, RippleCalc) <<
+				"pushNode: bad path: offer to same currency and issuer";
+			terResult = temBAD_PATH;
+		}
+		else
         {
             // Previous is an account.
             WriteLog (lsTRACE, RippleCalc) << "pushNode: imply for offer.";

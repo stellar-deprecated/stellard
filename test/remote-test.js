@@ -94,7 +94,7 @@ suite('Remote functions', function() {
     })
   });
 
-  
+
 
   test('create account', function(done) {
     var self = this;

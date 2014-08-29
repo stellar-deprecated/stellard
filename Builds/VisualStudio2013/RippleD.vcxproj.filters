@@ -343,6 +343,9 @@
     <Filter Include="[0] Libraries\libsodium\code">
       <UniqueIdentifier>{16646c2b-531d-4719-ae49-45ae15446183}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Reorg">
+      <UniqueIdentifier>{c52865dd-9ab7-4028-9e5d-53ed6637ed3a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\ripple_basics\containers\RangeSet.cpp">

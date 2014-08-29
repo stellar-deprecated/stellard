@@ -22,7 +22,7 @@
 
 namespace ripple {
 
-/** A transaction discovered to be in dispute during conensus.
+/** A transaction discovered to be in dispute during consensus.
 
     During consensus, a @ref DisputedTx is created when a transaction
     is discovered to be disputed. The object persists only as long as
@@ -84,8 +84,14 @@ private:
 // VFALCO TODO Rename and put these in a tidy place
 typedef std::map<uint256, DisputedTx::pointer>::value_type u256_lct_pair;
 typedef std::map<uint160, LedgerProposal::pointer>::value_type u160_prop_pair;
-#define LEDGER_TOTAL_PASSES 8
-#define LEDGER_RETRY_PASSES 5
+
+// How many total extra passes we make
+// We must ensure we make at least one non-retriable pass
+#define LEDGER_TOTAL_PASSES 3
+
+// How many extra retry passes we
+// make if the previous retry pass made changes
+#define LEDGER_RETRY_PASSES 2
 
 } // ripple
 

@@ -18,6 +18,142 @@ suite('Gateway', function() {
         testutils.build_teardown().call($, done);
     });
 
+    test("subscribe test: customer to customer with and without transfer fee: transaction retry logic", function (done) {
+
+        var self = this;
+
+        // $.remote.set_trace();
+
+        var steps = [
+            function (callback) {
+                self.what = "Create accounts.";
+
+                testutils.create_accounts($.remote, "root", "10000.0", ["alice", "bob", "mtgox"], callback);
+            },
+
+            function (callback) {
+                self.what = "Set credit limits.";
+
+                testutils.credit_limits($.remote,
+                    {
+                        "alice" : "100/AUD/mtgox",
+                        "bob"   : "100/AUD/mtgox",
+                    },
+                    callback);
+            },
+
+            function (callback) {
+                self.what = "Distribute funds.";
+
+                testutils.payments($.remote, { "mtgox" : [ "1/AUD/alice" ] },  callback);
+            },
+
+            function (callback) {
+                self.what = "Verify balances.";
+
+                testutils.verify_balances($.remote, {
+                        "alice"   : "1/AUD/mtgox",
+                        "mtgox"   : "-1/AUD/alice",
+                    },
+                    callback);
+            },
+
+            function (callback) {
+                self.what = "Alice sends Bob 1 AUD";
+
+                $.remote.transaction()
+                    .payment("alice", "bob", "1/AUD/mtgox")
+                    .on('proposed', function (m) {
+                        // console.log("proposed: %s", JSON.stringify(m));
+
+                        callback(m.engine_result !== 'tesSUCCESS');
+                    })
+                    .submit();
+            },
+
+            function (callback) {
+                self.what = "Verify balances 2.";
+
+                testutils.verify_balances($.remote, {
+                        "alice"   : "0/AUD/mtgox",
+                        "bob"     : "1/AUD/mtgox",
+                        "mtgox"   : "-1/AUD/bob",
+                    },
+                    callback);
+            },
+
+            //          function (callback) {
+            //            self.what = "Set transfer rate.";
+            //
+            //            $.remote.transaction()
+            //              .account_set("mtgox")
+            //              .transfer_rate(1e9*1.1)
+            //              .once('proposed', function (m) {
+            //                  // console.log("proposed: %s", JSON.stringify(m));
+            //                  callback(m.engine_result !== 'tesSUCCESS');
+            //                })
+            //              .submit();
+            //          },
+
+            function (callback) {
+                self.what = "Bob sends Alice 0.5 AUD";
+
+                $.remote.transaction()
+                    .payment("bob", "alice", "0.5/AUD/mtgox")
+                    .on('proposed', function (m) {
+                        // console.log("proposed: %s", JSON.stringify(m));
+
+                        callback(m.engine_result !== 'tesSUCCESS');
+                    })
+                    .submit();
+            },
+
+            function (callback) {
+                self.what = "Verify balances 3.";
+
+                testutils.verify_balances($.remote, {
+                        "alice"   : "0.5/AUD/mtgox",
+                        "bob"     : "0.5/AUD/mtgox",
+                        "mtgox"   : [ "-0.5/AUD/alice","-0.5/AUD/bob" ],
+                    },
+                    callback);
+            },
+
+            function (callback) {
+                self.what  = "Subscribe and accept.";
+                self.count = 0;
+                self.found = 0;
+
+                testutils.rpc(config,'{"method":"ledger"}')
+                    .then(function(result){
+                        //console.log('ledger1 '+ JSON.stringify(result));
+                        return testutils.rpc(config,'{"method":"ledger_accept"}'); })
+                    .then(function(result){
+                        //console.log('ledger_accept '+ JSON.stringify(result));
+                        return testutils.rpc(config,'{"method":"ledger"}'); })
+                    .then(function(result){
+                        //console.log('ledger2 '+JSON.stringify(result));
+                        callback();});
+
+            },
+            function (callback) {
+                self.what = "Verify balances 4.";
+
+                testutils.verify_balances($.remote, {
+                        "alice"   : "0.5/AUD/mtgox",
+                        "bob"     : "0.5/AUD/mtgox",
+                        "mtgox"   : [ "-0.5/AUD/alice","-0.5/AUD/bob" ]
+                    },
+                    callback);
+            },
+        ]
+
+        async.waterfall(steps, function (error) {
+            assert(!error, self.what);
+            done();
+        });
+    });
+
     test("trust line", function (done) {
         var self = this;
 
@@ -504,147 +640,5 @@ suite('Gateway', function() {
         });
     });
 
-    test("subscribe test: customer to customer with and without transfer fee: transaction retry logic", function (done) {
 
-        var self = this;
-
-        // $.remote.set_trace();
-
-        var steps = [
-            function (callback) {
-                self.what = "Create accounts.";
-
-                testutils.create_accounts($.remote, "root", "10000.0", ["alice", "bob", "mtgox"], callback);
-            },
-
-            function (callback) {
-                self.what = "Set credit limits.";
-
-                testutils.credit_limits($.remote,
-                    {
-                        "alice" : "100/AUD/mtgox",
-                        "bob"   : "100/AUD/mtgox",
-                    },
-                    callback);
-            },
-
-            function (callback) {
-                self.what = "Distribute funds.";
-
-                testutils.payments($.remote, { "mtgox" : [ "1/AUD/alice" ] },  callback);
-            },
-
-            function (callback) {
-                self.what = "Verify balances.";
-
-                testutils.verify_balances($.remote, {
-                        "alice"   : "1/AUD/mtgox",
-                        "mtgox"   : "-1/AUD/alice",
-                    },
-                    callback);
-            },
-
-            function (callback) {
-                self.what = "Alice sends Bob 1 AUD";
-
-                $.remote.transaction()
-                    .payment("alice", "bob", "1/AUD/mtgox")
-                    .on('proposed', function (m) {
-                        // console.log("proposed: %s", JSON.stringify(m));
-
-                        callback(m.engine_result !== 'tesSUCCESS');
-                    })
-                    .submit();
-            },
-
-            function (callback) {
-                self.what = "Verify balances 2.";
-
-                testutils.verify_balances($.remote, {
-                        "alice"   : "0/AUD/mtgox",
-                        "bob"     : "1/AUD/mtgox",
-                        "mtgox"   : "-1/AUD/bob",
-                    },
-                    callback);
-            },
-
-            //          function (callback) {
-            //            self.what = "Set transfer rate.";
-            //
-            //            $.remote.transaction()
-            //              .account_set("mtgox")
-            //              .transfer_rate(1e9*1.1)
-            //              .once('proposed', function (m) {
-            //                  // console.log("proposed: %s", JSON.stringify(m));
-            //                  callback(m.engine_result !== 'tesSUCCESS');
-            //                })
-            //              .submit();
-            //          },
-
-            function (callback) {
-                self.what = "Bob sends Alice 0.5 AUD";
-
-                $.remote.transaction()
-                    .payment("bob", "alice", "0.5/AUD/mtgox")
-                    .on('proposed', function (m) {
-                        // console.log("proposed: %s", JSON.stringify(m));
-
-                        callback(m.engine_result !== 'tesSUCCESS');
-                    })
-                    .submit();
-            },
-
-            function (callback) {
-                self.what = "Verify balances 3.";
-
-                testutils.verify_balances($.remote, {
-                        "alice"   : "0.5/AUD/mtgox",
-                        "bob"     : "0.5/AUD/mtgox",
-                        "mtgox"   : [ "-0.5/AUD/alice","-0.5/AUD/bob" ],
-                    },
-                    callback);
-            },
-
-            function (callback) {
-                self.what  = "Subscribe and accept.";
-                self.count = 0;
-                self.found = 0;
-
-                $.remote
-                    .on('transaction', function (m) {
-                        // console.log("ACCOUNT: %s", JSON.stringify(m));
-                        self.found  = 1;
-                    })
-                    .on('ledger_closed', function (m) {
-                        // console.log("LEDGER_CLOSE: %d: %s", self.count, JSON.stringify(m));
-
-                        if (self.count) {
-                            callback(!self.found);
-                        } else {
-                            self.count  = 1;
-                            $.remote.ledger_accept();
-                        }
-                    })
-                    .request_subscribe().accounts("mtgox")
-                    .request();
-
-                $.remote.ledger_accept();
-            },
-            function (callback) {
-                self.what = "Verify balances 4.";
-
-                testutils.verify_balances($.remote, {
-                        "alice"   : "0.5/AUD/mtgox",
-                        "bob"     : "0.5/AUD/mtgox",
-                        "mtgox"   : [ "-0.5/AUD/alice","-0.5/AUD/bob" ],
-                    },
-                    callback);
-            },
-        ]
-
-        async.waterfall(steps, function (error) {
-            assert(!error, self.what);
-            done();
-        });
-    });
 });
