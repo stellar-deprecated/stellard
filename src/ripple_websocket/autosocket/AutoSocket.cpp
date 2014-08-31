@@ -20,9 +20,10 @@
 #include "AutoSocket.h"
 
 #include "ripple_basics/log/Log.h"
-#include "beast/beast/asio/bind_handler.h"
+//#include "beast/beast/asio/bind_handler.h"
 
 ripple::LogPartition AutoSocket::AutoSocketPartition ("AutoSocket");
+
 
 bool AutoSocket::rfc2818_verify(const std::string& domain, bool preverified, boost::asio::ssl::verify_context& ctx)
 {

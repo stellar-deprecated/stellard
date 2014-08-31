@@ -20,7 +20,7 @@
 #ifndef __AUTOSOCKET_H_
 #define __AUTOSOCKET_H_
 
-//#include "../../beast/beast/asio/bind_handler.h"
+#include "beast/beast/asio/bind_handler.h"
 //#include "../../beast/modules/beast_core/system/Functional.h"
 
 #include <boost/bind.hpp>
@@ -115,25 +115,25 @@ public:
 	void async_handshake(handshake_type type, callback cbFunc);
 
     template <typename ShutdownHandler>
-    void async_shutdown (ShutdownHandler handler)
-    {
-        if (isSecure ())
-            mSocket->async_shutdown (handler);
-        else
-        {
-        	error_code ec;
-        	try
-        	{
-	            lowest_layer ().shutdown (plain_socket::shutdown_both);
+	void async_shutdown(ShutdownHandler handler)
+	{
+		if (isSecure())
+			mSocket->async_shutdown(handler);
+		else
+		{
+			error_code ec;
+			try
+			{
+				lowest_layer().shutdown(plain_socket::shutdown_both);
 			}
 			catch (boost::system::system_error& e)
 			{
 				ec = e.code();
 			}
-            mSocket->get_io_service ().post (
-                beast::asio::bind_handler (handler, ec));
-        }
-    }
+			mSocket->get_io_service().post(
+				beast::asio::bind_handler(handler, ec));
+		}
+	}
 
     template <typename Seq, typename Handler>
     void async_read_some (const Seq& buffers, Handler handler)
