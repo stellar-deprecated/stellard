@@ -249,6 +249,7 @@ COMPILED_FILES.extend([
 	'src/ripple_overlay/impl/PeerImp.cpp',
 	'src/ripple_data/protocol/BuildInfo.cpp',
 	'src/ripple_app/misc/NetworkOPs.cpp',
+	'src/ripple_websocket/autosocket/AutoSocket.cpp',
     ])
 
 # ------------------------------
