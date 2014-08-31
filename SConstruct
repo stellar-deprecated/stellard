@@ -246,6 +246,9 @@ COMPILED_FILES.extend([
     'src/ripple_data/crypto/EdKeyPair.cpp',
 	'src/ripple_data/crypto/StellarPrivateKey.cpp',
 	'src/ripple_data/crypto/StellarPublicKey.cpp',
+	'src/ripple_overlay/impl/PeerImp.cpp',
+	'src/ripple_data/protocol/BuildInfo.cpp',
+	'src/ripple_app/misc/NetworkOPs.cpp',
     ])
 
 # ------------------------------
