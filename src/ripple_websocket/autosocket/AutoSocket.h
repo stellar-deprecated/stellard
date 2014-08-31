@@ -20,7 +20,16 @@
 #ifndef __AUTOSOCKET_H_
 #define __AUTOSOCKET_H_
 
-#include "../../beast/beast/asio/bind_handler.h"
+//#include "../../beast/beast/asio/bind_handler.h"
+//#include "../../beast/modules/beast_core/system/Functional.h"
+
+#include <boost/bind.hpp>
+#include <boost/bind/arg.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
+#include "beast/beast/utility/noexcept.h"
+#include "ripple_basics/log/LogPartition.h"
 
 // Socket wrapper that supports both SSL and non-SSL connections.
 // Generally, handle it as you would an SSL connection.
@@ -59,7 +68,7 @@ public:
         return mSocket->get_io_service ();
     }
 
-    bool            isSecure ()
+    bool isSecure ()
     {
         return mSecure;
     }
@@ -98,62 +107,12 @@ public:
     }
 
 
-    static bool rfc2818_verify (const std::string& domain, bool preverified, boost::asio::ssl::verify_context& ctx)
-    {
-        using namespace ripple;
+	static bool rfc2818_verify(const std::string& domain, bool preverified, boost::asio::ssl::verify_context& ctx);
 
-        if (boost::asio::ssl::rfc2818_verification (domain) (preverified, ctx))
-            return true;
+	boost::system::error_code verify(const std::string& strDomain);
 
-        Log (lsWARNING, AutoSocketPartition) << "Outbound SSL connection to " <<
-                                             domain << " fails certificate verification";
-        return false;
-    }
 
-    boost::system::error_code verify (const std::string& strDomain)
-    {
-        boost::system::error_code ec;
-
-        mSocket->set_verify_mode (boost::asio::ssl::verify_peer);
-
-        // XXX Verify semantics of RFC 2818 are what we want.
-        mSocket->set_verify_callback (boost::bind (&rfc2818_verify, strDomain, boost::placeholders::_1, boost::placeholders::_2), ec);
-
-        return ec;
-    }
-
-/*
-    template <typename HandshakeHandler>
-    BOOST_ASIO_INITFN_RESULT_TYPE(HandshakeHandler, void (boost::system::error_code))
-    async_handshake (handshake_type role, BOOST_ASIO_MOVE_ARG(HandshakeHandler) handler)
-    {
-        return async_handshake_cb (role, handler);
-    }
-*/
-
-    void async_handshake (handshake_type type, callback cbFunc)
-    {
-        if ((type == ssl_socket::client) || (mSecure))
-        {
-            // must be ssl
-            mSecure = true;
-            mSocket->async_handshake (type, cbFunc);
-        }
-        else if (mBuffer.empty ())
-        {
-            // must be plain
-            mSecure = false;
-            mSocket->get_io_service ().post (
-                beast::asio::bind_handler (cbFunc, error_code()));
-        }
-        else
-        {
-            // autodetect
-            mSocket->next_layer ().async_receive (boost::asio::buffer (mBuffer), boost::asio::socket_base::message_peek,
-                                                  boost::bind (&AutoSocket::handle_autodetect, this, cbFunc,
-                                                          boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
-        }
-    }
+	void async_handshake(handshake_type type, callback cbFunc);
 
     template <typename ShutdownHandler>
     void async_shutdown (ShutdownHandler handler)
@@ -267,37 +226,7 @@ public:
     }
 
 protected:
-    void handle_autodetect (callback cbFunc, const error_code& ec, size_t bytesTransferred)
-    {
-        using namespace ripple;
-
-        if (ec)
-        {
-            Log (lsWARNING, AutoSocketPartition) << "Handle autodetect error: " << ec;
-            cbFunc (ec);
-        }
-        else if ((mBuffer[0] < 127) && (mBuffer[0] > 31) &&
-                 ((bytesTransferred < 2) || ((mBuffer[1] < 127) && (mBuffer[1] > 31))) &&
-                 ((bytesTransferred < 3) || ((mBuffer[2] < 127) && (mBuffer[2] > 31))) &&
-                 ((bytesTransferred < 4) || ((mBuffer[3] < 127) && (mBuffer[3] > 31))))
-        {
-            // not ssl
-            if (AutoSocketPartition.doLog (lsTRACE))
-                Log (lsTRACE, AutoSocketPartition) << "non-SSL";
-
-            mSecure = false;
-            cbFunc (ec);
-        }
-        else
-        {
-            // ssl
-            if (AutoSocketPartition.doLog (lsTRACE))
-                Log (lsTRACE, AutoSocketPartition) << "SSL";
-
-            mSecure = true;
-            mSocket->async_handshake (ssl_socket::server, cbFunc);
-        }
-    }
+	void handle_autodetect(callback cbFunc, const error_code& ec, size_t bytesTransferred);
 
 private:
     static ripple::LogPartition AutoSocketPartition;

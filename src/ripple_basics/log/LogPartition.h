@@ -20,6 +20,11 @@
 #ifndef RIPPLE_BASICS_LOGPARTITION_H_INCLUDED
 #define RIPPLE_BASICS_LOGPARTITION_H_INCLUDED
 
+#include <vector>
+#include "ripple_basics/log/LogSeverity.h"
+#include "beast/beast/utility/Journal.h"
+
+
 namespace ripple {
 
 class LogPartition : public beast::Journal::Sink

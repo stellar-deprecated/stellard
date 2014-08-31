@@ -20,6 +20,8 @@
 #ifndef RIPPLE_BASICTYPES_H
 #define RIPPLE_BASICTYPES_H
 
+#include <boost/thread/recursive_mutex.hpp>
+
 namespace ripple {
 
 /** Synchronization primitives.

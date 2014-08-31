@@ -19,6 +19,8 @@
 
 #ifndef RIPPLE_LOADMONITOR_H_INCLUDED
 #define RIPPLE_LOADMONITOR_H_INCLUDED
+#include "ripple_core/functional/LoadEvent.h"
+
 
 namespace ripple {
 
@@ -63,7 +65,7 @@ private:
 
     void update ();
 
-    typedef RippleMutex LockType;
+	typedef std::mutex LockType;
     typedef std::lock_guard <LockType> ScopedLockType;
     LockType mLock;
 

@@ -20,6 +20,8 @@
 #ifndef RIPPLE_INBOUNDLEDGERS_H
 #define RIPPLE_INBOUNDLEDGERS_H
 
+#include "ripple_app/ledger/InboundLedger.h"
+
 namespace ripple {
 
 /** Manages the lifetime of inbound ledgers.

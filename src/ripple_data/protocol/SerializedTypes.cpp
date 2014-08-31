@@ -46,6 +46,50 @@ bool SerializedType::isEquivalent (const SerializedType& t) const
     return false;
 }
 
+void SerializedType::addFieldID(Serializer& s) const
+{
+	s.addFieldID(fName->fieldType, fName->fieldValue);
+}
+
+void STUInt8::add(Serializer& s) const
+{
+	s.add8(value);
+}
+
+void STUInt16::add(Serializer& s) const
+{
+	s.add16(value);
+}
+
+void STUInt32::add(Serializer& s) const
+{
+	s.add32(value);
+}
+
+void STUInt64::add(Serializer& s) const
+{
+	s.add64(value);
+}
+void STHash128::add(Serializer& s) const
+{
+	s.add128(value);
+}
+
+void STHash160::add(Serializer& s) const
+{
+	s.add160(value);
+}
+
+void STHash256::add(Serializer& s) const
+{
+	s.add256(value);
+}
+
+void STVariableLength::add(Serializer& s) const
+{
+	s.addVL(value);
+}
+
 void STPathSet::printDebug ()
 {
     // VFALCO NOTE Can't use Log::out() because of std::endl

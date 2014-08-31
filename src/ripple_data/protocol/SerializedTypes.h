@@ -20,6 +20,12 @@
 #ifndef RIPPLE_SERIALIZEDTYPES_H
 #define RIPPLE_SERIALIZEDTYPES_H
 
+#include <boost/foreach.hpp>
+#include "beast/beast/utility/Zero.h"
+#include "ripple_data/protocol/FieldNames.h"
+
+using beast::zero;
+
 namespace ripple {
 
 // VFALCO TODO fix this restriction on copy assignment.
@@ -69,6 +75,8 @@ static inline const uint160& get_u160_one ()
 // VFALCO TODO Document this as it looks like a central class.
 //             STObject is derived from it
 //
+class Serializer;
+
 class SerializedType
 {
 public:
@@ -136,10 +144,7 @@ public:
 
     virtual bool isEquivalent (const SerializedType& t) const;
 
-    void addFieldID (Serializer& s) const
-    {
-        s.addFieldID (fName->fieldType, fName->fieldValue);
-    }
+	void addFieldID(Serializer& s) const;
 
     SerializedType& operator= (const SerializedType& t);
 
@@ -206,7 +211,7 @@ inline std::ostream& operator<< (std::ostream& out, const SerializedType& t)
 }
 
 //------------------------------------------------------------------------------
-
+class SerializerIterator;
 class STUInt8 : public SerializedType
 {
 public:
@@ -230,10 +235,7 @@ public:
     }
     std::string getText () const;
     Json::Value getJson (int) const;
-    void add (Serializer& s) const
-    {
-        s.add8 (value);
-    }
+	void add(Serializer& s) const;
 
     unsigned char getValue () const
     {
@@ -289,10 +291,7 @@ public:
     }
     std::string getText () const;
     Json::Value getJson (int) const;
-    void add (Serializer& s) const
-    {
-        s.add16 (value);
-    }
+	void add(Serializer& s) const;
 
     std::uint16_t getValue () const
     {
@@ -348,10 +347,7 @@ public:
     }
     std::string getText () const;
     Json::Value getJson (int) const;
-    void add (Serializer& s) const
-    {
-        s.add32 (value);
-    }
+	void add(Serializer& s) const;
 
     std::uint32_t getValue () const
     {
@@ -406,10 +402,7 @@ public:
     }
     std::string getText () const;
     Json::Value getJson (int) const;
-    void add (Serializer& s) const
-    {
-        s.add64 (value);
-    }
+	void add(Serializer& s) const;
 
     std::uint64_t getValue () const
     {
@@ -864,10 +857,7 @@ public:
         return STI_HASH128;
     }
     virtual std::string getText () const;
-    void add (Serializer& s) const
-    {
-        s.add128 (value);
-    }
+	void add(Serializer& s) const;
 
     const uint128& getValue () const
     {
@@ -937,10 +927,7 @@ public:
         return STI_HASH160;
     }
     virtual std::string getText () const;
-    void add (Serializer& s) const
-    {
-        s.add160 (value);
-    }
+	void add(Serializer& s) const;
 
     const uint160& getValue () const
     {
@@ -1010,10 +997,7 @@ public:
         return STI_HASH256;
     }
     std::string getText () const;
-    void add (Serializer& s) const
-    {
-        s.add256 (value);
-    }
+	void add(Serializer& s) const;
 
     uint256 const& getValue () const
     {
@@ -1077,10 +1061,7 @@ public:
         return STI_VL;
     }
     virtual std::string getText () const;
-    void add (Serializer& s) const
-    {
-        s.addVL (value);
-    }
+	void add(Serializer& s) const;
 
     Blob const& peekValue () const
     {

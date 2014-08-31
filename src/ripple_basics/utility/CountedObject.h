@@ -21,6 +21,8 @@
 #define RIPPLE_COUNTEDOBJECT_H_INCLUDED
 
 #include "../../beast/beast/utility/LeakChecked.h"
+#include <vector>
+#include <atomic>
 
 namespace ripple {
 

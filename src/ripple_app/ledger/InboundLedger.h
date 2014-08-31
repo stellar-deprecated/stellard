@@ -20,6 +20,8 @@
 #ifndef RIPPLE_INBOUNDLEDGER_H
 #define RIPPLE_INBOUNDLEDGER_H
 
+#include "ripple_app/peers/PeerSet.h"
+
 namespace ripple {
 
 // VFALCO TODO Rename to InboundLedger

@@ -31,7 +31,7 @@ struct BuildInfo
 
         http://semver.org/
     */
-    static beast::String const& getVersionString ();
+    static std::string const& getVersionString ();
 
     /** Full server version string.
 

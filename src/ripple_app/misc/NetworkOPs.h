@@ -21,6 +21,7 @@
 #define RIPPLE_NETWORKOPS_H
 
 #include <tuple>
+#include "ripple_net/rpc/InfoSub.h"
 
 namespace ripple {
 
@@ -142,8 +143,7 @@ public:
     // must complete immediately
     // VFALCO TODO Make this a TxCallback structure
     typedef std::function<void (Transaction::pointer, TER)> stCallback;
-    virtual void submitTransaction (Job&, SerializedTransaction::pointer,
-        stCallback callback = stCallback ()) = 0;
+    virtual void submitTransaction (Job&, SerializedTransaction::pointer) = 0;
     virtual Transaction::pointer submitTransactionSync (Transaction::ref tpTrans,
         bool bAdmin, bool bLocal, bool bFailHard, bool bSubmit) = 0;
     virtual void runTransactionQueue () = 0;

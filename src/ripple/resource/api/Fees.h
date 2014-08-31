@@ -20,6 +20,8 @@
 #ifndef RIPPLE_RESOURCE_FEES_H_INCLUDED
 #define RIPPLE_RESOURCE_FEES_H_INCLUDED
 
+#include "ripple/resource/api/LegacyFees.h"
+
 namespace ripple {
 namespace Resource {
 

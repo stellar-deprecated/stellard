@@ -20,6 +20,9 @@
 #ifndef CPPTL_JSON_H_INCLUDED
 #define CPPTL_JSON_H_INCLUDED
 
+#include "../ripple/json/api/json_config.h"
+#include "../ripple/json/api/json_forwards.h"
+
 /** \brief JSON (JavaScript Object Notation).
  */
 namespace Json
@@ -115,6 +118,9 @@ private:
  * It is possible to iterate over the list of a #objectValue values using
  * the getMemberNames() method.
  */
+class ValueIterator;
+class ValueConstIterator;
+
 class JSON_API Value
 {
     friend class ValueIteratorBase;
@@ -206,7 +212,7 @@ public:
      */
     Value ( const StaticString& value );
     Value ( const std::string& value );
-    Value (beast::String const& beastString);
+    //JED: hope we don't need Value (beast::String const& beastString);
 # ifdef JSON_USE_CPPTL
     Value ( const CppTL::ConstString& value );
 # endif

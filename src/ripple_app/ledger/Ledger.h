@@ -20,8 +20,23 @@
 #ifndef RIPPLE_LEDGER_H
 #define RIPPLE_LEDGER_H
 
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/thread/recursive_mutex.hpp>
+#include <mutex>
+#include <set>
+#include "ripple_basics/utility/CountedObject.h"
+#include "ripple/types/api/base_uint.h"
+#include "ripple_data/protocol/RippleAddress.h"
+#include "ripple_data/protocol/Serializer.h"
+#include "ripple_app/shamap/SHAMap.h"
+#include "ripple_app/tx/Transaction.h"
+#include "ripple_app/tx/TransactionMeta.h"
+#include "ripple_app/misc/AccountState.h"
+#include "ripple_app/misc/SerializedLedger.h"
+
 namespace ripple {
 
+	
 class Job;
 
 enum LedgerStateParms
@@ -55,7 +70,7 @@ protected:
     friend class TransactionEngine;
     friend class Transactor;
 
-    typedef RippleRecursiveMutex LockType;
+	typedef boost::recursive_mutex LockType;
     typedef std::lock_guard <LockType> ScopedLockType;
     LockType mLock;
 };
@@ -486,7 +501,7 @@ private:
     SHAMap::pointer mTransactionMap;
     SHAMap::pointer mAccountStateMap;
 
-    typedef RippleMutex StaticLockType;
+	typedef std::mutex StaticLockType;
     typedef std::lock_guard <StaticLockType> StaticScopedLockType;
     // ledgers not fully saved, validated ledger present but DB may not be correct yet
     static StaticLockType sPendingSaveLock;

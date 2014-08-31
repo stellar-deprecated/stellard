@@ -78,7 +78,7 @@ class FileOutputStream;
 // Order matters, since headers don't have their own #include lines.
 // Add new includes to the bottom.
 
-#include "system/Functional.h"
+//#include "system/Functional.h"
 
 #include "time/AtExitHook.h"
 #include "time/Time.h"

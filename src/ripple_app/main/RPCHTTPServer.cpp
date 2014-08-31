@@ -137,8 +137,8 @@ public:
         // The "boost::"'s are a workaround for broken versions of tr1::functional that
         // require the reference wrapper to be callable. HTTP::Session has abstract functions
         // and so references to it are not callable.
-        m_jobQueue.addJob (jtRPC, "RPC", boost::bind (
-            &RPCHTTPServerImp::processSession, this, boost::_1,
+        m_jobQueue.addJob (jtRPC, "RPC", std::bind (
+			&RPCHTTPServerImp::processSession, this, std::placeholders::_1,
                 boost::ref (session)));
 #endif
     }

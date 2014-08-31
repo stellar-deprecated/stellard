@@ -393,6 +393,7 @@ Value::Value ( const std::string& value )
 
 }
 
+/*
 Value::Value (beast::String const& beastString)
     : type_ ( stringValue )
     , allocated_ ( true )
@@ -405,6 +406,7 @@ Value::Value (beast::String const& beastString)
                      (unsigned int)beastString.length () );
 
 }
+*/
 
 Value::Value ( const StaticString& value )
     : type_ ( stringValue )

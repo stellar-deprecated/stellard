@@ -20,6 +20,8 @@
 #ifndef RIPPLE_TXFORMATS_H_INCLUDED
 #define RIPPLE_TXFORMATS_H_INCLUDED
 
+#include "ripple_data/protocol/KnownFormats.h"
+
 namespace ripple {
 
 /** Transaction type identifiers.
