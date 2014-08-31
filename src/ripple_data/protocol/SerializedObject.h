@@ -20,11 +20,14 @@
 #ifndef RIPPLE_SERIALIZEDOBJECT_H
 #define RIPPLE_SERIALIZEDOBJECT_H
 
-#include <boost/ptr_container/ptr_vector.hpp> // VFALCO NOTE this looks like junk
+#include <boost/ptr_container/ptr_vector.hpp> 
+#include "ripple_basics/utility/CountedObject.h"
+#include "ripple_data/protocol/SerializedTypes.h"
 
 namespace ripple {
 
 class STArray;
+class SOTemplate;
 
 class STObject
     : public SerializedType
@@ -98,12 +101,7 @@ public:
 
     // VFALCO NOTE does this return an expensive copy of an object with a dynamic buffer?
     // VFALCO TODO Remove this function and fix the few callers.
-    Serializer getSerializer () const
-    {
-        Serializer s;
-        add (s);
-        return s;
-    }
+	Serializer getSerializer() const;
 
     std::string getFullText () const;
     std::string getText () const;

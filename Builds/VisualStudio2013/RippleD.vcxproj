@@ -512,7 +512,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple\sitefiles\ripple_sitefiles.cpp" />
+    <ClCompile Include="..\..\src\ripple\sitefiles\ripple_sitefiles.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\src\ripple\sslutil\impl\CBigNum.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -614,22 +616,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\ripple_app\consensus\LedgerConsensus.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple_app\contracts\Contract.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple_app\contracts\Interpreter.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple_app\contracts\Operation.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple_app\contracts\ScriptData.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -750,7 +736,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\ripple_app\misc\NetworkOPs.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\ripple_app\misc\AccountItem.cpp">
@@ -781,6 +767,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\src\ripple_app\misc\NetworkOPsImp.cpp" />
     <ClCompile Include="..\..\src\ripple_app\misc\NicknameState.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -1231,7 +1218,7 @@
     <ClCompile Include="..\..\src\ripple_data\crypto\StellarPrivateKey.cpp" />
     <ClCompile Include="..\..\src\ripple_data\crypto\StellarPublicKey.cpp" />
     <ClCompile Include="..\..\src\ripple_data\protocol\BuildInfo.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\ripple_data\protocol\FieldNames.cpp">
@@ -1338,6 +1325,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\src\ripple_overlay\impl\PeerImp.cpp" />
     <ClCompile Include="..\..\src\ripple_overlay\ripple_overlay.cpp" />
     <ClCompile Include="..\..\src\ripple_rpc\handlers\AccountCurrencies.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -1625,7 +1613,7 @@
     </ClCompile>
     <ClCompile Include="..\..\src\ripple_rpc\ripple_rpc.cpp" />
     <ClCompile Include="..\..\src\ripple_websocket\autosocket\AutoSocket.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\ripple_websocket\autosocket\LogWebsockets.cpp">
@@ -1810,6 +1798,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\protobuf_core.cpp" />
+    <ClCompile Include="..\..\src\sanity\FirmezaMaster.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\src\snappy\snappy.unity.cpp" />
     <ClCompile Include="..\..\src\websocket\src\base64\base64.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -1919,6 +1910,7 @@
     <ClInclude Include="..\..\..\libsodium\include\sodium\utils.h" />
     <ClInclude Include="..\..\..\libsodium\include\sodium\version.h" />
     <ClInclude Include="..\..\src\BeastConfig.h" />
+    <ClInclude Include="..\..\src\history.h" />
     <ClInclude Include="..\..\src\ripple\algorithm\api\CycledSet.h" />
     <ClInclude Include="..\..\src\ripple\algorithm\api\DecayingSample.h" />
     <ClInclude Include="..\..\src\ripple\common\byte_view.h" />
@@ -2168,10 +2160,6 @@
     <ClInclude Include="..\..\src\ripple_app\book\Types.h" />
     <ClInclude Include="..\..\src\ripple_app\consensus\DisputedTx.h" />
     <ClInclude Include="..\..\src\ripple_app\consensus\LedgerConsensus.h" />
-    <ClInclude Include="..\..\src\ripple_app\contracts\Contract.h" />
-    <ClInclude Include="..\..\src\ripple_app\contracts\Interpreter.h" />
-    <ClInclude Include="..\..\src\ripple_app\contracts\Operation.h" />
-    <ClInclude Include="..\..\src\ripple_app\contracts\ScriptData.h" />
     <ClInclude Include="..\..\src\ripple_app\data\Database.h" />
     <ClInclude Include="..\..\src\ripple_app\data\DatabaseCon.h" />
     <ClInclude Include="..\..\src\ripple_app\data\DBInit.h" />
@@ -2204,6 +2192,7 @@
     <ClInclude Include="..\..\src\ripple_app\main\RPCHTTPServer.h" />
     <ClInclude Include="..\..\src\ripple_app\main\Tuning.h" />
     <ClInclude Include="..\..\src\ripple_app\misc\NetworkOPs.h" />
+    <ClInclude Include="..\..\src\ripple_app\misc\NetworkOPsImp.h" />
     <ClInclude Include="..\..\src\ripple_app\misc\PowResult.h" />
     <ClInclude Include="..\..\src\ripple_app\misc\AccountItem.h" />
     <ClInclude Include="..\..\src\ripple_app\misc\AccountItems.h" />
@@ -2419,6 +2408,8 @@
     <ClInclude Include="..\..\src\leveldb\util\mutexlock.h" />
     <ClInclude Include="..\..\src\leveldb\util\posix_logger.h" />
     <ClInclude Include="..\..\src\leveldb\util\random.h" />
+    <ClInclude Include="..\..\src\sanity\FirmezaMaster.h" />
+    <ClInclude Include="..\..\src\sanity\TransactionSet.h" />
     <ClInclude Include="..\..\src\websocket\src\base64\base64.h" />
     <ClInclude Include="..\..\src\websocket\src\common.hpp" />
     <ClInclude Include="..\..\src\websocket\src\connection.hpp" />
@@ -2522,6 +2513,7 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>RippleD</RootNamespace>
     <IgnoreWarnCompileDuplicatedFilename>true</IgnoreWarnCompileDuplicatedFilename>
+    <ProjectName>stellard</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -2576,7 +2568,7 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <OpenMPSupport>false</OpenMPSupport>
-      <AdditionalIncludeDirectories>/src;../../../libsodium/include;C:\code\libsodium\include\sodium;c:/code/boost_1_55_0;C:\code\OpenSSL-64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;../;/src;../../../libsodium/include;C:\code\libsodium\include\sodium;c:/code/boost_1_55_0;C:\code\OpenSSL-64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

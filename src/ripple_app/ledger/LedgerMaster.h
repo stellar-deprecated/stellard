@@ -20,6 +20,9 @@
 #ifndef RIPPLE_LEDGERMASTER_H_INCLUDED
 #define RIPPLE_LEDGERMASTER_H_INCLUDED
 
+#include "ripple_app/ledger/Ledger.h"
+#include "ripple_app/ledger/LedgerEntrySet.h"
+
 namespace ripple {
 
 // Tracks the current ledger and any ledgers in the process of closing

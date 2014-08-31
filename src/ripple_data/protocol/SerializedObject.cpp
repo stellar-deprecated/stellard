@@ -206,6 +206,13 @@ bool STObject::setType (const SOTemplate& type)
     return valid;
 }
 
+Serializer STObject::getSerializer() const
+{
+	Serializer s;
+	add(s);
+	return s;
+}
+
 bool STObject::isValidForType ()
 {
     boost::ptr_vector<SerializedType>::iterator it = mData.begin ();

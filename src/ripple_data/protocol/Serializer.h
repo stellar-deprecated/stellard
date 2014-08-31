@@ -20,7 +20,9 @@
 #ifndef RIPPLE_SERIALIZER_H
 #define RIPPLE_SERIALIZER_H
 
+#include <iomanip>
 #include "../../ripple/common/byte_view.h"
+#include "../ripple_data/protocol/FieldNames.h"
 
 namespace ripple {
 

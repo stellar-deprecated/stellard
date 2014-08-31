@@ -27,6 +27,6 @@
 // If you don't include this file, and you include boost headers,
 // Beast will generate a compile error with an explanation of why.
 
-#include "BoostPlaceholdersFix.h"
+//#include "BoostPlaceholdersFix.h"
 
 #endif

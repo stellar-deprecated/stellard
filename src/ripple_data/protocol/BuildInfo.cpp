@@ -17,9 +17,13 @@
 */
 //==============================================================================
 
-#include "../../beast/beast/unit_test/suite.h"
-#include "../../beast/modules/beast_core/diagnostic/FatalError.h"
-#include "../../beast/modules/beast_core/diagnostic/SemanticVersion.h"
+#include "../../BeastConfig.h"
+#include "beast/modules/beast_core/beast_core.h"
+
+#include "beast/beast/unit_test/suite.h"
+#include "beast/modules/beast_core/diagnostic/FatalError.h"
+#include "beast/modules/beast_core/diagnostic/SemanticVersion.h"
+#include "BuildInfo.h"
 
 namespace ripple {
 
@@ -31,7 +35,7 @@ char const* BuildInfo::getRawVersionString ()
     //
     //  The build version number (edit this for each release)
     //
-        "0.25.2"
+        "0.25.3"
     //
     //  Must follow the format described here:
     //
@@ -83,7 +87,8 @@ BuildInfo::Protocol const& BuildInfo::getMinimumProtocol ()
 //
 //------------------------------------------------------------------------------
 
-beast::String const& BuildInfo::getVersionString ()
+
+std::string BuildInfo::getVersionString()
 {
     struct SanityChecker
     {
@@ -104,7 +109,7 @@ beast::String const& BuildInfo::getVersionString ()
 
     static SanityChecker value;
 
-    return value.versionString;
+	return value.versionString.toStdString();
 }
 
 char const* BuildInfo::getFullVersionString ()
@@ -227,7 +232,7 @@ public:
 
         log <<
             "  Ripple version: " <<
-            BuildInfo::getVersionString().toStdString();
+            BuildInfo::getVersionString();
     }
 };
 

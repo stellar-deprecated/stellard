@@ -20,6 +20,9 @@
 #ifndef RIPPLE_SERIALIZEDTRANSACTION_H
 #define RIPPLE_SERIALIZEDTRANSACTION_H
 
+#include "ripple_data/protocol/SerializedObject.h"
+#include "ripple_data/protocol/TxFormats.h"
+
 namespace ripple {
 
 // VFALCO TODO replace these macros with language constants

@@ -234,4 +234,4 @@ void beast_reportFatalError (char const* message, char const* fileName, int line
 #endif
 
 // Must be outside the namespace
-#include "system/BoostPlaceholdersFix.cpp"
+//#include "system/BoostPlaceholdersFix.cpp"

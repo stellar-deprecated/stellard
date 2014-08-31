@@ -20,6 +20,8 @@
 #ifndef RIPPLE_SERIALIZEDLEDGER_H
 #define RIPPLE_SERIALIZEDLEDGER_H
 
+#include "ripple_data/protocol/LedgerFormats.h"
+
 namespace ripple {
 
 // VFALCO NOTE

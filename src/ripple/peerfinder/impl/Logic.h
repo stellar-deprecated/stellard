@@ -576,9 +576,9 @@ public:
                     // Test the slot's listening port before
                     // adding it to the livecache for the first time.
                     //                     
-                    m_checker.async_test (ep.address, bind (
+                    m_checker.async_test (ep.address, std::bind (
                         &Logic::checkComplete, this, slot->remote_endpoint (),
-                            ep.address, beast::_1));
+                            ep.address, std::placeholders::_1));
 
                     // Note that we simply discard the first Endpoint
                     // that the neighbor sends when we perform the

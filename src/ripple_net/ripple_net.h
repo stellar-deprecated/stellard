@@ -20,7 +20,9 @@
 #ifndef RIPPLE_NET_H_INCLUDED
 #define RIPPLE_NET_H_INCLUDED
 
-#include "../beast/modules/beast_core/system/BeforeBoost.h"
+#include "ripple_websocket/autosocket/AutoSocket.h"
+
+//#include "../beast/modules/beast_core/system/BeforeBoost.h"
 #include <boost/unordered_set.hpp> // For InfoSub
 
 #include <boost/asio.hpp>
@@ -31,7 +33,7 @@
 #include "../ripple_basics/ripple_basics.h"
 #include "../ripple_core/ripple_core.h"
 #include "../ripple_data/ripple_data.h"
-#include "../ripple_websocket/autosocket/AutoSocket.h"
+
 
 #include "basics/HTTPRequest.h"
 #include "basics/HTTPClient.h"

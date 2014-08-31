@@ -37,9 +37,6 @@
     <Filter Include="[2] Old Ripple\ripple_app">
       <UniqueIdentifier>{bcc68889-41a4-4090-ac3f-12a3ba1d8961}</UniqueIdentifier>
     </Filter>
-    <Filter Include="[2] Old Ripple\ripple_app\contracts">
-      <UniqueIdentifier>{3ac448dc-9f2e-472b-9f3c-cf9140dddf3a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="[2] Old Ripple\ripple_app\data">
       <UniqueIdentifier>{28809512-5c30-469f-a094-90839fbfa210}</UniqueIdentifier>
     </Filter>
@@ -343,7 +340,7 @@
     <Filter Include="[0] Libraries\libsodium\code">
       <UniqueIdentifier>{16646c2b-531d-4719-ae49-45ae15446183}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Reorg">
+    <Filter Include="sanity">
       <UniqueIdentifier>{c52865dd-9ab7-4028-9e5d-53ed6637ed3a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -599,18 +596,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\ripple_data\protocol\LedgerFormats.cpp">
       <Filter>[2] Old Ripple\ripple_data\protocol</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple_app\contracts\Contract.cpp">
-      <Filter>[2] Old Ripple\ripple_app\contracts</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple_app\contracts\Interpreter.cpp">
-      <Filter>[2] Old Ripple\ripple_app\contracts</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple_app\contracts\Operation.cpp">
-      <Filter>[2] Old Ripple\ripple_app\contracts</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple_app\contracts\ScriptData.cpp">
-      <Filter>[2] Old Ripple\ripple_app\contracts</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ripple_app\data\Database.cpp">
       <Filter>[2] Old Ripple\ripple_app\data</Filter>
@@ -1785,6 +1770,15 @@
     <ClCompile Include="..\..\src\ripple_data\crypto\StellarPrivateKey.cpp">
       <Filter>[2] Old Ripple\ripple_data\crypto</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\ripple_overlay\impl\PeerImp.cpp">
+      <Filter>[2] Old Ripple\ripple_overlay\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ripple_app\misc\NetworkOPsImp.cpp">
+      <Filter>[2] Old Ripple\ripple_app\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\sanity\FirmezaMaster.cpp">
+      <Filter>sanity</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\ripple_basics\containers\RangeSet.h">
@@ -2095,18 +2089,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\ripple_data\protocol\LedgerFormats.h">
       <Filter>[2] Old Ripple\ripple_data\protocol</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ripple_app\contracts\Contract.h">
-      <Filter>[2] Old Ripple\ripple_app\contracts</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ripple_app\contracts\Interpreter.h">
-      <Filter>[2] Old Ripple\ripple_app\contracts</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ripple_app\contracts\Operation.h">
-      <Filter>[2] Old Ripple\ripple_app\contracts</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ripple_app\contracts\ScriptData.h">
-      <Filter>[2] Old Ripple\ripple_app\contracts</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\ripple_app\data\Database.h">
       <Filter>[2] Old Ripple\ripple_app\data</Filter>
@@ -3581,6 +3563,18 @@
     </ClInclude>
     <ClInclude Include="..\..\src\ripple_data\crypto\StellarPrivateKey.h">
       <Filter>[2] Old Ripple\ripple_data\crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\history.h">
+      <Filter>sanity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\ripple_app\misc\NetworkOPsImp.h">
+      <Filter>[2] Old Ripple\ripple_app\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\sanity\FirmezaMaster.h">
+      <Filter>sanity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\sanity\TransactionSet.h">
+      <Filter>sanity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -20,6 +20,7 @@
 #ifndef RIPPLE_NODESTORE_NODEOBJECT_H_INCLUDED
 #define RIPPLE_NODESTORE_NODEOBJECT_H_INCLUDED
 
+#include "../ripple_data/protocol/Protocol.h"
 // VFALCO NOTE Intentionally not in the NodeStore namespace
 
 namespace ripple {

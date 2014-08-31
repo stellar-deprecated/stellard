@@ -27,9 +27,9 @@
 #include "../beast/beast/http/URL.h"
 #include "../beast/beast/Threads.h"
 
-#   include "api/Section.h"
-#  include "api/SiteFile.h"
-# include "api/Listener.h"
+#include "api/Section.h"
+#include "api/SiteFile.h"
+#include "api/Listener.h"
 #include "api/Manager.h"
 
 #endif

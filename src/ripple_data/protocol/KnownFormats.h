@@ -21,9 +21,11 @@
 #define RIPPLE_KNOWNFORMATS_H_INCLUDED
 
 #include "../../beast/beast/cxx14/memory.h" // <memory>
+#include "ripple_data/protocol/SerializedObjectTemplate.h"
 
 namespace ripple {
 
+	class SOElement;
 /** Manages a list of known formats.
 
     Each format has a name, an associated KeyType (typically an enumeration),
@@ -31,7 +33,7 @@ namespace ripple {
 
     @tparam KeyType The type of key identifying the format.
 */
-template <class KeyType>
+template <class KeyType> 
 class KnownFormats
 {
 public:

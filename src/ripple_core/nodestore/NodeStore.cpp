@@ -21,21 +21,21 @@
 #include <vector>
 
 // backend support
-#include "../ripple_hyperleveldb/ripple_hyperleveldb.h"
-#include "../ripple_leveldb/ripple_leveldb.h"
-#include "../ripple/rocksdb/ripple_rocksdb.h"
+#include "ripple_hyperleveldb/ripple_hyperleveldb.h"
+#include "ripple_leveldb/ripple_leveldb.h"
+#include "ripple/rocksdb/ripple_rocksdb.h"
 
-#include "../beast/beast/cxx14/memory.h"
+#include "beast/beast/cxx14/memory.h"
 
-#include "../../ripple/common/seconds_clock.h"
-#include "../../ripple/common/TaggedCache.h"
-#include "../../ripple/common/KeyCache.h"
+#include "ripple/common/seconds_clock.h"
+#include "ripple/common/TaggedCache.h"
+#include "ripple/common/KeyCache.h"
 
 #include "impl/Tuning.h"
-#  include "impl/DecodedBlob.h"
-#  include "impl/EncodedBlob.h"
-#  include "impl/BatchWriter.h"
-# include "backend/HyperDBFactory.h"
+#include "impl/DecodedBlob.h"
+#include "impl/EncodedBlob.h"
+#include "impl/BatchWriter.h"
+#include "backend/HyperDBFactory.h"
 #include "backend/HyperDBFactory.cpp"
 # include "backend/LevelDBFactory.h"
 #include "backend/LevelDBFactory.cpp"

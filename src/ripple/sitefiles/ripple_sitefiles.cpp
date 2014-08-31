@@ -28,8 +28,8 @@
 
 #include <set>
 
-#  include "impl/Site.h"
-# include "impl/Logic.h"
+#include "impl/Site.h"
+#include "impl/Logic.h"
 #include "impl/Manager.cpp"
 #include "impl/Section.cpp"
 #include "impl/SiteFile.cpp"

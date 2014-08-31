@@ -20,6 +20,8 @@
 #ifndef RIPPLE_BASICS_LOG_H_INCLUDED
 #define RIPPLE_BASICS_LOG_H_INCLUDED
 
+#include "ripple_basics/log/LogSink.h"
+
 namespace ripple {
 
 /** RAII helper for writing to the LogSink. */

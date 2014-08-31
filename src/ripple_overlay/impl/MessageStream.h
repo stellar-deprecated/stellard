@@ -32,8 +32,7 @@ private:
     std::vector <uint8_t> m_buffer;
 
 public:
-    void
-    write (void const* buffer, std::size_t bytes)
+    void write (void const* buffer, std::size_t bytes)
     {
     }
 };

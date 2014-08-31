@@ -28,7 +28,7 @@ namespace ripple {
 class SyncUnorderedMap
 {
 public:
-    typedef RippleRecursiveMutex LockType;
+	typedef boost::recursive_mutex LockType;
     typedef std::lock_guard <LockType> ScopedLockType;
 };
 

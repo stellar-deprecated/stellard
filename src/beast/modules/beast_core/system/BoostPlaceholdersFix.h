@@ -39,7 +39,7 @@
 // the missing placeholder declarations but put them in a proper namespace.
 //
 // We put the placeholders in boost::placeholders so they can be accessed
-// explicitly to handle the common case of a "using namespace oost" directive
+// explicitly to handle the common case of a "using namespace boost" directive
 // being in effect.
 //
 // Declarations based on boost/bind/placeholders.cpp

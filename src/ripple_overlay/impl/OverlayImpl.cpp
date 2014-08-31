@@ -21,7 +21,9 @@
 #include "PeerDoor.h"
 #include "PeerImp.h"
 
-#include "../../beast/beast/ByteOrder.h"
+#include "beast/beast/ByteOrder.h"
+#include "ripple_core/functional/Config.h"
+
 
 namespace ripple {
 

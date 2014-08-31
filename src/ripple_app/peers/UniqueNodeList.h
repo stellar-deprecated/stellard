@@ -22,6 +22,8 @@
 
 namespace ripple {
 
+	class ClusterNodeStatus;
+
 class UniqueNodeList : public beast::Stoppable
 {
 protected:

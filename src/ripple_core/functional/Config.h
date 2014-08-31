@@ -20,6 +20,7 @@
 #ifndef RIPPLE_CORE_CONFIG_H_INCLUDED
 #define RIPPLE_CORE_CONFIG_H_INCLUDED
 
+#include <boost/filesystem.hpp>
 #include "../../beast/modules/beast_core/files/File.h"
 
 namespace ripple {
@@ -490,6 +491,7 @@ public:
     void load ();
 };
 
+// TODO: at least name this so it is clear it is a global
 extern Config& getConfig ();
 
 } // ripple

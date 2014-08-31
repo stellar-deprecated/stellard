@@ -21,6 +21,7 @@
 #define RIPPLE_APP_APPLICATION_H_INCLUDED
 
 #include "FullBelowCache.h"
+#include "ripple/common/TaggedCache.h"
 
 namespace ripple {
 
@@ -51,6 +52,7 @@ class LocalCredentials;
 class PathRequests;
 
 class DatabaseCon;
+class Validations;
 
 typedef TaggedCache <uint256, Blob> NodeCache;
 typedef TaggedCache <uint256, SerializedLedgerEntry> SLECache;

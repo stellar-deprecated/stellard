@@ -20,6 +20,9 @@
 #ifndef RIPPLE_TRANSACTION_H
 #define RIPPLE_TRANSACTION_H
 
+#include "ripple_app/misc/SerializedTransaction.h"
+#include "ripple_data/protocol/TER.h"
+
 namespace ripple {
 
 //
@@ -69,16 +72,16 @@ public:
 
     bool sign (const RippleAddress & naAccountPrivate);
 
-    bool checkSign () const;
+	bool checkCoherent();
 
     void updateID ()
     {
-        mTransactionID = mTransaction->getTransactionID ();
+		mTransactionID = mSerializedTransaction->getTransactionID();
     }
 
     SerializedTransaction::ref getSTransaction ()
     {
-        return mTransaction;
+		return mSerializedTransaction;
     }
 
     uint256 const& getID () const
@@ -93,28 +96,28 @@ public:
 
     STAmount getAmount () const
     {
-        return mTransaction->getFieldU64 (sfAmount);
+		return mSerializedTransaction->getFieldU64(sfAmount);
     }
 
     STAmount getFee () const
     {
-        return mTransaction->getTransactionFee ();
+		return mSerializedTransaction->getTransactionFee();
     }
 
     std::uint32_t getFromAccountSeq () const
     {
-        return mTransaction->getSequence ();
+		return mSerializedTransaction->getSequence();
     }
 
     std::uint32_t getSourceTag () const
     {
-        return mTransaction->getFieldU32 (sfSourceTag);
+		return mSerializedTransaction->getFieldU32(sfSourceTag);
     }
 
     // VFALCO TODO Should this return a const reference?
     Blob getSignature () const
     {
-        return mTransaction->getSignature ();
+		return mSerializedTransaction->getSignature();
     }
 
     LedgerIndex getLedger () const
@@ -184,7 +187,7 @@ private:
     TransStatus     mStatus;
     TER             mResult;
 
-    SerializedTransaction::pointer mTransaction;
+    SerializedTransaction::pointer mSerializedTransaction;
 };
 
 } // ripple

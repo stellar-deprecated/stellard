@@ -20,7 +20,11 @@
 #ifndef RIPPLE_TRANSACTIONMETA_H
 #define RIPPLE_TRANSACTIONMETA_H
 
+#include <boost/optional.hpp>
+#include "ripple_app/misc/SerializedLedger.h"
+
 namespace ripple {
+	
 
 class TransactionMetaSet : beast::LeakChecked <TransactionMetaSet>
 {

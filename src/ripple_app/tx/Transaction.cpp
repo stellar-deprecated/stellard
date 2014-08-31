@@ -20,21 +20,20 @@
 namespace ripple {
 
 Transaction::Transaction (SerializedTransaction::ref sit, bool bValidate)
-    : mInLedger (0), mStatus (INVALID), mResult (temUNCERTAIN), mTransaction (sit)
+: mInLedger(0), mStatus(INVALID), mResult(temUNCERTAIN), mSerializedTransaction(sit)
 {
     try
     {
-        mFromPubKey.setAccountPublic (mTransaction->getSigningPubKey ());
-        mTransactionID  = mTransaction->getTransactionID ();
-        mAccountFrom    = mTransaction->getSourceAccount ();
+		mFromPubKey.setAccountPublic(mSerializedTransaction->getSigningPubKey());
+		mTransactionID = mSerializedTransaction->getTransactionID();
+		mAccountFrom = mSerializedTransaction->getSourceAccount();
     }
     catch (...)
     {
         return;
     }
 
-    if (!bValidate || (passesLocalChecks (*mTransaction) && checkSign ()))
-        mStatus = NEW;
+	mStatus = NEW;
 }
 
 Transaction::pointer Transaction::sharedTransaction (Blob const& vucTransaction, bool bValidate)
@@ -70,21 +69,37 @@ Transaction::Transaction (
 {
     assert (mFromPubKey.isValid ());
 
-    mTransaction    = boost::make_shared<SerializedTransaction> (ttKind);
+	mSerializedTransaction = boost::make_shared<SerializedTransaction>(ttKind);
 
     // Log(lsINFO) << str(boost::format("Transaction: account: %s") % naSourceAccount.humanAccountID());
     // Log(lsINFO) << str(boost::format("Transaction: mAccountFrom: %s") % mAccountFrom.humanAccountID());
 
-    mTransaction->setSigningPubKey (mFromPubKey);
-    mTransaction->setSourceAccount (mAccountFrom);
-    mTransaction->setSequence (uSeq);
-    mTransaction->setTransactionFee (saFee);
+	mSerializedTransaction->setSigningPubKey(mFromPubKey);
+	mSerializedTransaction->setSourceAccount(mAccountFrom);
+	mSerializedTransaction->setSequence(uSeq);
+	mSerializedTransaction->setTransactionFee(saFee);
 
     if (uSourceTag)
     {
-        mTransaction->makeFieldPresent (sfSourceTag);
-        mTransaction->setFieldU32 (sfSourceTag, uSourceTag);
+		mSerializedTransaction->makeFieldPresent(sfSourceTag);
+		mSerializedTransaction->setFieldU32(sfSourceTag, uSourceTag);
     }
+}
+
+bool Transaction::checkCoherent()
+{
+	if (!passesLocalChecks(*mSerializedTransaction)) return(false);
+	
+	if (!mFromPubKey.isValid())
+	{
+		Log(lsWARNING) << "Transaction has bad source public key";
+		return false;
+	}
+
+	if (!mSerializedTransaction->checkSign(mFromPubKey)) return(false);
+	// TODO: check that it doesn't have weird fields
+
+	return(true);
 }
 
 bool Transaction::sign (const RippleAddress& naAccountPrivate)
@@ -119,16 +134,6 @@ bool Transaction::sign (const RippleAddress& naAccountPrivate)
 // Misc.
 //
 
-bool Transaction::checkSign () const
-{
-    if (!mFromPubKey.isValid ())
-    {
-        Log (lsWARNING) << "Transaction has bad source public key";
-        return false;
-    }
-
-    return mTransaction->checkSign (mFromPubKey);
-}
 
 void Transaction::setStatus (TransStatus ts, std::uint32_t lseq)
 {
@@ -332,7 +337,7 @@ bool Transaction::convertToTransactions (std::uint32_t firstLedgerSeq, std::uint
 // options 1 to include the date of the transaction
 Json::Value Transaction::getJson (int options, bool binary) const
 {
-    Json::Value ret (mTransaction->getJson (0, binary));
+	Json::Value ret(mSerializedTransaction->getJson(0, binary));
 
     if (mInLedger)
     {

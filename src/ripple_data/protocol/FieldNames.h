@@ -20,6 +20,8 @@
 #ifndef RIPPLE_FIELDNAMES_H
 #define RIPPLE_FIELDNAMES_H
 
+#include "../ripple/json/api/json_value.h"
+
 namespace ripple {
 
 // VFALCO TODO lose the macro.
@@ -228,7 +230,7 @@ public:
 protected:
     static std::map<int, ptr>   codeToField;
 
-    typedef RippleMutex StaticLockType;
+	typedef std::mutex StaticLockType;
     typedef std::lock_guard <StaticLockType> StaticScopedLockType;
 
     static StaticLockType& getMutex ();

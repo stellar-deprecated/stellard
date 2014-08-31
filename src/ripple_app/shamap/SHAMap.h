@@ -20,10 +20,21 @@
 #ifndef RIPPLE_SHAMAP_H
 #define RIPPLE_SHAMAP_H
 
+#include <stack>
+#include <unordered_map>
+#include <boost/thread/shared_mutex.hpp>
 #include "../ripple/radmap/ripple_radmap.h"
 #include "../main/FullBelowCache.h"
+#include "../ripple_app/shamap/SHAMapNode.h"
+#include "../ripple_app/shamap/SHAMapItem.h"
+#include "../ripple_app/shamap/SHAMapTreeNode.h"
+#include "../ripple_app/shamap/SHAMapMissingNode.h"
+#include "../ripple_app/shamap/SHAMapSyncFilter.h"
+#include "../ripple_app/shamap/SHAMapAddNode.h"
+#include "../ripple_core/nodestore/api/NodeObject.h"
+#include "../ripple/common/TaggedCache.h"
+#include "../ripple_basics/containers/SyncUnorderedMap.h"
 
-#include <unordered_map>
 /*
 Used for:
 the Ledger
@@ -42,10 +53,12 @@ there is some cache that we check when we are looking up items?
 
 
 
+
 namespace std {
 
-template <>
-struct hash <ripple::SHAMapNode>
+
+
+template <> struct hash <ripple::SHAMapNode>
 {
     std::size_t operator() (ripple::SHAMapNode const& value) const
     {
@@ -69,7 +82,7 @@ struct hash <ripple::SHAMapNode> : std::hash <ripple::SHAMapNode>
 //------------------------------------------------------------------------------
 
 namespace ripple {
-
+	
 enum SHAMapState
 {
     smsModifying = 0,       // Objects can be added and removed (like an open ledger)
@@ -104,6 +117,7 @@ enum SHAMapState
 	Here is a pretty good explanation:
 	https://github.com/ripple/ripple-lib-java/blob/master/ripple-core/src/main/java/com/ripple/core/types/shamap/README.md
  */
+
 class SHAMap
 {
 private:

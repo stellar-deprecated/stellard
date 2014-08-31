@@ -268,6 +268,7 @@ using namespace placeholders;
 
 #elif BEAST_FUNCTIONAL_USES_BOOST
 
+#include <boost/bind.hpp>
 namespace functional
 {
 
