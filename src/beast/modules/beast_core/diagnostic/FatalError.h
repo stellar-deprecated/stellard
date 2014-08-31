@@ -20,6 +20,9 @@
 #ifndef BEAST_CORE_FATALERROR_H_INCLUDED
 #define BEAST_CORE_FATALERROR_H_INCLUDED
 
+//#include "beast/beast/Uncopyable.h"
+//#include "beast/beast/strings/String.h"
+
 namespace beast
 {
 

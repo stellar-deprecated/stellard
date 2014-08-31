@@ -17,9 +17,13 @@
 */
 //==============================================================================
 
-#include "../../beast/beast/unit_test/suite.h"
-#include "../../beast/modules/beast_core/diagnostic/FatalError.h"
-#include "../../beast/modules/beast_core/diagnostic/SemanticVersion.h"
+#include "../../BeastConfig.h"
+#include "beast/modules/beast_core/beast_core.h"
+
+#include "beast/beast/unit_test/suite.h"
+#include "beast/modules/beast_core/diagnostic/FatalError.h"
+#include "beast/modules/beast_core/diagnostic/SemanticVersion.h"
+#include "BuildInfo.h"
 
 namespace ripple {
 
@@ -83,8 +87,8 @@ BuildInfo::Protocol const& BuildInfo::getMinimumProtocol ()
 //
 //------------------------------------------------------------------------------
 
-// TODO: fix this to correctly use std::string
-std::string const& BuildInfo::getVersionString()
+
+std::string BuildInfo::getVersionString()
 {
     struct SanityChecker
     {

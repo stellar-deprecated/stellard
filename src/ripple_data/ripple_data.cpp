@@ -64,7 +64,6 @@
 #include "crypto/Base58Data.cpp"
 #include "crypto/RFC1751.cpp"
 
-#include "protocol/BuildInfo.cpp"
 #include "protocol/FieldNames.cpp"
 #include "protocol/HashPrefix.cpp"
 #include "protocol/LedgerFormats.cpp"

@@ -70,15 +70,15 @@ suite('JSON-RPC', function() {
   });
 
   test('server info', function(done) {
-      console.log("start");
+
     var rippled_config = config.servers.alpha;
-      console.log("http://" + rippled_config.rpc_ip + ":" + rippled_config.rpc_port);
+      //console.log("http://" + rippled_config.rpc_ip + ":" + rippled_config.rpc_port);
     var client  = jsonrpc.client("http://" + rippled_config.rpc_ip + ":" + rippled_config.rpc_port);
 
       try
       {
           client.call('server_info', [ ], function (result) {
-              console.log(JSON.stringify(result));
+              //console.log(JSON.stringify(result));
               assert(typeof result === 'object');
               assert('info' in result);
               done();
