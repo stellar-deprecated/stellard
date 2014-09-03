@@ -36,6 +36,9 @@
 namespace ripple {
 namespace PeerFinder {
 
+
+	// TODO: rename PeerSlotLogic 
+
 /** The Logic for maintaining the list of Slot addresses.
     We keep this in a separate class so it can be instantiated
     for unit tests.
@@ -380,8 +383,7 @@ public:
         state->counts.add (*slot);
     }
 
-    void on_handshake (SlotImp::ptr const& slot,
-        RipplePublicKey const& key, bool cluster)
+    void on_handshake (SlotImp::ptr const& slot, RipplePublicKey const& key, bool cluster)
     {
         if (m_journal.debug) m_journal.debug << beast::leftw (18) <<
             "Logic handshake " << slot->remote_endpoint () <<
@@ -442,6 +444,8 @@ public:
         }
         else
         {
+			WriteLog(lsINFO, Peer) << "Full dropping: " << key;
+
             if (! slot->inbound())
                 state->bootcache.on_success (
                     slot->remote_endpoint());
