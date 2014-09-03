@@ -297,6 +297,9 @@ Json::Value RPCHandler::doSubscribe (Json::Value params, Resource::Charge& loadT
                     bHaveMasterLock = false;
                 }
 
+				bool verbose = false;
+				if (jvSubRequest.isMember("verbose")) verbose = true;
+
                 loadType = Resource::feeMediumBurdenRPC;
                 Ledger::pointer     lpLedger = getApp().getLedgerMaster ().getPublishedLedger ();
                 if (lpLedger)
@@ -308,17 +311,17 @@ Json::Value RPCHandler::doSubscribe (Json::Value params, Resource::Charge& loadT
                         Json::Value jvBids (Json::objectValue);
                         Json::Value jvAsks (Json::objectValue);
 
-                        mNetOps->getBookPage (lpLedger, pay_currency, pay_issuer, get_currency, get_issuer, raTakerID.getAccountID (), false, 0, jvMarker, jvBids);
+                        mNetOps->getBookPage (lpLedger, pay_currency, pay_issuer, get_currency, get_issuer, raTakerID.getAccountID (), false, verbose, 0, jvMarker, jvBids);
 
                         if (jvBids.isMember (jss::offers)) jvResult[jss::bids] = jvBids[jss::offers];
 
-                        mNetOps->getBookPage (lpLedger, get_currency, get_issuer, pay_currency, pay_issuer, raTakerID.getAccountID (), false, 0, jvMarker, jvAsks);
+						mNetOps->getBookPage(lpLedger, get_currency, get_issuer, pay_currency, pay_issuer, raTakerID.getAccountID(), false, verbose, 0, jvMarker, jvAsks);
 
                         if (jvAsks.isMember (jss::offers)) jvResult[jss::asks] = jvAsks[jss::offers];
                     }
                     else
                     {
-                        mNetOps->getBookPage (lpLedger, pay_currency, pay_issuer, get_currency, get_issuer, raTakerID.getAccountID (), false, 0, jvMarker, jvResult);
+						mNetOps->getBookPage(lpLedger, pay_currency, pay_issuer, get_currency, get_issuer, raTakerID.getAccountID(), false, verbose, 0, jvMarker, jvResult);
                     }
                 }
             }

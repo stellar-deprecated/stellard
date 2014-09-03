@@ -56,8 +56,7 @@ public:
         async_accept ();
     }
 
-    void
-    stop()
+    void stop()
     {
         {
             boost::system::error_code ec;

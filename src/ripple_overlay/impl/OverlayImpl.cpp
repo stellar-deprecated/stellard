@@ -113,8 +113,7 @@ OverlayImpl::~OverlayImpl ()
         return this->m_child_count == 0; });
 }
 
-void
-OverlayImpl::accept (bool proxyHandshake, socket_type&& socket)
+void OverlayImpl::accept (bool proxyHandshake, socket_type&& socket)
 {
     // An error getting an endpoint means the connection closed.
     // Just do nothing and the socket will be closed by the caller.
