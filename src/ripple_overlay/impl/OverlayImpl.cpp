@@ -311,8 +311,7 @@ OverlayImpl::send (PeerFinder::Slot::ptr const& slot,
     }
 }
 
-void
-OverlayImpl::disconnect (PeerFinder::Slot::ptr const& slot, bool graceful)
+void OverlayImpl::disconnect (PeerFinder::Slot::ptr const& slot, bool graceful)
 {
     if (m_journal.trace) m_journal.trace <<
         "Disconnect " << slot->remote_endpoint () <<

@@ -401,6 +401,9 @@ public:
         // Check for duplicate connection by key
         if (state->keys.find (key) != state->keys.end())
         {
+			if (m_journal.info) m_journal.info << beast::leftw(18) <<
+				"Duplicate Connection: " << key;
+
             m_callback.disconnect (slot, true);
             return;
         }
@@ -444,11 +447,11 @@ public:
         }
         else
         {
-			WriteLog(lsINFO, Peer) << "Full dropping: " << key;
+			if (m_journal.info) m_journal.info << beast::leftw(18) <<
+				"Full dropping peer: " << key;
 
             if (! slot->inbound())
-                state->bootcache.on_success (
-                    slot->remote_endpoint());
+                state->bootcache.on_success (slot->remote_endpoint());
 
             // Maybe give them some addresses to try
             if (slot->inbound ())

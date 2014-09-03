@@ -906,7 +906,7 @@ private:
             m_peerFinder.on_endpoints (m_slot, endpoints);
     }
 
-	void recvGetObjectByHash(const boost::shared_ptr<protocol::TMGetObjectByHas>h& ptr);
+	void recvGetObjectByHash(const boost::shared_ptr<protocol::TMGetObjectByHash>& ptr);
 
 	void recvPing(protocol::TMPing& packet);
 
