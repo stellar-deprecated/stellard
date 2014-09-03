@@ -190,6 +190,9 @@ Json::Value RPCHandler::doBookOffers (Json::Value params, Resource::Charge& load
         return RPC::make_error (rpcBAD_MARKET);
     }
 
+	bool verbose = false;
+	if (params.isMember("verbose")) verbose = true;
+
     if (params.isMember ("limit") && ! params ["limit"].isIntegral())
         return RPC::expected_field_error (
         "limit", "integer");
@@ -206,7 +209,7 @@ Json::Value RPCHandler::doBookOffers (Json::Value params, Resource::Charge& load
 
     mNetOps->getBookPage (lpLedger, pay_currency, pay_issuer,
         get_currency, get_issuer, raTakerID.getAccountID (),
-            bProof, iLimit, jvMarker, jvResult);
+            bProof, verbose, iLimit, jvMarker, jvResult);
 
     loadType = Resource::feeMediumBurdenRPC;
 

@@ -1801,6 +1801,9 @@
     <ClCompile Include="..\..\src\sanity\FirmezaMaster.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\src\sanity\History.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\src\snappy\snappy.unity.cpp" />
     <ClCompile Include="..\..\src\websocket\src\base64\base64.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -2409,6 +2412,7 @@
     <ClInclude Include="..\..\src\leveldb\util\posix_logger.h" />
     <ClInclude Include="..\..\src\leveldb\util\random.h" />
     <ClInclude Include="..\..\src\sanity\FirmezaMaster.h" />
+    <ClInclude Include="..\..\src\sanity\History.h" />
     <ClInclude Include="..\..\src\sanity\TransactionSet.h" />
     <ClInclude Include="..\..\src\websocket\src\base64\base64.h" />
     <ClInclude Include="..\..\src\websocket\src\common.hpp" />

@@ -1725,6 +1725,7 @@ Json::Value NetworkOPsImp::getServerInfo (bool human, bool admin)
         info[jss::fetch_pack] = Json::UInt (fp);
 
     info[jss::peers] = Json::UInt (getApp ().overlay ().size ());
+	info[jss::max_peers] = Json::UInt(getConfig().PEERS_MAX);
 
     Json::Value lastClose = Json::objectValue;
     lastClose[jss::proposers] = getApp().getOPs ().getPreviousProposers ();
@@ -2364,7 +2365,9 @@ InfoSub::pointer NetworkOPsImp::addRpcSub (const std::string& strUrl, InfoSub::r
 //            work, but it demonstrated poor performance.
 //
 // FIXME : support iLimit.
-void NetworkOPsImp::getBookPage (Ledger::pointer lpLedger, const uint160& uTakerPaysCurrencyID, const uint160& uTakerPaysIssuerID, const uint160& uTakerGetsCurrencyID, const uint160& uTakerGetsIssuerID, const uint160& uTakerID, const bool bProof, const unsigned int iLimit, const Json::Value& jvMarker, Json::Value& jvResult)
+void NetworkOPsImp::getBookPage (Ledger::pointer lpLedger, const uint160& uTakerPaysCurrencyID, const uint160& uTakerPaysIssuerID, 
+	const uint160& uTakerGetsCurrencyID, const uint160& uTakerGetsIssuerID, const uint160& uTakerID, 
+	const bool bProof, const bool verbose, const unsigned int iLimit, const Json::Value& jvMarker, Json::Value& jvResult)
 { // CAUTION: This is the old get book page logic
     Json::Value&    jvOffers    = (jvResult[jss::offers] = Json::Value (Json::arrayValue));
 
@@ -2484,9 +2487,9 @@ void NetworkOPsImp::getBookPage (Ledger::pointer lpLedger, const uint160& uTaker
                 std::uint32_t uOfferRate;
 
 
-                if (uTransferRate != QUALITY_ONE                // Have a tranfer fee.
+                if (uTransferRate != QUALITY_ONE                // Have a transfer fee.
                         && uTakerID != uTakerGetsIssuerID           // Not taking offers of own IOUs.
-                        && uTakerGetsIssuerID != uOfferOwnerID)     // Offer owner not issuing ownfunds
+                        && uTakerGetsIssuerID != uOfferOwnerID)     // Offer owner not issuing own funds
                 {
                     // Need to charge a transfer fee to offer owner.
                     uOfferRate          = uTransferRate;
@@ -2535,9 +2538,22 @@ void NetworkOPsImp::getBookPage (Ledger::pointer lpLedger, const uint160& uTaker
                 if (saOwnerFunds != zero || uOfferOwnerID == uTakerID)
                 {
                     // Only provide funded offers and offers of the taker.
-                    Json::Value& jvOf   = jvOffers.append (jvOffer);
-                    jvOf[jss::quality]     = saDirRate.getText ();
-                }
+					if (verbose)
+					{
+						Json::Value& jvOf = jvOffers.append(jvOffer);
+						jvOf[jss::quality] = saDirRate.getText();
+					}
+					else
+					{
+						Json::Value offerJSON;
+						offerJSON["Account"] = jvOffer["Account"];
+						offerJSON["Sequence"] = jvOffer["Sequence"];
+						offerJSON["TakerGets"] = jvOffer["TakerGets"];
+						offerJSON["TakerPays"] = jvOffer["TakerPays"];
+						offerJSON[jss::quality] = saDirRate.getText();
+						jvOffers.append(offerJSON);
+					}
+				}
             }
             else
             {

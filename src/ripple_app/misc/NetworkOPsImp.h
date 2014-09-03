@@ -207,6 +207,7 @@ namespace ripple {
 			const uint160& uTakerGetsIssuerID,
 			const uint160& uTakerID,
 			const bool bProof,
+			const bool verbose,
 			const unsigned int iLimit,
 			const Json::Value& jvMarker,
 			Json::Value& jvResult);

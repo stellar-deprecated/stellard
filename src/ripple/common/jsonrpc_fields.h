@@ -98,6 +98,7 @@ JSS ( load_factor_local );
 JSS ( load_factor_net );
 JSS ( load_fee );
 JSS ( marker );
+JSS (max_peers);
 JSS ( message );
 JSS ( meta );
 JSS ( metaData );

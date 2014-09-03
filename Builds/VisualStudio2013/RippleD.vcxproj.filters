@@ -1779,6 +1779,9 @@
     <ClCompile Include="..\..\src\sanity\FirmezaMaster.cpp">
       <Filter>sanity</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\sanity\History.cpp">
+      <Filter>sanity</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\ripple_basics\containers\RangeSet.h">
@@ -3574,6 +3577,9 @@
       <Filter>sanity</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\sanity\TransactionSet.h">
+      <Filter>sanity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\sanity\History.h">
       <Filter>sanity</Filter>
     </ClInclude>
   </ItemGroup>
