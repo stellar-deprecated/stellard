@@ -24,7 +24,6 @@
 
 namespace ripple {
 
-// VFALCO TODO Rename to InboundLedger
 // A ledger we are trying to acquire
 class InboundLedger
     : public PeerSet
