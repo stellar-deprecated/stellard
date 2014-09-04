@@ -61,7 +61,7 @@ public:
         Thread safety:
             Can be called from any threads at any time.
     */
-    virtual void setConfig (Config const& config) = 0;
+    virtual void setConfig () = 0;
 
     /** Add a peer that should always be connected.
         This is useful for maintaining a private cluster of peers.

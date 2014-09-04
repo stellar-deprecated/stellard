@@ -120,7 +120,8 @@ Config::Config ()
     PEER_CONNECT_LOW_WATER  = DEFAULT_PEER_CONNECT_LOW_WATER;
 
     PEER_PRIVATE            = false;
-    PEERS_MAX               = 0;    // indicates "use default"
+    PEERS_MAX               = 21;  
+	PEERS_RESERVE_OUT		= 3;
 
     TRANSACTION_FEE_BASE    = DEFAULT_FEE_DEFAULT;
 
@@ -351,6 +352,9 @@ void Config::load ()
 
             if (SectionSingleB (secConfig, SECTION_PEERS_MAX, strTemp))
                 PEERS_MAX           = beast::lexicalCastThrow <int> (strTemp);
+
+			if (SectionSingleB(secConfig, SECTION_PEERS_RESERVE_OUT, strTemp))
+				PEERS_RESERVE_OUT = beast::lexicalCastThrow <int>(strTemp);
 
             smtTmp = SectionEntries (secConfig, SECTION_RPC_ADMIN_ALLOW);
 

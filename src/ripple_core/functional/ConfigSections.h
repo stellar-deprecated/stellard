@@ -66,6 +66,7 @@ struct ConfigSection
 #define SECTION_PEER_PROXY_PORT         "peer_port_proxy"
 #define SECTION_PEER_PRIVATE            "peer_private"
 #define SECTION_PEERS_MAX               "peers_max"
+#define SECTION_PEERS_RESERVE_OUT       "peers_reserve_out"
 #define SECTION_PEER_SCAN_INTERVAL_MIN  "peer_scan_interval_min"
 #define SECTION_PEER_SSL_CIPHER_LIST    "peer_ssl_cipher_list"
 #define SECTION_PEER_START_MAX          "peer_start_max"

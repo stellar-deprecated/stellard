@@ -28,7 +28,6 @@
 # include "api/Endpoint.h"
 # include "api/Types.h"
 #include "api/Callback.h"
-#include "api/Config.h"
 #include "api/Manager.h"
 
 #endif

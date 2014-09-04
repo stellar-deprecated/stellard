@@ -20,6 +20,7 @@
 #ifndef CPPTL_JSON_H_INCLUDED
 #define CPPTL_JSON_H_INCLUDED
 
+#include <map>
 #include "../ripple/json/api/json_config.h"
 #include "../ripple/json/api/json_forwards.h"
 

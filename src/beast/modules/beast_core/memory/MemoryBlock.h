@@ -24,7 +24,11 @@
 #ifndef BEAST_MEMORYBLOCK_H_INCLUDED
 #define BEAST_MEMORYBLOCK_H_INCLUDED
 
+//#include "C:\code\stellard\src\beast\beast\strings/String.h"
+//#include "../../../beast/beast/strings/String.h"
 #include "../../../beast/utility/LeakChecked.h"
+#include "../../../beast/strings/String.h"
+
 
 namespace beast {
 
@@ -37,13 +41,13 @@ class MemoryBlock : LeakChecked <MemoryBlock>
 {
 public:
     //==============================================================================
-    /** Create an uninitialised block with 0 size. */
+    /** Create an uninitialized block with 0 size. */
     MemoryBlock() noexcept;
 
     /** Creates a memory block with a given initial size.
 
         @param initialSize          the size of block to create
-        @param initialiseToZero     whether to clear the memory or just leave it uninitialised
+        @param initialiseToZero     whether to clear the memory or just leave it uninitialized
     */
     MemoryBlock (const size_t initialSize,
                  bool initialiseToZero = false);

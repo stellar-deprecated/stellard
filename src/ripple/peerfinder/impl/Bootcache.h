@@ -20,6 +20,7 @@
 #ifndef RIPPLE_PEERFINDER_BOOTCACHE_H_INCLUDED
 #define RIPPLE_PEERFINDER_BOOTCACHE_H_INCLUDED
 
+#include <boost/iterator/transform_iterator.hpp>
 #include <boost/bimap.hpp>
 #include <boost/bimap/multiset_of.hpp>
 #include <boost/bimap/unordered_set_of.hpp>

@@ -21,6 +21,7 @@
 #define RIPPLE_PEERFINDER_FIXED_H_INCLUDED
 
 #include "Tuning.h"
+#include "ripple/peerfinder/api/Types.h"
 
 namespace ripple {
 namespace PeerFinder {

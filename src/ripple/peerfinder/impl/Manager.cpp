@@ -16,6 +16,7 @@
     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 //==============================================================================
+#include "PeerSlotLogic.h"
 
 namespace ripple {
 namespace PeerFinder {
@@ -36,7 +37,7 @@ public:
     StoreSqdb m_store;
     SerializedContext m_context;
     CheckerAdapter m_checker;
-    Logic m_logic;
+    PeerSlotLogic m_logic;
     beast::DeadlineTimer m_secondsTimer;
     
     //--------------------------------------------------------------------------
@@ -74,12 +75,11 @@ public:
     //
     //--------------------------------------------------------------------------
 
-    void setConfig (Config const& config)
+    void setConfig ()
     {
         m_queue.dispatch (
             m_context.wrap (
-                std::bind (&Logic::setConfig, &m_logic,
-                    config)));
+                std::bind (&PeerSlotLogic::setConfig, &m_logic)));
     }
 
     void addFixedPeer (std::string const& name,
@@ -87,7 +87,7 @@ public:
     {
         m_queue.dispatch (
             m_context.wrap (
-                boost::bind (&Logic::addFixedPeer, &m_logic,
+			boost::bind(&PeerSlotLogic::addFixedPeer, &m_logic,
                     name, addresses)));
     }
 
@@ -96,7 +96,7 @@ public:
     {
         m_queue.dispatch (
             m_context.wrap (
-                std::bind (&Logic::addStaticSource, &m_logic,
+			std::bind(&PeerSlotLogic::addStaticSource, &m_logic,
                     SourceStrings::New (name, strings))));
     }
 
@@ -257,7 +257,7 @@ public:
         {
             m_queue.dispatch (
                 m_context.wrap (
-                    std::bind (&Logic::periodicActivity, &m_logic)));
+				std::bind(&PeerSlotLogic::periodicActivity, &m_logic)));
 
             m_secondsTimer.setExpiration (Tuning::secondsPerConnect);
         }
