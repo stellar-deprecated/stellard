@@ -20,7 +20,7 @@
 #ifndef RIPPLE_PEERFINDER_MANAGER_H_INCLUDED
 #define RIPPLE_PEERFINDER_MANAGER_H_INCLUDED
 
-#include "Config.h"
+
 #include "Slot.h"
 #include "Types.h"
 
