@@ -21,7 +21,12 @@
 #define RIPPLE_CORE_CONFIG_H_INCLUDED
 
 #include <boost/filesystem.hpp>
-#include "../../beast/modules/beast_core/files/File.h"
+#include "beast/modules/beast_core/files/File.h"
+#include "beast/beast/http/URL.h"
+#include "beast/beast/net/IPEndpoint.h"
+#include "beast/modules/beast_core/text/StringPairArray.h"
+#include "ripple/json/api/json_value.h"
+#include "ripple_data/protocol/RippleAddress.h"
 
 namespace ripple {
 
@@ -405,6 +410,7 @@ public:
     unsigned int                PEER_CONNECT_LOW_WATER;
     bool                        PEER_PRIVATE;           // True to ask peers not to relay current IP.
     unsigned int                PEERS_MAX;
+	unsigned int                PEERS_RESERVE_OUT;
 
     // Websocket networking parameters
     std::string                 WEBSOCKET_PUBLIC_IP;        // XXX Going away. Merge with the inbound peer connction.

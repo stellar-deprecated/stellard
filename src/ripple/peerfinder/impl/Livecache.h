@@ -20,6 +20,7 @@
 #ifndef RIPPLE_PEERFINDER_LIVECACHE_H_INCLUDED
 #define RIPPLE_PEERFINDER_LIVECACHE_H_INCLUDED
 
+#include <sstream>
 #include "../../../beast/beast/container/aged_map.h"
 #include "../../../beast/beast/utility/maybe_const.h"
 
@@ -463,8 +464,7 @@ Livecache <Allocator>::dump (beast::Journal::ScopedStream& ss) const
 }
 
 template <class Allocator>
-void
-Livecache <Allocator>::onWrite (beast::PropertyStream::Map& map)
+void Livecache <Allocator>::onWrite (beast::PropertyStream::Map& map)
 {
     typename cache_type::time_point const expired (
         m_cache.clock().now() - Tuning::liveCacheSecondsToLive);
@@ -478,7 +478,7 @@ Livecache <Allocator>::onWrite (beast::PropertyStream::Map& map)
         item ["hops"] = e.endpoint.hops;
         item ["address"] = e.endpoint.address.to_string ();
         std::stringstream ss;
-        ss << iter.when() - expired;
+       //FIX ss << iter.when() - expired;
         item ["expires"] = ss.str();
     }
 }

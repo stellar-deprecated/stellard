@@ -30,7 +30,6 @@ struct Params
     Params ()
         : steps (50)
         , nodes (10)
-        , maxPeers (20)
         , outPeers (9.5)
         , firewalled (0)
     {
@@ -38,7 +37,6 @@ struct Params
 
     int steps;
     int nodes;
-    int maxPeers;
     double outPeers;
     double firewalled; // [0, 1)
 };

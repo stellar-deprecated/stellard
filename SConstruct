@@ -250,6 +250,8 @@ COMPILED_FILES.extend([
 	'src/ripple_data/protocol/BuildInfo.cpp',
 	'src/ripple_app/misc/NetworkOPs.cpp',
 	'src/ripple_websocket/autosocket/AutoSocket.cpp',
+	'src/ripple/peerfinder/impl/PeerSlotLogic.cpp',
+	'src/ripple/peerfinder/impl/Counts.cpp',
     ])
 
 # ------------------------------

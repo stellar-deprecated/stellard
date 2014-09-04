@@ -335,31 +335,7 @@ void OverlayImpl::disconnect (PeerFinder::Slot::ptr const& slot, bool graceful)
 
 void OverlayImpl::onPrepare ()
 {
-    PeerFinder::Config config;
-
-    if (getConfig ().PEERS_MAX != 0)
-        config.maxPeers = getConfig ().PEERS_MAX;
-
-    config.outPeers = config.calcOutPeers();
-
-    config.wantIncoming =
-        (! getConfig ().PEER_PRIVATE) &&
-        (getConfig().peerListeningPort != 0);
-
-    // if it's a private peer or we are running as standalone
-    // automatic connections would defeat the purpose.
-    config.autoConnect =
-        !getConfig().RUN_STANDALONE &&
-        !getConfig().PEER_PRIVATE;
-
-    config.listeningPort = getConfig().peerListeningPort;
-
-    config.features = "";
-
-    // Enforce business rules
-    config.applyTuning ();
-
-    m_peerFinder->setConfig (config);
+    m_peerFinder->setConfig();
 
     auto bootstrapIps (getConfig ().IPS);
 

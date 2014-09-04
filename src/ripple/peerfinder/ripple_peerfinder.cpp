@@ -63,11 +63,9 @@
 #include "impl/Bootcache.h"
 #include "impl/StoreSqdb.h"
 #include "impl/Reporting.h"
-#include "impl/Logic.h"
 
 #include "impl/Bootcache.cpp"
 #include "impl/Checker.cpp"
-#include "impl/Config.cpp"
 #include "impl/ConnectHandouts.cpp"
 #include "impl/Endpoint.cpp"
 #include "impl/Livecache.cpp"

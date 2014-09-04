@@ -135,14 +135,11 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple\peerfinder\impl\Config.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\..\src\ripple\peerfinder\impl\ConnectHandouts.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\src\ripple\peerfinder\impl\Counts.cpp" />
     <ClCompile Include="..\..\src\ripple\peerfinder\impl\Endpoint.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -151,6 +148,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\src\ripple\peerfinder\impl\PeerSlotLogic.cpp" />
     <ClCompile Include="..\..\src\ripple\peerfinder\impl\Manager.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -1961,7 +1959,7 @@
     <ClInclude Include="..\..\src\ripple\peerfinder\impl\handout.h" />
     <ClInclude Include="..\..\src\ripple\peerfinder\impl\iosformat.h" />
     <ClInclude Include="..\..\src\ripple\peerfinder\impl\Livecache.h" />
-    <ClInclude Include="..\..\src\ripple\peerfinder\impl\Logic.h" />
+    <ClInclude Include="..\..\src\ripple\peerfinder\impl\PeerSlotLogic.h" />
     <ClInclude Include="..\..\src\ripple\peerfinder\impl\PrivateTypes.h" />
     <ClInclude Include="..\..\src\ripple\peerfinder\impl\RedirectHandouts.h" />
     <ClInclude Include="..\..\src\ripple\peerfinder\impl\Reporting.h" />

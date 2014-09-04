@@ -595,7 +595,6 @@ void Network::prepare ()
             config.well_known_endpoint = well_known_endpoint;
             config.config.maxPeers = params().maxPeers;
             config.config.outPeers = params().outPeers;
-            config.config.wantIncoming = true;
             config.config.autoConnect = true;
             config.config.listeningPort = address.port();
             m_nodes.emplace_back (
