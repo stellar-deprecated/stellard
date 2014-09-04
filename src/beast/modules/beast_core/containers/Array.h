@@ -27,6 +27,7 @@
 #include "ArrayAllocationBase.h"
 #include "ElementComparator.h"
 #include "../threads/CriticalSection.h"
+#include "../../../beast/Arithmetic.h"
 
 namespace beast {
 
@@ -37,13 +38,13 @@ namespace beast {
     Examples of arrays are: Array<int>, Array<Rectangle> or Array<MyClass*>
 
     The Array class can be used to hold simple, non-polymorphic objects as well as primitive types - to
-    do so, the class must fulfil these requirements:
+    do so, the class must fulfill these requirements:
     - it must have a copy constructor and assignment operator
     - it must be able to be relocated in memory by a memcpy without this causing any problems - so
       objects whose functionality relies on external pointers or references to themselves can be used.
 
     For holding lists of strings, you can use Array\<String\>, but it's usually better to use the
-    specialised class StringArray, which provides more useful functions.
+    specialized class StringArray, which provides more useful functions.
 
     To make all the array's methods thread-safe, pass in "CriticalSection" as the templated
     TypeOfCriticalSectionToUse parameter, instead of the default DummyCriticalSection.
