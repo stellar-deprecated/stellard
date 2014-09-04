@@ -26,6 +26,8 @@
 
 #include <boost/intrusive/list.hpp>
 #include <boost/iterator/transform_iterator.hpp>
+#include "ripple/peerfinder/impl/iosformat.h"
+
 
 namespace ripple {
 namespace PeerFinder {
