@@ -397,22 +397,22 @@ if OSX:
 TravisBuild = (os.environ.get('TRAVIS', '0') == 'true') and \
               (os.environ.get('CI', '0') == 'true')
 
-RippleRepository = False
+StellarRepository = False
 
 # Determine if we're building against the main stellar repo or a developer repo
 if TravisBuild:
     Slug = os.environ.get('TRAVIS_REPO_SLUG', '')
 
     if (Slug.find ("stellar/") == 0):
-        RippleRepository = True
+        StellarRepository = True
 
 if TravisBuild:
     env.Append(CFLAGS = ['-DTRAVIS_CI_BUILD'])
     env.Append(CXXFLAGS = ['-DTRAVIS_CI_BUILD'])
 
-if RippleRepository:
-    env.Append(CFLAGS = ['-DRIPPLE_MASTER_BUILD'])
-    env.Append(CXXFLAGS = ['-DRIPPLE_MASTER_BUILD'])
+if StellarRepository:
+    env.Append(CFLAGS = ['-DSTELLAR_MASTER_BUILD'])
+    env.Append(CXXFLAGS = ['-DSTELLAR_MASTER_BUILD'])
 
 # Display build configuration information for debugging purposes
 def print_nv_pair(n, v):
@@ -448,10 +448,10 @@ if TravisBuild:
 
     sys.stdout.write("\nBuild Type:\n")
 
-    if (Slug.find ("ripple/") == 0):
-        print_nv_pair ("Build", "Travis - Ripple Master Repository")
+    if (Slug.find ("stellar/") == 0):
+        print_nv_pair ("Build", "Travis - Stellar Master Repository")
     else:
-        print_nv_pair ("Build", "Travis - Ripple Developer Fork")
+        print_nv_pair ("Build", "Travis - Stellar Developer Fork")
 
     if (Slug):
         print_nv_pair ("Repo", Slug)

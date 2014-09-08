@@ -1,5 +1,7 @@
 #stellard - Stellar P2P server
 
+[![Build Status](https://travis-ci.org/stellar/stellard.svg?branch=master)](https://travis-ci.org/stellar/stellard)
+
 This is the repository for Stellar's `stellard`, reference P2P server.
 
 ###Build instructions:
