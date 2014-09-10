@@ -86,6 +86,13 @@ namespace ripple {
 			return telNOT_TIME;
 		}
 
+		if (!mEngine->getLedger()->getInflationAllowed())
+		{
+			WriteLog(lsINFO, InflationTransactor) << "doInflation: cannot allow multiple inflations in a round.";
+
+			return telNOT_TIME;
+		}
+
 		// check previous ledger if this should be applied now
 		// loop through all accounts and tally votes
 		// dole out the inflation amount to the winners
