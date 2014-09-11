@@ -32,9 +32,7 @@ before_install:
   # Report versions
   - g++ -v
   - clang -v
-  - sudo apt-get install -qq mlocate
-  - sudo updatedb
-  - sudo locate libboost | grep /lib | grep -e ".a$"
+  - find /usr/lib -name libboost\*.a
 
 script:
   - set -e
