@@ -17,11 +17,11 @@
 
 # Ignore object files.
 *.o
-build
+build/**
 tags
 bin/rippled
-Debug/*.*
-Release/*.*
+**/Debug/**
+**/Release/**
 
 # Ignore locally installed node_modules
 /node_modules
@@ -79,3 +79,9 @@ rippled-build.log
 vagrant/debug.log
 vagrant/debug-private-ledger.log
 vagrant/debug-public-ledger.log
+
+# Visual Studio
+*.suo
+*.sdf
+*.opensdf
+Builds/VisualStudio2013/db

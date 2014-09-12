@@ -228,9 +228,17 @@ function createAccountsFromObjects(remote, src, accounts, callback) {
 
     remote.set_account_seq(src, 1);
 
+    var config = init_config();
     async.eachSeries(accounts, function (account, callback) {
         // Cache the seq as 1.
-        // Otherwise, when other operations attempt to operate async against the account they may get confused.
+    	// Otherwise, when other operations attempt to operate async against the account they may get confused.
+    	//console.log( "Create account %s", JSON.stringify( account ) );
+
+		// interestingly enough, accounts must be in the config thanks to resolution embedded in uint160
+    	if ( ! account.name in config.accounts )
+    	{
+    		console.log( "name %s not found in config ", account.name );
+    	}
         remote.set_account_seq(account.name, 1);
 
         var tx = remote.transaction();
