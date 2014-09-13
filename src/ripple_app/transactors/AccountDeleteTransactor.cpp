@@ -46,7 +46,7 @@ TER AccountDeleteTransactor::doApply ()
 
 	if (!mSigMaster)
 	{
-		WriteLog(lsINFO, AccountDeleteTransactor) << "AccountDelete: Invalid: Not authorized to delete account.";
+		WriteLog(lsINFO, AccountDeleteTransactor) << "AccountDelete: Invalid: Not authorized to delete account. (sig)";
 
 		return temBAD_AUTH_MASTER;
 	}
@@ -101,10 +101,13 @@ TER AccountDeleteTransactor::doApply ()
 		SLE::pointer			sleLine		  = mEngine->entryCache(ltRIPPLE_STATE, itemIndex);
         auto                    pCurrAccItem  = pAccItem->makeItem(mTxnAccountID, sleLine);
         RippleState*			pLine         = (RippleState*) pCurrAccItem.get();
+
 		const STAmount&			saLineBalance = pLine->getBalance();
 
+		assert(pLine->getAccountID() == mTxnAccountID);
+
 		if (saLineBalance < zero){
-			WriteLog(lsINFO, AccountDeleteTransactor) << "AccountDelete: Invalid: Not authorized to delete account.";
+			WriteLog(lsINFO, AccountDeleteTransactor) << "AccountDelete: Invalid: Not authorized to delete account. (balance)";
 
 			return temBAD_AMOUNT;
 		}
@@ -123,11 +126,14 @@ TER AccountDeleteTransactor::doApply ()
                 auto pDestAccItem = pAccItem->makeItem(uDestinationID, sleDestinationTrustLine);
 				RippleState* destTrustLine = (RippleState*) pDestAccItem.get();
 
+				assert(destTrustLine->getAccountID() == uDestinationID);
+
+				// if auth was enabled on the account, we need to ensure that the new account can auth as well
+				// to avoid being locked out
 				if (pLine->getAuthPeer() == true && destTrustLine->getAuthPeer() == false)
 				{
 					WriteLog(lsINFO, AccountDeleteTransactor) << "AccountDelete: Invalid: Destination not authorized to hold IOUs.";
 
-					//TODO right return code?
 					return terNO_AUTH;
 				}
                 
@@ -137,25 +143,24 @@ TER AccountDeleteTransactor::doApply ()
                 const STAmount& destBalance = sleDestinationTrustLine->getFieldAmount(sfBalance);
                 
                 auto finalBalance = bHigh ? destBalance - saLineBalance : destBalance + saLineBalance;
+
+				auto limit = sleDestinationTrustLine->getFieldAmount(bHigh ? sfHighLimit : sfLowLimit); // 0 if no limit
+
+				if ((bHigh && finalBalance < -limit) || (!bHigh && finalBalance > limit))
+				{
+					WriteLog(lsINFO, AccountDeleteTransactor) << "AccountDelete: Invalid: Destination limits too low for transfering IOUs. " << finalBalance << ":" << limit;
+
+					return terNO_AUTH;
+				}
+
 				sleDestinationTrustLine->setFieldAmount(sfBalance, finalBalance);
 
 			}
 			else
-			{	// create new trustline with no trust and set balance
+			{
+				WriteLog(lsINFO, AccountDeleteTransactor) << "AccountDelete: Invalid: Destination has missing trustline IOUs.";
 
-				const bool      bHigh = uDestinationID > iouIssuerId;
-                const STAmount	trustAmount {uCurrencyId, ACCOUNT_ONE}; // Don't set trust for (unassuming) destination
-
-				mEngine->view().trustCreate(bHigh,
-					uDestinationID,
-					iouIssuerId,
-					uTrustLineIndex,
-					sleDst,
-					false,
-					false,
-                    bHigh?-saLineBalance:saLineBalance,
-					trustAmount);
-
+				return terNO_AUTH;
 			}
 		}
 
@@ -190,6 +195,7 @@ TER AccountDeleteTransactor::doApply ()
 
 	// Delete account offers
 
+	
 	std::list<const uint256> offersList;
 
 	mEngine->getLedger()->visitAccountItems(mTxnAccountID, BIND_TYPE(&offerAdder, boost::ref(offersList), P_1));
@@ -207,7 +213,6 @@ TER AccountDeleteTransactor::doApply ()
 	}
 
 	offersList.clear();
-
 
 	// Delete account itself
 	mEngine->view().entryDelete(mTxnAccount);
