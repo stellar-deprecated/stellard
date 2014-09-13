@@ -17,318 +17,302 @@ suite('Deleting accounts', function() {
     testutils.build_teardown().call($, done);
   });
 
-  /*
-  test("delete test #1", function (done) {
-    var self = this;
-    var starting_balance = 0;
-    var tx_fee = 0;
 
-    var steps = [
-      function (callback) {
-        self.what = "Create accounts.";
-        testutils.create_accounts($.remote, "root", "10000.0", ["alice", "bob", "carol"], callback);
-      },
+  function accountCreatorHelper( t ) {
+  	var r = [
+		function (callback) {
+			t.what = "Create accounts.";
+			testutils.create_accounts( $.remote, "root", "10000.0", ["alice", "bob", t.gateways[0], t.gateways[1]], callback );
+		},
+  		function (callback) {
+  			t.what = "Set limits";
+  			var limits = {
+  				"alice": ["100/USD/" + t.gateways[0], "111/USD/" + t.gateways[1]]
+  			};
+  			limits[t.gateways[0]] = "49/USD/alice";
+  			limits[t.gateways[1]] = "50/USD/alice";
+  			testutils.credit_limits( $.remote, limits, callback );
+  		},
+		function ( callback ) {
+			t.what = "Distribute funds.";
+			var dist = {};
+			dist[t.gateways[0]] = ["99/USD/alice"];
+			testutils.payments( $.remote, dist, callback );
+		},
+		
+		function ( callback ) {
+		 	t.what = "Create offer.";
 
-      /*
-       function (callback) {
-       self.what = "Display ledger";
+		 	$.remote.transaction()
+              .offer_create( "alice", "10/USD/mtgox", "500" )
+              .on( 'submitted', function ( m ) {
+              	assert.strictEqual( m.engine_result, 'tesSUCCESS' );
+              	callback();
+              })
+              .submit();
+		 }
+  	];
+  	return { steps: r } ;
+  }
 
-       $.remote.request_ledger('current', true)
-       .on('success', function (m) {
-       console.log("Ledger: %s", JSON.stringify(m, undefined, 2));
-       callback();
-       }).on('error', function(m) {
-       console.log("error: %s", JSON.stringify(m));
-       callback();
-       }).request();
-       }, * /
+  function test_helper( t, gateways, delete_should_fail, extra_steps, post_checks) {
+  	t.starting_balance = 0;
+  	t.starting_dest_balance = 0;
+  	t.tx_fee = 0;
 
-      function (callback) {
-        self.what = "Get bob's state";
+  	t.alice_id = $.remote.account( 'alice' )._account_id;
 
-        $.remote.requestAccountBalance($.remote.account('bob')._account_id, 'current', null)
-          .on('success', function (m) {
-            starting_balance = m.node.Balance;
-            callback();
-          }).request();
-      },
+  	t.gateways = gateways;
 
-      function (callback) {
-        self.what = "Delete alice";
-        $.remote.transaction()
-          .accountDelete('alice', 'bob')
-          .once('submitted', function (m) {
-            assert.strictEqual(m.engine_result, 'tesSUCCESS');
-            $.remote.ledger_accept();    // Move it along.
-          })
-          .once('final', function (m) {
-            assert.strictEqual(m.engine_result, 'tesSUCCESS');
-			//console.log("TX: %s", JSON.stringify(m, undefined, 2));
-            tx_fee = m.tx_json.Fee;
-            callback();
-          })
-          .submit();
-      },
+    var ac = accountCreatorHelper( t );
 
-      function (callback) {
-        self.what = "Check bob's state";
+    var steps = ac.steps.concat( [
 
-        $.remote.requestAccountBalance($.remote.account('bob')._account_id, 'current', null)
-          .on('success', function (m) {
-            if(m.node.Balance != 2 * starting_balance - tx_fee)
-              console.log("bob's state: "+m.node.Balance+', tx: '+tx_fee+', starting_balance:'+starting_balance );
-            assert(m.node.Balance == 2 * starting_balance - tx_fee );
-            callback();
-          }).request();
-      },
+		function ( callback ) {
+			t.what = "Set Bob's credit limits";
+			testutils.credit_limits( $.remote,
+				{
+					"bob": ["200/USD/" + gateways[0], "201/USD/" + gateways[1]]
+				},
+				callback );
+		},
+		function ( callback ) {
+			t.what = "Distribute funds.";
 
-      /*
-       function (callback) {
-       self.what = "Display alice's state";
+			var dist = {};
+			dist[gateways[0]] = ["100/USD/bob"];
+			testutils.payments( $.remote, dist, callback );
+		}],
+		extra_steps,
+		[
+		function ( callback ) {
+			t.what = "Get alice's state";
 
-       $.remote.requestAccountBalance($.remote.account('alice')._account_id, 'current', null)
-       .on('success', function (m) {
-       console.log('success'+m);
-       callback();
-       })
-       .on('failure', function (m) {
-       console.log('failure'+m);
-       callback();
-       })
-       .request();
-       },
-       * /
+			$.remote.requestAccountBalance( $.remote.account( 'alice' )._account_id, 'current', null )
+			  .on( 'success', function ( m ) {
+			  	t.starting_balance = m.node.Balance;
+			  	callback();
+			  } ).request();
+		},
+		function ( callback ) {
+			t.what = "Get bob's state";
 
-    ];
+			$.remote.requestAccountBalance( $.remote.account( 'bob' )._account_id, 'current', null )
+			  .on( 'success', function ( m ) {
+			  	t.starting_dest_balance = m.node.Balance;
+			  	callback();
+			  } ).request();
+		},
+		function ( callback ) {
+			$.remote.once( 'ledger_closed', function ( ledger_closed, ledger_index ) { callback(); } );
+			$.remote.ledger_accept();    // Move it along.
+		},
 
-    async.waterfall(steps, function(error) {
-      assert(!error, self.what);
-      done();
-    });
-  });
-*/
-  test("delete account, create new line", function (done){
-    var self = this;
-
-    var steps = [
-
-      function (callback) {
-        self.what = "Create accounts.";
-        testutils.create_accounts($.remote, "root", "10000.0", ["alice", "bob", "carol", "mtgox"], callback);
-      },
-
-      function (callback) {
-        self.what = "Set alice's limit.";
-        testutils.credit_limit($.remote, "alice", "1000/USD/mtgox", callback);
-      },
-/*
-      function (callback) {
-        self.what = "Set bob's limit.";
-        testutils.credit_limit($.remote, "bob", "1000/USD/mtgox", callback);
-      },*/
-
-      function (callback) {
-        self.what = "Send alice some USD.";
-
-        $.remote.transaction()
-          .payment('mtgox', 'alice', "100/USD/mtgox")
-          .once('submitted', function (m) {
-            //console.log("proposed:%s",JSON.stringify(m, undefined, 2));
-            callback(m.engine_result !== 'tesSUCCESS');
-          })
-          /*.once('final', function (m) {
-		    console.log("proposed:%s",JSON.stringify(m, undefined, 2));
-            assert(m.engine_result !== 'tesSUCCESS');
-            callback();
-          })*/
-          .submit();
-      },
-	  /*
-	  function (callback) {
-        self.what = "Send bob some USD.";
-
-        $.remote.transaction()
-          .payment('mtgox', 'bob', "10/USD/mtgox")
-          .once('submitted', function (m) {
-            //console.log("proposed:%s",JSON.stringify(m));
-			//$.remote.ledger_accept();    // Move it along. //
-            callback(m.engine_result !== 'tesSUCCESS');
-          })
-          .submit();
-      },*/
-
-      function (callback) {
-        self.what = "Verify balance.";
-
-        $.remote.request_ripple_balance("alice", "mtgox", "USD", 'CURRENT')
-          .once('ripple_state', function (m) {
-			//console.log("res: %s",JSON.stringify(m, undefined, 2));
-            console.log(m.account_balance.to_number(false));
-            assert(m.account_balance.equals("100/USD/alice"));
-            assert(m.peer_balance.equals("-100/USD/mtgox"));
-
-            callback();
-          })
-          .request();
-      },
-
-/*
-	  function (callback) {
-        self.what = "Display ledger";
-
-        $.remote.request_ledger('current', true)
-          .on('success', function (m) {
-            console.log("Ledger: %s", JSON.stringify(m, undefined, 2));
-            callback();
-          }).on('error', function(m) {
-            //console.log("error: %s", JSON.stringify(m));
-            callback();
-          }).request();
-      },
-	*/  
-      function (callback) {
-        self.what = "Delete alice";
-        $.remote.transaction()
-          .accountDelete('alice', 'bob')
-          .once('submitted', function (m) {
-            assert.strictEqual(m.engine_result, 'tesSUCCESS');
-            //$.remote.once('ledger_closed', function(ledger_closed, ledger_index) { callback(); } );
-			//$.remote.ledger_accept();    // Move it along.
-			callback();
-          })
-          .once('final', function (m) {
-			//console.log("res: %s",JSON.stringify(m, undefined, 2));
-            assert.strictEqual(m.engine_result, 'tesSUCCESS');
-            tx_fee = m.tx_json.Fee;
-            callback();
-          })
+//		testutils.display_ledger_helper( t, $.remote, "original ledger" ),
+		
+      function ( callback ) {
+      	t.what = "Delete alice";
+      	$.remote.transaction()
+          .accountDelete( 'alice', 'bob' )
+          .once( 'submitted', function ( m ) {
+          	if (delete_should_fail) {
+          		assert( m.engine_result != 'tesSUCCESS' );
+          	} else {
+          		assert.strictEqual( m.engine_result, 'tesSUCCESS' );
+          	}
+          	t.tx_fee = m.tx_json.Fee;
+          	$.remote.once( 'ledger_closed', function ( ledger_closed, ledger_index ) { callback(); } );
+          	$.remote.ledger_accept();    // Move it along.
+          } )
           .submit();
       },
 	  
-      function (callback) {
-        self.what = "Verify balance.";
+//	  testutils.display_ledger_helper( t, $.remote, "final ledger"),
 
-        $.remote.request_ripple_balance("bob", "mtgox",  "USD", 'CURRENT')
-          .once('ripple_state', function (m) {
-		    //console.log("res: %s",JSON.stringify(m, undefined, 2));
-            console.log(m.account_balance.to_number(false));
-            console.log(m.peer_balance.to_number(false));
-            assert(m.account_balance.equals("100/USD/bob"));
-            assert(m.peer_balance.equals("-100/USD/mtgox"));
+      
+		], post_checks );
 
-            callback();
-          })
-		  .once('error' , function (m) {
-			console.log("err: %s",JSON.stringify(m, undefined, 2));
-			callback();
-		  })
-          .request();
-      },
-    ];
+  	return steps;
+  }
 
-    async.waterfall(steps, function(error) {
+  function checks_deleteSuccess( t ) {
+  	return [function ( callback ) {
+  		t.what = "Check bob's STR balance";
+
+  		$.remote.requestAccountBalance( $.remote.account( 'bob' )._account_id, 'current', null )
+		  .on( 'success', function ( m ) {
+		  	var predicted_balance = t.starting_balance - t.tx_fee + Number( t.starting_dest_balance ); // fee here is for account deletion
+		  	//console.log( "bob's balance: " + m.node.Balance + ', predicted:' + predicted_balance + ', tx: ' + t.tx_fee + ', original dest balance:' + t.starting_dest_balance + ', original account balance:' + t.starting_balance );
+
+		  	assert( m.node.Balance == predicted_balance );
+		  	callback();
+		  } ).request();
+  	},
+
+	 function ( callback ) {
+	 	t.what = "Verify balances";
+
+	 	var expected = {};
+	 	expected["bob"] = ["199/USD/" + t.gateways[0], "0/USD/" + t.gateways[1]];
+	 	expected[t.gateways[0]] = "-199/USD/bob";
+	 	testutils.verify_balances( $.remote, expected, callback );
+	 },
+
+	 function ( callback ) {
+	 	t.what = "check that alice is deleted";
+
+	 	// the way we test it here is by looking for the id as we want any reference to the account to be gone
+	 	helper = testutils.custom_ledger_helper( t, $.remote, null, function ( ledger, cb ) {
+	 		s = JSON.stringify( ledger, undefined );
+	 		assert( s.indexOf( t.alice_id ) == -1 );
+	 		cb();
+	 	} );
+	 	helper( callback );
+	 }];
+  }
+
+  function checks_deletefail( t, get_expected ) {
+  	return [function ( callback ) {
+  		t.what = "Check bob's STR balance";
+
+  		$.remote.requestAccountBalance( $.remote.account( 'bob' )._account_id, 'current', null )
+		  .on( 'success', function ( m ) {
+		  	assert( m.node.Balance == t.starting_dest_balance );
+		  	callback();
+		  } ).request();
+  	},
+
+	 function ( callback ) {
+	 	t.what = "Verify balances";
+
+	 	var expected = get_expected();
+	 	
+	 	testutils.verify_balances( $.remote, expected, callback );
+	 },
+
+  	];
+  }
+
+	// tests are deleting "alice", transfering to "bob"
+  test("simple delete", function (done) {
+  	var self = this;
+  	var steps = test_helper(self, ["mtgox", "bitstamp"], false, [], checks_deleteSuccess(self));
+
+    async.waterfall( steps, function ( error ) {
+    	if ( error )
+    		console.log( error );
       assert(!error, self.what);
       done();
     });
   });
+
+	
+  test( "simple delete #2", function ( done ) {
+  	var self = this;
+
+  	var steps = test_helper( self, ["bitstamp", "mtgox"], false, [], checks_deleteSuccess(self) );
+
+
+  	async.waterfall( steps, function ( error ) {
+  		if ( error )
+  			console.log( error );
+  		assert( !error, self.what );
+  		done();
+  	} );
+  } );
   
-  test("delete account, update existing line", function (done){
-    var self = this;
 
-    var steps = [
+function iouTestHelper_negative_balance( t, gateways ) {
+	var get_expected = function () {
+		var expected = {
+			"bob": ["100/USD/" + t.gateways[0], "0/USD/" + t.gateways[1], t.starting_dest_balance],
+			"alice": ["-26/USD/" + t.gateways[0], "0/USD/" + t.gateways[1], t.starting_balance]
+		};
+		expected[t.gateways[0]] = ["-100/USD/bob", "26/USD/alice"];
+		//expected[t.gateways[1]] = [];
+		return expected;
+	}
+	return steps = test_helper( t, gateways, true, [
+		function ( callback ) {
+			t.what = "Distribute funds 2";
+			var dist = { "alice": ["125/USD/" + gateways[0]] };
+			testutils.payments( $.remote, dist, callback );
+		},
+	], checks_deletefail( t, get_expected ) );
+}
 
-      function (callback) {
-        self.what = "Create accounts.";
-        testutils.create_accounts($.remote, "root", "10000.0", ["alice", "bob", "carol", "mtgox"], callback);
-      },
+test( "delete user with negative IOU #1", function ( done ) {
+	var self = this;
+	var steps = iouTestHelper_negative_balance( this, ["bitstamp", "mtgox"] );
+  	async.waterfall( steps, function ( error ) {
+  		if ( error ) {
+  			console.log( JSON.stringify( error, undefined ) );
+  		}
+  		assert( !error, self.what );
+  		done();
+  	} );
+  } );
 
-      function (callback) {
-        self.what = "Set alice's limit.";
-        testutils.credit_limit($.remote, "alice", "1000/USD/mtgox", callback);
-      },
+  test( "delete user with negative IOU #2", function ( done ) {
+  	var self = this;
+  	var steps = iouTestHelper_negative_balance( this, ["mtgox", "bitstamp"] );
+  	async.waterfall( steps, function ( error ) {
+  		if ( error ) {
+  			console.log( JSON.stringify( error, undefined ) );
+  		}
+  		assert( !error, self.what );
+  		done();
+  	} );
+  } );
+  
+function iouTestHelper_overlimit( t, gateways ) {
+	var get_expected = function () {
+		var expected = {
+			"bob": ["100/USD/" + t.gateways[0], "0/USD/" + t.gateways[1], t.starting_dest_balance],
+			"alice": ["99/USD/" + t.gateways[0], "0/USD/" + t.gateways[1], t.starting_balance]
+		};
+		expected[t.gateways[0]] = ["-100/USD/bob", "-99/USD/alice"];
+		//expected[t.gateways[1]] = [];
+		return expected;
+	}
 
-      function (callback) {
-        self.what = "Set bob's limit.";
-        testutils.credit_limit($.remote, "bob", "1000/USD/mtgox", callback);
-      },
+  	return steps = test_helper( t, gateways, true, [
+		function ( callback ) {
+			t.what = "Set Bob's credit limits";
+			testutils.credit_limits( $.remote,
+				{
+					"bob": ["110/USD/" + gateways[0], "201/USD/" + gateways[1]]
+				},
+				callback );
+		}
+  	], checks_deletefail( t, get_expected ) );
+  }
 
-      function (callback) {
-        self.what = "Send alice some USD.";
+  test( "delete user with over the limit IOU #1", function ( done ) {
+  	var self = this;
+  	var steps = iouTestHelper_overlimit( this, ["bitstamp", "mtgox"] );
+  	async.waterfall( steps, function ( error ) {
+  		if ( error ) {
+  			console.log( JSON.stringify( error, undefined ) );
+  		}
+  		assert( !error, self.what );
+  		done();
+  	} );
+  } );
 
-        $.remote.transaction()
-          .payment('mtgox', 'alice', "100/USD/mtgox")
-          .once('submitted', function (m) {
-            callback(m.engine_result !== 'tesSUCCESS');
-          })
-          .submit();
-      },
-	  
-	  function (callback) {
-        self.what = "Send bob some USD.";
-
-        $.remote.transaction()
-          .payment('mtgox', 'bob', "50/USD/mtgox")
-          .once('submitted', function (m) {
-            callback(m.engine_result !== 'tesSUCCESS');
-          })
-          .submit();
-      },
-
-      function (callback) {
-        self.what = "Verify balance.";
-
-        $.remote.request_ripple_balance("alice", "mtgox", "USD", 'CURRENT')
-          .once('ripple_state', function (m) {
-            //console.log(m.account_balance.to_number(false));
-            assert(m.account_balance.equals("100/USD/alice"));
-            assert(m.peer_balance.equals("-100/USD/mtgox"));
-
-            callback();
-          })
-          .request();
-      },
-
-
-      function (callback) {
-        self.what = "Delete alice";
-        $.remote.transaction()
-          .accountDelete('alice', 'bob')
-          .once('submitted', function (m) {
-            assert.strictEqual(m.engine_result, 'tesSUCCESS');
-			callback();
-          })
-          .once('final', function (m) {
-            assert.strictEqual(m.engine_result, 'tesSUCCESS');
-            callback();
-          })
-          .submit();
-      },
-	  
-      function (callback) {
-        self.what = "Verify balance.";
-
-        $.remote.request_ripple_balance("bob", "mtgox",  "USD", 'CURRENT')
-          .once('ripple_state', function (m) {
-            assert(m.account_balance.equals("150/USD/bob"));
-            assert(m.peer_balance.equals("-150/USD/mtgox"));
-
-            callback();
-          })
-		  .once('error' , function (m) {
-			console.log("err: %s",JSON.stringify(m, undefined, 2));
-			callback(m);
-		  })
-          .request();
-      },
-    ];
-
-    async.waterfall(steps, function(error) {
-      assert(!error, self.what);
-      done();
-    });
-  });
-
+  test( "delete user with over the limit IOU #2", function ( done ) {
+  	var self = this;
+  	var steps = iouTestHelper_overlimit( this, ["mtgox", "bitstamp"] );
+  	async.waterfall( steps, function ( error ) {
+  		if ( error ) {
+  			console.log( JSON.stringify( error, undefined ) );
+  		}
+  		assert( !error, self.what );
+  		done();
+  	} );
+  } );
 });
+
 
 
 // vim:sw=2:sts=2:ts=8:et
