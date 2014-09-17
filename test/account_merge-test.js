@@ -6,7 +6,7 @@ var Server    = require("./server").Server;
 var testutils = require("./testutils");
 var config    = testutils.init_config();
 
-suite('Deleting accounts', function() {
+suite('Merging accounts', function() {
   var $ = { };
 
   setup(function(done) {
@@ -55,7 +55,7 @@ suite('Deleting accounts', function() {
   	return { steps: r } ;
   }
 
-  function test_helper( t, gateways, delete_should_fail, extra_steps, post_checks) {
+  function test_helper( t, gateways, merge_should_fail, extra_steps, post_checks) {
   	t.starting_balance = 0;
   	t.starting_dest_balance = 0;
   	t.tx_fee = 0;
@@ -111,11 +111,11 @@ suite('Deleting accounts', function() {
 //		testutils.display_ledger_helper( t, $.remote, "original ledger" ),
 		
       function ( callback ) {
-      	t.what = "Delete alice";
+      	t.what = "Merge alice -> bob";
       	$.remote.transaction()
-          .accountDelete( 'alice', 'bob' )
+          .accountMerge( 'alice', 'bob' )
           .once( 'submitted', function ( m ) {
-          	if (delete_should_fail) {
+          	if (merge_should_fail) {
           		assert( m.engine_result != 'tesSUCCESS' );
           	} else {
           		assert.strictEqual( m.engine_result, 'tesSUCCESS' );
@@ -135,13 +135,13 @@ suite('Deleting accounts', function() {
   	return steps;
   }
 
-  function checks_deleteSuccess( t ) {
+  function checks_mergeSuccess( t ) {
   	return [function ( callback ) {
   		t.what = "Check bob's STR balance";
 
   		$.remote.requestAccountBalance( $.remote.account( 'bob' )._account_id, 'current', null )
 		  .on( 'success', function ( m ) {
-		  	var predicted_balance = t.starting_balance - t.tx_fee + Number( t.starting_dest_balance ); // fee here is for account deletion
+		  	var predicted_balance = t.starting_balance - t.tx_fee + Number( t.starting_dest_balance ); // fee here is for account merge operation
 		  	//console.log( "bob's balance: " + m.node.Balance + ', predicted:' + predicted_balance + ', tx: ' + t.tx_fee + ', original dest balance:' + t.starting_dest_balance + ', original account balance:' + t.starting_balance );
 
 		  	assert( m.node.Balance == predicted_balance );
@@ -171,7 +171,7 @@ suite('Deleting accounts', function() {
 	 }];
   }
 
-  function checks_deletefail( t, get_expected ) {
+  function checks_mergefail( t, get_expected ) {
   	return [function ( callback ) {
   		t.what = "Check bob's STR balance";
 
@@ -194,9 +194,9 @@ suite('Deleting accounts', function() {
   }
 
 	// tests are deleting "alice", transfering to "bob"
-  test("simple delete", function (done) {
+  test("simple merge", function (done) {
   	var self = this;
-  	var steps = test_helper(self, ["mtgox", "bitstamp"], false, [], checks_deleteSuccess(self));
+  	var steps = test_helper(self, ["mtgox", "bitstamp"], false, [], checks_mergeSuccess(self));
 
     async.waterfall( steps, function ( error ) {
     	if ( error )
@@ -207,10 +207,10 @@ suite('Deleting accounts', function() {
   });
 
 	
-  test( "simple delete #2", function ( done ) {
+  test( "simple merge #2", function ( done ) {
   	var self = this;
 
-  	var steps = test_helper( self, ["bitstamp", "mtgox"], false, [], checks_deleteSuccess(self) );
+  	var steps = test_helper( self, ["bitstamp", "mtgox"], false, [], checks_mergeSuccess(self) );
 
 
   	async.waterfall( steps, function ( error ) {
@@ -238,10 +238,10 @@ function iouTestHelper_negative_balance( t, gateways ) {
 			var dist = { "alice": ["125/USD/" + gateways[0]] };
 			testutils.payments( $.remote, dist, callback );
 		},
-	], checks_deletefail( t, get_expected ) );
+	], checks_mergefail( t, get_expected ) );
 }
 
-test( "delete user with negative IOU #1", function ( done ) {
+test( "merge user with negative IOU #1", function ( done ) {
 	var self = this;
 	var steps = iouTestHelper_negative_balance( this, ["bitstamp", "mtgox"] );
   	async.waterfall( steps, function ( error ) {
@@ -253,7 +253,7 @@ test( "delete user with negative IOU #1", function ( done ) {
   	} );
   } );
 
-  test( "delete user with negative IOU #2", function ( done ) {
+  test( "merge user with negative IOU #2", function ( done ) {
   	var self = this;
   	var steps = iouTestHelper_negative_balance( this, ["mtgox", "bitstamp"] );
   	async.waterfall( steps, function ( error ) {
@@ -285,10 +285,10 @@ function iouTestHelper_overlimit( t, gateways ) {
 				},
 				callback );
 		}
-  	], checks_deletefail( t, get_expected ) );
+  	], checks_mergefail( t, get_expected ) );
   }
 
-  test( "delete user with over the limit IOU #1", function ( done ) {
+  test( "merge user with over the limit IOU #1", function ( done ) {
   	var self = this;
   	var steps = iouTestHelper_overlimit( this, ["bitstamp", "mtgox"] );
   	async.waterfall( steps, function ( error ) {
@@ -300,7 +300,7 @@ function iouTestHelper_overlimit( t, gateways ) {
   	} );
   } );
 
-  test( "delete user with over the limit IOU #2", function ( done ) {
+  test( "merge user with over the limit IOU #2", function ( done ) {
   	var self = this;
   	var steps = iouTestHelper_overlimit( this, ["mtgox", "bitstamp"] );
   	async.waterfall( steps, function ( error ) {

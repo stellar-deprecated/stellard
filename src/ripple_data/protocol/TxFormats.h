@@ -38,7 +38,7 @@ enum TxType
     ttINFLATION         = 1, 
     ttWALLET_ADD        = 2,
     ttACCOUNT_SET       = 3,
-	ttACCOUNT_DELETE	= 4,
+    ttACCOUNT_MERGE	= 4,
     ttREGULAR_KEY_SET   = 5,
     ttNICKNAME_SET      = 6, // open
     ttOFFER_CREATE      = 7,

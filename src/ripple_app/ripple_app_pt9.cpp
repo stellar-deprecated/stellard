@@ -34,7 +34,7 @@
 #include "transactors/CreateOfferDirect.cpp"
 #include "transactors/CreateOfferBridged.cpp"
 #include "transactors/InflationTransactor.cpp"
-#include "transactors/AccountDeleteTransactor.cpp"
+#include "transactors/AccountMergeTransactor.cpp"
 
 
 #if RIPPLE_USE_OLD_CREATE_TRANSACTOR

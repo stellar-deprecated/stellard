@@ -19,10 +19,10 @@
 
 namespace ripple {
 
-SETUP_LOG(AccountDeleteTransactor)
+SETUP_LOG(AccountMergeTransactor)
 
 
-static void offerAdder(std::list<const uint256>& offersList, SLE::ref offer)
+static void offerAdder(std::list<uint256>& offersList, SLE::ref offer)
 {
 	if (offer->getType() == ltOFFER)
 	{
@@ -30,7 +30,7 @@ static void offerAdder(std::list<const uint256>& offersList, SLE::ref offer)
 	}
 }
 
-static void rippleStateAdder(std::list<const uint256>& stateList, SLE::ref rippleState)
+static void rippleStateAdder(std::list<uint256>& stateList, SLE::ref rippleState)
 {
 	if (rippleState->getType() == ltRIPPLE_STATE)
 	{
@@ -38,22 +38,22 @@ static void rippleStateAdder(std::list<const uint256>& stateList, SLE::ref rippl
 	}
 }
 
-TER AccountDeleteTransactor::doApply ()
+TER AccountMergeTransactor::doApply ()
 {
 	
-    WriteLog (lsINFO, AccountDeleteTransactor) << "AccountDelete>";
+    WriteLog (lsINFO, AccountMergeTransactor) << "AccountMerge>";
 
 
 	if (!mSigMaster)
 	{
-		WriteLog(lsINFO, AccountDeleteTransactor) << "AccountDelete: Invalid: Not authorized to delete account. (sig)";
+		WriteLog(lsINFO, AccountMergeTransactor) << "AccountMerge: Invalid: Not authorized to merge account. (sig)";
 
 		return temBAD_AUTH_MASTER;
 	}
 
 	if (!mTxn.isFieldPresent(sfDestination))
 	{
-		WriteLog(lsINFO, AccountDeleteTransactor) << "AccountDelete: Malformed transaction: Destination is not set.";
+		WriteLog(lsINFO, AccountMergeTransactor) << "AccountMerge: Malformed transaction: Destination is not set.";
 
 		return temDST_NEEDED;
 	}
@@ -63,7 +63,7 @@ TER AccountDeleteTransactor::doApply ()
 
 	if (uDestinationID == mTxnAccountID)
 	{
-		WriteLog(lsINFO, AccountDeleteTransactor) << "AccountDelete: Malformed transaction: Destination is source account.";
+		WriteLog(lsINFO, AccountMergeTransactor) << "AccountMerge: Malformed transaction: Destination is source account.";
 
 		return temDST_IS_SRC;
 	}
@@ -71,7 +71,7 @@ TER AccountDeleteTransactor::doApply ()
 
 	if (!mEngine->getLedger()->hasAccount(aDestination))
 	{
-		WriteLog(lsINFO, AccountDeleteTransactor) << "AccountDelete: Malformed transaction: Destination account doesn't exist.";
+		WriteLog(lsINFO, AccountMergeTransactor) << "AccountMerge: Malformed transaction: Destination account doesn't exist.";
 
 		// TODO: allow sending to nonexistent account? Should we create new one?
 		return tecNO_DST;
@@ -81,7 +81,7 @@ TER AccountDeleteTransactor::doApply ()
 
 	if ((sleDst->getFlags() & lsfRequireDestTag) && !mTxn.isFieldPresent(sfDestinationTag))
 	{
-		WriteLog(lsINFO, AccountDeleteTransactor) << "Payment: Malformed transaction: DestinationTag required.";
+		WriteLog(lsINFO, AccountMergeTransactor) << "Payment: Malformed transaction: DestinationTag required.";
 
 		return tefDST_TAG_NEEDED;
 	}
@@ -90,7 +90,7 @@ TER AccountDeleteTransactor::doApply ()
 
 	/// Manage account IOUs
 
-	std::list<const uint256> rippleLinesList;
+	std::list<uint256> rippleLinesList;
 	mEngine->getLedger()->visitAccountItems(mTxnAccountID, BIND_TYPE(&rippleStateAdder, boost::ref(rippleLinesList), P_1));
 
 	auto pAccItem = AccountItem::pointer(new RippleState());
@@ -107,7 +107,7 @@ TER AccountDeleteTransactor::doApply ()
 		assert(pLine->getAccountID() == mTxnAccountID);
 
 		if (saLineBalance < zero){
-			WriteLog(lsINFO, AccountDeleteTransactor) << "AccountDelete: Invalid: Not authorized to delete account. (balance)";
+			WriteLog(lsINFO, AccountMergeTransactor) << "AccountMerge: Invalid: Not authorized to merge account. (balance)";
 
 			return temBAD_AMOUNT;
 		}
@@ -132,7 +132,7 @@ TER AccountDeleteTransactor::doApply ()
 				// to avoid being locked out
 				if (pLine->getAuthPeer() == true && destTrustLine->getAuthPeer() == false)
 				{
-					WriteLog(lsINFO, AccountDeleteTransactor) << "AccountDelete: Invalid: Destination not authorized to hold IOUs.";
+					WriteLog(lsINFO, AccountMergeTransactor) << "AccountMerge: Invalid: Destination not authorized to hold IOUs.";
 
 					return terNO_AUTH;
 				}
@@ -148,7 +148,7 @@ TER AccountDeleteTransactor::doApply ()
 
 				if ((bHigh && finalBalance < -limit) || (!bHigh && finalBalance > limit))
 				{
-					WriteLog(lsINFO, AccountDeleteTransactor) << "AccountDelete: Invalid: Destination limits too low for transfering IOUs. " << finalBalance << ":" << limit;
+					WriteLog(lsINFO, AccountMergeTransactor) << "AccountMerge: Invalid: Destination limits too low for transfering IOUs. " << finalBalance << ":" << limit;
 
 					return terNO_AUTH;
 				}
@@ -158,7 +158,7 @@ TER AccountDeleteTransactor::doApply ()
 			}
 			else
 			{
-				WriteLog(lsINFO, AccountDeleteTransactor) << "AccountDelete: Invalid: Destination has missing trustline IOUs.";
+				WriteLog(lsINFO, AccountMergeTransactor) << "AccountMerge: Invalid: Destination has missing trustline IOUs.";
 
 				return terNO_AUTH;
 			}
@@ -174,7 +174,7 @@ TER AccountDeleteTransactor::doApply ()
 		TER terResult = mEngine->view().trustDelete(sleLine, uLowAccountID, uHighAccountID);
 
 		if (terResult != tesSUCCESS){
-			WriteLog(lsINFO, AccountDeleteTransactor) << "AccountDelete: Deleting trust line failed: " << transHuman(terResult);
+			WriteLog(lsINFO, AccountMergeTransactor) << "AccountMerge: Deleting trust line failed: " << transHuman(terResult);
             return tefINTERNAL; 
 		}
 
@@ -196,18 +196,18 @@ TER AccountDeleteTransactor::doApply ()
 	// Delete account offers
 
 	
-	std::list<const uint256> offersList;
+	std::list<uint256> offersList;
 
 	mEngine->getLedger()->visitAccountItems(mTxnAccountID, BIND_TYPE(&offerAdder, boost::ref(offersList), P_1));
 
-	WriteLog(lsINFO, AccountDeleteTransactor) << "AccountDelete: Deleting " << offersList.size() << " account offers";
+	WriteLog(lsINFO, AccountMergeTransactor) << "AccountMerge: Deleting " << offersList.size() << " account offers";
 
 	BOOST_FOREACH(const uint256 offerIndex, offersList)
 	{
 		auto terResult = mEngine->view().offerDelete(offerIndex);
 
 		if (terResult != tesSUCCESS){
-			WriteLog(lsINFO, AccountDeleteTransactor) << "AccountDelete: Deleting offer failed: " << transHuman(terResult);
+			WriteLog(lsINFO, AccountMergeTransactor) << "AccountMerge: Deleting offer failed: " << transHuman(terResult);
             return tefINTERNAL;
 		}
 	}
