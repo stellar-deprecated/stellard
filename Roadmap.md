@@ -1,4 +1,4 @@
-This is our general plan for developing stellard. Until december we are mostly working on changing the core data structures and simplifying the protocol. This will allow us to get much higher performance and scalability and should make it a tractable task for people to build alternate implementations.
+This is our general plan for developing **stellard**. Until December we are mostly working on changing the core data structures and simplifying the protocol. The goal is to get much higher performance and scalability and make it a tractable task for people to build alternate implementations.
 
 Times, priority, and tasks are all subject to change as the network evolves, we grow the team, and receive more or less contributions from the community. We use github issues for all the near term [items we are working on.](https://github.com/stellar/stellard/issues)
 
