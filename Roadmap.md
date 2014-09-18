@@ -6,12 +6,14 @@ Times, priority, and tasks are all subject to change as the network evolves, we 
 
 #### Performance & Scalability Refactor
 1. Redesign node store/ledger hashing/communication protocol. (september)
-2. New way of keeping track of ledger history. (october)
-3. Change how nodes fetch the history. (october)
-4. Move Ledger objects into SQL. (october)
-5. Move transaction meta out of the ledger (october)
-6. New way of determining the ledger hash. (november)
-7. Drop node store. (november)
+2. Replay stream of transactions to recreate a given ledger. (september)
+3. History as stream of transactions with ledger checkpoints. (october)
+4. Change how nodes fetch the history from Network. (october)
+5. Move Ledger objects into SQL. (october)
+6. Do offer matching/inflation and other lookups in the SQL DB. (october) 
+7. Temporal buckets for ledger objects. (november)
+8. New way of determining the ledger hash. (november)
+9. Drop node store. (november)
 
 
 #### New features
