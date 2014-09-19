@@ -8,27 +8,32 @@ Times, priority, and tasks are all subject to change as the network evolves, we 
 
 #### Performance & Scalability Refactor
 1. Redesign node store/ledger hashing/communication protocol. (september)
-2. Replay stream of transactions to recreate a given ledger. (september)
-3. History as stream of transactions with ledger checkpoints. (october)
-4. Change how nodes fetch the history from Network. (october)
-5. Move Ledger objects into SQL. (october)
-6. Do offer matching/inflation and other lookups in the SQL DB. (october) 
-7. Temporal buckets for ledger objects. (november)
-8. New way of determining the ledger hash. (november)
-9. Drop node store. (november)
+2. Do apply only once. (september)
+3. Replay stream of transactions to recreate a given ledger. (october)
+4. Performance testing (october)
+5. Decouple Transactions from nodestore (october)
+6. Move Ledger objects into SQL. (october)
+7. Inflation using the SQL store (october)
+8. History as stream of transactions with ledger checkpoints. (october)
+9. Change how nodes fetch the history from Network. (november)
+10. Make SLEs actual classes (november)
+11. Make offer matching and other things use the SQL DB rather the SLEs. (november) 
+12. Temporal buckets for ledger objects. (december)
+13. SQL backend for postgres or someother DB (december)
+14. Clean up dead nodestore code. (december)
 
 
 #### New features
 1. Merge accounts. This will allow people to clean up accounts they are no longer using and recover the reserve balance.  (september)
-2. Pull changes from rippled. This is an ongoing process but we will spend some time looking through the rippled commits since we diverged and see what makes sense to pull in. (october)
+2. Pull changes from rippled. This is an ongoing process but we will spend some time looking through the rippled commits since we diverged and see what makes sense to pull in. (september)
 3. Improve deployment pipeline. (october)
-4. Merge various transaction memo fields into one. (october)
-5. Clean up API. *please [let us know](https://github.com/stellar/stellar-protocol/issues) anything you would like to see changed* (october)
-6. New consensus algorithm. (december)
-7. Ephemeral messaging. (december)
-8. Multi-sig. (december)
-9. Design Scripting/contracts. (december)
-10. Start implementing Private transactions. (january)
+4. Merge various transaction memo fields into one. (december)
+5. Clean up API. *please [let us know](https://github.com/stellar/stellar-protocol/issues) anything you would like to see changed* (december)
+6. New consensus algorithm. (2015)
+7. Ephemeral messaging. (2015)
+8. Multi-sig. (2015)
+9. Design Scripting/contracts. (2015)
+10. Start implementing Private transactions. (2015)
  
 
 ### How you can help
