@@ -977,11 +977,30 @@ suite('Inflation', function() {
           }).request();
       },
 
+      // extra transaction to cover tx history check
+      function ( callback ) {
+        self.what = "Distribute funds.";
+        testutils.payment( $.remote, "alice", "bob", "5000.0", callback );
+      },
+
       function(callback)
       {
         $.remote.ledger_accept();    // Move it along.
         callback(null);
       },
+
+      // this is an extra check to verify that the tx history on carol is correct
+      function ( callback ) {
+        self.what = "check that tx stats are correct";
+        var request = $.remote.requestAccountTx( { account: $.remote.account( 'carol' )._account_id }, function ( err, r ) {
+            if ( err ) {
+                callback( err );
+            }
+            //console.log( "account tx: %s", JSON.stringify( r, undefined, 2 ) );
+            assert( r.transactions.length == 2 ); // account creation, inflation
+            callback( null );
+        } );
+      }
     ]
 
     async.waterfall(steps,function (error) {
