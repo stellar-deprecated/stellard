@@ -920,7 +920,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple_app\transactors\AccountDeleteTransactor.cpp">
+    <ClCompile Include="..\..\src\ripple_app\transactors\AccountMergeTransactor.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -2233,7 +2233,7 @@
     <ClInclude Include="..\..\src\ripple_app\shamap\SHAMapSyncFilters.h" />
     <ClInclude Include="..\..\src\ripple_app\shamap\RadixMapTest.h" />
     <ClInclude Include="..\..\src\ripple_app\shamap\SHAMapTreeNode.h" />
-    <ClInclude Include="..\..\src\ripple_app\transactors\AccountDeleteTransactor.h" />
+    <ClInclude Include="..\..\src\ripple_app\transactors\AccountMergeTransactor.h" />
     <ClInclude Include="..\..\src\ripple_app\transactors\InflationTransactor.h" />
     <ClInclude Include="..\..\src\ripple_app\transactors\SetAccount.h" />
     <ClInclude Include="..\..\src\ripple_app\transactors\Change.h" />
