@@ -35,7 +35,6 @@
 #include "misc/NicknameState.cpp"
 #include "ledger/OrderBookDB.cpp"
 
-#include "data/Database.cpp"
 #include "data/DatabaseCon.cpp"
 #include "data/SqliteDatabase.cpp"
 #include "data/DBInit.cpp"

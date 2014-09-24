@@ -26,6 +26,8 @@
 
 #include "../containers/Array.h"
 #include "../threads/CriticalSection.h"
+#include "beast/beast/utility/LeakChecked.h"
+#include "beast/beast/strings/String.h"
 
 namespace beast {
 
