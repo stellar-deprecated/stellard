@@ -11,6 +11,25 @@ best-practice C++ advice, experience, and personal preference.
 The [Don't Repeat Yourself][1] principle summarises the essence of what it
 means to write good code, in all languages, at all levels.
 
+
+## Naming conventions
+
+* Member variables and method names are written with camel-case, and begin with
+ a lower case letter.
+* Class and type names are also written in camel-case, but always begin with a capital
+  letter.
+* For global variables... well, you shouldn't have any, so it doesn't matter.
+* Class data members begin with `m`, static data members begin with `s`.
+  Global variables begin with `g`. This is so the scope of the corresponding
+  declaration can be easily determined.
+* Avoid underscores in your names, especially leading or trailing underscores.
+  In particular, leading underscores should be avoided, as these are often used
+  in standard library code, so to use them in your own code looks quite jarring.
+* If you really have to write a macro for some reason, then make it all caps,
+  with underscores to separate the words. And obviously make sure that its name
+  is unlikely to clash with symbols used in other libraries or 3rd party code.
+
+
 ## Formatting
 
 The goal of source code formatting should always be to make things as easy to
@@ -62,22 +81,7 @@ overlooked. Blank lines are used to separate code into "paragraphs."
 * Always place a space in between the template angle brackets and the type
   name. Template code is already hard enough to read!
 
-## Naming conventions
 
-* Member variables and method names are written with camel-case, and never
-  begin with a capital letter.
-* Class names are also written in camel-case, but always begin with a capital
-  letter.
-* For global variables... well, you shouldn't have any, so it doesn't matter.
-* Class data members begin with `m_`, static data members begin with `s_`.
-  Global variables begin with `g_`. This is so the scope of the corresponding
-  declaration can be easily determined.
-* Avoid underscores in your names, especially leading or trailing underscores.
-  In particular, leading underscores should be avoided, as these are often used
-  in standard library code, so to use them in your own code looks quite jarring.
-* If you really have to write a macro for some reason, then make it all caps,
-  with underscores to separate the words. And obviously make sure that its name
-  is unlikely to clash with symbols used in other libraries or 3rd party code.
 
 ## Types, const-correctness
 

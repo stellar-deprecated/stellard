@@ -19,6 +19,7 @@
 
 #ifndef RIPPLE_DATABASECON_H
 #define RIPPLE_DATABASECON_H
+#include "ripple_app/data/Database.h"
 
 namespace ripple {
 

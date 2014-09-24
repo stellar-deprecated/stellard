@@ -20,6 +20,7 @@
 #ifndef RIPPLE_SERIALIZEDTRANSACTION_H
 #define RIPPLE_SERIALIZEDTRANSACTION_H
 
+#include <boost/shared_ptr.hpp>
 #include "ripple_data/protocol/SerializedObject.h"
 #include "ripple_data/protocol/TxFormats.h"
 

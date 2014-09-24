@@ -19,6 +19,7 @@
 
 #ifndef RIPPLE_SERIALIZEDOBJECTTEMPLATE_H
 #define RIPPLE_SERIALIZEDOBJECTTEMPLATE_H
+#include "ripple_data/protocol/FieldNames.h"
 
 namespace ripple {
 
@@ -40,7 +41,7 @@ enum SOE_Flags
 class SOElement
 {
 public:
-    SField::ref       e_field;
+    SField::ref	e_field;
     SOE_Flags const   flags;
 
     SOElement (SField::ref fieldName, SOE_Flags flags)

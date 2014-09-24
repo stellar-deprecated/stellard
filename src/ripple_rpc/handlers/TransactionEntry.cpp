@@ -68,7 +68,7 @@ Json::Value RPCHandler::doTransactionEntry (Json::Value params, Resource::Charge
             {
                 jvResult["tx_json"]     = tpTrans->getJson (0);
                 if (tmTrans)
-                    jvResult["metadata"]    = tmTrans->getJson (0);
+                    jvResult["meta"]    = tmTrans->getJson (0);
                 // 'accounts'
                 // 'engine_...'
                 // 'ledger_...'

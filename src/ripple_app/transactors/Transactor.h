@@ -37,7 +37,9 @@ protected:
     TransactionEngine*              mEngine;
     TransactionEngineParams         mParams;
 
-    uint160                         mTxnAccountID;
+	   
+		
+	uint160                         mTxnAccountID;
     STAmount                        mFeeDue;
     STAmount                        mPriorBalance;  // Balance before fees.
     STAmount                        mSourceBalance; // Balance after fees.

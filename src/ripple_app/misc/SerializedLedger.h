@@ -20,7 +20,9 @@
 #ifndef RIPPLE_SERIALIZEDLEDGER_H
 #define RIPPLE_SERIALIZEDLEDGER_H
 
+#include <boost/shared_ptr.hpp>
 #include "ripple_data/protocol/LedgerFormats.h"
+#include "ripple_data/protocol/SerializedObject.h"
 
 namespace ripple {
 

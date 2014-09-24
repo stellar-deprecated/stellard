@@ -565,8 +565,7 @@ bool Ledger::saveValidatedLedger (bool current)
     static boost::format deleteTrans2 ("DELETE FROM AccountTransactions WHERE LedgerSeq = %u;");
     static boost::format deleteAcctTrans ("DELETE FROM AccountTransactions WHERE TransID = '%s';");
     static boost::format transExists ("SELECT Status FROM Transactions WHERE TransID = '%s';");
-    static boost::format
-    updateTx ("UPDATE Transactions SET LedgerSeq = %u, Status = '%c', TxnMeta = %s WHERE TransID = '%s';");
+    static boost::format updateTx ("UPDATE Transactions SET LedgerSeq = %u, Status = '%c', TxnMeta = %s WHERE TransID = '%s';");
     static boost::format addLedger ("INSERT OR REPLACE INTO Ledgers "
                                     "(LedgerHash,LedgerSeq,PrevHash,TotalCoins,InflateSeq,FeePool,ClosingTime,PrevClosingTime,CloseTimeRes,CloseFlags,"
                                     "AccountSetHash,TransSetHash) VALUES ('%s','%u','%s','%s','%u','%u','%u','%u','%d','%u','%s','%s');");

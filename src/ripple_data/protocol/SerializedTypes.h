@@ -21,8 +21,10 @@
 #define RIPPLE_SERIALIZEDTYPES_H
 
 #include <boost/foreach.hpp>
+#include "ripple/types/api/base_uint.h"
 #include "beast/beast/utility/Zero.h"
 #include "ripple_data/protocol/FieldNames.h"
+#include "ripple_data/protocol/RippleAddress.h"
 
 using beast::zero;
 
