@@ -20,6 +20,75 @@ suite('More path finding', function() {
     testutils.build_teardown().call($, done);
   });
 
+    test("Pathfind through an offer", function (done) {
+        var self = this;
+
+        async.waterfall([
+            function (callback) {
+                self.what = "Create accounts.";
+
+                testutils.create_accounts($.remote, "root", "10000.0", ["alice", "bob", "carol", "dan", "mtgox", "bitstamp"], callback);
+            },
+            function (callback) {
+                self.what = "Set transfer rate.";
+
+                $.remote.transaction()
+                    .account_set("carol")
+                    .transfer_rate(1e9*1.1)
+                    .once('submitted', function (m) {
+                        //console.log("proposed: %s", JSON.stringify(m));
+                        callback(m.engine_result !== 'tesSUCCESS');
+                    })
+                    .submit();
+            },
+            function (callback) {
+                self.what = "Set credit limits.";
+
+                testutils.credit_limits($.remote,
+                    {
+                        "alice" : [ "800/USD/bitstamp", "800/USD/carol", "800/USD/dan", "800/USD/mtgox", ],
+                        "bob"   : [ "800/USD/bitstamp", "800/USD/carol", "800/USD/dan", "800/USD/mtgox", ],
+                        "dan"   : [ "800/USD/alice", "800/USD/bob" ],
+                    },
+                    callback);
+            },
+            function (callback) {
+                self.what = "Distribute funds.";
+
+                testutils.payments($.remote,
+                    {
+                        "bitstamp" : "100/USD/alice",
+                        "carol" : "100/USD/alice",
+                        "mtgox" : "100/USD/alice",
+                    },
+                    callback);
+            },
+            // XXX What should this check?
+            function (callback) {
+                self.what = "Find path from alice to bob";
+
+                $.remote.request_ripple_path_find("alice", "bob", "5/USD/bob",
+                    [ { 'currency' : "USD" } ])
+                    .on('success', function (m) {
+                        // console.log("proposed: %s", JSON.stringify(m));
+
+                        // 1 alternative.
+                        //                  buster.assert.equals(1, m.alternatives.length)
+                        //                  // Path is empty.
+                        //                  buster.assert.equals(0, m.alternatives[0].paths_canonical.length)
+
+                        callback();
+                    })
+                    .request();
+            }
+        ], function (error) {
+            assert(!error, self.what);
+            done();
+        });
+    });
+
+
+
   test("alternative paths - limit returned paths to best quality", function (done) {
     var self = this;
 

@@ -20,9 +20,10 @@
 #ifndef RIPPLE_STRINGUTILITIES_H
 #define RIPPLE_STRINGUTILITIES_H
 
+#include <sstream>
 #include <boost/format.hpp>
 #include "../ripple/types/api/ByteOrder.h"
-
+#include "beast/modules/beast_core/text/StringPairArray.h"
 namespace ripple {
 
 // String utility functions.
@@ -132,8 +133,7 @@ bool parseUrl (const std::string& strUrl, std::string& strScheme,
 
     <key>=<value>['|'<key>=<value>]
 */
-extern beast::StringPairArray
-parseDelimitedKeyValueString (
+extern beast::StringPairArray parseDelimitedKeyValueString (
     beast::String s, beast::beast_wchar delimiter='|');
 
 /** toString() generalizes std::to_string to handle bools, chars, and strings.

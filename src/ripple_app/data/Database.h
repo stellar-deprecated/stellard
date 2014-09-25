@@ -20,6 +20,10 @@
 #ifndef RIPPLE_DATABASE_H_INCLUDED
 #define RIPPLE_DATABASE_H_INCLUDED
 
+#include <string>
+#include <cstdint>
+#include "ripple/types/api/base_uint.h"
+
 namespace ripple {
 
 // VFALCO Get rid of these macros
@@ -87,6 +91,8 @@ public:
     virtual int getBinary (int colIndex, unsigned char* buf, int maxSize) = 0;
     virtual std::uint64_t getBigInt (int colIndex) = 0;
     virtual Blob getBinary (int colIndex) = 0;
+
+	uint160 getAccountID(const char* colName);
 
     // int getSingleDBValueInt(const char* sql);
     // float getSingleDBValueFloat(const char* sql);

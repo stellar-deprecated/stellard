@@ -1960,13 +1960,13 @@ Json::Value NetworkOPsImp::transJson (const SerializedTransaction& stTxn, TER te
     transResultInfo (terResult, sToken, sHuman);
 
     jvObj[jss::type]           = jss::transaction;
-    jvObj[jss::transaction]    = stTxn.getJson (0);
+	jvObj[jss::transaction] = stTxn.getJson(0);
 
     if (bValidated)
     {
         jvObj[jss::ledger_index]           = lpCurrent->getLedgerSeq ();
         jvObj[jss::ledger_hash]            = to_string (lpCurrent->getHash ());
-        jvObj[jss::transaction][jss::date]  = lpCurrent->getCloseTimeNC ();
+		jvObj[jss::transaction][jss::date] = lpCurrent->getCloseTimeNC();
         jvObj[jss::validated]              = true;
 
         // WRITEME: Put the account next seq here

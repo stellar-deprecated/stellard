@@ -21,6 +21,7 @@
 #define RIPPLE_BASICS_LOG_H_INCLUDED
 
 #include "ripple_basics/log/LogSink.h"
+#include "ripple_basics/log/LogPartition.h"
 
 namespace ripple {
 

@@ -20,6 +20,8 @@
 #ifndef RIPPLE_LOADFEETRACK_H_INCLUDED
 #define RIPPLE_LOADFEETRACK_H_INCLUDED
 
+#include "ripple/json/api/json_value.h"
+
 namespace ripple {
 
 /** Manages the current fee schedule.

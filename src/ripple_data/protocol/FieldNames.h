@@ -20,6 +20,7 @@
 #ifndef RIPPLE_FIELDNAMES_H
 #define RIPPLE_FIELDNAMES_H
 
+#include <mutex>
 #include "../ripple/json/api/json_value.h"
 
 namespace ripple {

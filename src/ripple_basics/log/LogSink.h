@@ -25,7 +25,7 @@
 #include "../../beast/beast/smart_ptr/SharedPtr.h"
 #include "../../beast/modules/beast_core/memory/SharedSingleton.h"
 #include "ripple_basics/log/LogFile.h"
-
+#include "ripple_basics/log/LogSeverity.h"
 
 namespace ripple {
 

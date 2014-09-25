@@ -16,6 +16,11 @@
     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 //==============================================================================
+#include "Database.h"
+#include "ripple_basics/utility/StringUtilities.h"
+#include "ripple/types/api/Base58.h"
+
+using namespace std;
 
 namespace ripple {
 
@@ -129,6 +134,16 @@ std::uint64_t Database::getBigInt (const char* colName)
     }
 
     return 0;
+}
+
+// these are stored as base58 strings in the DB
+uint160 Database::getAccountID(const char* colName)
+{
+	string accountStr;
+	Blob tempBlob;
+	getStr(colName, accountStr);
+	Base58::decode(accountStr, tempBlob);
+	return uint160(tempBlob);
 }
 
 // returns false if can't find col

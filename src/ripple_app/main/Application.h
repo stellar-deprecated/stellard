@@ -20,8 +20,11 @@
 #ifndef RIPPLE_APP_APPLICATION_H_INCLUDED
 #define RIPPLE_APP_APPLICATION_H_INCLUDED
 
+#include <boost/asio.hpp>
 #include "FullBelowCache.h"
 #include "ripple/common/TaggedCache.h"
+#include "beast/beast/utility/PropertyStream.h"
+#include "ripple_basics/types/BasicTypes.h"
 
 namespace ripple {
 

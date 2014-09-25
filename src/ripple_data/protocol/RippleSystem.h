@@ -56,7 +56,6 @@ public:
 #define SYSTEM_NAME                 "stellar"
 #define SYSTEM_CURRENCY_CODE        "STR"
 #define SYSTEM_CURRENCY_PRECISION   6
-#define SYSTEM_CURRENCY_CODE_RIPPLE "XRR"
 
 } // ripple
 

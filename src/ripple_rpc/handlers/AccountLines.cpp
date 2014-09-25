@@ -69,6 +69,9 @@ Json::Value RPCHandler::doAccountLines (Json::Value params, Resource::Charge& lo
             return jvResult;
     }
 
+	// SANITY:
+	// "SELECT * From TrustLines where lowAccount=X or highAccount=X"
+
     if (lpLedger->hasAccount (raAccount))
     {
         AccountItems rippleLines (raAccount.getAccountID (), lpLedger, AccountItem::pointer (new RippleState ()));
