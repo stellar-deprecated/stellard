@@ -20,6 +20,8 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifndef __INFLATIONTRANSACTOR__
 #define __INFLATIONTRANSACTOR__
 
+#include "Transactor.h"
+
 namespace ripple {
 
 	class InflationTransactor : public Transactor

@@ -19,6 +19,9 @@
 
 #ifndef RIPPLE_TX_TRANSACTOR_H_INCLUDED
 #define RIPPLE_TX_TRANSACTOR_H_INCLUDED
+#include <memory>
+#include "ripple_app/misc/SerializedTransaction.h"
+#include "ripple_app/ledger/LedgerEntrySet.h"
 
 namespace ripple {
 

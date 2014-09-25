@@ -35,6 +35,7 @@
 #include "../../beast/beast/container/hardened_hash.h"
 
 #include <functional>
+using namespace std;
 
 namespace ripple {
 
@@ -100,7 +101,7 @@ public:
     const_reverse_iterator crend()   const { return cbegin(); }
 
     /** Value hashing function.
-        The seed prevents crafted inputs from causing degenarate parent containers.
+        The seed prevents crafted inputs from causing degenerate parent containers.
     */
     typedef beast::hardened_hash <base_uint> hasher;
 
@@ -421,6 +422,12 @@ public:
     {
         SetHexExact (str.c_str ());
     }
+
+	string base58Encode()
+	{
+		unsigned char* start = (unsigned char*)pn;
+		return(Base58::encode(start, start + WIDTH*4));
+	}
 
     unsigned int size () const
     {

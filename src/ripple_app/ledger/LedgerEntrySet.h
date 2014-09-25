@@ -19,6 +19,8 @@
 
 #ifndef RIPPLE_LEDGERENTRYSET_H
 #define RIPPLE_LEDGERENTRYSET_H
+#include "ripple_app/misc/SerializedLedger.h"
+#include "ripple_app/ledger/Ledger.h"
 
 namespace ripple {
 

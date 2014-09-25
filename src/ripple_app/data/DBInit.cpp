@@ -88,6 +88,19 @@ const char* LedgerDBInit[] =
 	);",
     "CREATE INDEX SeqLedger ON Ledgers(LedgerSeq);",
 
+	"CREATE TABLE Accounts (						\
+		accountID		CHARACTER(35) PRIMARY KEY,	\
+		balance			BIGINT UNSIGNED,			\
+		sequence		INT UNSIGNED,				\
+		owenerCount		INT UNSIGNED,			\
+		transferRate	INT UNSIGNED,		\
+		inflationDest	CHARACTER(35),		\
+		publicKey		CHARACTER(56),		\
+		requireDest		BOOL,				\
+		requireAuth		BOOL				\
+	);",
+
+
     "CREATE TABLE Validations	(					\
 		LedgerHash	CHARACTER(64),					\
 		NodePubKey	CHARACTER(56),					\
@@ -300,21 +313,24 @@ const char* NetNodeDBInit[] =
 int NetNodeDBCount = NUMBER (NetNodeDBInit);
 */
 
-// This appears to be unused
-/*
-const char* PathFindDBInit[] =
+
+const char* LedgerEntryDBInit[] =
 {
     "PRAGMA synchronous = OFF;            ",
 
     "DROP TABLE TrustLines;               ",
 
     "CREATE TABLE TrustLines {            "
-    "To				CHARACTER(40),    "  // Hex of account trusted
-    "By				CHARACTER(40),    " // Hex of account trusting
-    "Currency		CHARACTER(80),    " // Hex currency, hex issuer
-    "Use			INTEGER,          " // Use count
-    "Seq			BIGINT UNSIGNED   " // Sequence when use count was updated
-    "};                                   ",
+	"trustIndex blob(32),"
+    "lowAccount	blob(20),"  
+    "highAccount blob(20)," 
+    "currency blob(20)," 
+    "lowLimit BIGINT UNSIGNED,"
+	"highLimit BIGINT UNSIGNED,"
+	"balance BIGINT UNSIGNED,"
+	"lowAuthSet INT,"
+	"highAuthSet INT"
+    "}; ",
 
     "CREATE INDEX TLBy ON TrustLines(By, Currency, Use);",
     "CREATE INDEX TLTo ON TrustLines(To, Currency, Use);",
@@ -333,7 +349,7 @@ const char* PathFindDBInit[] =
     "CREATE INDEX ExTo ON Exchanges(To, Currency, Use);",
 };
 
-int PathFindDBCount = NUMBER (PathFindDBInit);
-*/
+int LedgerEntryDBCount = NUMBER (LedgerEntryDBInit);
+
 
 } // ripple

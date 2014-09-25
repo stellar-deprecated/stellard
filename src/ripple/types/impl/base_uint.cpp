@@ -43,5 +43,4 @@ std::size_t hash_value (uint256 const& u)
     return beast::hardened_hash<uint256>{seed}(u);
 }
 
-
 }
