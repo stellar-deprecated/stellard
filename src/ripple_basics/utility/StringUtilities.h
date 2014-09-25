@@ -20,6 +20,7 @@
 #ifndef RIPPLE_STRINGUTILITIES_H
 #define RIPPLE_STRINGUTILITIES_H
 
+#include <sstream>
 #include <boost/format.hpp>
 #include "../ripple/types/api/ByteOrder.h"
 #include "beast/modules/beast_core/text/StringPairArray.h"
