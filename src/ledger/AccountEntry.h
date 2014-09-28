@@ -30,6 +30,7 @@ namespace stellar
 
 
 		AccountEntry();
+		AccountEntry(SLE::pointer sle);
 		AccountEntry(uint160 id);
 
 		bool loadFromDB(uint256& index);

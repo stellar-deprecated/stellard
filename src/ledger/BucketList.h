@@ -4,7 +4,7 @@
 #include <map>
 #include "ripple/types/api/base_uint.h"
 #include "ripple_app/misc/SerializedLedger.h"
-#include "LedgerPreimage.h"
+#include "CanonicalLedgerForm.h"
 
 using namespace ripple;
 
@@ -18,7 +18,7 @@ Do we need the SLE in the bucket list?
 namespace stellar
 {
 
-	class BucketList : public LedgerPreimage
+	class BucketList : public CanonicalLedgerForm
 	{
 		// index , SLE
 		std::map<uint256, SLE::pointer> mPendingAdds;
@@ -27,6 +27,9 @@ namespace stellar
 		uint256 mHash;
 		void calculateHash();
 	public:
+
+		bool load();
+
 		//void setParentBucketList(BucketList::pointer parent);
 		void addEntry(uint256& newHash, SLE::pointer newEntry);
 		void updateEntry(uint256& oldHash, uint256& newHash, SLE::pointer updatedEntry);

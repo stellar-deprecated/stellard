@@ -1,6 +1,6 @@
 #ifndef __LEGACYPREIMAGE__
 #define __LEGACYPREIMAGE__
-#include "LedgerPreimage.h"
+#include "CanonicalLedgerForm.h"
 #include "ripple_app/ledger/Ledger.h"
 /*
 SHAMap way of calculating the ledger hash
@@ -9,12 +9,14 @@ using namespace ripple;
 
 namespace stellar
 {
-	class LegacyPreimage : public LedgerPreimage
+	class LegacyCLF : public CanonicalLedgerForm
 	{
 		Ledger::pointer mLedger;
 		uint256 mHash;
 	public:
 		
+		bool load();
+		void getDeltaSince(CanonicalLedgerForm::pointer pastCLF, vector<SLE::pointer>& retList);
 
 		void addEntry(uint256& newHash, SLE::pointer newEntry);
 		void updateEntry(uint256& oldHash, uint256& newHash, SLE::pointer updatedEntry);

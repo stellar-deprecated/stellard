@@ -59,14 +59,19 @@ protected:
     void                txnWrite ();
 
 public:
+	// true is this engine is running because the ledger is closing
+	// false if this engine is running because the tx just came in
+	bool mClosingLedger;
+
     typedef boost::shared_ptr<TransactionEngine> pointer;
 
     TransactionEngine () : mTxnSeq (0)
     {
-        ;
+		mClosingLedger = false;
     }
     TransactionEngine (Ledger::ref ledger) : mLedger (ledger), mTxnSeq (0)
     {
+		mClosingLedger = false;
         assert (mLedger);
     }
 

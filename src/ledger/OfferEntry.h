@@ -3,17 +3,27 @@
 
 #include "LedgerEntry.h"
 
+
 namespace stellar
 {
 	class OfferEntry : public LedgerEntry
 	{
-	public:
-		OfferEntry();
+		void insertIntoDB();
+		void updateInDB();
+		void deleteFromDB();
 
-		// these will do the appropriate thing in the DB and the preimage
-		void storeDelete();
-		void storeChange();
-		void storeAdd();
+		void calculateIndex();
+	public:
+		uint160 mAccount;
+		uint32	mSequence;
+		STAmount mTakerPays;
+		STAmount mTakerGets;
+		bool mPassive;
+		uint32 mExpiration;
+
+
+ 		OfferEntry();
+		OfferEntry(SLE::pointer sle);
 	};
 }
 

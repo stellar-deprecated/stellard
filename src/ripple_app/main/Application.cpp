@@ -20,8 +20,11 @@
 #include "../ripple/common/seconds_clock.h"
 #include "../ripple_rpc/api/Manager.h"
 #include "../ripple_overlay/api/make_Overlay.h"
-
+#include "../src/ledger/LedgerMaster.h"
+//#include "ledger/AccountEntry.h"
 #include "Tuning.h"
+
+using namespace stellar;
 
 namespace ripple {
     
@@ -740,6 +743,9 @@ public:
         m_sleCache.setTargetSize (getConfig ().getSize (siSLECacheSize));
         m_sleCache.setTargetAge (getConfig ().getSize (siSLECacheAge));
         SHAMap::setTreeCache (getConfig ().getSize (siTreeCacheSize), getConfig ().getSize (siTreeCacheAge));
+
+		// SANITY is this the correct place to do this?
+		gLedgerMaster.loadLastKnownCLF();
 
 
         //----------------------------------------------------------------------

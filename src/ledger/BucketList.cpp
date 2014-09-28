@@ -3,6 +3,11 @@
 namespace stellar
 {
 
+	bool BucketList::load()
+	{
+
+		return(true);
+	}
 
 	void BucketList::calculateHash()
 	{

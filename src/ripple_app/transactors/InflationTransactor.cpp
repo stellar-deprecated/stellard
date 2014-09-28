@@ -95,6 +95,9 @@ namespace ripple {
 			return telNOT_TIME;
 		}
 
+		// don't bother to process on the first apply
+		if(!mEngine->mClosingLedger) return tesSUCCESS;
+
 		boost::multiprecision::cpp_int minBalance(mEngine->getLedger()->getTotalCoins());
 		boost::multiprecision::cpp_int minWinMultiplier(INFLATION_WIN_MIN_PERCENT);
 		boost::multiprecision::cpp_int inflRateDivider(TRILLION);

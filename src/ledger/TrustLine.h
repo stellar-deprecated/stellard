@@ -34,6 +34,7 @@ namespace stellar {
 		bool mHighAuthSet;
 
 		TrustLine();
+		TrustLine(SLE::pointer sle);
 
 		bool loadFromDB(uint256& index);
 		TER fromTx(AccountEntry& signingAccount, TrustSetTx* tx);

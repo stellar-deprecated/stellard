@@ -65,7 +65,7 @@
     <ClCompile Include="..\..\src\ledger\Ledger.cpp" />
     <ClCompile Include="..\..\src\ledger\LedgerEntry.cpp" />
     <ClCompile Include="..\..\src\ledger\LedgerMaster.cpp" />
-    <ClCompile Include="..\..\src\ledger\LegacyPreimage.cpp" />
+    <ClCompile Include="..\..\src\ledger\LegacyCLF.cpp" />
     <ClCompile Include="..\..\src\ledger\OfferEntry.cpp" />
     <ClCompile Include="..\..\src\ledger\TrustLine.cpp" />
     <ClCompile Include="..\..\src\ripple\beast\ripple_beast.cpp" />
@@ -933,7 +933,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\ripple_app\transactors\InflationTransactor.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\ripple_app\transactors\SetAccount.cpp">
@@ -1930,8 +1930,8 @@
     <ClInclude Include="..\..\src\ledger\Ledger.h" />
     <ClInclude Include="..\..\src\ledger\LedgerEntry.h" />
     <ClInclude Include="..\..\src\ledger\LedgerMaster.h" />
-    <ClInclude Include="..\..\src\ledger\LedgerPreimage.h" />
-    <ClInclude Include="..\..\src\ledger\LegacyPreimage.h" />
+    <ClInclude Include="..\..\src\ledger\CanonicalLedgerForm.h" />
+    <ClInclude Include="..\..\src\ledger\LegacyCLF.h" />
     <ClInclude Include="..\..\src\ledger\OfferEntry.h" />
     <ClInclude Include="..\..\src\ledger\TrustLine.h" />
     <ClInclude Include="..\..\src\ripple\algorithm\api\CycledSet.h" />

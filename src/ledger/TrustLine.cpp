@@ -1,5 +1,7 @@
+#include <boost/format.hpp>
 #include "TrustLine.h"
 #include "AccountEntry.h"
+#include "LedgerMaster.h"
 #include "ripple_data/protocol/LedgerFormats.h"
 #include "ripple_data/protocol/Serializer.h"
 #include "ripple_data/protocol/TxFlags.h"
@@ -8,6 +10,8 @@
 #include "ripple_app/main/Application.h"
 #include "ripple_app/data/DatabaseCon.h"
 #include "transactions/TrustSetTx.h"
+#include "ripple_basics/log/Log.h"
+#include "ripple_app/ledger/Ledger.h"
 
 using namespace std;
 
@@ -16,6 +20,11 @@ namespace stellar {
 	TrustLine::TrustLine()
 	{
 
+	}
+
+	TrustLine::TrustLine(SLE::pointer sle)
+	{
+		//SANITY
 	}
 
 	void TrustLine::calculateIndex()
@@ -62,8 +71,8 @@ namespace stellar {
 		sql.append("';");
 
 		{
-			DeprecatedScopedLock sl(getApp().getTxnDB()->getDBLock());
-			Database* db = getApp().getTxnDB()->getDB();
+			DeprecatedScopedLock sl(getApp().getLedgerDB()->getDBLock());
+			Database* db = getApp().getLedgerDB()->getDB();
 
 			if (!db->executeSQL(sql, true) || !db->startIterRows())
 				return false;
@@ -84,30 +93,47 @@ namespace stellar {
 
 	void TrustLine::insertIntoDB()
 	{
-		std::string sql = "INSERT INTO TrustLines (lowAccount,highAccount,lowLimit,highLimit,currency,balance,lowAuthSet,highAuthSet) values ('";
-		// SANITY
+		//make sure it isn't already in DB
+		deleteFromDB();
+
+		string sql = str(boost::format("INSERT INTO TrustLines (lowAccount,highAccount,lowLimit,highLimit,currency,balance,lowAuthSet,highAuthSet) values ('%s','%s',%d,%d,%d,%d,%d,%d);")
+			% mLowAccount.base58Encode(RippleAddress::VER_ACCOUNT_ID)
+			% mHighAccount.base58Encode(RippleAddress::VER_ACCOUNT_ID)
+			% mLowLimit
+			% mHighLimit
+			% mCurrency
+			% mBalance
+			% mLowAuthSet
+			% mHighAuthSet);
+
 		{
-			DeprecatedScopedLock sl(getApp().getTxnDB()->getDBLock());
-			Database* db = getApp().getTxnDB()->getDB();
+			DeprecatedScopedLock sl(getApp().getLedgerDB()->getDBLock());
+			Database* db = getApp().getLedgerDB()->getDB();
 
 			if(!db->executeSQL(sql, true))
 			{
-				// Report error?
+				WriteLog(lsWARNING, ripple::Ledger) << "SQL failed: " << sql;
 			}
 		}
 	}
 
 	void TrustLine::updateInDB()
 	{
-		std::string sql = "UPDATE TrustLines set lowLimit= ,highLimit= ,balance= ,lowAuthSet= ,highAuthSet= where trustIndex='";
-		// SANITY
+		string sql = str(boost::format("UPDATE TrustLines set lowLimit=%d ,highLimit=%d ,balance=%d ,lowAuthSet=%d ,highAuthSet=%d where trustIndex='%s';")
+			% mLowLimit
+			% mHighLimit
+			% mBalance
+			% mLowAuthSet
+			% mHighAuthSet
+			% mIndex.base58Encode(RippleAddress::VER_NONE));
+
 		{
-			DeprecatedScopedLock sl(getApp().getTxnDB()->getDBLock());
-			Database* db = getApp().getTxnDB()->getDB();
+			DeprecatedScopedLock sl(getApp().getLedgerDB()->getDBLock());
+			Database* db = getApp().getLedgerDB()->getDB();
 
 			if(!db->executeSQL(sql, true))
 			{
-				// Report error?
+				WriteLog(lsWARNING, ripple::Ledger) << "SQL failed: " << sql;
 			}
 		}
 	}
@@ -120,12 +146,12 @@ namespace stellar {
 
 		// SANITY
 		{
-			DeprecatedScopedLock sl(getApp().getTxnDB()->getDBLock());
-			Database* db = getApp().getTxnDB()->getDB();
+			DeprecatedScopedLock sl(getApp().getLedgerDB()->getDBLock());
+			Database* db = getApp().getLedgerDB()->getDB();
 
 			if(!db->executeSQL(sql, true))
 			{
-				// Report error?
+				WriteLog(lsWARNING, ripple::Ledger) << "SQL failed: " << sql;
 			}
 		}
 	}

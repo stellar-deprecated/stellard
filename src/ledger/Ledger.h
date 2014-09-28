@@ -8,6 +8,9 @@ using namespace ripple;
 
 namespace stellar
 {
+	/*
+		Ledger headers + ?
+	*/
 
 	class Ledger
 	{

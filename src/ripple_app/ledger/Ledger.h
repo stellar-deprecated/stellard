@@ -92,6 +92,7 @@ class Ledger
     , public CountedObject <Ledger>
     , public beast::Uncopyable
 {
+
 public:
     static char const* getCountedObjectName () { return "Ledger"; }
 

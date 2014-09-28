@@ -1,5 +1,7 @@
 #include "LedgerEntry.h"
 #include "LedgerMaster.h"
+#include "TrustLine.h"
+#include "OfferEntry.h"
 
 namespace stellar
 {
@@ -7,7 +9,17 @@ namespace stellar
 	// SANITY
 	LedgerEntry::pointer LedgerEntry::makeEntry(SLE::pointer sle)
 	{
+		switch(sle->getType())
+		{
+		case ltACCOUNT_ROOT:
+			return LedgerEntry::pointer(new AccountEntry(sle));
 
+		case ltRIPPLE_STATE:
+			return LedgerEntry::pointer(new TrustLine(sle));
+
+		case ltOFFER:
+			return LedgerEntry::pointer(new OfferEntry(sle));
+		}
 		return(LedgerEntry::pointer());
 	}
 
@@ -17,26 +29,26 @@ namespace stellar
 		return(mIndex);
 	}
 
-	// these will do the appropriate thing in the DB and the preimage
+	// these will do the appropriate thing in the DB and the Canonical Ledger form
 	void LedgerEntry::storeDelete()
 	{
 		deleteFromDB();
 		
-		gLedgerMaster.getPreimage()->deleteEntry( getHash() );
+		gLedgerMaster.getCurrentCLF()->deleteEntry( getHash() );
 	}
 
 	void LedgerEntry::storeChange()
 	{
 		updateInDB();
 
-		gLedgerMaster.getPreimage()->deleteEntry(getHash());
+		gLedgerMaster.getCurrentCLF()->deleteEntry(getHash());
 	}
 
 	void LedgerEntry::storeAdd()
 	{
 		insertIntoDB();
 
-		gLedgerMaster.getPreimage()->deleteEntry(getHash());
+		gLedgerMaster.getCurrentCLF()->deleteEntry(getHash());
 	}
 
 

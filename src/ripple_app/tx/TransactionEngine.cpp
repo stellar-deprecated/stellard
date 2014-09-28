@@ -17,6 +17,9 @@
 */
 //==============================================================================
 
+
+#include "ledger/LedgerEntry.h"
+
 namespace ripple {
 
 //
@@ -25,6 +28,7 @@ namespace ripple {
 
 SETUP_LOG (TransactionEngine)
 
+// Commit all the changes this transaction made to the ledger 
 void TransactionEngine::txnWrite ()
 {
     // Write back the account states
@@ -32,6 +36,11 @@ void TransactionEngine::txnWrite ()
     BOOST_FOREACH (u256_LES_pair & it, mNodes)
     {
         SLE::ref    sleEntry    = it.second.mEntry;
+
+		// only stick in DB on the second apply
+		stellar::LedgerEntry::pointer ledgerEntry;
+		if(mClosingLedger) ledgerEntry = stellar::LedgerEntry::makeEntry(sleEntry);
+		
 
         switch (it.second.mAction)
         {
@@ -46,6 +55,7 @@ void TransactionEngine::txnWrite ()
         {
             WriteLog (lsINFO, TransactionEngine) << "applyTransaction: taaCREATE: " << sleEntry->getText ();
 
+			if(ledgerEntry) ledgerEntry->storeAdd();
             if (mLedger->writeBack (lepCREATE, sleEntry) & lepERROR)
                 assert (false);
         }
@@ -55,6 +65,7 @@ void TransactionEngine::txnWrite ()
         {
             WriteLog (lsINFO, TransactionEngine) << "applyTransaction: taaMODIFY: " << sleEntry->getText ();
 
+			if(ledgerEntry) ledgerEntry->storeChange();
             if (mLedger->writeBack (lepNONE, sleEntry) & lepERROR)
                 assert (false);
         }
@@ -64,6 +75,7 @@ void TransactionEngine::txnWrite ()
         {
             WriteLog (lsINFO, TransactionEngine) << "applyTransaction: taaDELETE: " << sleEntry->getText ();
 
+			if(ledgerEntry) ledgerEntry->storeDelete();
             if (!mLedger->peekAccountStateMap ()->delItem (it.first))
                 assert (false);
         }

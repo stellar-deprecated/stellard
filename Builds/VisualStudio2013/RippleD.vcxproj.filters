@@ -1818,11 +1818,11 @@
     <ClCompile Include="..\..\src\transactions\Transaction.cpp">
       <Filter>transactions</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ledger\LegacyPreimage.cpp">
-      <Filter>ledger</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\transactions\TransactionSet.cpp">
       <Filter>transactions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ledger\LegacyCLF.cpp">
+      <Filter>ledger</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -3675,10 +3675,10 @@
     <ClInclude Include="..\..\src\transactions\SetRegularKeyTx.h">
       <Filter>transactions</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\ledger\LedgerPreimage.h">
+    <ClInclude Include="..\..\src\ledger\CanonicalLedgerForm.h">
       <Filter>ledger</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\ledger\LegacyPreimage.h">
+    <ClInclude Include="..\..\src\ledger\LegacyCLF.h">
       <Filter>ledger</Filter>
     </ClInclude>
   </ItemGroup>

@@ -423,10 +423,13 @@ public:
         SetHexExact (str.c_str ());
     }
 
-	string base58Encode()
+	string base58Encode(char prefix)
 	{
-		unsigned char* start = (unsigned char*)pn;
-		return(Base58::encode(start, start + WIDTH*4));
+		Blob vch(1, prefix);
+
+		vch.insert(vch.end(), begin(), end());
+
+		return Base58::encodeWithCheck(vch);
 	}
 
     unsigned int size () const
