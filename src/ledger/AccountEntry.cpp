@@ -22,12 +22,13 @@ namespace stellar
 		if(sle->isFieldPresent(sfInflationDest))
 			mInflationDest=sle->getFieldAccount160(sfInflationDest);
 		
-		//SANITY do these below
-		//if(sle->isFieldPresent(sfPublicKey))
+		uint32 flags = sle->getFlags();
+
+		mRequireDest = flags & lsfRequireDestTag;
+		mRequireAuth = flags & lsfRequireAuth;
+
+		// if(sle->isFieldPresent(sfPublicKey)) SANITY
 		//	mPubKey=
-		
-		mRequireDest=false;
-		mRequireAuth=false;
 	}
 
 	void AccountEntry::calculateIndex()

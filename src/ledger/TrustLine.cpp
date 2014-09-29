@@ -24,7 +24,19 @@ namespace stellar {
 
 	TrustLine::TrustLine(SLE::pointer sle)
 	{
-		//SANITY
+		STAmount lowLimit = sle->getFieldAmount(sfLowLimit);
+		STAmount highLimit = sle->getFieldAmount(sfHighLimit);
+		mBalance = sle->getFieldU64(sfBalance);
+
+		mLowAccount = lowLimit.getIssuer();
+		mHighAccount = highLimit.getIssuer();
+		mCurrency = lowLimit.getCurrency();
+
+
+		uint32 flags = sle->getFlags();
+
+		mLowAuthSet = flags & lsfLowAuth;  // if the high account has authorized the low account to hold its credit?
+		mHighAuthSet = flags & lsfHighAuth;
 	}
 
 	void TrustLine::calculateIndex()
@@ -56,8 +68,7 @@ namespace stellar {
 		
 		if(tx->mAuthSet && !signingAccount.checkFlag(lsfRequireAuth))
 		{
-			Log(lsTRACE) <<
-				"Retry: Auth not required.";
+			Log(lsTRACE) <<	"Retry: Auth not required.";
 			return tefNO_AUTH_REQUIRED;
 		}
 		
