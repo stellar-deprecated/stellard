@@ -220,6 +220,7 @@ public:
     std::unique_ptr <DatabaseCon> mRpcDB;
     std::unique_ptr <DatabaseCon> mTxnDB;
     std::unique_ptr <DatabaseCon> mLedgerDB;
+    std::unique_ptr <DatabaseCon> mWorkingLedgerDB;
     std::unique_ptr <DatabaseCon> mWalletDB;
 
     std::unique_ptr <beast::asio::SSLContext> m_peerSSLContext;
@@ -587,6 +588,10 @@ public:
     {
         return mLedgerDB.get();
     }
+    DatabaseCon* getWorkingLedgerDB ()
+    {
+        return mWorkingLedgerDB.get();
+    }
     DatabaseCon* getWalletDB ()
     {
         return mWalletDB.get();
@@ -614,6 +619,7 @@ public:
         case 1: mTxnDB.reset (openDatabaseCon ("transaction.db", TxnDBInit, TxnDBCount)); break;
         case 2: mLedgerDB.reset (openDatabaseCon ("ledger.db", LedgerDBInit, LedgerDBCount)); break;
         case 3: mWalletDB.reset (openDatabaseCon ("wallet.db", WalletDBInit, WalletDBCount)); break;
+        case 4: mWorkingLedgerDB.reset(openDatabaseCon ("ledger.db", LedgerDBInit, LedgerDBCount)); break;
         };
     }
 
@@ -623,7 +629,7 @@ public:
         //             dont want unowned threads and because ParallelFor
         //             is broken.
         //
-        for (int i = 0; i < 4; ++i)
+        for (int i = 0; i < 5; ++i)
             initSqliteDb (i);
     }
 
@@ -684,8 +690,8 @@ public:
                 (getConfig ().getSize (siTxnDBCache) * 1024)));
 
         mTxnDB->getDB ()->setupCheckpointing (m_jobQueue.get());
-        mLedgerDB->getDB ()->setupCheckpointing (m_jobQueue.get());
-
+        mWorkingLedgerDB->getDB ()->setupCheckpointing (m_jobQueue.get());
+        
         if (!getConfig ().RUN_STANDALONE)
             updateTables ();
 

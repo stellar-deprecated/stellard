@@ -22,6 +22,12 @@ namespace stellar
 
 		// called when we successfully sync to the network
 		void catchUpToNetowrk(CanonicalLedgerForm::pointer currentCLF);
+
+        // SQL helper commands
+        int mTransactionLevel; // how many levels of transactions are currently active
+        void beginTransaction();
+        void endTransaction(bool rollback);
+
 	public:
 		LedgerMaster();
 

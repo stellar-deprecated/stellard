@@ -56,14 +56,11 @@ namespace stellar
 			% mRequireDest
 			% mRequireAuth);
 
-		{
-			DeprecatedScopedLock sl(getApp().getLedgerDB()->getDBLock());
-			Database* db = getApp().getLedgerDB()->getDB();
+		Database* db = getApp().getWorkingLedgerDB()->getDB();
 
-			if(!db->executeSQL(sql, true))
-			{
-				WriteLog(lsWARNING, ripple::Ledger) << "SQL failed: " << sql;
-			}
+		if(!db->executeSQL(sql, true))
+		{
+			WriteLog(lsWARNING, ripple::Ledger) << "SQL failed: " << sql;
 		}
 	}
 	void AccountEntry::updateInDB()
@@ -79,14 +76,11 @@ namespace stellar
 			% mRequireAuth
 			% mAccountID.base58Encode(RippleAddress::VER_ACCOUNT_ID));
 
-		{
-			DeprecatedScopedLock sl(getApp().getLedgerDB()->getDBLock());
-			Database* db = getApp().getLedgerDB()->getDB();
+		Database* db = getApp().getWorkingLedgerDB()->getDB();
 
-			if(!db->executeSQL(sql, true))
-			{
-				WriteLog(lsWARNING, ripple::Ledger) << "SQL failed: " << sql;
-			}
+		if(!db->executeSQL(sql, true))
+		{
+			WriteLog(lsWARNING, ripple::Ledger) << "SQL failed: " << sql;
 		}
 	}
 	void AccountEntry::deleteFromDB()
@@ -94,14 +88,11 @@ namespace stellar
 		string sql = str(boost::format("DELETE from Accounts where accountID='%s';")
 			% mAccountID.base58Encode(RippleAddress::VER_ACCOUNT_ID));
 
-		{
-			DeprecatedScopedLock sl(getApp().getLedgerDB()->getDBLock());
-			Database* db = getApp().getLedgerDB()->getDB();
+		Database* db = getApp().getWorkingLedgerDB()->getDB();
 
-			if(!db->executeSQL(sql, true))
-			{
-				WriteLog(lsWARNING, ripple::Ledger) << "SQL failed: " << sql;
-			}
+		if(!db->executeSQL(sql, true))
+		{
+			WriteLog(lsWARNING, ripple::Ledger) << "SQL failed: " << sql;
 		}
 	}
 

@@ -115,6 +115,7 @@ public:
     virtual DatabaseCon* getRpcDB () = 0;
     virtual DatabaseCon* getTxnDB () = 0;
     virtual DatabaseCon* getLedgerDB () = 0;
+    virtual DatabaseCon* getWorkingLedgerDB() = 0;
 
     virtual std::chrono::milliseconds getIOLatency () = 0;
     virtual int          getWebsocketConnCount() = 0;
