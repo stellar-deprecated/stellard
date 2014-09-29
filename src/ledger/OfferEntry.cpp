@@ -23,7 +23,9 @@ namespace stellar
 			mExpiration = sle->getFieldU32(sfExpiration);
 		else mExpiration = 0;  
 
-		mPassive = false;  // SANITY
+		uint32 flags = sle->getFlags();
+		
+		mPassive = flags & lsfPassive;  
  	}
 
 	void OfferEntry::calculateIndex()
