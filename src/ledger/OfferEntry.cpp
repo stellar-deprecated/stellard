@@ -1,28 +1,114 @@
+#include <boost/format.hpp>
 #include "OfferEntry.h"
+#include "ripple_app/data/DatabaseCon.h"
+#include "ripple_app/main/Application.h"
+#include "ripple_basics/log/Log.h"
+#include "ripple_data/protocol/Serializer.h"
+#include "ripple_app/ledger/Ledger.h"
+
+using namespace std;
 
 namespace stellar
 {
 
 	OfferEntry::OfferEntry(SLE::pointer sle)
 	{
-		//SANITY
+		mAccountID = sle->getFieldAccount160(sfAccount);
+		mSequence = sle->getFieldU32(sfSequence);
+
+		mTakerPays=sle->getFieldAmount(sfTakerPays);
+		mTakerGets = sle->getFieldAmount(sfTakerGets);
+		
+		if(sle->isFieldPresent(sfExpiration))
+			mExpiration = sle->getFieldU32(sfExpiration);
+		else mExpiration = 0;  
+
+		mPassive = false;  // SANITY
  	}
 
 	void OfferEntry::calculateIndex()
 	{
-		//SANITY
+		Serializer  s(26);
+
+		s.add16(spaceOffer);       //  2
+		s.add160(mAccountID);      // 20
+		s.add32(mSequence);        //  4
+
+		mIndex= s.getSHA512Half();
 	}
 
 	void OfferEntry::insertIntoDB()
 	{
-		//SANITY
+		//make sure it isn't already in DB
+		deleteFromDB();
+
+		
+		uint160 paysIssuer = mTakerPays.getIssuer();
+		uint160 getsIssuer = mTakerGets.getIssuer();
+
+		string sql = str(boost::format("INSERT INTO Offers (accountID,sequence,takerPaysCurrency,takerPaysAmount,takerPaysIssuer,takerGetsCurrency,takerGetsAmount,takerGetsIssuer,expiration,passive) values ('%s',%d,x'%s',%d,'%s',x'%s',%d,'%s',%d,%d);")
+			% mAccountID.base58Encode(RippleAddress::VER_ACCOUNT_ID)
+			% mSequence
+			% to_string(mTakerPays.getCurrency())
+			% mTakerPays.getNValue()
+			% paysIssuer.base58Encode(RippleAddress::VER_ACCOUNT_ID)
+			% to_string(mTakerGets.getCurrency())
+			% mTakerGets.getNValue()
+			% getsIssuer.base58Encode(RippleAddress::VER_ACCOUNT_ID)
+			% mExpiration
+			% mPassive);
+
+		{
+			DeprecatedScopedLock sl(getApp().getLedgerDB()->getDBLock());
+			Database* db = getApp().getLedgerDB()->getDB();
+
+			if(!db->executeSQL(sql, true))
+			{
+				WriteLog(lsWARNING, ripple::Ledger) << "SQL failed: " << sql;
+			}
+		}
 	}
 	void OfferEntry::updateInDB()
 	{
-		//SANITY
+		uint160 paysIssuer = mTakerPays.getIssuer();
+		uint160 getsIssuer = mTakerGets.getIssuer();
+
+		string sql = str(boost::format("UPDATE Offers set takerPaysCurrency=x'%s', takerPaysAmount=%d, takerPaysIssuer='%s', takerGetsCurrency=x'%s' ,takerGetsAmount=%d, takerGetsIssuer='%s' ,expiration=%d, passive=%d where accountID='%s' AND sequence=%d;")	
+			% to_string(mTakerPays.getCurrency())
+			% mTakerPays.getNValue()
+			% paysIssuer.base58Encode(RippleAddress::VER_ACCOUNT_ID)
+			% to_string(mTakerGets.getCurrency())
+			% mTakerGets.getNValue()
+			% getsIssuer.base58Encode(RippleAddress::VER_ACCOUNT_ID)
+			% mExpiration
+			% mPassive
+			% mAccountID.base58Encode(RippleAddress::VER_ACCOUNT_ID)
+			% mSequence);
+
+		{
+			DeprecatedScopedLock sl(getApp().getLedgerDB()->getDBLock());
+			Database* db = getApp().getLedgerDB()->getDB();
+
+			if(!db->executeSQL(sql, true))
+			{
+				WriteLog(lsWARNING, ripple::Ledger) << "SQL failed: " << sql;
+			}
+		}
 	}
 	void OfferEntry::deleteFromDB()
 	{
-		//SANITY
+		string sql = str(boost::format("DELETE FROM Offers where accountID='%s' AND sequence=%d;")
+			% mAccountID.base58Encode(RippleAddress::VER_ACCOUNT_ID)
+			% mSequence);
+
+		{
+			DeprecatedScopedLock sl(getApp().getLedgerDB()->getDBLock());
+			Database* db = getApp().getLedgerDB()->getDB();
+
+			if(!db->executeSQL(sql, true))
+			{
+				WriteLog(lsWARNING, ripple::Ledger) << "SQL failed: " << sql;
+			}
+		}
 	}
 }

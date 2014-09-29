@@ -66,7 +66,8 @@ namespace stellar {
 
 	bool TrustLine::loadFromDB(uint256& index)
 	{
-		std::string sql = "SELECT * FROM TrustLines WHERE trustID='";
+		mIndex = index;
+		std::string sql = "SELECT * FROM TrustLines WHERE trustIndex=x'";
 		sql.append(to_string(index));
 		sql.append("';");
 
@@ -96,7 +97,8 @@ namespace stellar {
 		//make sure it isn't already in DB
 		deleteFromDB();
 
-		string sql = str(boost::format("INSERT INTO TrustLines (lowAccount,highAccount,lowLimit,highLimit,currency,balance,lowAuthSet,highAuthSet) values ('%s','%s',%d,%d,%d,%d,%d,%d);")
+		string sql = str(boost::format("INSERT INTO TrustLines (trustIndex, lowAccount,highAccount,lowLimit,highLimit,currency,balance,lowAuthSet,highAuthSet) values (x'%s','%s','%s',%d,%d,%d,%d,%d,%d);")
+			% to_string(getIndex())
 			% mLowAccount.base58Encode(RippleAddress::VER_ACCOUNT_ID)
 			% mHighAccount.base58Encode(RippleAddress::VER_ACCOUNT_ID)
 			% mLowLimit
@@ -119,13 +121,13 @@ namespace stellar {
 
 	void TrustLine::updateInDB()
 	{
-		string sql = str(boost::format("UPDATE TrustLines set lowLimit=%d ,highLimit=%d ,balance=%d ,lowAuthSet=%d ,highAuthSet=%d where trustIndex='%s';")
+		string sql = str(boost::format("UPDATE TrustLines set lowLimit=%d ,highLimit=%d ,balance=%d ,lowAuthSet=%d ,highAuthSet=%d where trustIndex=x'%s';")
 			% mLowLimit
 			% mHighLimit
 			% mBalance
 			% mLowAuthSet
 			% mHighAuthSet
-			% mIndex.base58Encode(RippleAddress::VER_NONE));
+			% to_string(getIndex()));
 
 		{
 			DeprecatedScopedLock sl(getApp().getLedgerDB()->getDBLock());
@@ -140,11 +142,10 @@ namespace stellar {
 
 	void TrustLine::deleteFromDB()
 	{
-		std::string sql = "DELETE FROM TrustLines where trustIndex='";
+		std::string sql = "DELETE FROM TrustLines where trustIndex=x'";
 		sql.append(to_string(getIndex()));
 		sql.append("';");
 
-		// SANITY
 		{
 			DeprecatedScopedLock sl(getApp().getLedgerDB()->getDBLock());
 			Database* db = getApp().getLedgerDB()->getDB();

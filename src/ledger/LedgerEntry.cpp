@@ -5,8 +5,6 @@
 
 namespace stellar
 {
-
-	// SANITY
 	LedgerEntry::pointer LedgerEntry::makeEntry(SLE::pointer sle)
 	{
 		switch(sle->getType())
@@ -25,6 +23,7 @@ namespace stellar
 
 	uint256 LedgerEntry::getIndex()
 	{
+		// SANITY does this !mIndex work?
 		if(!mIndex) calculateIndex();
 		return(mIndex);
 	}

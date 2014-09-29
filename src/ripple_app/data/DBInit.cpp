@@ -100,6 +100,31 @@ const char* LedgerDBInit[] =
 		requireAuth		BOOL				\
 	);",
 
+	"CREATE TABLE Offers (						\
+			accountID		CHARACTER(35),		\
+			sequence		INT UNSIGNED,		\
+			takerPaysCurrency Blob(20),			\
+			takerPaysAmount BIGINT UNSIGNED,	\
+			takerPaysIssuer CHARACTER(35),		\
+			takerGetsCurrency Blob(20),			\
+			takerGetsAmount BIGINT UNSIGNED,	\
+			takerGetsIssuer CHARACTER(3),		\
+			expiration INT UNSIGNED,			\
+			BOOL passive						\
+	);",
+
+	"CREATE TABLE TrustLines (					\
+		trustIndex Blob(32),					\
+		lowAccount	CHARACTER(35),				\
+		highAccount CHARACTER(35),				\
+		currency Blob(20),						\
+		lowLimit BIGINT UNSIGNED,				\
+		highLimit BIGINT UNSIGNED,				\
+		balance BIGINT UNSIGNED,				\
+		lowAuthSet BOOL,						\
+		highAuthSet BOOL						\
+	); ",
+
 
     "CREATE TABLE Validations	(					\
 		LedgerHash	CHARACTER(64),					\

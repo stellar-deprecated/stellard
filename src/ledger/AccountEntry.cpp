@@ -32,7 +32,12 @@ namespace stellar
 
 	void AccountEntry::calculateIndex()
 	{
-		//SANITY
+		Serializer  s(22);
+
+		s.add16(spaceAccount); //  2
+		s.add160(mAccountID);  // 20
+
+		mIndex= s.getSHA512Half();
 	}
 
 	void  AccountEntry::insertIntoDB()

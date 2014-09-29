@@ -14,7 +14,7 @@ namespace stellar
 
 		void calculateIndex();
 	public:
-		uint160 mAccount;
+		uint160 mAccountID;
 		uint32	mSequence;
 		STAmount mTakerPays;
 		STAmount mTakerGets;

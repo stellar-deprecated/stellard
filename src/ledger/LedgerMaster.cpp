@@ -29,7 +29,6 @@ namespace stellar
 				catchUpToNetowrk(currentCLF);
 			}
 		}
-		
 	}
 
 	
