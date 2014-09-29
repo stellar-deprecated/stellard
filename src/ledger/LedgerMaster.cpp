@@ -17,13 +17,22 @@ namespace stellar
 		return(Ledger::pointer());
 	}
 
-	void LedgerMaster::ledgerClosed()
+	void LedgerMaster::legacyLedgerClosed(ripple::Ledger::pointer ledger)
 	{
 		if(!mCaughtUp)
 		{
-			mCaughtUp = true;
+			// see if we are missing any entries from the ledger
+			std::vector<uint256> needed=ledger->getNeededAccountStateHashes(1,NULL);
+			if(!needed.size())
+			{ // we are now caught up
+				CanonicalLedgerForm::pointer currentCLF(new LegacyCLF(ledger));
+				catchUpToNetowrk(currentCLF);
+			}
 		}
+		
 	}
+
+	
 
 	void LedgerMaster::loadLastKnownCLF()
 	{
@@ -32,13 +41,26 @@ namespace stellar
 
 	void LedgerMaster::catchUpToNetowrk(CanonicalLedgerForm::pointer currentCLF)
 	{
-		vector<SLE::pointer> delta;
+		// new SLE , old SLE
+		vector< pair<SLE::pointer, SLE::pointer> > delta;
 		currentCLF->getDeltaSince(mCurrentCLF,delta);
 		for(int i = 0; i < delta.size(); i++)
 		{
-			// SANITY we need to add a tombstone LedgerEntry for handling deletes
-			LedgerEntry::pointer entry = LedgerEntry::makeEntry(delta[i]);
-			if(entry) entry->storeAdd();
+			if(delta[i].first)
+			{
+				LedgerEntry::pointer entry = LedgerEntry::makeEntry(delta[i].first);
+				if(delta[i].second)
+				{	// SLE updated
+					if(entry) entry->storeChange();
+				} else
+				{	// SLE added
+					if(entry) entry->storeAdd();
+				}
+			} else
+			{ // SLE must have been deleted
+				LedgerEntry::pointer entry = LedgerEntry::makeEntry(delta[i].second);
+				if(entry) entry->storeDelete();
+			}			
 		}
 	}
 

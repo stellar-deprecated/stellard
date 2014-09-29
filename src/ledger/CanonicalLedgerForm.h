@@ -23,7 +23,8 @@ namespace stellar
 		virtual bool load() = 0;
 
 		// gives us a list of the LedgerEntries that have changed since a particular Ledger in the past
-		virtual void getDeltaSince(CanonicalLedgerForm::pointer pastCLF, vector<SLE::pointer>& retList) = 0;
+		// vector is new SLE,oldSLE
+		virtual void getDeltaSince(CanonicalLedgerForm::pointer pastCLF, vector< pair<SLE::pointer, SLE::pointer> >& retList) = 0;
 
 		virtual void addEntry(uint256& newHash, SLE::pointer newEntry)=0;
 		virtual void updateEntry(uint256& oldHash, uint256& newHash, SLE::pointer updatedEntry)=0;

@@ -18,6 +18,7 @@
 //==============================================================================
 
 #include "../../ripple_overlay/api/predicates.h"
+#include "../src/ledger/LedgerMaster.h"
 
 namespace ripple {
 
@@ -1028,6 +1029,8 @@ private:
             mNewLedgerHash = newLCL->getHash ();
             mState = lcsACCEPTED;
             sl.unlock ();
+
+			stellar::gLedgerMaster.legacyLedgerClosed(getApp().getLedgerMaster().getCurrentLedger());
 
             if (mValidating)
             {

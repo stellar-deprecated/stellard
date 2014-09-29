@@ -11,12 +11,14 @@ namespace stellar
 {
 	class LegacyCLF : public CanonicalLedgerForm
 	{
-		Ledger::pointer mLedger;
+		ripple::Ledger::pointer mLedger;
 		uint256 mHash;
 	public:
-		
+		LegacyCLF();
+		LegacyCLF(ripple::Ledger::pointer ledger);
+
 		bool load();
-		void getDeltaSince(CanonicalLedgerForm::pointer pastCLF, vector<SLE::pointer>& retList);
+		void getDeltaSince(CanonicalLedgerForm::pointer pastCLF, vector< pair<SLE::pointer, SLE::pointer> >& retList);
 
 		void addEntry(uint256& newHash, SLE::pointer newEntry);
 		void updateEntry(uint256& oldHash, uint256& newHash, SLE::pointer updatedEntry);
@@ -24,6 +26,8 @@ namespace stellar
 		void closeLedger();  // need to call after all the tx have been applied to save that last versions of the ledger entries into the buckets
 
 		uint256 getHash();
+
+		ripple::Ledger::pointer getLegacyLedger(){ return mLedger;  }
 	};
 }
 

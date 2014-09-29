@@ -1,7 +1,7 @@
 
 #include "Ledger.h"
+#include "ripple_app/ledger/Ledger.h"  // I know I know. It is temporary
 #include "CanonicalLedgerForm.h"
-
 #include "transactions/TransactionSet.h"
 
 /*
@@ -29,7 +29,7 @@ namespace stellar
 		void loadLastKnownCLF();
 
 		// called every time we close a ledger
-		void ledgerClosed();
+		void legacyLedgerClosed(ripple::Ledger::pointer ledger);
 
 		Ledger::pointer getCurrentLedger();
 

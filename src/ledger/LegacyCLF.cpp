@@ -1,7 +1,17 @@
 #include "LegacyCLF.h"
 
+
 namespace stellar
 {
+	LegacyCLF::LegacyCLF()
+	{
+
+	}
+
+	LegacyCLF::LegacyCLF(ripple::Ledger::pointer ledger)
+	{
+		mLedger = ledger;
+	}
 
 	// SANITY how do we know what our last full ledger is?
 	bool LegacyCLF::load()
@@ -10,9 +20,14 @@ namespace stellar
 		return(true);
 	}
 
-	void LegacyCLF::getDeltaSince(CanonicalLedgerForm::pointer pastCLF, vector<SLE::pointer>& retList)
+	void LegacyCLF::getDeltaSince(CanonicalLedgerForm::pointer pastCLF, vector< pair<SLE::pointer, SLE::pointer> >& retList)
 	{
+		SHAMap::pointer newState=mLedger->peekAccountStateMap();
+		SHAMap::pointer oldState = ((LegacyCLF*)(pastCLF.get()))->getLegacyLedger()->peekAccountStateMap();
 
+		//vector< pair<SLE::pointer, SLE::pointer> > differences;
+		newState->compare(oldState, retList);
+		
 	}
 
 	void LegacyCLF::addEntry(uint256& newHash, SLE::pointer newEntry)
