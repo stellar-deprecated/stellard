@@ -21,7 +21,7 @@ namespace stellar
 		typedef boost::shared_ptr<CanonicalLedgerForm> pointer;
 
 		// load up our last known version of this
-		virtual bool load() = 0;
+		virtual bool load(uint256 ledgerHash) = 0;
 
 		// gives us a list of the LedgerEntries that have changed since a particular Ledger in the past
 		// vector is new SLE,oldSLE

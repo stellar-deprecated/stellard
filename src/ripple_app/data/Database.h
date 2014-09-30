@@ -49,7 +49,7 @@ public:
 
     virtual ~Database ();
 
-    virtual void connect () = 0;
+    virtual void connect ();
 
     virtual void disconnect () = 0;
 
@@ -116,12 +116,21 @@ public:
         return -1;
     }
 
+    void beginTransaction();
+    void endTransaction(bool rollback);
+    int getTransactionLevel() const
+    {
+        return mTransactionLevel;
+    }
+
 protected:
     bool getColNumber (const char* colName, int* retIndex);
 
     int mNumCol;
     std::string mHost;
     std::vector <std::string> mColNameTable;
+
+    int mTransactionLevel; // how many levels of transactions are currently active
 };
 
 } // ripple

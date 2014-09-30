@@ -137,6 +137,11 @@ const char* LedgerDBInit[] =
     "CREATE INDEX ValidationsByTime ON				\
 		Validations(SignTime);",
 
+    "CREATE TABLE StoreState (                      \
+            StateName   CHARACTER(32) PRIMARY KEY,  \
+            State       CHARACTER(32)               \
+    );",
+
     "END TRANSACTION;"
 };
 

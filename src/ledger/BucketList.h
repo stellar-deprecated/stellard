@@ -28,7 +28,7 @@ namespace stellar
 		void calculateHash();
 	public:
 
-		bool load();
+		bool load(uint256 ledgerHash);
 
 		//void setParentBucketList(BucketList::pointer parent);
 		void addEntry(uint256& newHash, SLE::pointer newEntry);

@@ -63,6 +63,7 @@
     <ClCompile Include="..\..\src\ledger\AccountEntry.cpp" />
     <ClCompile Include="..\..\src\ledger\BucketList.cpp" />
     <ClCompile Include="..\..\src\ledger\Ledger.cpp" />
+    <ClCompile Include="..\..\src\ledger\LedgerDatabase.cpp" />
     <ClCompile Include="..\..\src\ledger\LedgerEntry.cpp" />
     <ClCompile Include="..\..\src\ledger\LedgerMaster.cpp" />
     <ClCompile Include="..\..\src\ledger\LegacyCLF.cpp" />
@@ -1928,6 +1929,7 @@
     <ClInclude Include="..\..\src\ledger\AccountEntry.h" />
     <ClInclude Include="..\..\src\ledger\BucketList.h" />
     <ClInclude Include="..\..\src\ledger\Ledger.h" />
+    <ClInclude Include="..\..\src\ledger\LedgerDatabase.h" />
     <ClInclude Include="..\..\src\ledger\LedgerEntry.h" />
     <ClInclude Include="..\..\src\ledger\LedgerMaster.h" />
     <ClInclude Include="..\..\src\ledger\CanonicalLedgerForm.h" />

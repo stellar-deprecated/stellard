@@ -1,18 +1,25 @@
 #include "LedgerMaster.h"
 #include "LegacyCLF.h"
 #include "ripple_app/main/Application.h"
-#include "ripple_app/data/DatabaseCon.h"
+#include "ripple_basics/log/Log.h"
+
+using namespace ripple; // needed for logging...
 
 namespace stellar
 {
 	LedgerMaster gLedgerMaster;
 
-	LedgerMaster::LedgerMaster()
+    LedgerMaster::LedgerMaster() : mCurrentDB(getApp().getWorkingLedgerDB())
 	{
 		mCaughtUp = false;
-		mCurrentCLF = LegacyCLF::pointer(new LegacyCLF()); // change this to BucketList when we are ready
-        mTransactionLevel = 0;
+        reset();
+        
 	}
+
+    void LedgerMaster::reset()
+    {
+        mCurrentCLF = LegacyCLF::pointer(new LegacyCLF()); // change this to BucketList when we are ready
+    }
 
 	Ledger::pointer LedgerMaster::getCurrentLedger()
 	{
@@ -23,7 +30,7 @@ namespace stellar
 	{
 		if(!mCaughtUp)
 		{
-			// see if we are missing any entries from the ledger
+			// see if we are missing any entries in the local ledger
 			std::vector<uint256> needed=ledger->getNeededAccountStateHashes(1,NULL);
 			if(!needed.size())
 			{ // we are now caught up
@@ -38,8 +45,14 @@ namespace stellar
 
 	void LedgerMaster::loadLastKnownCLF()
 	{
-        // TODO: need to use separate field for tracking hash of current
-		mCurrentCLF->load();
+        uint256 lkcl = getLastClosedLedgerHash();
+        if (lkcl.isNonZero()) {
+            // there is a ledger in the database
+		    mCurrentCLF->load(lkcl);
+        }
+        else {
+            reset();
+        }
 	}
 
 	void LedgerMaster::catchUpToNetwork(CanonicalLedgerForm::pointer updatedCurrentCLF)
@@ -52,40 +65,71 @@ namespace stellar
         }
         catch (...)
         {
-            // TODO: fall back to recreate full (delta not efficient)
+            // SANITY: fall back to recreate full (delta not efficient)
+            WriteLog(ripple::lsWARNING, ripple::Ledger) << "Could not compute delta: too many changes";
         };
 
-        BOOST_FOREACH(SHAMap::Delta::value_type it, delta)
-		{
-            SLE::pointer newEntry = updatedCurrentCLF->getLegacyLedger()->getSLEi(it.first);
-            SLE::pointer oldEntry = mCurrentCLF->getLegacyLedger()->getSLEi(it.first);
+        mCurrentDB.beginTransaction();
 
-			if(newEntry)
-			{
-				LedgerEntry::pointer entry = LedgerEntry::makeEntry(newEntry);
-				if(oldEntry)
-				{	// SLE updated
-					if(entry) entry->storeChange();
-				} else
-				{	// SLE added
-					if(entry) entry->storeAdd();
-				}
-			} else
-			{ // SLE must have been deleted
-                assert(oldEntry);
-				LedgerEntry::pointer entry = LedgerEntry::makeEntry(oldEntry);
-				if(entry) entry->storeDelete();
-			}			
-		}
-        // TODO: need to use separate field for tracking hash of
-        //       current (that gets committed with the set of transactions)
+        try {
+            BOOST_FOREACH(SHAMap::Delta::value_type it, delta)
+		    {
+                SLE::pointer newEntry = updatedCurrentCLF->getLegacyLedger()->getSLEi(it.first);
+                SLE::pointer oldEntry = mCurrentCLF->getLegacyLedger()->getSLEi(it.first);
+
+			    if(newEntry)
+			    {
+				    LedgerEntry::pointer entry = LedgerEntry::makeEntry(newEntry);
+				    if(oldEntry)
+				    {	// SLE updated
+					    if(entry) entry->storeChange();
+				    } else
+				    {	// SLE added
+					    if(entry) entry->storeAdd();
+				    }
+			    } else
+			    { // SLE must have been deleted
+                    assert(oldEntry);
+				    LedgerEntry::pointer entry = LedgerEntry::makeEntry(oldEntry);
+				    if(entry) entry->storeDelete();
+			    }			
+		    }
+            // TODO: need to use separate field for tracking hash of
+            //       current (that gets committed with the set of transactions)
+
+
+            updateDBFromLedger(updatedCurrentCLF);
+        }
+        catch (...) {
+            mCurrentDB.endTransaction(true);
+            throw;
+        }
+
+        mCurrentDB.endTransaction(false);
+
+        // all committed to the db
+
         mCurrentCLF = updatedCurrentCLF;
 	}
 
+    void LedgerMaster::updateDBFromLedger(CanonicalLedgerForm::pointer ledger)
+    {
+        uint256 currentHash = ledger->getHash();
+        string hex(to_string(currentHash));
+
+        mCurrentDB.setState(mCurrentDB.getStoreStateName(LedgerDatabase::kLastClosedLedger), hex.c_str());
+    }
+
+    uint256 LedgerMaster::getLastClosedLedgerHash()
+    {
+        string h = mCurrentDB.getState(mCurrentDB.getStoreStateName(LedgerDatabase::kLastClosedLedger));
+        return uint256(h); // empty string -> 0
+    }
+
     void LedgerMaster::closeLedger(TransactionSet::pointer txSet)
 	{
-        assert(mTransactionLevel == 0);
-        beginTransaction();
+        mCurrentDB.beginTransaction();
+        assert(mCurrentDB.getTransactionLevel() == 1);
         try {
 		// apply tx set to the last ledger
             // todo: needs the logic to deal with partial failure
@@ -102,60 +146,10 @@ namespace stellar
         }
         catch (...)
         {
-            endTransaction(true);
+            mCurrentDB.endTransaction(true);
             throw;
         }
-        endTransaction(false);
+        mCurrentDB.endTransaction(false);
 	}
 
-    void LedgerMaster::beginTransaction()
-    {
-        const char *sql = nullptr;
-        bool tooklock = false;
-        if (mTransactionLevel++ == 0) {
-            sql = "BEGIN;";
-            getApp().getWorkingLedgerDB()->getDBLock().lock();
-            tooklock = true;
-        }
-        else {
-            assert(mTransactionLevel <= 2); // no need for more levels for now
-            sql = "SAVEPOINT L1;";
-        }
-
-        Database* db = getApp().getWorkingLedgerDB()->getDB();
-        if(!db->executeSQL(sql, true))
-        {
-            if (tooklock) {
-                getApp().getWorkingLedgerDB()->getDBLock().unlock();
-            }
-            throw std::runtime_error("Could not perform transaction");
-        }
-    }
-
-    void LedgerMaster::endTransaction(bool rollback)
-    {
-        const char *sql = nullptr;
-        bool needunlock = false;
-        assert(mTransactionLevel > 0);
-        if (--mTransactionLevel == 0) {
-            sql = rollback ? "ROLLBACK;" : "COMMIT;";
-            needunlock = true;
-        }
-        else {
-            sql = rollback ? "ROLLBACK TO SAVEPOINT L1;" : "RELEASE SAVEPOINT L1";
-        }
-
-        Database* db = getApp().getWorkingLedgerDB()->getDB();
-        bool success = db->executeSQL(sql, true);
-        
-        if (needunlock)
-        {
-            getApp().getWorkingLedgerDB()->getDBLock().unlock();
-        }
-
-        if (!success)
-        {
-            throw std::runtime_error("Could not commit transaction");
-        }
-    }
 }

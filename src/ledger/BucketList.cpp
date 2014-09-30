@@ -3,7 +3,7 @@
 namespace stellar
 {
 
-	bool BucketList::load()
+	bool BucketList::load(uint256 ledgerHash)
 	{
 
 		return(true);

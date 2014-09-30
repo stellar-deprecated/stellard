@@ -3,6 +3,7 @@
 #include "ripple_app/ledger/Ledger.h"  // I know I know. It is temporary
 #include "CanonicalLedgerForm.h"
 #include "transactions/TransactionSet.h"
+#include "ledger/LedgerDatabase.h"
 
 /*
 Holds the current ledger
@@ -16,17 +17,13 @@ namespace stellar
 	{
 		bool mCaughtUp;
 		CanonicalLedgerForm::pointer mCurrentCLF;
+        LedgerDatabase mCurrentDB;
 		
 		//LedgerHistory mHistory;
 
 
 		// called when we successfully sync to the network
 		void catchUpToNetwork(CanonicalLedgerForm::pointer currentCLF);
-
-        // SQL helper commands
-        int mTransactionLevel; // how many levels of transactions are currently active
-        void beginTransaction();
-        void endTransaction(bool rollback);
 
 	public:
 		LedgerMaster();
@@ -41,6 +38,11 @@ namespace stellar
 
 		void closeLedger(TransactionSet::pointer txSet);
 		CanonicalLedgerForm::pointer getCurrentCLF(){ return(mCurrentCLF); }
+
+    private:
+        void updateDBFromLedger(CanonicalLedgerForm::pointer ledger);
+        uint256 getLastClosedLedgerHash();
+        void reset();
 	};
 
 	extern LedgerMaster gLedgerMaster;

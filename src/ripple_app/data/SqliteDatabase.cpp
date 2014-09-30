@@ -71,6 +71,7 @@ SqliteDatabase::~SqliteDatabase ()
 
 void SqliteDatabase::connect ()
 {
+    Database::connect();
     int rc = sqlite3_open_v2 (mHost.c_str (), &mConnection,
                 SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX, nullptr);
 

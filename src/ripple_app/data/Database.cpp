@@ -25,7 +25,7 @@ using namespace std;
 namespace ripple {
 
 Database::Database (const char* host)
-    : mNumCol (0)
+    : mNumCol(0)
 {
     mHost   = host;
 }
@@ -219,5 +219,46 @@ char* Database::getSingleDBValueStr (const char* sql, std::string& retStr)
     return (ret);
 }
 #endif
+
+void Database::connect()
+{
+    mTransactionLevel = 0;
+}
+
+void Database::beginTransaction()
+{
+    const char *sql = nullptr;
+    if (mTransactionLevel++ == 0) {
+        sql = "BEGIN;";
+    }
+    else {
+        assert(mTransactionLevel <= 2); // no need for more levels for now
+        sql = "SAVEPOINT L1;";
+    }
+
+    if(!executeSQL(sql, true))
+    {
+        throw std::runtime_error("Could not perform transaction");
+    }
+}
+
+void Database::endTransaction(bool rollback)
+{
+    const char *sql = nullptr;
+    assert(mTransactionLevel > 0);
+    if (--mTransactionLevel == 0) {
+        sql = rollback ? "ROLLBACK;" : "COMMIT;";
+    }
+    else {
+        sql = rollback ? "ROLLBACK TO SAVEPOINT L1;" : "RELEASE SAVEPOINT L1";
+    }
+
+    bool success = executeSQL(sql, true);
+        
+    if (!success)
+    {
+        throw std::runtime_error("Could not commit transaction");
+    }
+}
 
 } // ripple

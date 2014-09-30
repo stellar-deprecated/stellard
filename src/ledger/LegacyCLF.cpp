@@ -14,7 +14,7 @@ namespace stellar
 	}
 
 	// SANITY how do we know what our last full ledger is?
-	bool LegacyCLF::load()
+	bool LegacyCLF::load(uint256 ledgerHash)
 	{
 		
 		return(true);

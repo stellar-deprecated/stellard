@@ -24,7 +24,7 @@ namespace stellar
 		uint32 mOwnerCount;
 		uint32 mTransferRate;
 		uint160 mInflationDest;
-		StellarPublicKey mPubKey;
+		StellarPublicKey mPubKey; // SANITY make this optional and map to nullable in SQL
 		bool mRequireDest;
 		bool mRequireAuth;
 
