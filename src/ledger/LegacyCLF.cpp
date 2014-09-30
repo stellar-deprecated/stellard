@@ -20,14 +20,19 @@ namespace stellar
 		return(true);
 	}
 
-	void LegacyCLF::getDeltaSince(CanonicalLedgerForm::pointer pastCLF, vector< pair<SLE::pointer, SLE::pointer> >& retList)
+	void LegacyCLF::getDeltaSince(CanonicalLedgerForm::pointer pastCLF, SHAMap::Delta& retList)
 	{
+        const int kMaxDiffs = 10000000;
+
 		SHAMap::pointer newState=mLedger->peekAccountStateMap();
-		SHAMap::pointer oldState = ((LegacyCLF*)(pastCLF.get()))->getLegacyLedger()->peekAccountStateMap();
+        ripple::Ledger::pointer pastLedger = pastCLF->getLegacyLedger();
+		SHAMap::pointer oldState = pastLedger->peekAccountStateMap();
 
 		//vector< pair<SLE::pointer, SLE::pointer> > differences;
-		newState->compare(oldState, retList);
-		
+        if (!newState->compare(oldState, retList, kMaxDiffs))
+        {
+            throw std::runtime_error("too many differences");
+        }
 	}
 
 	void LegacyCLF::addEntry(uint256& newHash, SLE::pointer newEntry)

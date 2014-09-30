@@ -18,7 +18,7 @@ namespace stellar
 		LegacyCLF(ripple::Ledger::pointer ledger);
 
 		bool load();
-		void getDeltaSince(CanonicalLedgerForm::pointer pastCLF, vector< pair<SLE::pointer, SLE::pointer> >& retList);
+		void getDeltaSince(CanonicalLedgerForm::pointer pastCLF, SHAMap::Delta& retList);
 
 		void addEntry(uint256& newHash, SLE::pointer newEntry);
 		void updateEntry(uint256& oldHash, uint256& newHash, SLE::pointer updatedEntry);

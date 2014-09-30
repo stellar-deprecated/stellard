@@ -28,7 +28,7 @@ namespace stellar
 			if(!needed.size())
 			{ // we are now caught up
 				CanonicalLedgerForm::pointer currentCLF(new LegacyCLF(ledger));
-				catchUpToNetowrk(currentCLF);
+				catchUpToNetwork(currentCLF);
                 mCaughtUp = true;
 			}
 		}
@@ -38,20 +38,32 @@ namespace stellar
 
 	void LedgerMaster::loadLastKnownCLF()
 	{
+        // TODO: need to use separate field for tracking hash of current
 		mCurrentCLF->load();
 	}
 
-	void LedgerMaster::catchUpToNetowrk(CanonicalLedgerForm::pointer currentCLF)
+	void LedgerMaster::catchUpToNetwork(CanonicalLedgerForm::pointer updatedCurrentCLF)
 	{
 		// new SLE , old SLE
-		vector< pair<SLE::pointer, SLE::pointer> > delta;
-		currentCLF->getDeltaSince(mCurrentCLF,delta);
-		for(int i = 0; i < delta.size(); i++)
+		SHAMap::Delta delta;
+        try
+        {
+		    updatedCurrentCLF->getDeltaSince(mCurrentCLF,delta);
+        }
+        catch (...)
+        {
+            // TODO: fall back to recreate full (delta not efficient)
+        };
+
+        BOOST_FOREACH(SHAMap::Delta::value_type it, delta)
 		{
-			if(delta[i].first)
+            SLE::pointer newEntry = updatedCurrentCLF->getLegacyLedger()->getSLEi(it.first);
+            SLE::pointer oldEntry = mCurrentCLF->getLegacyLedger()->getSLEi(it.first);
+
+			if(newEntry)
 			{
-				LedgerEntry::pointer entry = LedgerEntry::makeEntry(delta[i].first);
-				if(delta[i].second)
+				LedgerEntry::pointer entry = LedgerEntry::makeEntry(newEntry);
+				if(oldEntry)
 				{	// SLE updated
 					if(entry) entry->storeChange();
 				} else
@@ -60,10 +72,14 @@ namespace stellar
 				}
 			} else
 			{ // SLE must have been deleted
-				LedgerEntry::pointer entry = LedgerEntry::makeEntry(delta[i].second);
+                assert(oldEntry);
+				LedgerEntry::pointer entry = LedgerEntry::makeEntry(oldEntry);
 				if(entry) entry->storeDelete();
 			}			
 		}
+        // TODO: need to use separate field for tracking hash of
+        //       current (that gets committed with the set of transactions)
+        mCurrentCLF = updatedCurrentCLF;
 	}
 
     void LedgerMaster::closeLedger(TransactionSet::pointer txSet)
@@ -130,7 +146,7 @@ namespace stellar
         }
 
         Database* db = getApp().getWorkingLedgerDB()->getDB();
-        bool success = db->executeSQL(sql, true));
+        bool success = db->executeSQL(sql, true);
         
         if (needunlock)
         {
