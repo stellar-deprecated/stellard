@@ -1,5 +1,14 @@
 #include "LegacyCLF.h"
 
+#include "ripple_app/main/Application.h"
+
+
+#include "ripple_basics/log/Log.h"
+
+#include "ripple_app/ledger/LedgerMaster.h"
+
+using namespace ripple; // needed for logging...
+
 
 namespace stellar
 {
@@ -13,15 +22,26 @@ namespace stellar
 		mLedger = ledger;
 	}
 
-	// SANITY how do we know what our last full ledger is?
 	bool LegacyCLF::load(uint256 ledgerHash)
 	{
-		
-		return(true);
+        // SANITY - should load from sql when we're ready
+        mLedger = getApp().getLedgerMaster ().getLedgerByHash (ledgerHash);
+        if (!mLedger) {
+            WriteLog(ripple::lsWARNING, ripple::Ledger) << "ledger " << ledgerHash << " not found in local db";
+        }
+        else {
+            if (!mLedger->isClosed()) {
+                WriteLog(ripple::lsWARNING, ripple::Ledger) << "ledger " << ledgerHash << " found but not closed in local db";
+                mLedger = Ledger::pointer();
+            }
+        }
+		return(mLedger != nullptr);
 	}
 
 	void LegacyCLF::getDeltaSince(CanonicalLedgerForm::pointer pastCLF, SHAMap::Delta& retList)
 	{
+        assert(mLedger && mLedger->isClosed());
+
         const int kMaxDiffs = 10000000;
 
 		SHAMap::pointer newState=mLedger->peekAccountStateMap();
