@@ -1030,7 +1030,7 @@ private:
             mState = lcsACCEPTED;
             sl.unlock ();
 
-			stellar::gLedgerMaster.legacyLedgerClosed(getApp().getLedgerMaster().getCurrentLedger());
+            stellar::gLedgerMaster->legacyLedgerClosed(newLCL);
 
             if (mValidating)
             {

@@ -120,7 +120,7 @@ namespace stellar
 	TER AccountEntry::tryToIncreaseOwnerCount()
 	{
 		// The reserve required to create the line.
-		uint64 reserveNeeded = gLedgerMaster.getCurrentLedger()->getReserve(mOwnerCount + 1);
+		uint64 reserveNeeded = gLedgerMaster->getCurrentLedger()->getReserve(mOwnerCount + 1);
 
 		if(mBalance >= reserveNeeded)
 		{

@@ -695,6 +695,8 @@ public:
         if (!getConfig ().RUN_STANDALONE)
             updateTables ();
 
+        stellar::gLedgerMaster = boost::make_shared<stellar::LedgerMaster>();
+
         m_amendmentTable->addInitial();
         Pathfinder::initPathTable ();
 
@@ -751,7 +753,7 @@ public:
         SHAMap::setTreeCache (getConfig ().getSize (siTreeCacheSize), getConfig ().getSize (siTreeCacheAge));
 
 		// SANITY is this the correct place to do this?
-		gLedgerMaster.loadLastKnownCLF();
+		stellar::gLedgerMaster->loadLastKnownCLF();
 
 
         //----------------------------------------------------------------------

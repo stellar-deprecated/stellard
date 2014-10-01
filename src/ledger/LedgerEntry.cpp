@@ -33,21 +33,21 @@ namespace stellar
 	{
 		deleteFromDB();
 		
-		gLedgerMaster.getCurrentCLF()->deleteEntry( getHash() );
+		gLedgerMaster->getCurrentCLF()->deleteEntry( getHash() );
 	}
 
 	void LedgerEntry::storeChange()
 	{
 		updateInDB();
 
-		gLedgerMaster.getCurrentCLF()->deleteEntry(getHash());
+		gLedgerMaster->getCurrentCLF()->deleteEntry(getHash());
 	}
 
 	void LedgerEntry::storeAdd()
 	{
 		insertIntoDB();
 
-		gLedgerMaster.getCurrentCLF()->deleteEntry(getHash());
+		gLedgerMaster->getCurrentCLF()->deleteEntry(getHash());
 	}
 
 

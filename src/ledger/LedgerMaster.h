@@ -26,6 +26,10 @@ namespace stellar
 		void catchUpToNetwork(CanonicalLedgerForm::pointer currentCLF);
 
 	public:
+
+        typedef boost::shared_ptr<LedgerMaster>           pointer;
+        typedef const boost::shared_ptr<LedgerMaster>&    ref;
+
 		LedgerMaster();
 
 		// called on startup to get the last CLF we knew about
@@ -47,7 +51,7 @@ namespace stellar
         void reset();
 	};
 
-	extern LedgerMaster gLedgerMaster;
+	extern LedgerMaster::pointer gLedgerMaster;
 }
 
 

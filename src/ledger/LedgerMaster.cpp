@@ -8,7 +8,7 @@ using namespace ripple; // needed for logging...
 
 namespace stellar
 {
-	LedgerMaster gLedgerMaster;
+	LedgerMaster::pointer gLedgerMaster;
 
     LedgerMaster::LedgerMaster() : mCurrentDB(getApp().getWorkingLedgerDB())
 	{
