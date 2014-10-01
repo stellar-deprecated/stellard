@@ -86,13 +86,9 @@ public:
         , mLastOffsetUpdate ((time_t) - 1)
         , mReceiveBuffer (256)
     {
-        mSocket.open (boost::asio::ip::udp::v4 ());
+        boost::system::error_code ec;
 
-        mSocket.async_receive_from (boost::asio::buffer (mReceiveBuffer, 256),
-            mReceiveEndpoint, boost::bind (
-                &SNTPClientImp::receivePacket, this,
-                    boost::asio::placeholders::error,
-                        boost::asio::placeholders::bytes_transferred));
+        mSocket.open (boost::asio::ip::udp::v4 (), ec);
 
         mTimer.expires_from_now (boost::posix_time::seconds (NTP_QUERY_FREQUENCY));
         mTimer.async_wait (boost::bind (&SNTPClientImp::timerEntry, this, boost::asio::placeholders::error));
@@ -237,7 +233,11 @@ public:
 
     void receivePacket (const boost::system::error_code& error, std::size_t bytes_xferd)
     {
-        if (!error)
+        if (error)
+        {
+            WriteLog(lsWARNING, SNTPClient) << "SNTP: receive error";
+        }
+        else
         {
             ScopedLockType sl (mLock);
     #ifdef SNTP_DEBUG
@@ -264,15 +264,23 @@ public:
                     processReply ();
             }
         }
-
-        mSocket.async_receive_from (boost::asio::buffer (mReceiveBuffer, 256), mReceiveEndpoint,
-                                    boost::bind (&SNTPClientImp::receivePacket, this, boost::asio::placeholders::error,
-                                            boost::asio::placeholders::bytes_transferred));
     }
 
     void sendComplete (const boost::system::error_code& error, std::size_t)
     {
-        CondLog (error, lsWARNING, SNTPClient) << "SNTP: Send error";
+        if (error)
+        {
+            WriteLog(lsWARNING, SNTPClient) << "SNTP: Send error";
+        }
+        else
+        {
+            // can proceed with waiting for the answer
+            mSocket.async_receive_from (boost::asio::buffer (mReceiveBuffer, 256),
+            mReceiveEndpoint, boost::bind (
+                &SNTPClientImp::receivePacket, this,
+                    boost::asio::placeholders::error,
+                        boost::asio::placeholders::bytes_transferred));
+        }
     }
 
     void processReply ()
