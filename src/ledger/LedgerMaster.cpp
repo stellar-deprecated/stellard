@@ -66,9 +66,13 @@ namespace stellar
         }
         catch (...)
         {
-            // SANITY: fall back to recreate full (delta not efficient)
-            WriteLog(ripple::lsWARNING, ripple::Ledger) << "Could not compute delta: too many changes";
+            WriteLog(ripple::lsWARNING, ripple::Ledger) << "Could not compute delta: defaulting to full import";
+
+            importLedgerState(updatedCurrentCLF->getHash());
+            return;
         };
+
+        // incremental update
 
         mCurrentDB.beginTransaction();
 
