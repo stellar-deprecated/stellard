@@ -46,13 +46,16 @@ namespace stellar
 
 		SHAMap::pointer newState=mLedger->peekAccountStateMap();
         ripple::Ledger::pointer pastLedger = pastCLF->getLegacyLedger();
-		SHAMap::pointer oldState = pastLedger->peekAccountStateMap();
+		if(pastLedger)
+		{
+			SHAMap::pointer oldState = pastLedger->peekAccountStateMap();
 
-		//vector< pair<SLE::pointer, SLE::pointer> > differences;
-        if (!newState->compare(oldState, retList, kMaxDiffs))
-        {
-            throw std::runtime_error("too many differences");
-        }
+			//vector< pair<SLE::pointer, SLE::pointer> > differences;
+			if(!newState->compare(oldState, retList, kMaxDiffs))
+			{
+				throw std::runtime_error("too many differences");
+			}
+		}
 	}
 
 	void LegacyCLF::addEntry(uint256& newHash, SLE::pointer newEntry)
