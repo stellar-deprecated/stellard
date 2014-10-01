@@ -24,6 +24,9 @@ namespace stellar
 
  		OfferEntry();
 		OfferEntry(SLE::pointer sle);
+
+        static void dropAll(LedgerDatabase &db);
+        static const char *kSQLCreateStatement;
 	};
 }
 

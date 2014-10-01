@@ -2,6 +2,7 @@
 #include "LegacyCLF.h"
 #include "ripple_app/main/Application.h"
 #include "ripple_basics/log/Log.h"
+#include "ripple_basics/ripple_basics.h"
 
 using namespace ripple; // needed for logging...
 
@@ -111,6 +112,42 @@ namespace stellar
 
         mCurrentCLF = updatedCurrentCLF;
 	}
+
+
+    static void importHelper(SLE::ref curEntry, LedgerMaster &lm) {
+        LedgerEntry::pointer entry = LedgerEntry::makeEntry(curEntry);
+        if(entry) {
+            entry->storeAdd();
+        }
+        else {
+            throw std::runtime_error("could not add entry");
+        }
+    }
+    
+    void LedgerMaster::importLedgerState(uint256 ledgerHash)
+    {
+        CanonicalLedgerForm::pointer newLedger = LegacyCLF::pointer(new LegacyCLF());
+
+        if (newLedger->load(ledgerHash)) {
+            mCurrentDB.beginTransaction();
+            try {
+                // delete all
+                LedgerEntry::dropAll(mCurrentDB);
+
+                // import all anew
+                newLedger->getLegacyLedger()->visitStateItems(BIND_TYPE (&importHelper, P_1, boost::ref (*this)));
+
+                updateDBFromLedger(newLedger);
+            }
+            catch (...) {
+                mCurrentDB.endTransaction(false);
+                WriteLog(ripple::lsWARNING, ripple::Ledger) << "Could not import state";
+                return;
+            }
+            mCurrentDB.endTransaction(true);
+            mCurrentCLF = newLedger;
+        }
+    }
 
     void LedgerMaster::updateDBFromLedger(CanonicalLedgerForm::pointer ledger)
     {

@@ -39,6 +39,8 @@ namespace stellar
 		void closeLedger(TransactionSet::pointer txSet);
 		CanonicalLedgerForm::pointer getCurrentCLF(){ return(mCurrentCLF); }
 
+        void importLedgerState(uint256 ledgerHash);
+
     private:
         void updateDBFromLedger(CanonicalLedgerForm::pointer ledger);
         uint256 getLastClosedLedgerHash();

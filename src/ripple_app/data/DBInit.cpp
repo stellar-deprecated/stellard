@@ -17,6 +17,10 @@
 */
 //==============================================================================
 
+#include "ledger/AccountEntry.h"
+#include "ledger/TrustLine.h"
+#include "ledger/OfferEntry.h"
+
 namespace ripple {
 
 // Transaction database holds transactions and public keys
@@ -72,7 +76,7 @@ const char* LedgerDBInit[] =
 
     "BEGIN TRANSACTION;",
 
-    "CREATE TABLE Ledgers (							\
+    "CREATE TABLE IF NOT EXISTS Ledgers (							\
 		LedgerHash		CHARACTER(64) PRIMARY KEY,	\
 		LedgerSeq		BIGINT UNSIGNED,			\
 		PrevHash		CHARACTER(64),				\
@@ -88,56 +92,24 @@ const char* LedgerDBInit[] =
 	);",
     "CREATE INDEX SeqLedger ON Ledgers(LedgerSeq);",
 
-	"CREATE TABLE Accounts (						\
-		accountID		CHARACTER(35) PRIMARY KEY,	\
-		balance			BIGINT UNSIGNED,			\
-		sequence		INT UNSIGNED,				\
-		owenerCount		INT UNSIGNED,			\
-		transferRate	INT UNSIGNED,		\
-		inflationDest	CHARACTER(35),		\
-		publicKey		CHARACTER(56),		\
-		requireDest		BOOL,				\
-		requireAuth		BOOL				\
-	);",
+    stellar::AccountEntry::kSQLCreateStatement,
 
-	"CREATE TABLE Offers (						\
-			accountID		CHARACTER(35),		\
-			sequence		INT UNSIGNED,		\
-			takerPaysCurrency Blob(20),			\
-			takerPaysAmount BIGINT UNSIGNED,	\
-			takerPaysIssuer CHARACTER(35),		\
-			takerGetsCurrency Blob(20),			\
-			takerGetsAmount BIGINT UNSIGNED,	\
-			takerGetsIssuer CHARACTER(3),		\
-			expiration INT UNSIGNED,			\
-			BOOL passive						\
-	);",
+	stellar::OfferEntry::kSQLCreateStatement,
 
-	"CREATE TABLE TrustLines (					\
-		trustIndex Blob(32),					\
-		lowAccount	CHARACTER(35),				\
-		highAccount CHARACTER(35),				\
-		currency Blob(20),						\
-		lowLimit BIGINT UNSIGNED,				\
-		highLimit BIGINT UNSIGNED,				\
-		balance BIGINT UNSIGNED,				\
-		lowAuthSet BOOL,						\
-		highAuthSet BOOL						\
-	); ",
+	stellar::TrustLine::kSQLCreateStatement,
 
-
-    "CREATE TABLE Validations	(					\
+    "CREATE TABLE IF NOT EXISTS Validations	(					\
 		LedgerHash	CHARACTER(64),					\
 		NodePubKey	CHARACTER(56),					\
 		SignTime	BIGINT UNSIGNED,				\
 		RawData		BLOB							\
 	);",
-    "CREATE INDEX ValidationsByHash ON				\
+    "CREATE INDEX IF NOT EXISTS ValidationsByHash ON				\
 		Validations(LedgerHash);",
     "CREATE INDEX ValidationsByTime ON				\
 		Validations(SignTime);",
 
-    "CREATE TABLE StoreState (                      \
+    "CREATE TABLE IF NOT EXISTS StoreState (                      \
             StateName   CHARACTER(32) PRIMARY KEY,  \
             State       CHARACTER(32)               \
     );",

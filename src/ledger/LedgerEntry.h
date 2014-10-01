@@ -3,6 +3,7 @@
 
 #include "ripple/types/api/base_uint.h"
 #include "ripple_app/misc/SerializedLedger.h"
+#include "LedgerDatabase.h"
 
 using namespace ripple;
 /*
@@ -39,6 +40,8 @@ namespace stellar
 		void storeDelete();
 		void storeChange();
 		void storeAdd();
+
+        static void dropAll(LedgerDatabase &db); // deletes all data from DB
 	};
 }
 

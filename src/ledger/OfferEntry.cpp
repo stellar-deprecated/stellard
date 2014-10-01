@@ -11,6 +11,19 @@ using namespace std;
 namespace stellar
 {
 
+    const char *OfferEntry::kSQLCreateStatement = "CREATE TABLE IF NOT EXISTS Offers (						\
+			accountID		CHARACTER(35),		\
+			sequence		INT UNSIGNED,		\
+			takerPaysCurrency Blob(20),			\
+			takerPaysAmount BIGINT UNSIGNED,	\
+			takerPaysIssuer CHARACTER(35),		\
+			takerGetsCurrency Blob(20),			\
+			takerGetsAmount BIGINT UNSIGNED,	\
+			takerGetsIssuer CHARACTER(3),		\
+			expiration INT UNSIGNED,			\
+			BOOL passive						\
+	);";
+
 	OfferEntry::OfferEntry(SLE::pointer sle)
 	{
 		mAccountID = sle->getFieldAccount160(sfAccount);
@@ -113,4 +126,16 @@ namespace stellar
 			}
 		}
 	}
+
+    void OfferEntry::dropAll(LedgerDatabase &db)
+    {
+        if (!db.getDBCon()->getDB()->executeSQL("DROP TABLE IF EXISTS Offers;"))
+		{
+            throw std::runtime_error("Could not drop Offers data");
+		}
+        if (!db.getDBCon()->getDB()->executeSQL(kSQLCreateStatement))
+        {
+            throw std::runtime_error("Could not recreate Offers data");
+		}
+    }
 }

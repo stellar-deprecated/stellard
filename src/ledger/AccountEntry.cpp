@@ -8,6 +8,19 @@
 
 namespace stellar
 {
+
+    const char *AccountEntry::kSQLCreateStatement = 	"CREATE TABLE IF NOT EXISTS Accounts (						\
+		accountID		CHARACTER(35) PRIMARY KEY,	\
+		balance			BIGINT UNSIGNED,			\
+		sequence		INT UNSIGNED,				\
+		owenerCount		INT UNSIGNED,			\
+		transferRate	INT UNSIGNED,		\
+		inflationDest	CHARACTER(35),		\
+		publicKey		CHARACTER(56),		\
+		requireDest		BOOL,				\
+		requireAuth		BOOL				\
+	);";
+
 	
 	AccountEntry::AccountEntry(SLE::pointer sle)
 	{
@@ -116,5 +129,17 @@ namespace stellar
 		}
 		return tecINSUF_RESERVE_LINE;
 	}
+
+    void AccountEntry::dropAll(LedgerDatabase &db)
+    {
+        if (!db.getDBCon()->getDB()->executeSQL("DROP TABLE IF EXISTS Accounts;"))
+		{
+            throw std::runtime_error("Could not drop Account data");
+		}
+        if (!db.getDBCon()->getDB()->executeSQL(kSQLCreateStatement))
+        {
+            throw std::runtime_error("Could not recreate Account data");
+		}
+    }
 }
 

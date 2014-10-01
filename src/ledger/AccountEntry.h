@@ -41,7 +41,8 @@ namespace stellar
 		// will return tesSUCCESS or that this account doesn't have the reserve to do this
 		TER tryToIncreaseOwnerCount();
 
-		
+        static void dropAll(LedgerDatabase &db);
+        static const char *kSQLCreateStatement;
 	};
 }
 

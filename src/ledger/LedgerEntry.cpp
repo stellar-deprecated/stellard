@@ -58,5 +58,13 @@ namespace stellar
 		//if(!mSLE) makeSLE();
 		//return(mSLE->getHash());
 	}
-	
+
+    // SANITY use a registration pattern instead as we also need factories
+    void LedgerEntry::dropAll(LedgerDatabase &db)
+    {
+        // SANITY implement this for the actual ledger entry ~~ the ledger class seems to conflict with this
+        AccountEntry::dropAll(db);
+        TrustLine::dropAll(db);
+        OfferEntry::dropAll(db);
+    }
 }

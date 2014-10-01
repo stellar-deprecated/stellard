@@ -39,6 +39,8 @@ namespace stellar {
 		bool loadFromDB(uint256& index);
 		TER fromTx(AccountEntry& signingAccount, TrustSetTx* tx);
 		
+        static void dropAll(LedgerDatabase &db);
+        static const char *kSQLCreateStatement;
 		
 	};
 }

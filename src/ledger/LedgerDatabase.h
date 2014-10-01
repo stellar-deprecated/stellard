@@ -26,7 +26,7 @@ namespace stellar
         void endTransaction(bool rollback);
         int getTransactionLevel();
 
-        
+        ripple::DatabaseCon *getDBCon() { return mDBCon; }
 
     private:
         ripple::DatabaseCon *mDBCon;

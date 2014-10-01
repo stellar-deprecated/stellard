@@ -17,6 +17,18 @@ using namespace std;
 
 namespace stellar {
 
+    const char *TrustLine::kSQLCreateStatement = "CREATE TABLE IF NOT EXISTS TrustLines (					\
+		trustIndex Blob(32),					\
+		lowAccount	CHARACTER(35),				\
+		highAccount CHARACTER(35),				\
+		currency Blob(20),						\
+		lowLimit BIGINT UNSIGNED,				\
+		highLimit BIGINT UNSIGNED,				\
+		balance BIGINT UNSIGNED,				\
+		lowAuthSet BOOL,						\
+		highAuthSet BOOL						\
+	); ";
+
 	TrustLine::TrustLine()
 	{
 
@@ -167,4 +179,16 @@ namespace stellar {
 			}
 		}
 	}
+
+    void TrustLine::dropAll(LedgerDatabase &db)
+    {
+        if (!db.getDBCon()->getDB()->executeSQL("DROP TABLE IF EXISTS TrustLines;"))
+		{
+            throw std::runtime_error("Could not drop TrustLines data");
+		}
+        if (!db.getDBCon()->getDB()->executeSQL(kSQLCreateStatement))
+        {
+            throw std::runtime_error("Could not recreate Account data");
+		}
+    }
 }
