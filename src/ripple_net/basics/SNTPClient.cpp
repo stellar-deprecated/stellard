@@ -233,7 +233,11 @@ public:
 
     void receivePacket (const boost::system::error_code& error, std::size_t bytes_xferd)
     {
-        if (!error)
+        if (error)
+        {
+            WriteLog(lsWARNING, SNTPClient) << "SNTP: receive error";
+        }
+        else
         {
             ScopedLockType sl (mLock);
     #ifdef SNTP_DEBUG
@@ -260,17 +264,13 @@ public:
                     processReply ();
             }
         }
-
-        mSocket.async_receive_from (boost::asio::buffer (mReceiveBuffer, 256), mReceiveEndpoint,
-                                    boost::bind (&SNTPClientImp::receivePacket, this, boost::asio::placeholders::error,
-                                            boost::asio::placeholders::bytes_transferred));
     }
 
     void sendComplete (const boost::system::error_code& error, std::size_t)
     {
         if (error)
         {
-            CondLog (error, lsWARNING, SNTPClient) << "SNTP: Send error";
+            WriteLog(lsWARNING, SNTPClient) << "SNTP: Send error";
         }
         else
         {
