@@ -113,8 +113,7 @@ namespace ripple {
 		vector< pair<uint160, boost::multiprecision::cpp_int> > winners;
 
 		{
-			DeprecatedScopedLock sl(getApp().getTxnDB()->getDBLock());
-			Database* db = getApp().getTxnDB()->getDB();
+			Database* db = getApp().getWorkingLedgerDB()->getDB();
 
 			if(db->executeSQL(sql, true) && db->startIterRows())
 			{

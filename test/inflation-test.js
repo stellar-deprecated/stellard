@@ -34,6 +34,8 @@ suite('Inflation', function() {
     var INFLATION_NUM_WINNERS = 50;
     var INT_SIZE_BITS = 256;
 
+    this.timeout(0);
+
     // calculate balances after inflation, returns total doled coins
     function calcInflation(accountObjects, accNum, total_fees, total_coins){
 
@@ -138,7 +140,126 @@ suite('Inflation', function() {
         testutils.build_teardown().call($, done);
     });
 
-/*
+
+
+
+
+    // When no one gets over the min %
+    // so choose the top 50 guys (or all 12 in this case)
+    test('Inflation #2 - no one over min', function(done) {
+        var self = this;
+        var tx_fee = 12; //TODO: get tx fee
+
+        var voteFun = function(n){
+            if(n==11) return 0;
+            return n+1;
+        };
+
+        var balanceFun = function(n){
+            return (n+1)*1000;
+        };
+
+        var accountObjects=makeTestAccounts(12, balanceFun, voteFun, tx_fee).accountObjects;
+        var failed = false;
+
+        var steps = [
+
+            function (callback) {
+                self.what = "Create accounts.";
+                testutils.createAccountsFromObjects($.remote, "root", accountObjects, callback);
+            },
+
+            function (wfCB) {
+                self.what = "Set InflationDests";
+
+                async.eachSeries(accountObjects, function (account, callback) {
+                    $.remote.transaction()
+                        .account_set(account.name)
+                        .inflation_dest($.remote.account(account.voteFor)._account_id)
+                        .on('submitted', function (m) {
+                            if (m.engine_result === 'tesSUCCESS') {
+                               callback();
+
+                            } else {
+                                console.log('',m);
+                                callback(new Error(m.engine_result));
+                            }
+                        })
+                        .submit();
+                }, wfCB);
+            },
+
+            function(wfCB)
+            {
+                self.what = "Move next";
+               // console.log("next");
+                testutils.rpc(config,'{"method":"ledger_accept"}').then(function(){ wfCB(); });
+            },
+
+            function (callback) {
+                self.what = "Do inflation";
+
+                //console.log('INFLATE');
+                testutils.rpc(config,{'method':'submit', 'params':[ {'secret':'s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN', 'tx_json':{"TransactionType":"Inflation","Fee":0, "Account":"ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb","InflateSeq":1 }}] })
+                    .then(function(result)
+                    {
+                        //console.log('',result);
+
+                        if (result.engine_result === 'tesSUCCESS') {
+
+                            return testutils.rpc(config,'{"method":"ledger_accept"}').then(function(){ callback(); });
+
+                        } else {
+                            console.log(result.engine_result);
+                            callback(new Error(result.engine_result));
+                        }
+                    });
+            },
+
+            function(wfCB)
+            {
+                self.what = "Move next 2";
+                //console.log("next");
+                testutils.rpc(config,'{"method":"ledger_accept"}').then(function(){ wfCB(); });
+            },
+
+            function (wfCB) {
+                self.what = "Check all balances";
+
+                async.eachSeries(accountObjects, function (account, callback) {
+                    $.remote.requestAccountBalance($.remote.account(account.name)._account_id, 'current', null)
+                        .on('success', function (m) {
+
+                            var balance = Number( bigint.bigInt2str(account.targetBalance,10));
+                            if(m.node.Balance != balance) failed = true;
+
+                            if(failed)
+                                console.log('target('+account.name+'): '+balance/DUST_MULTIPLIER+' vs '+m.node.Balance/DUST_MULTIPLIER);
+
+                            //assert(m.node.Balance == balance);
+                            callback();
+                        }).request();
+                },wfCB);
+            },
+
+            function (wfCB) {
+                self.what = "Check all balances / fail check";
+
+                assert(failed==false);
+
+                wfCB();
+            }
+        ]
+
+        async.waterfall(steps,function (error) {
+            assert(!error, self.what);
+            done();
+        });
+    });
+
+
+
+
     test('Inflation #1 - two guys over threshold', function(done) {
         var self = this;
         var tx_fee = 12; //TODO: get tx fee
@@ -161,7 +282,11 @@ suite('Inflation', function() {
 
             function (callback) {
                 self.what = "Create accounts.";
-                testutils.createAccountsFromObjects($.remote, "root", accountObjects, callback);
+
+                testutils.createAccountsFromObjects($.remote, "root", accountObjects, function(){
+                    testutils.rpc(config,'{"method":"ledger_accept"}').then(function(){ callback(); });
+                });
+
             },
 
             function (wfCB) {
@@ -173,9 +298,7 @@ suite('Inflation', function() {
                         .inflation_dest($.remote.account(account.voteFor)._account_id)
                         .on('submitted', function (m) {
                             if (m.engine_result === 'tesSUCCESS') {
-                                $.remote.once('ledger_closed', function(ledger_closed, ledger_index) { callback(); } );
-                                $.remote.ledger_accept();    // Move it along.
-
+                                callback();
                             } else {
                                 console.log('',m);
                                 callback(new Error(m.engine_result));
@@ -185,26 +308,33 @@ suite('Inflation', function() {
                 }, wfCB);
             },
 
+            function(wfCB)
+            {
+                self.what = "Move next";
+
+                testutils.rpc(config,'{"method":"ledger_accept"}').then(function(){ wfCB(); });
+            },
+
             function (callback) {
                 self.what = "Do inflation";
 
-                console.log('INFLATE');
-                $.remote.transaction()
-                    .inflation($.remote.account('root')._account_id, 1)
-                    .on('submitted', function (m) {
-                        if (m.engine_result === 'tesSUCCESS') {
-                            $.remote.once('ledger_closed', function(ledger_closed, ledger_index) { callback(); } );
-                            $.remote.ledger_accept();    // Move it along.
 
-                        } else {
-                            callback(new Error(m.engine_result));
-                        }
-                    })
-                    .on('error', function (m) {
-                        console.log('error: %s', JSON.stringify(m));
-                        callback(m);
-                    })
-                    .submit();
+                testutils.rpc(config,{'method':'submit', 'params':[ {'secret':'s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN', 'tx_json':{"TransactionType":"Inflation","Fee":0, "Account":"ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb","InflateSeq":1 }}] })
+                    .then(function(result)
+                {
+                    //console.log('',result);
+
+                    if (result.engine_result === 'tesSUCCESS') {
+
+                        return testutils.rpc(config,'{"method":"ledger_accept"}').then(function(){ callback(); });
+
+                    } else {
+                        console.log(result.engine_result);
+                        callback(new Error(result.engine_result));
+                    }
+                });
+
+
             },
 
             function (wfCB) {
@@ -242,23 +372,28 @@ suite('Inflation', function() {
         });
     });
 
-    // When no one gets over the min %
-    // so choose the top 50 guys (or all 12 in this case)
-    test('Inflation #2 - no one over min', function(done) {
+
+
+
+
+    // Use wrong sequence ID
+    test('Inflation #4 - wrong sequence ID', function(done) {
         var self = this;
         var tx_fee = 12; //TODO: get tx fee
 
-        var voteFun = function(n){
-            if(n==11) return 0;
-            return n+1;
+        var voteFunc = function(n){
+            if(n<6) return 0;
+            else if(n==6) return 2;
+            else if(n==7) return 3;
+            else return 1;
         };
 
-        var balanceFun = function(n){
-            return (n+1)*1000;
+        var balanceFunc = function(n){
+            return (n+1)*100000000;
         };
 
-        var accountObjects=makeTestAccounts(12, balanceFun, voteFun, tx_fee).accountObjects;
-        var failed = false;
+        var accountObjects=makeTestAccounts(12, balanceFunc, voteFunc, tx_fee).accountObjects;
+
 
         var steps = [
 
@@ -290,50 +425,22 @@ suite('Inflation', function() {
             function (callback) {
                 self.what = "Do inflation";
 
-                console.log('INFLATE');
-                $.remote.transaction()
-                    .inflation($.remote.account('root')._account_id, 1)
-                    .on('submitted', function (m) {
-                        if (m.engine_result === 'tesSUCCESS') {
-                            $.remote.once('ledger_closed', function(ledger_closed, ledger_index) { callback(); } );
-                            $.remote.ledger_accept();    // Move it along.
+                //console.log('INFLATE');
+                testutils.rpc(config,{'method':'submit', 'params':[ {'secret':'s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN', 'tx_json':{"TransactionType":"Inflation","Fee":0, "Account":"ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb","InflateSeq":2 }}] })
+                    .then(function(result)
+                    {
+                        //console.log('',result);
+
+                        if (result.engine_result === 'tesSUCCESS') {
+
+                            callback(new Error("Inflation succedded with wrong sequence ID"));
+
                         } else {
-                            callback(new Error(m.engine_result));
+                            callback(null);
                         }
-                    })
-                    .on('error', function (m) {
-                        console.log('error: %s', JSON.stringify(m));
-                        callback(m);
-                    })
-                    .submit();
-            },
-
-            function (wfCB) {
-                self.what = "Check all balances";
-
-                async.eachSeries(accountObjects, function (account, callback) {
-                    $.remote.requestAccountBalance($.remote.account(account.name)._account_id, 'current', null)
-                        .on('success', function (m) {
+                    });
 
 
-                            var balance = Number( bigint.bigInt2str(account.targetBalance,10));
-                            if(m.node.Balance != balance) failed = true;
-
-                            if(failed)
-                                console.log('target('+account.name+'): '+balance/DUST_MULTIPLIER+' vs '+m.node.Balance/DUST_MULTIPLIER);
-
-                            //assert(m.node.Balance == balance);
-                            callback();
-                        }).request();
-                },wfCB);
-            },
-
-            function (wfCB) {
-                self.what = "Check all balances / fail check";
-
-                assert(failed==false);
-
-                wfCB();
             }
         ]
 
@@ -342,6 +449,9 @@ suite('Inflation', function() {
             done();
         });
     });
+
+
+
 
     // Using two consecutive inflations, somehow minimal fee is included
     test('Inflation #3 - No fees to distribute', function(done) {
@@ -394,22 +504,21 @@ suite('Inflation', function() {
             function (callback) {
                 self.what = "Do inflation";
 
-                console.log('INFLATE');
-                $.remote.transaction()
-                    .inflation($.remote.account('root')._account_id, 1)
-                    .on('submitted', function (m) {
-                        if (m.engine_result === 'tesSUCCESS') {
-                            $.remote.once('ledger_closed', function(ledger_closed, ledger_index) { callback(); } );
-                            $.remote.ledger_accept();    // Move it along.
+                //console.log('INFLATE');
+                testutils.rpc(config,{'method':'submit', 'params':[ {'secret':'s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN', 'tx_json':{"TransactionType":"Inflation","Fee":0, "Account":"ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb","InflateSeq":1 }}] })
+                    .then(function(result)
+                    {
+                        //console.log('',result);
+
+                        if (result.engine_result === 'tesSUCCESS') {
+
+                            return testutils.rpc(config,'{"method":"ledger_accept"}').then(function(){ callback(); });
+
                         } else {
-                            callback(new Error(m.engine_result));
+                            console.log(result.engine_result);
+                            callback(new Error(result.engine_result));
                         }
-                    })
-                    .on('error', function (m) {
-                        console.log('error: %s', JSON.stringify(m));
-                        callback(m);
-                    })
-                    .submit();
+                    });
             },
 
 
@@ -444,25 +553,23 @@ suite('Inflation', function() {
             function (callback) {
                 self.what = "Do inflation #2";
 
-                totalCoins = doSubsequentInflation(12, accountObjects, 12, totalCoins);
+                totalCoins = doSubsequentInflation(12, accountObjects, 0, totalCoins);
 
-                console.log('INFLATE #2');
-                $.remote.transaction()
-                    .inflation($.remote.account('root')._account_id, 2)
-                    .on('submitted', function (m) {
-                        if (m.engine_result === 'tesSUCCESS') {
-                            $.remote.once('ledger_closed', function(ledger_closed, ledger_index) { callback(); } );
-                            $.remote.ledger_accept();    // Move it along.
+                //console.log('INFLATE #2');
+                testutils.rpc(config,{'method':'submit', 'params':[ {'secret':'s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN', 'tx_json':{"TransactionType":"Inflation","Fee":0, "Account":"ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb","InflateSeq":2 }}] })
+                    .then(function(result)
+                    {
+                        //console.log('',result);
+
+                        if (result.engine_result === 'tesSUCCESS') {
+
+                            return testutils.rpc(config,'{"method":"ledger_accept"}').then(function(){ callback(); });
+
                         } else {
-                            console.log('error: %s', JSON.stringify(m));
-                            callback(new Error(m.engine_result));
+                            console.log(result.engine_result);
+                            callback(new Error(result.engine_result));
                         }
-                    })
-                    .on('error', function (m) {
-                        console.log('error: %s', JSON.stringify(m));
-                        callback(m);
-                    })
-                    .submit();
+                    });
             },
 
             function (wfCB) {
@@ -500,67 +607,53 @@ suite('Inflation', function() {
         });
     });
 
-    // Use wrong sequence ID
-    test('Inflation #4 - wrong sequence ID', function(done) {
+
+    test("Inflation to another account", function (done) {
+        var self    = this;
+        var ledgers = 20;
+        var got_proposed;
+
+        $.remote.transaction()
+            .payment('root', 'alice', "1")
+            .once('submitted', function (m) {
+                // Transaction got an error.
+                // console.log("proposed: %s", JSON.stringify(m));
+                assert.strictEqual(m.engine_result, 'tecNO_DST_INSUF_STR');
+                got_proposed  = true;
+                $.remote.ledger_accept();    // Move it along.
+            })
+            .once('final', function (m) {
+                // console.log("final: %s", JSON.stringify(m, undefined, 2));
+                assert.strictEqual(m.engine_result, 'tecNO_DST_INSUF_STR');
+                done();
+            })
+            .submit();
+    });
+
+    test('set InflationDest', function(done) {
         var self = this;
-        var tx_fee = 12; //TODO: get tx fee
-
-        var voteFunc = function(n){
-            if(n<6) return 0;
-            else if(n==6) return 2;
-            else if(n==7) return 3;
-            else return 1;
-        };
-
-        var balanceFunc = function(n){
-            return (n+1)*100000000;
-        };
-
-        var accountObjects=makeTestAccounts(12, balanceFunc, voteFunc, tx_fee).accountObjects;
-
 
         var steps = [
-
             function (callback) {
-                self.what = "Create accounts.";
-                testutils.createAccountsFromObjects($.remote, "root", accountObjects, callback);
-            },
+                self.what = "Set InflationDest.";
 
-            function (wfCB) {
-                self.what = "Set InflationDests";
-
-                async.eachSeries(accountObjects, function (account, callback) {
-                    $.remote.transaction()
-                        .account_set(account.name)
-                        .inflation_dest($.remote.account(account.voteFor)._account_id)
-                        .on('submitted', function (m) {
-                            if (m.engine_result === 'tesSUCCESS') {
-                                $.remote.once('ledger_closed', function(ledger_closed, ledger_index) { callback(); } );
-                                $.remote.ledger_accept();    // Move it along.
-                            } else {
-                                console.log('',m);
-                                callback(new Error(m.engine_result));
-                            }
-                        })
-                        .submit();
-                }, wfCB);
-            },
-
-            function (callback) {
-                self.what = "Do inflation";
-
-                console.log('INFLATE');
                 $.remote.transaction()
-                    .inflation($.remote.account('root')._account_id, 2) //bad sequence ID
+                    .account_set("root")
+                    .inflation_dest($.remote.account('root')._account_id)
                     .on('submitted', function (m) {
-
+                        //console.log("proposed: %s", JSON.stringify(m));
                         if (m.engine_result === 'tesSUCCESS') {
-                            callback(new Error("Inflation succedded with wrong sequence ID"));
-                        } else {
                             callback(null);
+                        } else {
+                            callback(new Error(m.engine_result));
                         }
                     })
                     .submit();
+            },
+            function(callback)
+            {
+                $.remote.ledger_accept();    // Move it along.
+                callback(null);
             }
         ]
 
@@ -569,6 +662,229 @@ suite('Inflation', function() {
             done();
         });
     });
+
+    /*
+  test('Inflation #1 - all to one destination', function(done) {
+    var self = this;
+    var start_balance = 0;
+    var tx_fee = 15; //TODO: get tx fee
+
+    var steps = [
+
+      function (callback) {
+        self.what = "Create accounts.";
+        testutils.create_accounts($.remote, "root", "10000.0", ["alice", "bob", "carol", "mtgox"], callback);
+      },
+
+      function (callback) {
+        self.what = "Set InflationDest #1";
+
+        $.remote.transaction()
+          .account_set("alice")
+          .inflation_dest($.remote.account('carol')._account_id)
+          .on('submitted', function (m) {
+            if (m.engine_result === 'tesSUCCESS') {
+              $.remote.ledger_accept();    // Move it along.
+              callback(null);
+            } else {
+              callback(new Error(m.engine_result));
+            }
+          })
+          .submit();
+      },
+
+      function (callback) {
+        self.what = "Set InflationDest #2";
+
+        $.remote.transaction()
+          .account_set("bob")
+          .inflation_dest($.remote.account('carol')._account_id)
+          .on('submitted', function (m) {
+            if (m.engine_result === 'tesSUCCESS') {
+              $.remote.ledger_accept();    // Move it along.
+              callback(null);
+            } else {
+              callback(new Error(m.engine_result));
+            }
+          })
+          .submit();
+      },
+
+      function (callback) {
+        self.what = "Check starting balance";
+
+        $.remote.requestAccountBalance($.remote.account('carol')._account_id, 'current', null)
+          .on('success', function (m) {
+            start_balance = m.node.Balance;
+            callback();
+          }).request();
+      },
+
+      function (callback) {
+        self.what = "Do inflation";
+
+          testutils.rpc(config,{'method':'submit', 'params':[ {'secret':'s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN', 'tx_json':{"TransactionType":"Inflation","Fee":0, "Account":"ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb","InflateSeq":1 }}] })
+              .then(function(result)
+              {
+                  //console.log('',result);
+
+                  if (result.engine_result === 'tesSUCCESS') {
+
+                      return testutils.rpc(config,'{"method":"ledger_accept"}').then(function(){ callback(); });
+
+                  } else {
+                      console.log(result.engine_result);
+                      callback(new Error(result.engine_result));
+                  }
+              });
+      },
+
+      function (callback) {
+        self.what = "Check final balance";
+
+        $.remote.requestAccountBalance($.remote.account('carol')._account_id, 'current', null)
+          .on('success', function (m) {
+
+            var diff = m.node.Balance - start_balance;
+
+            assert( diff >= INFLATION_ROUND );
+            assert( diff < (INFLATION_ROUND + tx_fee*15) ); // 10 tx fees
+
+            callback();
+          }).request();
+      },
+
+      function(callback)
+      {
+        $.remote.ledger_accept();    // Move it along.
+        callback(null);
+      },
+    ]
+
+    async.waterfall(steps,function (error) {
+      assert(!error, self.what);
+      done();
+    });
+  });
+
+  test('Inflation #2 - 50/50 split', function(done) {
+    var self = this;
+    var start_balance = 10000000000;
+    var tx_fee = 15; //TODO: get tx fee
+
+    var steps = [
+
+      function (callback) {
+        self.what = "Create accounts.";
+        testutils.create_accounts($.remote, "root", "10000.0", ["alice", "bob", "carol", "mtgox"], callback);
+      },
+
+      function (callback) {
+        self.what = "Set InflationDest #1";
+
+        $.remote.transaction()
+          .account_set("alice")
+          .inflation_dest($.remote.account('carol')._account_id)
+          .on('submitted', function (m) {
+            if (m.engine_result === 'tesSUCCESS') {
+              $.remote.ledger_accept();    // Move it along.
+              callback(null);
+            } else {
+              callback(new Error(m.engine_result));
+            }
+          })
+          .submit();
+      },
+
+      function (callback) {
+        self.what = "Set InflationDest #2";
+
+        $.remote.transaction()
+          .account_set("bob")
+          .inflation_dest($.remote.account('mtgox')._account_id)
+          .on('submitted', function (m) {
+            if (m.engine_result === 'tesSUCCESS') {
+              $.remote.ledger_accept();    // Move it along.
+              callback(null);
+            } else {
+              callback(new Error(m.engine_result));
+            }
+          })
+          .submit();
+      },
+
+      function (callback) {
+        self.what = "Do inflation";
+
+          testutils.rpc(config,{'method':'submit', 'params':[ {'secret':'s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN', 'tx_json':{"TransactionType":"Inflation","Fee":0, "Account":"ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb","InflateSeq":1 }}] })
+              .then(function(result)
+              {
+                  //console.log('',result);
+
+                  if (result.engine_result === 'tesSUCCESS') {
+
+                      return testutils.rpc(config,'{"method":"ledger_accept"}').then(function(){ callback(); });
+
+                  } else {
+                      console.log(result.engine_result);
+                      callback(new Error(result.engine_result));
+                  }
+              });
+      },
+
+      function (callback) {
+        self.what = "Display ledger";
+
+        $.remote.request_ledger('current', true)
+          .on('success', function (m) {
+            //console.log("Ledger: %s", JSON.stringify(m, undefined, 2));
+            callback();
+          }).on('error', function(m) {
+            console.log("error: %s", JSON.stringify(m));
+            callback();
+          }).request();
+      },
+
+      function (callback) {
+        self.what = "Check mtgox's balance"; // async task, could take forever :)
+
+        $.remote.requestAccountBalance($.remote.account('mtgox')._account_id, 'current', null)
+          .on('success', function (m) {
+
+            var diff = m.node.Balance - start_balance; // diff == -850,000BTC
+            //console.log(diff);
+
+            assert( diff >= INFLATION_ROUND/2 );
+            assert( diff < (INFLATION_ROUND/2 + tx_fee*15) ); // 10 tx fees
+
+            callback();
+          }).request();
+      },
+
+
+      function (callback) {
+        self.what = "Check carol's balance";
+
+        $.remote.requestAccountBalance($.remote.account('carol')._account_id, 'current', null)
+          .on('success', function (m) {
+
+            var diff = m.node.Balance - start_balance;
+            //console.log(diff);
+
+            assert( diff >= INFLATION_ROUND/2 );
+            assert( diff < (INFLATION_ROUND/2 + tx_fee*15) ); // 10 tx fees
+
+            callback();
+          }).request();
+      },
+
+    ]
+
+    async.waterfall(steps,function (error) {
+      assert(!error, self.what);
+      done();
+    });
+  });
 
 
     test('Inflation #5 - Two inflation transactions make it into the same ledger, same seq ID', function(done) {
@@ -622,20 +938,20 @@ suite('Inflation', function() {
                 self.what = "Do inflation";
 
                 console.log('INFLATE');
-                $.remote.transaction()
-                    .inflation($.remote.account('root')._account_id, 1)
-                    .on('submitted', function (m) {
-                        if (m.engine_result === 'tesSUCCESS') {
-                            callback(null);
+                testutils.rpc(config,{'method':'submit', 'params':[ {'secret':'s3q5ZGX2ScQK2rJ4JATp7rND6X5npG3De8jMbB7tuvm2HAVHcCN', 'tx_json':{"TransactionType":"Inflation","Fee":0, "Account":"ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb","InflateSeq":1 }}] })
+                    .then(function(result)
+                    {
+                        //console.log('',result);
+
+                        if (result.engine_result === 'tesSUCCESS') {
+
+                            return testutils.rpc(config,'{"method":"ledger_accept"}').then(function(){ callback(); });
+
                         } else {
-                            callback(new Error(m.engine_result));
+                            console.log(result.engine_result);
+                            callback(new Error(result.engine_result));
                         }
-                    })
-                    .on('error', function (m) {
-                        console.log('error: %s', JSON.stringify(m));
-                        callback(m);
-                    })
-                    .submit();
+                    });
             },
 
 
@@ -670,14 +986,14 @@ suite('Inflation', function() {
             function (callback) {
                 self.what = "Do inflation #2";
 
-                totalCoins = doSubsequentInflation(12, accountObjects, 12, totalCoins);
+                totalCoins = doSubsequentInflation(12, accountObjects, 0, totalCoins);
 
                 console.log('INFLATE #2');
                 $.remote.transaction()
                     .inflation($.remote.account('root')._account_id, 1)
                     .on('submitted', function (m) {
                         if (m.engine_result === 'tesSUCCESS') {
-                            callback(new Error("Inflation succedded with wrong sequence ID"));
+                            callback(new Error("Inflation succeeded with wrong sequence ID"));
                         } else {
                             callback(null);
                         }
@@ -845,287 +1161,9 @@ suite('Inflation', function() {
             done();
         });
     });
-*/
-/*
-    test("Inflation to another account", function (done) {
-        var self    = this;
-        var ledgers = 20;
-        var got_proposed;
-
-        $.remote.transaction()
-            .payment('root', 'alice', "1")
-            .once('submitted', function (m) {
-                // Transaction got an error.
-                // console.log("proposed: %s", JSON.stringify(m));
-                assert.strictEqual(m.engine_result, 'tecNO_DST_INSUF_STR');
-                got_proposed  = true;
-                $.remote.ledger_accept();    // Move it along.
-            })
-            .once('final', function (m) {
-                // console.log("final: %s", JSON.stringify(m, undefined, 2));
-                assert.strictEqual(m.engine_result, 'tecNO_DST_INSUF_STR');
-                done();
-            })
-            .submit();
-    });
-
-    test('set InflationDest', function(done) {
-        var self = this;
-
-        var steps = [
-            function (callback) {
-                self.what = "Set InflationDest.";
-
-                $.remote.transaction()
-                    .account_set("root")
-                    .inflation_dest($.remote.account('root')._account_id)
-                    .on('submitted', function (m) {
-                        //console.log("proposed: %s", JSON.stringify(m));
-                        if (m.engine_result === 'tesSUCCESS') {
-                            callback(null);
-                        } else {
-                            callback(new Error(m.engine_result));
-                        }
-                    })
-                    .submit();
-            },
-            function(callback)
-            {
-                $.remote.ledger_accept();    // Move it along.
-                callback(null);
-            }
-        ]
-
-        async.waterfall(steps,function (error) {
-            assert(!error, self.what);
-            done();
-        });
-    });
 
 
-  test('Inflation #1 - all to one destination', function(done) {
-    var self = this;
-    var start_balance = 0;
-    var tx_fee = 15; //TODO: get tx fee
-
-    var steps = [
-
-      function (callback) {
-        self.what = "Create accounts.";
-        testutils.create_accounts($.remote, "root", "10000.0", ["alice", "bob", "carol", "mtgox"], callback);
-      },
-
-      function (callback) {
-        self.what = "Set InflationDest #1";
-
-        $.remote.transaction()
-          .account_set("alice")
-          .inflation_dest($.remote.account('carol')._account_id)
-          .on('submitted', function (m) {
-            if (m.engine_result === 'tesSUCCESS') {
-              $.remote.ledger_accept();    // Move it along.
-              callback(null);
-            } else {
-              callback(new Error(m.engine_result));
-            }
-          })
-          .submit();
-      },
-
-      function (callback) {
-        self.what = "Set InflationDest #2";
-
-        $.remote.transaction()
-          .account_set("bob")
-          .inflation_dest($.remote.account('carol')._account_id)
-          .on('submitted', function (m) {
-            if (m.engine_result === 'tesSUCCESS') {
-              $.remote.ledger_accept();    // Move it along.
-              callback(null);
-            } else {
-              callback(new Error(m.engine_result));
-            }
-          })
-          .submit();
-      },
-
-      function (callback) {
-        self.what = "Check starting balance";
-
-        $.remote.requestAccountBalance($.remote.account('carol')._account_id, 'current', null)
-          .on('success', function (m) {
-            start_balance = m.node.Balance;
-            callback();
-          }).request();
-      },
-
-      function (callback) {
-        self.what = "Do inflation";
-
-        $.remote.transaction()
-          .inflation($.remote.account('root')._account_id, 1)
-          .on('submitted', function (m) {
-            if (m.engine_result === 'tesSUCCESS') {
-              callback(null);
-            } else {
-              callback(new Error(m.engine_result));
-            }
-          })
-          .on('error', function (m) {
-            console.log('error: %s', JSON.stringify(m));
-            callback(m);
-          })
-          .submit();
-      },
-
-      function (callback) {
-        self.what = "Check final balance";
-
-        $.remote.requestAccountBalance($.remote.account('carol')._account_id, 'current', null)
-          .on('success', function (m) {
-
-            var diff = m.node.Balance - start_balance;
-
-            assert( diff >= INFLATION_ROUND );
-            assert( diff < (INFLATION_ROUND + tx_fee*15) ); // 10 tx fees
-
-            callback();
-          }).request();
-      },
-
-      function(callback)
-      {
-        $.remote.ledger_accept();    // Move it along.
-        callback(null);
-      },
-    ]
-
-    async.waterfall(steps,function (error) {
-      assert(!error, self.what);
-      done();
-    });
-  });
-
-  test('Inflation #2 - 50/50 split', function(done) {
-    var self = this;
-    var start_balance = 10000000000;
-    var tx_fee = 15; //TODO: get tx fee
-
-    var steps = [
-
-      function (callback) {
-        self.what = "Create accounts.";
-        testutils.create_accounts($.remote, "root", "10000.0", ["alice", "bob", "carol", "mtgox"], callback);
-      },
-
-      function (callback) {
-        self.what = "Set InflationDest #1";
-
-        $.remote.transaction()
-          .account_set("alice")
-          .inflation_dest($.remote.account('carol')._account_id)
-          .on('submitted', function (m) {
-            if (m.engine_result === 'tesSUCCESS') {
-              $.remote.ledger_accept();    // Move it along.
-              callback(null);
-            } else {
-              callback(new Error(m.engine_result));
-            }
-          })
-          .submit();
-      },
-
-      function (callback) {
-        self.what = "Set InflationDest #2";
-
-        $.remote.transaction()
-          .account_set("bob")
-          .inflation_dest($.remote.account('mtgox')._account_id)
-          .on('submitted', function (m) {
-            if (m.engine_result === 'tesSUCCESS') {
-              $.remote.ledger_accept();    // Move it along.
-              callback(null);
-            } else {
-              callback(new Error(m.engine_result));
-            }
-          })
-          .submit();
-      },
-
-      function (callback) {
-        self.what = "Do inflation";
-
-        $.remote.transaction()
-          .inflation($.remote.account('root')._account_id, 1)
-          .on('submitted', function (m) {
-            if (m.engine_result === 'tesSUCCESS') {
-              $.remote.ledger_accept();    // Move it along.
-              callback(null);
-            } else {
-              callback(new Error(m.engine_result));
-            }
-          })
-          .on('error', function (m) {
-            console.log('error: %s', JSON.stringify(m));
-            callback(m);
-          })
-          .submit();
-      },
-
-      function (callback) {
-        self.what = "Display ledger";
-
-        $.remote.request_ledger('current', true)
-          .on('success', function (m) {
-            //console.log("Ledger: %s", JSON.stringify(m, undefined, 2));
-            callback();
-          }).on('error', function(m) {
-            console.log("error: %s", JSON.stringify(m));
-            callback();
-          }).request();
-      },
-
-      function (callback) {
-        self.what = "Check mtgox's balance"; // async task, could take forever :)
-
-        $.remote.requestAccountBalance($.remote.account('mtgox')._account_id, 'current', null)
-          .on('success', function (m) {
-
-            var diff = m.node.Balance - start_balance; // diff == -850,000BTC
-            //console.log(diff);
-
-            assert( diff >= INFLATION_ROUND/2 );
-            assert( diff < (INFLATION_ROUND/2 + tx_fee*15) ); // 10 tx fees
-
-            callback();
-          }).request();
-      },
-
-
-      function (callback) {
-        self.what = "Check carol's balance";
-
-        $.remote.requestAccountBalance($.remote.account('carol')._account_id, 'current', null)
-          .on('success', function (m) {
-
-            var diff = m.node.Balance - start_balance;
-            //console.log(diff);
-
-            assert( diff >= INFLATION_ROUND/2 );
-            assert( diff < (INFLATION_ROUND/2 + tx_fee*15) ); // 10 tx fees
-
-            callback();
-          }).request();
-      },
-
-    ]
-
-    async.waterfall(steps,function (error) {
-      assert(!error, self.what);
-      done();
-    });
-  });
-*/
+     */
 
 
 });

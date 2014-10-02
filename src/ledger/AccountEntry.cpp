@@ -65,7 +65,7 @@ namespace stellar
 			% mSequence
 			% mOwnerCount
 			% mTransferRate
-			% mInflationDest
+			% mInflationDest.base58Encode(RippleAddress::VER_ACCOUNT_ID)
 			% mPubKey.base58Key()
 			% mRequireDest
 			% mRequireAuth);
@@ -84,7 +84,7 @@ namespace stellar
 			% mSequence
 			% mOwnerCount
 			% mTransferRate
-			% mInflationDest
+			% mInflationDest.base58Encode(RippleAddress::VER_ACCOUNT_ID)
 			% mPubKey.base58Key()
 			% mRequireDest
 			% mRequireAuth

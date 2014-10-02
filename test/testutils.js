@@ -231,6 +231,8 @@ function createAccountsFromObjects(remote, src, accounts, callback) {
     async.eachSeries(accounts, function (account, callback) {
         // Cache the seq as 1.
         // Otherwise, when other operations attempt to operate async against the account they may get confused.
+        //console.log('', account);
+
         remote.set_account_seq(account.name, 1);
 
         var tx = remote.transaction();

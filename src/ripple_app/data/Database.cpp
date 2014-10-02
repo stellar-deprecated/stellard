@@ -19,6 +19,7 @@
 #include "Database.h"
 #include "ripple_basics/utility/StringUtilities.h"
 #include "ripple/types/api/Base58.h"
+#include "ripple_data/protocol/RippleAddress.h"
 
 using namespace std;
 
@@ -142,8 +143,15 @@ uint160 Database::getAccountID(const char* colName)
 	string accountStr;
 	Blob tempBlob;
 	getStr(colName, accountStr);
-	Base58::decode(accountStr, tempBlob);
-	return uint160(tempBlob);
+	
+	if(Base58::decodeWithCheck(accountStr.c_str(), tempBlob, Base58::getRippleAlphabet()))
+	{
+		if(tempBlob.empty() || tempBlob[0] != RippleAddress::VER_ACCOUNT_ID) return uint160();
+
+		Blob innerBlob;
+		innerBlob.assign(tempBlob.begin() + 1, tempBlob.end());
+		return uint160(innerBlob);
+	} else return uint160();
 }
 
 // returns false if can't find col
