@@ -78,6 +78,6 @@ namespace stellar
 
 	uint256 LegacyCLF::getHash()
 	{
-		return(mHash);
+		return (mLedger == nullptr) ? uint256() : mLedger->getHash();
 	}
 }

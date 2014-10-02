@@ -12,7 +12,6 @@ namespace stellar
 	class LegacyCLF : public CanonicalLedgerForm
 	{
 		ripple::Ledger::pointer mLedger;
-		uint256 mHash;
 	public:
 		LegacyCLF();
 		LegacyCLF(ripple::Ledger::pointer ledger);

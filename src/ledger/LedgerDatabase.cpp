@@ -34,7 +34,7 @@ namespace stellar
     }
 
     void LedgerDatabase::setState(const char *stateName, const char *value) {
-        string sql = str(boost::format("INSERT OR REPLACE INTO StoreState (StateName, State) VALUES ('%s',%s);")
+        string sql = str(boost::format("INSERT OR REPLACE INTO StoreState (StateName, State) VALUES ('%s','%s');")
             % stateName
             % value
             );

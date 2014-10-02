@@ -60,17 +60,28 @@ namespace stellar
 	{
 		// new SLE , old SLE
 		SHAMap::Delta delta;
+        bool needFull = false;
         try
         {
-		    updatedCurrentCLF->getDeltaSince(mCurrentCLF,delta);
+            if (mCurrentCLF->getHash().isZero())
+            {
+                needFull = true;
+            }
+            else
+            {
+		        updatedCurrentCLF->getDeltaSince(mCurrentCLF,delta);
+            }
         }
         catch (...)
         {
-            WriteLog(ripple::lsWARNING, ripple::Ledger) << "Could not compute delta: defaulting to full import";
+            WriteLog(ripple::lsWARNING, ripple::Ledger) << "Could not compute delta";
+            needFull = true;
+        };
 
+        if (needFull){
             importLedgerState(updatedCurrentCLF->getHash());
             return;
-        };
+        }
 
         // incremental update
 
@@ -123,13 +134,13 @@ namespace stellar
         if(entry) {
             entry->storeAdd();
         }
-        else {
-            throw std::runtime_error("could not add entry");
-        }
+        // else entry type we don't care about
     }
     
     void LedgerMaster::importLedgerState(uint256 ledgerHash)
     {
+        WriteLog(ripple::lsINFO, ripple::Ledger) << "Importing full ledger " << ledgerHash;
+
         CanonicalLedgerForm::pointer newLedger = LegacyCLF::pointer(new LegacyCLF());
 
         if (newLedger->load(ledgerHash)) {
@@ -144,11 +155,11 @@ namespace stellar
                 updateDBFromLedger(newLedger);
             }
             catch (...) {
-                mCurrentDB.endTransaction(false);
+                mCurrentDB.endTransaction(true);
                 WriteLog(ripple::lsWARNING, ripple::Ledger) << "Could not import state";
                 return;
             }
-            mCurrentDB.endTransaction(true);
+            mCurrentDB.endTransaction(false);
             mCurrentCLF = newLedger;
         }
     }
