@@ -24,6 +24,7 @@
 #include "ripple_app/ledger/LedgerEntrySet.h"
 
 namespace ripple {
+class TransactionEngine;
 
 class Transactor
 {

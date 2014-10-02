@@ -31,6 +31,7 @@
 #include "Blob.h"
 #include "strHex.h"
 #include "ByteOrder.h"
+#include "ripple/types/api/Base58.h"
     
 #include "../../beast/beast/container/hardened_hash.h"
 

@@ -29,7 +29,7 @@ namespace stellar
 
 		virtual void addEntry(uint256& newHash, SLE::pointer newEntry)=0;
 		virtual void updateEntry(uint256& oldHash, uint256& newHash, SLE::pointer updatedEntry)=0;
-		virtual void deleteEntry(uint256& hash)=0;
+		virtual void deleteEntry(const uint256& hash)=0;
 		virtual void closeLedger()=0;  // need to call after all the tx have been applied to save that last versions of the ledger entries into the buckets
 
 		virtual uint256 getHash()=0;

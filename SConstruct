@@ -253,8 +253,11 @@ COMPILED_FILES.extend([
 	'src/ripple_websocket/autosocket/AutoSocket.cpp',
 	'src/ripple/peerfinder/impl/PeerSlotLogic.cpp',
 	'src/ripple/peerfinder/impl/Counts.cpp',
-	'src/ripple_app/transactors/InfaltionTransactor.cpp'
+	'src/ripple_app/transactors/InflationTransactor.cpp'
     ])
+
+COMPILED_FILES.extend(Glob('src/transactions/*.cpp',strings=True ))
+COMPILED_FILES.extend(Glob('src/ledger/*.cpp',strings=True))
 
 # ------------------------------
 # New-style Ripple unity sources

@@ -66,7 +66,7 @@ namespace stellar
 	{
 
 	}
-	void LegacyCLF::deleteEntry(uint256& hash)
+	void LegacyCLF::deleteEntry(const uint256& hash)
 	{
 
 	}

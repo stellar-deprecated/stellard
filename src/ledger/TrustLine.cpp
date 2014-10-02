@@ -87,7 +87,7 @@ namespace stellar {
 		return(tesSUCCESS);
 	}
 
-	bool TrustLine::loadFromDB(uint256& index)
+	bool TrustLine::loadFromDB(const uint256& index)
 	{
 		mIndex = index;
 		std::string sql = "SELECT * FROM TrustLines WHERE trustIndex=x'";
