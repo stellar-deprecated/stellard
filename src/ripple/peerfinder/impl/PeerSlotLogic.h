@@ -420,16 +420,7 @@ public:
     //--------------------------------------------------------------------------
 
     // Returns true if the IP::Endpoint contains no invalid data.
-    bool is_valid_address (beast::IP::Endpoint const& address)
-    {
-        if (is_unspecified (address))
-            return false;
-        if (! is_public (address))
-            return false;
-        if (address.port() == 0)
-            return false;
-        return true;
-    }
+    bool is_valid_address(beast::IP::Endpoint const& address);
 
     //--------------------------------------------------------------------------
 
