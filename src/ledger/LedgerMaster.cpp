@@ -20,6 +20,7 @@ namespace stellar
     void LedgerMaster::reset()
     {
         mCurrentCLF = LegacyCLF::pointer(new LegacyCLF()); // change this to BucketList when we are ready
+        mLastLedgerHash = uint256();
     }
 
 	Ledger::pointer LedgerMaster::getCurrentLedger()
@@ -27,36 +28,98 @@ namespace stellar
 		return(Ledger::pointer());
 	}
 
-	void LedgerMaster::legacyLedgerClosed(ripple::Ledger::pointer ledger)
+    void LedgerMaster::beginClosingLedger()
+    {
+        mCurrentDB.beginTransaction();
+        assert(mCurrentDB.getTransactionLevel() == 1); // should be top level transaction
+    }
+
+	void LedgerMaster::commitLedgerClose(ripple::Ledger::pointer ledger)
 	{
-		if(!mCaughtUp)
-		{
-			// see if we are missing any entries in the local ledger
-			std::vector<uint256> needed=ledger->getNeededAccountStateHashes(1,NULL);
-			if(!needed.size())
-			{ // we are now caught up
-				CanonicalLedgerForm::pointer currentCLF(new LegacyCLF(ledger));
-				catchUpToNetwork(currentCLF);
-                mCaughtUp = true;
-			}
-		}
+        CanonicalLedgerForm::pointer newCLF;
+
+        try
+        {
+            if (mCaughtUp)
+            {
+                if (ledger->getParentHash() == mLastLedgerHash)
+                {
+                    CanonicalLedgerForm::pointer nl(new LegacyCLF(ledger));
+                    try
+                    {
+                        // only need to update ledger related fields as the account state is already in SQL
+                        updateDBFromLedger(nl);
+                        newCLF = nl;
+                    }
+                    catch (std::runtime_error const &)
+                    {
+                        WriteLog(ripple::lsERROR, ripple::Ledger) << "Ledger close: could not update database";
+                    }
+                
+                }
+                else
+                { // somehow we got out of sync
+                    WriteLog(ripple::lsERROR, ripple::Ledger) << "Ledger close: out of sync detected";
+                    mCaughtUp = false;
+                }
+            }
+
+		    if(!mCaughtUp)
+		    {
+			    // see if we are missing any entries in the local ledger
+			    std::vector<uint256> needed=ledger->getNeededAccountStateHashes(1,NULL);
+			    if(!needed.size())
+			    { // we are now caught up
+				    CanonicalLedgerForm::pointer currentCLF(new LegacyCLF(ledger));
+				    newCLF = catchUp(currentCLF);
+                    mCaughtUp = (newCLF != nullptr); // if error, pretend we didn't catch up
+			    }
+            }
+        }
+        catch (...)
+        {
+            newCLF = nullptr;
+        }
+
+        if (newCLF != nullptr)
+        {
+            mCurrentDB.endTransaction(false);
+            setLastClosedLedger(newCLF);
+        }
+        else
+        {
+            mCurrentDB.endTransaction(true);
+        }
 	}
 
-	
+    void LedgerMaster::setLastClosedLedger(CanonicalLedgerForm::pointer ledger)
+    {
+        // should only be done outside of transactions, to guarantee state reflects what is on disk
+        assert(mCurrentDB.getTransactionLevel() == 0);
+        mCurrentCLF = ledger;
+        mLastLedgerHash = ledger->getHash();
+    }
+
+    void LedgerMaster::abortLedgerClose()
+    {
+        mCurrentDB.endTransaction(true);
+    }
 
 	void LedgerMaster::loadLastKnownCLF()
 	{
         uint256 lkcl = getLastClosedLedgerHash();
         if (lkcl.isNonZero()) {
             // there is a ledger in the database
-		    mCurrentCLF->load(lkcl);
+            if (mCurrentCLF->load(lkcl)) {
+                mLastLedgerHash = lkcl;
+            }
         }
         else {
             reset();
         }
 	}
 
-	void LedgerMaster::catchUpToNetwork(CanonicalLedgerForm::pointer updatedCurrentCLF)
+	CanonicalLedgerForm::pointer LedgerMaster::catchUp(CanonicalLedgerForm::pointer updatedCurrentCLF)
 	{
 		// new SLE , old SLE
 		SHAMap::Delta delta;
@@ -72,15 +135,14 @@ namespace stellar
 		        updatedCurrentCLF->getDeltaSince(mCurrentCLF,delta);
             }
         }
-        catch (...)
+        catch (std::runtime_error const &)
         {
             WriteLog(ripple::lsWARNING, ripple::Ledger) << "Could not compute delta";
             needFull = true;
         };
 
         if (needFull){
-            importLedgerState(updatedCurrentCLF->getHash());
-            return;
+            return importLedgerState(updatedCurrentCLF->getHash());
         }
 
         // incremental update
@@ -110,9 +172,6 @@ namespace stellar
 				    if(entry) entry->storeDelete();
 			    }			
 		    }
-            // TODO: need to use separate field for tracking hash of
-            //       current (that gets committed with the set of transactions)
-
 
             updateDBFromLedger(updatedCurrentCLF);
         }
@@ -123,9 +182,7 @@ namespace stellar
 
         mCurrentDB.endTransaction(false);
 
-        // all committed to the db
-
-        mCurrentCLF = updatedCurrentCLF;
+        return updatedCurrentCLF;
 	}
 
 
@@ -137,8 +194,10 @@ namespace stellar
         // else entry type we don't care about
     }
     
-    void LedgerMaster::importLedgerState(uint256 ledgerHash)
+    CanonicalLedgerForm::pointer LedgerMaster::importLedgerState(uint256 ledgerHash)
     {
+        CanonicalLedgerForm::pointer res;
+
         WriteLog(ripple::lsINFO, ripple::Ledger) << "Importing full ledger " << ledgerHash;
 
         CanonicalLedgerForm::pointer newLedger = LegacyCLF::pointer(new LegacyCLF());
@@ -157,11 +216,12 @@ namespace stellar
             catch (...) {
                 mCurrentDB.endTransaction(true);
                 WriteLog(ripple::lsWARNING, ripple::Ledger) << "Could not import state";
-                return;
+                return CanonicalLedgerForm::pointer();
             }
             mCurrentDB.endTransaction(false);
-            mCurrentCLF = newLedger;
+            res = newLedger;
         }
+        return res;
     }
 
     void LedgerMaster::updateDBFromLedger(CanonicalLedgerForm::pointer ledger)

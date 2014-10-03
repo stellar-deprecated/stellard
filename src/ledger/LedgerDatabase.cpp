@@ -26,9 +26,7 @@ namespace stellar
             );
         if (mDBCon->getDB()->executeSQL(sql))
         {
-            if (mDBCon->getDB()->getNextRow()) {
-                mDBCon->getDB()->getStr(0, res);
-            }
+            mDBCon->getDB()->getStr(0, res);
         }
         return res;
     }
@@ -41,6 +39,7 @@ namespace stellar
         if (!mDBCon->getDB()->executeSQL(sql))
         {
             WriteLog(ripple::lsWARNING, ripple::Ledger) << "SQL failed: " << sql;
+            throw std::runtime_error("could not update state in database");
         }
     }
 

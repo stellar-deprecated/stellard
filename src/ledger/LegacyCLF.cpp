@@ -24,7 +24,8 @@ namespace stellar
 
 	bool LegacyCLF::load(uint256 ledgerHash)
 	{
-        // SANITY - should load from sql when we're ready
+        // SANITY - should prefer to load from sql when we're ready
+        //     (and only go through historical blobs if necessary)
         mLedger = getApp().getLedgerMaster ().getLedgerByHash (ledgerHash);
         if (!mLedger) {
             WriteLog(ripple::lsWARNING, ripple::Ledger) << "ledger " << ledgerHash << " not found in local db";

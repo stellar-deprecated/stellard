@@ -893,6 +893,8 @@ private:
             //   perform updates, extract changes
             newLCL->peekTransactionMap ()->armDirty ();
             newLCL->peekAccountStateMap ()->armDirty ();
+            stellar::gLedgerMaster->beginClosingLedger();
+
             WriteLog (lsDEBUG, LedgerConsensus) 
                 << "Applying consensus set transactions to the"
                 << " last closed ledger";
@@ -1030,7 +1032,7 @@ private:
             mState = lcsACCEPTED;
             sl.unlock ();
 
-            stellar::gLedgerMaster->legacyLedgerClosed(newLCL);
+            stellar::gLedgerMaster->commitLedgerClose(newLCL);
 
             if (mValidating)
             {

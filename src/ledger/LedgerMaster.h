@@ -18,14 +18,11 @@ namespace stellar
 		bool mCaughtUp;
 		CanonicalLedgerForm::pointer mCurrentCLF;
         LedgerDatabase mCurrentDB;
+        uint256 mLastLedgerHash;
 		
 		//LedgerHistory mHistory;
 
-
-		// called when we successfully sync to the network
-		void catchUpToNetwork(CanonicalLedgerForm::pointer currentCLF);
-
-	public:
+    public:
 
         typedef boost::shared_ptr<LedgerMaster>           pointer;
         typedef const boost::shared_ptr<LedgerMaster>&    ref;
@@ -35,19 +32,33 @@ namespace stellar
 		// called on startup to get the last CLF we knew about
 		void loadLastKnownCLF();
 
-		// called every time we close a ledger
-		void legacyLedgerClosed(ripple::Ledger::pointer ledger);
+        // legacy interop
+		
+        // called before starting to make changes to the db
+        void beginClosingLedger();
+        // called every time we successfully closed a ledger
+		void commitLedgerClose(ripple::Ledger::pointer ledger);
+        // called when we could not close the ledger
+        void abortLedgerClose();
 
 		Ledger::pointer getCurrentLedger();
 
 		void closeLedger(TransactionSet::pointer txSet);
 		CanonicalLedgerForm::pointer getCurrentCLF(){ return(mCurrentCLF); }
 
-        void importLedgerState(uint256 ledgerHash);
-
     private:
+
+        // helper methods: returns new value of CLF in database 
+        
+        // called when we successfully sync to the network
+		CanonicalLedgerForm::pointer catchUp(CanonicalLedgerForm::pointer currentCLF);
+        CanonicalLedgerForm::pointer importLedgerState(uint256 ledgerHash);
+        
         void updateDBFromLedger(CanonicalLedgerForm::pointer ledger);
+        
+        void setLastClosedLedger(CanonicalLedgerForm::pointer ledger);
         uint256 getLastClosedLedgerHash();
+
         void reset();
 	};
 
