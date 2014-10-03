@@ -14,7 +14,6 @@ namespace stellar
 	{
 		mCaughtUp = false;
         reset();
-        
 	}
 
     void LedgerMaster::reset()
@@ -55,7 +54,6 @@ namespace stellar
                     {
                         WriteLog(ripple::lsERROR, ripple::Ledger) << "Ledger close: could not update database";
                     }
-                
                 }
                 else
                 { // somehow we got out of sync
@@ -107,14 +105,16 @@ namespace stellar
 
 	void LedgerMaster::loadLastKnownCLF()
 	{
+        bool needreset = true;
         uint256 lkcl = getLastClosedLedgerHash();
         if (lkcl.isNonZero()) {
             // there is a ledger in the database
             if (mCurrentCLF->load(lkcl)) {
                 mLastLedgerHash = lkcl;
+                needreset = false;
             }
         }
-        else {
+        if (needreset) {
             reset();
         }
 	}
@@ -172,7 +172,6 @@ namespace stellar
 				    if(entry) entry->storeDelete();
 			    }			
 		    }
-
             updateDBFromLedger(updatedCurrentCLF);
         }
         catch (...) {

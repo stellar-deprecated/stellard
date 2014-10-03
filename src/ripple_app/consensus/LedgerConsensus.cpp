@@ -1276,7 +1276,7 @@ private:
         bool openLgr)
     {
         TransactionEngine engine (applyLedger);
-		engine.mClosingLedger = true;
+        engine.mClosingLedger = !openLgr;
 
         for (SHAMapItem::pointer item = set->peekFirstItem (); !!item; 
             item = set->peekNextItem (item->getTag ()))
