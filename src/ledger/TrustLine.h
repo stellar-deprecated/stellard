@@ -36,7 +36,7 @@ namespace stellar {
 		TrustLine();
 		TrustLine(SLE::pointer sle);
 
-		bool loadFromDB(uint256& index);
+		bool loadFromDB(const uint256& index);
 		TER fromTx(AccountEntry& signingAccount, TrustSetTx* tx);
 		
         static void dropAll(LedgerDatabase &db);

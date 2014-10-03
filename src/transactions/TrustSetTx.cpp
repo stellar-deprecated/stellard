@@ -1,3 +1,4 @@
+#include "ripple/types/api/base_uint.h"
 #include "TrustSetTx.h"
 #include "ledger/TrustLine.h"
 #include "ledger/LedgerMaster.h"
