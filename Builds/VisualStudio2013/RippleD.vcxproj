@@ -60,14 +60,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\ledger\AccountEntry.cpp" />
-    <ClCompile Include="..\..\src\ledger\BucketList.cpp" />
-    <ClCompile Include="..\..\src\ledger\Ledger.cpp" />
-    <ClCompile Include="..\..\src\ledger\LedgerEntry.cpp" />
-    <ClCompile Include="..\..\src\ledger\LedgerMaster.cpp" />
-    <ClCompile Include="..\..\src\ledger\LegacyPreimage.cpp" />
-    <ClCompile Include="..\..\src\ledger\OfferEntry.cpp" />
-    <ClCompile Include="..\..\src\ledger\TrustLine.cpp" />
     <ClCompile Include="..\..\src\ripple\beast\ripple_beast.cpp" />
     <ClCompile Include="..\..\src\ripple\beast\ripple_beastc.c" />
     <ClCompile Include="..\..\src\ripple\common\impl\KeyCache.cpp">
@@ -1813,8 +1805,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\snappy\snappy.unity.cpp" />
-    <ClCompile Include="..\..\src\transactions\Transaction.cpp" />
-    <ClCompile Include="..\..\src\transactions\TrustSetTx.cpp" />
     <ClCompile Include="..\..\src\websocket\src\base64\base64.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -1924,15 +1914,6 @@
     <ClInclude Include="..\..\..\libsodium\include\sodium\version.h" />
     <ClInclude Include="..\..\src\BeastConfig.h" />
     <ClInclude Include="..\..\src\history.h" />
-    <ClInclude Include="..\..\src\ledger\AccountEntry.h" />
-    <ClInclude Include="..\..\src\ledger\BucketList.h" />
-    <ClInclude Include="..\..\src\ledger\Ledger.h" />
-    <ClInclude Include="..\..\src\ledger\LedgerEntry.h" />
-    <ClInclude Include="..\..\src\ledger\LedgerMaster.h" />
-    <ClInclude Include="..\..\src\ledger\LedgerPreimage.h" />
-    <ClInclude Include="..\..\src\ledger\LegacyPreimage.h" />
-    <ClInclude Include="..\..\src\ledger\OfferEntry.h" />
-    <ClInclude Include="..\..\src\ledger\TrustLine.h" />
     <ClInclude Include="..\..\src\ripple\algorithm\api\CycledSet.h" />
     <ClInclude Include="..\..\src\ripple\algorithm\api\DecayingSample.h" />
     <ClInclude Include="..\..\src\ripple\common\byte_view.h" />
@@ -2433,16 +2414,6 @@
     <ClInclude Include="..\..\src\sanity\FirmezaMaster.h" />
     <ClInclude Include="..\..\src\sanity\History.h" />
     <ClInclude Include="..\..\src\sanity\TransactionSet.h" />
-    <ClInclude Include="..\..\src\transactions\CancelOfferTx.h" />
-    <ClInclude Include="..\..\src\transactions\CreateOfferTx.h" />
-    <ClInclude Include="..\..\src\transactions\InflationTx.h" />
-    <ClInclude Include="..\..\src\transactions\MergeTx.h" />
-    <ClInclude Include="..\..\src\transactions\PaymentTx.h" />
-    <ClInclude Include="..\..\src\transactions\SetAccountTx.h" />
-    <ClInclude Include="..\..\src\transactions\SetRegularKeyTx.h" />
-    <ClInclude Include="..\..\src\transactions\Transaction.h" />
-    <ClInclude Include="..\..\src\transactions\TransactionSet.h" />
-    <ClInclude Include="..\..\src\transactions\TrustSetTx.h" />
     <ClInclude Include="..\..\src\websocket\src\base64\base64.h" />
     <ClInclude Include="..\..\src\websocket\src\common.hpp" />
     <ClInclude Include="..\..\src\websocket\src\connection.hpp" />
