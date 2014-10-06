@@ -27,67 +27,96 @@ namespace stellar
 		return(Ledger::pointer());
 	}
 
+    bool LedgerMaster::ensureSync(ripple::Ledger::pointer lastClosedLedger)
+    {
+        bool res = false;
+        // first, make sure we're in sync with the world
+        if (lastClosedLedger->getHash() != mLastLedgerHash)
+        {
+            std::vector<uint256> needed=lastClosedLedger->getNeededAccountStateHashes(1,NULL);
+            if(needed.size())
+            {
+                // we're missing some nodes
+                return false;
+            }
+
+            try
+            {
+                CanonicalLedgerForm::pointer newCLF, currentCLF(new LegacyCLF(lastClosedLedger));
+                mCurrentDB.beginTransaction();
+                try
+                {
+                    newCLF = catchUp(currentCLF);
+                }
+                catch (...)
+                {
+                    mCurrentDB.endTransaction(true);
+                }
+
+                if (newCLF)
+                {
+                    mCurrentDB.endTransaction(false);
+                    setLastClosedLedger(newCLF);
+                    res = true;
+                }
+            }
+            catch (...)
+            {
+                // problem applying to the database
+                WriteLog(ripple::lsERROR, ripple::Ledger) << "database error";
+            }
+        }
+        else
+        { // already tracking proper ledger
+            res = true;
+        }
+
+        return res;
+    }
+
     void LedgerMaster::beginClosingLedger()
     {
+        // ready to make changes
         mCurrentDB.beginTransaction();
         assert(mCurrentDB.getTransactionLevel() == 1); // should be top level transaction
     }
 
-	void LedgerMaster::commitLedgerClose(ripple::Ledger::pointer ledger)
+	bool  LedgerMaster::commitLedgerClose(ripple::Ledger::pointer ledger)
 	{
+        bool res = false;
         CanonicalLedgerForm::pointer newCLF;
+
+        assert(ledger->getParentHash() == mLastLedgerHash); // should not happen
 
         try
         {
-            if (mCaughtUp)
+            CanonicalLedgerForm::pointer nl(new LegacyCLF(ledger));
+            try
             {
-                if (ledger->getParentHash() == mLastLedgerHash)
-                {
-                    CanonicalLedgerForm::pointer nl(new LegacyCLF(ledger));
-                    try
-                    {
-                        // only need to update ledger related fields as the account state is already in SQL
-                        updateDBFromLedger(nl);
-                        newCLF = nl;
-                    }
-                    catch (std::runtime_error const &)
-                    {
-                        WriteLog(ripple::lsERROR, ripple::Ledger) << "Ledger close: could not update database";
-                    }
-                }
-                else
-                { // somehow we got out of sync
-                    WriteLog(ripple::lsERROR, ripple::Ledger) << "Ledger close: out of sync detected";
-                    mCaughtUp = false;
-                }
+                // only need to update ledger related fields as the account state is already in SQL
+                updateDBFromLedger(nl);
+                newCLF = nl;
+            }
+            catch (std::runtime_error const &)
+            {
+                WriteLog(ripple::lsERROR, ripple::Ledger) << "Ledger close: could not update database";
             }
 
-		    if(!mCaughtUp)
-		    {
-			    // see if we are missing any entries in the local ledger
-			    std::vector<uint256> needed=ledger->getNeededAccountStateHashes(1,NULL);
-			    if(!needed.size())
-			    { // we are now caught up
-				    CanonicalLedgerForm::pointer currentCLF(new LegacyCLF(ledger));
-				    newCLF = catchUp(currentCLF);
-                    mCaughtUp = (newCLF != nullptr); // if error, pretend we didn't catch up
-			    }
+            if (newCLF != nullptr)
+            {
+                mCurrentDB.endTransaction(false);
+                setLastClosedLedger(newCLF);
+                res = true;
+            }
+            else
+            {
+                mCurrentDB.endTransaction(true);
             }
         }
         catch (...)
         {
-            newCLF = nullptr;
         }
-
-        if (newCLF != nullptr)
-        {
-            mCurrentDB.endTransaction(false);
-            setLastClosedLedger(newCLF);
-        }
-        else
-        {
-            mCurrentDB.endTransaction(true);
-        }
+        return res;
 	}
 
     void LedgerMaster::setLastClosedLedger(CanonicalLedgerForm::pointer ledger)
@@ -261,6 +290,7 @@ namespace stellar
             throw;
         }
         mCurrentDB.endTransaction(false);
+        // SANITY this code is incomplete
 	}
 
 }

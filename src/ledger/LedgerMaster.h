@@ -34,10 +34,13 @@ namespace stellar
 
         // legacy interop
 		
+        // establishes that our internal representation is in sync with passed ledger
+        bool ensureSync(ripple::Ledger::pointer lastClosedLedger);
+
         // called before starting to make changes to the db
         void beginClosingLedger();
         // called every time we successfully closed a ledger
-		void commitLedgerClose(ripple::Ledger::pointer ledger);
+		bool commitLedgerClose(ripple::Ledger::pointer ledger);
         // called when we could not close the ledger
         void abortLedgerClose();
 

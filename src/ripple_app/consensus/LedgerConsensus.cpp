@@ -885,6 +885,12 @@ private:
 
             CanonicalTXSet failedTransactions (set->getHash ());
 
+            if (!stellar::gLedgerMaster->ensureSync(mPreviousLedger))
+            {
+                WriteLog(lsDEBUG, LedgerConsensus) << "Cannot perform transactions, database not in sync";
+                return;
+            }
+
             Ledger::pointer newLCL 
                 = boost::make_shared<Ledger> (false
                 , boost::ref (*mPreviousLedger));
@@ -1032,7 +1038,11 @@ private:
             mState = lcsACCEPTED;
             sl.unlock ();
 
-            stellar::gLedgerMaster->commitLedgerClose(newLCL);
+            bool dbcom = stellar::gLedgerMaster->commitLedgerClose(newLCL);
+            if (!dbcom)
+            {
+                WriteLog(lsFATAL, LedgerConsensus) << "Could not commit to the database";
+            }
 
             if (mValidating)
             {

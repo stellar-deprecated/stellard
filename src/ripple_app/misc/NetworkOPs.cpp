@@ -23,6 +23,7 @@
 #include "../ripple_overlay/api/Overlay.h"
 #include "../ripple_app/tx/TxQueueEntry.h"
 #include "../ripple_app/tx/TxQueue.h"
+#include "../src/ledger/LedgerMaster.h"
 
 #include "NetworkOPsImp.h"
 
@@ -969,6 +970,15 @@ int NetworkOPsImp::beginConsensus (uint256 const& networkClosed, Ledger::pointer
             setMode (omTRACKING);
         }
 
+        return 3;
+    }
+    else if (!stellar::gLedgerMaster->ensureSync(prevLedger))
+    {
+        if (mMode == omFULL)
+        {
+            m_journal.warning << "Don't have LCL in database, going to tracking";
+            setMode (omTRACKING);
+        }
         return 3;
     }
 
