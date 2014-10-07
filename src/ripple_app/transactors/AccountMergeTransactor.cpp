@@ -16,6 +16,13 @@
     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 //==============================================================================
+#include <boost/ref.hpp>
+#include "AccountMergeTransactor.h"
+#include "ripple_basics/log/Log.h"
+#include "ripple_app/tx/TransactionEngine.h"
+#include "ripple_basics/utility/PlatformMacros.h"
+#include "ripple_app/misc/AccountItem.h"
+#include "ripple_app/paths/RippleState.h"
 
 namespace ripple {
 
@@ -32,7 +39,7 @@ static void offerAdder(std::list<uint256>& offersList, SLE::ref offer)
 
 static void rippleStateAdder(std::list<uint256>& stateList, SLE::ref rippleState)
 {
-	if (rippleState->getType() == ltRIPPLE_STATE)
+	if(rippleState->getType() == ltRIPPLE_STATE)
 	{
 		stateList.push_front(rippleState->getIndex());
 	}
