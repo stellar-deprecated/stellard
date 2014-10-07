@@ -728,7 +728,14 @@ public:
             startNewLedger ();
         }
         else
-            startNewLedger ();
+        {
+            m_journal.info << "Attempting to load latest Ledger";
+            if (!loadOldLedger ("latest", false))
+            {
+                m_journal.info << "defaulting to new ledger";
+                startNewLedger ();
+            }
+        }
 
         m_orderBookDB.setup (getApp().getLedgerMaster ().getCurrentLedger ());
 
