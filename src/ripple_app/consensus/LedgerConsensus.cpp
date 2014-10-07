@@ -946,6 +946,12 @@ private:
                 << ":" << newLCL->getLedgerSeq ();
             uint256 newLCLHash = newLCL->getHash ();
 
+            bool dbcom = stellar::gLedgerMaster->commitLedgerClose(newLCL);
+            if (!dbcom)
+            {
+                WriteLog(lsFATAL, LedgerConsensus) << "Could not commit to the database";
+            }
+
             statusChange (protocol::neACCEPTED_LEDGER, *newLCL);
 
             if (mValidating && !mConsensusFail)
@@ -1037,12 +1043,6 @@ private:
             mNewLedgerHash = newLCL->getHash ();
             mState = lcsACCEPTED;
             sl.unlock ();
-
-            bool dbcom = stellar::gLedgerMaster->commitLedgerClose(newLCL);
-            if (!dbcom)
-            {
-                WriteLog(lsFATAL, LedgerConsensus) << "Could not commit to the database";
-            }
 
             if (mValidating)
             {

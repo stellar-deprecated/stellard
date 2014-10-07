@@ -609,81 +609,89 @@ bool Ledger::saveValidatedLedger (bool current)
         return false;
     }
 
-    {
-        DeprecatedScopedLock sl (getApp().getLedgerDB ()->getDBLock ());
-        getApp().getLedgerDB ()->getDB ()->executeSQL (boost::str (deleteLedger % mLedgerSeq));
-    }
+    bool res;
 
     {
         Database* db = getApp().getTxnDB ()->getDB ();
         DeprecatedScopedLock dbLock (getApp().getTxnDB ()->getDBLock ());
-        db->executeSQL ("BEGIN TRANSACTION;");
-
-        db->executeSQL (boost::str (deleteTrans1 % mLedgerSeq));
-        db->executeSQL (boost::str (deleteTrans2 % mLedgerSeq));
-
-        BOOST_FOREACH (const AcceptedLedger::value_type & vt, aLedger->getMap ())
+        res = db->executeSQL("BEGIN TRANSACTION;");
+        if (res)
         {
-            uint256 txID = vt.second->getTransactionID ();
-            getApp().getMasterTransaction ().inLedger (txID, mLedgerSeq);
+            res = res && db->executeSQL (boost::str (deleteTrans1 % mLedgerSeq));
+            res = res && db->executeSQL (boost::str (deleteTrans2 % mLedgerSeq));
 
-            db->executeSQL (boost::str (deleteAcctTrans % to_string (txID)));
-
-            const std::vector<RippleAddress>& accts = vt.second->getAffected ();
-
-            if (!accts.empty ())
+            BOOST_FOREACH (const AcceptedLedger::value_type & vt, aLedger->getMap ())
             {
-                std::string sql = "INSERT INTO AccountTransactions (TransID, Account, LedgerSeq, TxnSeq) VALUES ";
-                bool first = true;
+                uint256 txID = vt.second->getTransactionID ();
+                getApp().getMasterTransaction ().inLedger (txID, mLedgerSeq);
 
-                for (auto it = accts.begin (), end = accts.end (); it != end; ++it)
+                res = res && db->executeSQL (boost::str (deleteAcctTrans % to_string (txID)));
+
+                const std::vector<RippleAddress>& accts = vt.second->getAffected ();
+
+                if (!accts.empty ())
                 {
-                    if (!first)
-                        sql += ", ('";
-                    else
+                    std::string sql = "INSERT INTO AccountTransactions (TransID, Account, LedgerSeq, TxnSeq) VALUES ";
+                    bool first = true;
+
+                    for (auto it = accts.begin (), end = accts.end (); it != end; ++it)
                     {
-                        sql += "('";
-                        first = false;
+                        if (!first)
+                            sql += ", ('";
+                        else
+                        {
+                            sql += "('";
+                            first = false;
+                        }
+
+                        sql += to_string (txID);
+                        sql += "','";
+                        sql += it->humanAccountID ();
+                        sql += "',";
+                        sql += beast::lexicalCastThrow <std::string> (getLedgerSeq ());
+                        sql += ",";
+                        sql += beast::lexicalCastThrow <std::string> (vt.second->getTxnSeq ());
+                        sql += ")";
                     }
 
-                    sql += to_string (txID);
-                    sql += "','";
-                    sql += it->humanAccountID ();
-                    sql += "',";
-                    sql += beast::lexicalCastThrow <std::string> (getLedgerSeq ());
-                    sql += ",";
-                    sql += beast::lexicalCastThrow <std::string> (vt.second->getTxnSeq ());
-                    sql += ")";
+                    sql += ";";
+                    WriteLog (lsTRACE, Ledger) << "ActTx: " << sql;
+                    res = res && db->executeSQL (sql);
                 }
+                else
+                    WriteLog (lsWARNING, Ledger) << "Transaction in ledger " << mLedgerSeq << " affects no accounts";
 
-                sql += ";";
-                WriteLog (lsTRACE, Ledger) << "ActTx: " << sql;
-                db->executeSQL (sql);
+                res = res && db->executeSQL (SerializedTransaction::getMetaSQLInsertReplaceHeader () +
+                                vt.second->getTxn ()->getMetaSQL (getLedgerSeq (), vt.second->getEscMeta ()) + ";");
+            }
+            if (!res)
+            {
+                db->executeSQL("ROLLBACK TRANSACTION;");
+                res = false;
             }
             else
-                WriteLog (lsWARNING, Ledger) << "Transaction in ledger " << mLedgerSeq << " affects no accounts";
-
-            db->executeSQL (SerializedTransaction::getMetaSQLInsertReplaceHeader () +
-                            vt.second->getTxn ()->getMetaSQL (getLedgerSeq (), vt.second->getEscMeta ()) + ";");
+            {
+                res = db->executeSQL ("COMMIT TRANSACTION;");
+            }
         }
-        db->executeSQL ("COMMIT TRANSACTION;");
     }
 
+    if (res)
 	{
 		DeprecatedScopedLock sl(getApp().getLedgerDB()->getDBLock());
-
-		getApp().getLedgerDB()->getDB()->executeSQL(boost::str(addLedger %
+		res = getApp().getLedgerDB()->getDB()->executeSQL(boost::str(addLedger %
 			to_string(getHash()) % mLedgerSeq % to_string(mParentHash) %
 			beast::lexicalCastThrow <std::string>(mTotCoins) % mInflationSeq % mFeePool % mCloseTime %
 			mParentCloseTime % mCloseResolution % mCloseFlags %
 			to_string(mAccountHash) % to_string(mTransHash)));
-	}
+    }
 
+    if (res)
     { // Clients can now trust the database for information about this ledger sequence
         StaticScopedLockType sl (sPendingSaveLock);
         sPendingSaves.erase(getLedgerSeq());
     }
-    return true;
+    return res;
 }
 
 #ifndef NO_SQLITE3_PREPARE
@@ -1861,12 +1869,6 @@ std::uint32_t Ledger::roundCloseTime (std::uint32_t closeTime, std::uint32_t clo
 */
 bool Ledger::pendSaveValidated (bool isSynchronous, bool isCurrent)
 {
-    if (!getApp().getHashRouter ().setFlag (getHash (), SF_SAVED))
-    {
-        WriteLog (lsDEBUG, Ledger) << "Double pend save for " << getLedgerSeq();
-        return true;
-    }
-
     assert (isImmutable ());
 
     {
