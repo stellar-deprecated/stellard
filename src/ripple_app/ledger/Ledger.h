@@ -192,10 +192,15 @@ public:
 	{
 		return mInflationSeq;
 	}
+	bool getInflationAllowed() const
+	{
+		return mInflationAllowed;
+	}
 	void incrementInflationSeq()
 	{
 		mFeePool = 0;  
 		mInflationSeq++;
+		mInflationAllowed = false;
 	}
 	
 	void inflateCoins(uint64 newCoins)
@@ -488,6 +493,7 @@ private:
 	std::uint64_t      mFeePool;		// All the fees collected since last inflation spend
     std::uint32_t      mLedgerSeq;
 	std::uint32_t		mInflationSeq;	// the last inflation that was applied 
+	bool                mInflationAllowed; // if inflation can be applied to this ledger
 	// Ripple times are seconds since 1/1/2000 00:00 UTC. You can add 946684800 to a Ripple time to convert it to a UNIX time
     std::uint32_t      mCloseTime;         // when this ledger closed
     std::uint32_t      mParentCloseTime;   // when the previous ledger closed

@@ -28,7 +28,7 @@ TxFormats::TxFormats ()
             << SOElement (sfInflationDest,   SOE_OPTIONAL)
             ;
 
-    add("AccountDelete", ttACCOUNT_DELETE)
+    add("AccountMerge", ttACCOUNT_MERGE)
             << SOElement (sfDestination,     SOE_REQUIRED)
 			<< SOElement (sfDestinationTag,  SOE_OPTIONAL)
             ;

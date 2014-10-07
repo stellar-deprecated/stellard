@@ -409,8 +409,9 @@ bool LedgerEntrySet::threadTx (const RippleAddress& threadTo, Ledger::ref ledger
 
     if (!sle)
     {
-        WriteLog (lsFATAL, LedgerEntrySet) << "Threading to non-existent account: " << threadTo.humanAccountID ();
-        assert (false);
+        /// Expected on account deletion. 
+        //WriteLog (lsFATAL, LedgerEntrySet) << "Threading to non-existent account: " << threadTo.humanAccountID ();
+        //assert (false);
         return false;
     }
 
@@ -452,9 +453,10 @@ bool LedgerEntrySet::threadOwners (SLE::ref node, Ledger::ref ledger,
 #ifdef META_DEBUG
         WriteLog (lsTRACE, LedgerEntrySet) << "Thread to two owners";
 #endif
-        return
-            threadTx (node->getFirstOwner (), ledger, newMods) &&
-            threadTx (node->getSecondOwner (), ledger, newMods);
+		// propagates to both owners. note that we want both threadTx to be executed
+		// in case of users not found
+		bool res = threadTx(node->getFirstOwner(), ledger, newMods);
+		return threadTx (node->getSecondOwner (), ledger, newMods) && res;
     }
     else
         return false;

@@ -18,6 +18,7 @@
 //==============================================================================
 
 #include <cassert>
+#include <boost/range/adaptor/reversed.hpp>
 
 namespace ripple {
 
@@ -465,55 +466,34 @@ public:
         return e;
     }
 
+    /**
+     * Starting from `ledger`, scan in decreasing order through batches of ledgers held in the SQL
+     * database filling in the RangeSet `mCompleteLedgers`.
+     *
+     * Stop when there are no more ledgers, or at the first ledger sequence number already held in
+     * `mCompleteLedgers`.
+     *
+     * Previous version of this function stopped at the first break in the `prevHash` chain, but we
+     * are (for the time being) willing to serve ledgers even from a broken history chain.
+     */
     void tryFill (Job& job, Ledger::pointer ledger)
     {
-        std::uint32_t seq = ledger->getLedgerSeq ();
-        uint256 prevHash = ledger->getParentHash ();
-
-        std::map< std::uint32_t, std::pair<uint256, uint256> > ledgerHashes;
-
-        std::uint32_t minHas = ledger->getLedgerSeq ();
-        std::uint32_t maxHas = ledger->getLedgerSeq ();
-
-        while (! job.shouldCancel() && seq > 0)
+        LedgerSeq batchSize = 500;
+        for (LedgerSeq high = ledger->getLedgerSeq (); high != 0; high -= std::min(high, batchSize))
         {
+            if (job.shouldCancel() || getApp().isShutdown ())
+                return;
+
+            LedgerSeq low = (high < batchSize) ? 0 : (high - (batchSize - 1));
+            auto const ledgerHashes = Ledger::getHashesByIndex (low, high);
+
+            ScopedLockType sl (mCompleteLock);
+            for (auto const &i : boost::adaptors::reverse(ledgerHashes))
             {
-                ScopedLockType ml (m_mutex);
-                minHas = seq;
-                --seq;
-
-                if (haveLedger (seq))
+                if (mCompleteLedgers.hasValue (i.first))
                     break;
+                mCompleteLedgers.setValue (i.first);
             }
-
-            std::map< std::uint32_t, std::pair<uint256, uint256> >::iterator it = ledgerHashes.find (seq);
-
-            if (it == ledgerHashes.end ())
-            {
-                if (getApp().isShutdown ())
-                    return;
-
-                {
-                    ScopedLockType ml (mCompleteLock);
-                    mCompleteLedgers.setRange (minHas, maxHas);
-                }
-                maxHas = minHas;
-                ledgerHashes = Ledger::getHashesByIndex ((seq < 500) ? 0 : (seq - 499), seq);
-                it = ledgerHashes.find (seq);
-
-                if (it == ledgerHashes.end ())
-                    break;
-            }
-
-            if (it->second.first != prevHash)
-                break;
-
-            prevHash = it->second.second;
-        }
-
-        {
-            ScopedLockType ml (mCompleteLock);
-            mCompleteLedgers.setRange (minHas, maxHas);
         }
         {
             ScopedLockType ml (m_mutex);

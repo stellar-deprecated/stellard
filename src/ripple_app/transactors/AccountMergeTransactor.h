@@ -17,15 +17,15 @@
 */
 //==============================================================================
 
-#ifndef ACCOUNTDELETETRANSACTOR_H
-#define ACCOUNTDELETETRANSACTOR_H
+#ifndef ACCOUNTMERGETRANSACTOR_H
+#define ACCOUNTMERGETRANSACTOR_H
 
 namespace ripple {
 
-class AccountDeleteTransactor : public Transactor
+class AccountMergeTransactor : public Transactor
 {
 public:
-	AccountDeleteTransactor(const SerializedTransaction& txn, TransactionEngineParams params, TransactionEngine* engine) : Transactor(txn, params, engine) {}
+	AccountMergeTransactor(const SerializedTransaction& txn, TransactionEngineParams params, TransactionEngine* engine) : Transactor(txn, params, engine) {}
 
 	TER doApply();
 };

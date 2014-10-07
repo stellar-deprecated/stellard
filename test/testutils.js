@@ -228,9 +228,17 @@ function createAccountsFromObjects(remote, src, accounts, callback) {
 
     remote.set_account_seq(src, 1);
 
+    var config = init_config();
     async.eachSeries(accounts, function (account, callback) {
         // Cache the seq as 1.
-        // Otherwise, when other operations attempt to operate async against the account they may get confused.
+    	// Otherwise, when other operations attempt to operate async against the account they may get confused.
+    	//console.log( "Create account %s", JSON.stringify( account ) );
+
+		// interestingly enough, accounts must be in the config thanks to resolution embedded in uint160
+    	if ( ! account.name in config.accounts )
+    	{
+    		console.log( "name %s not found in config ", account.name );
+    	}
         //console.log('', account);
 
         remote.set_account_seq(account.name, 1);
@@ -354,12 +362,14 @@ function ledger_close(remote, callback) {
 function payment(remote, src, dst, amount, callback) {
   assert(arguments.length === 5);
 
+  //console.log( "payment src:%s  dst:%s", src, dst );
+  remote.set_account_seq( src, 1 );
   var tx = remote.transaction();
 
   tx.payment(src, dst, amount);
 
   tx.once('proposed', function (m) {
-    // console.log('proposed: %s', JSON.stringify(m));
+    //console.log('proposed: %s', JSON.stringify(m));
     callback(m.engine_result === 'tesSUCCESS' ? null : new Error());
   });
 
@@ -424,9 +434,9 @@ function verify_balance(remote, src, amount_json, callback) {
       }
       var valid_balance = amount_act.equals(amount_req, true);
       if (!valid_balance) {
-        //console.log('verify_balance: failed: %s / %s',
-        //amount_act.to_text_full(),
-        //amount_req.to_text_full());
+        console.log('verify_balance: failed: %s / %s',
+        amount_act.to_text_full(),
+        amount_req.to_text_full());
       }
       callback(valid_balance ? null : new Error());
     });
@@ -472,7 +482,7 @@ function verify_balances(remote, balances, callback) {
     verify_balance(remote, test.source, test.amount, callback)
   }
 
-  async.every(tests, iterator, callback);
+  async.each( tests, iterator, callback );
 
 };
 
@@ -541,7 +551,7 @@ function verify_owner_counts(remote, counts, callback) {
     verify_owner_count(remote, test.account, test.count, callback)
   }
 
-  async.every(tests, iterator, callback);
+  async.each( tests, iterator, callback );
 };
 
 // takes an object or a string
@@ -578,6 +588,35 @@ function rpc(config,tx)
     });
 }
 
+function custom_ledger_helper(t, remote, precallback, callback) {
+	var res = function ( cb ) {
+		if ( precallback ) {
+			precallback();
+		}
+		remote.request_ledger( 'current', true )
+		.on( 'success', function ( m ) {
+			callback(m, cb );
+		} ).on( 'error', function ( m ) {
+			callback(new Error(m), cb);
+		} ).request();
+	};
+	return res;
+}
+
+function display_ledger_helper( t, remote, description ) {
+	var res = custom_ledger_helper(t, remote, function() {
+			t.what = "Display ledger " + description;
+			console.log( "---------------------" + description + "-------------------" );
+		},
+		function ( ledger, callback ) {
+			console.log( "Ledger: %s", JSON.stringify( ledger, undefined, 2 ) );
+			callback();
+		}
+	);
+	return res;
+}
+
+
 exports.account_dump            = account_dump;
 exports.build_setup             = build_setup;
 exports.build_teardown          = build_teardown;
@@ -599,6 +638,8 @@ exports.verify_offer_not_found  = verify_offer_not_found;
 exports.verify_owner_count      = verify_owner_count;
 exports.verify_owner_counts     = verify_owner_counts;
 exports.rpc                     = rpc;
+exports.display_ledger_helper   = display_ledger_helper;
+exports.custom_ledger_helper    = custom_ledger_helper;
 
 process.on('uncaughtException', function() {
   Object.keys(server).forEach(function(host) {

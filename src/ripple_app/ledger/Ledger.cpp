@@ -33,6 +33,7 @@ Ledger::Ledger (const RippleAddress& masterID, std::uint64_t startAmount)
     : mTotCoins (startAmount)
     , mLedgerSeq (1) // First Ledger
 	, mInflationSeq(1)
+	, mInflationAllowed(true)
 	, mFeePool(0)
     , mCloseTime (0)
     , mParentCloseTime (0)
@@ -85,6 +86,7 @@ Ledger::Ledger (uint256 const& parentHash,
     , mAccountHash (accountHash)
     , mTotCoins (totCoins)
 	, mInflationSeq(inflateSeq)
+	, mInflationAllowed(true)
 	, mFeePool(feePool)
     , mLedgerSeq (ledgerSeq)
     , mCloseTime (closeTime)
@@ -129,6 +131,7 @@ Ledger::Ledger (Ledger& ledger,
     , mTotCoins (ledger.mTotCoins)
     , mLedgerSeq (ledger.mLedgerSeq)
 	, mInflationSeq(ledger.mInflationSeq)
+	, mInflationAllowed(ledger.mInflationAllowed)
 	, mFeePool(ledger.mFeePool)
     , mCloseTime (ledger.mCloseTime)
     , mParentCloseTime (ledger.mParentCloseTime)
@@ -152,6 +155,7 @@ Ledger::Ledger (bool /* dummy */,
     : mTotCoins (prevLedger.mTotCoins)
     , mLedgerSeq (prevLedger.mLedgerSeq + 1)
 	, mInflationSeq(prevLedger.mInflationSeq)
+	, mInflationAllowed(true)
 	, mFeePool(prevLedger.mFeePool)
     , mParentCloseTime (prevLedger.mCloseTime)
     , mCloseResolution (prevLedger.mCloseResolution)
@@ -195,6 +199,7 @@ Ledger::Ledger (Blob const& rawLedger,
     , mValidHash (false)
     , mAccepted (false)
     , mImmutable (true)
+	, mInflationAllowed(true)
 {
     Serializer s (rawLedger);
 
@@ -209,6 +214,7 @@ Ledger::Ledger (const std::string& rawLedger, bool hasPrefix)
     , mValidHash (false)
     , mAccepted (false)
     , mImmutable (true)
+	, mInflationAllowed(true)
 {
     Serializer s (rawLedger);
     setRaw (s, hasPrefix);
