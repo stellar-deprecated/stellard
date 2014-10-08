@@ -245,7 +245,7 @@ function createAccountsFromObjects(remote, src, accounts, callback) {
 
         var tx = remote.transaction();
 
-        //console.log(account.balance);
+        //console.log(account.name);
         tx.payment(src, account.name, account.balance);
 
         tx.once('proposed', function (m) {

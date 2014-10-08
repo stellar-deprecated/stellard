@@ -108,7 +108,7 @@ namespace ripple {
 
 		WriteLog(lsDEBUG, InflationTransactor) << "minBalance: " << minBalance;
 
-		string sql("SELECT sum(balance) as votes,inflationDest from Accounts where inflationDest is not NULL group by inflationDest order by votes desc limit 50");
+		string sql("SELECT sum(balance) as votes,inflationDest from Accounts where inflationDest is not NULL AND inflationDest is NOT 'ggggggggggggggggggggghoLvTs' group by inflationDest order by votes desc limit 50");
 		
 		vector< pair<uint160, boost::multiprecision::cpp_int> > winners;
 
@@ -120,6 +120,8 @@ namespace ripple {
 				totalVoted = db->getBigInt("votes");
 				uint160 destAccount=db->getAccountID("inflationDest");
 				winners.push_back(pair<uint160, boost::multiprecision::cpp_int>(destAccount, totalVoted));
+
+				WriteLog(lsWARNING, InflationTransactor) << "totalVoted: " << totalVoted << " minBalance: " << minBalance;
 
 				if(totalVoted <= minBalance)
 				{  // need to take top 50

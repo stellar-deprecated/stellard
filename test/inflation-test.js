@@ -118,7 +118,8 @@ suite('Inflation', function() {
             bnBalance = bigint.mult(bnBalance, bigint.int2bigInt(DUST_MULTIPLIER, INT_SIZE_BITS, 0));
             var bnTargetBalance = bigint.sub(bnBalance,bigint.int2bigInt(tx_fee, INT_SIZE_BITS, 0));
 
-            accountObjects[n]={ name:''+n, targetBalance: bnTargetBalance , voteFor:''+accVoteFun(n)};
+            accountObjects[n]={ name:'A'+n, targetBalance: bnTargetBalance };
+            accountObjects[n].voteFor=accVoteFun(n);
             accountObjects[n].balance=''+bigint.bigInt2str(bnBalance,10);
             //accountObjects[n].balanceInt=parseInt(accountObjects[n].balance);
             accountObjects[n].votes = 0;
@@ -175,7 +176,7 @@ suite('Inflation', function() {
                 async.eachSeries(accountObjects, function (account, callback) {
                     $.remote.transaction()
                         .account_set(account.name)
-                        .inflation_dest($.remote.account(account.voteFor)._account_id)
+                        .inflation_dest($.remote.account('A'+account.voteFor)._account_id)
                         .on('submitted', function (m) {
                             if (m.engine_result === 'tesSUCCESS') {
                                callback();
@@ -295,7 +296,7 @@ suite('Inflation', function() {
                 async.eachSeries(accountObjects, function (account, callback) {
                     $.remote.transaction()
                         .account_set(account.name)
-                        .inflation_dest($.remote.account(account.voteFor)._account_id)
+                        .inflation_dest($.remote.account('A'+account.voteFor)._account_id)
                         .on('submitted', function (m) {
                             if (m.engine_result === 'tesSUCCESS') {
                                 callback();
@@ -408,7 +409,7 @@ suite('Inflation', function() {
                 async.eachSeries(accountObjects, function (account, callback) {
                     $.remote.transaction()
                         .account_set(account.name)
-                        .inflation_dest($.remote.account(account.voteFor)._account_id)
+                        .inflation_dest($.remote.account('A'+account.voteFor)._account_id)
                         .on('submitted', function (m) {
                             if (m.engine_result === 'tesSUCCESS') {
                                 $.remote.once('ledger_closed', function(ledger_closed, ledger_index) { callback(); } );
@@ -487,7 +488,7 @@ suite('Inflation', function() {
                 async.eachSeries(accountObjects, function (account, callback) {
                     $.remote.transaction()
                         .account_set(account.name)
-                        .inflation_dest($.remote.account(account.voteFor)._account_id)
+                        .inflation_dest($.remote.account('A'+account.voteFor)._account_id)
                         .on('submitted', function (m) {
                             if (m.engine_result === 'tesSUCCESS') {
                                 $.remote.once('ledger_closed', function(ledger_closed, ledger_index) { callback(); } );
@@ -920,7 +921,7 @@ suite('Inflation', function() {
                 async.eachSeries(accountObjects, function (account, callback) {
                     $.remote.transaction()
                         .account_set(account.name)
-                        .inflation_dest($.remote.account(account.voteFor)._account_id)
+                        .inflation_dest($.remote.account('A'+account.voteFor)._account_id)
                         .on('submitted', function (m) {
                             if (m.engine_result === 'tesSUCCESS') {
                                 $.remote.once('ledger_closed', function(ledger_closed, ledger_index) { callback(); } );
@@ -1041,7 +1042,7 @@ suite('Inflation', function() {
                 async.eachSeries(accountObjects, function (account, callback) {
                     $.remote.transaction()
                         .account_set(account.name)
-                        .inflation_dest($.remote.account(account.voteFor)._account_id)
+                        .inflation_dest($.remote.account('A'+account.voteFor)._account_id)
                         .on('submitted', function (m) {
                             if (m.engine_result === 'tesSUCCESS') {
                                 $.remote.once('ledger_closed', function(ledger_closed, ledger_index) { callback(); } );
