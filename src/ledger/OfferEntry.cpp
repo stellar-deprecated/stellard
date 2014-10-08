@@ -11,6 +11,8 @@ using namespace std;
 namespace stellar
 {
 
+    // SANITY: deal with amounts properly (see TrustLines)
+
     const char *OfferEntry::kSQLCreateStatement = "CREATE TABLE IF NOT EXISTS Offers (						\
 			accountID		CHARACTER(35),		\
 			sequence		INT UNSIGNED,		\
@@ -65,10 +67,10 @@ namespace stellar
 			% mAccountID.base58Encode(RippleAddress::VER_ACCOUNT_ID)
 			% mSequence
 			% to_string(mTakerPays.getCurrency())
-			% mTakerPays.getNValue()
+            % mTakerPays.getText()
 			% paysIssuer.base58Encode(RippleAddress::VER_ACCOUNT_ID)
 			% to_string(mTakerGets.getCurrency())
-			% mTakerGets.getNValue()
+			% mTakerGets.getText()
 			% getsIssuer.base58Encode(RippleAddress::VER_ACCOUNT_ID)
 			% mExpiration
 			% mPassive);
@@ -90,10 +92,10 @@ namespace stellar
 
 		string sql = str(boost::format("UPDATE Offers set takerPaysCurrency=x'%s', takerPaysAmount=%d, takerPaysIssuer='%s', takerGetsCurrency=x'%s' ,takerGetsAmount=%d, takerGetsIssuer='%s' ,expiration=%d, passive=%d where accountID='%s' AND sequence=%d;")	
 			% to_string(mTakerPays.getCurrency())
-			% mTakerPays.getNValue()
+			% mTakerPays.getText()
 			% paysIssuer.base58Encode(RippleAddress::VER_ACCOUNT_ID)
 			% to_string(mTakerGets.getCurrency())
-			% mTakerGets.getNValue()
+			% mTakerGets.getText()
 			% getsIssuer.base58Encode(RippleAddress::VER_ACCOUNT_ID)
 			% mExpiration
 			% mPassive

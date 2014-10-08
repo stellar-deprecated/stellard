@@ -25,15 +25,15 @@ namespace stellar
 				bool raiseOwnerCount = false;
 				if(mSigningAccount.mAccountID == existingLine.mLowAccount)
 				{	// we are moding the lowAccount
-					if(existingLine.mLowLimit > 0 && txTrustLine.mLowLimit == 0 && existingLine.mBalance >= 0) lowerOwnerCount = true;
-					else if(existingLine.mLowLimit == 0 && txTrustLine.mLowLimit > 0 && existingLine.mBalance <= 0) raiseOwnerCount = true;
+					if(existingLine.mLowLimit > zero && txTrustLine.mLowLimit == zero && existingLine.mBalance >= zero) lowerOwnerCount = true;
+					else if(existingLine.mLowLimit == zero && txTrustLine.mLowLimit > zero && existingLine.mBalance <= zero) raiseOwnerCount = true;
 					existingLine.mLowLimit = txTrustLine.mLowLimit;
 					existingLine.mHighAuthSet = txTrustLine.mHighAuthSet;
 
 				} else
 				{	// we are moding the highAccount
-					if(existingLine.mHighLimit > 0 && txTrustLine.mHighLimit == 0 && existingLine.mBalance <= 0) lowerOwnerCount = true;
-					else if(existingLine.mHighLimit == 0 && txTrustLine.mHighLimit > 0 && existingLine.mBalance >= 0) raiseOwnerCount = true;
+					if(existingLine.mHighLimit > zero && txTrustLine.mHighLimit == zero && existingLine.mBalance <= zero) lowerOwnerCount = true;
+					else if(existingLine.mHighLimit == zero && txTrustLine.mHighLimit > zero && existingLine.mBalance >= zero) raiseOwnerCount = true;
 					existingLine.mHighLimit = txTrustLine.mHighLimit;
 					existingLine.mLowAuthSet = txTrustLine.mLowAuthSet;
 				}
@@ -48,7 +48,7 @@ namespace stellar
 					if(terResult != tesSUCCESS) return(terResult);
 				}
 				//check if line should be deleted
-				if(existingLine.mLowLimit == 0 && existingLine.mHighLimit == 0 && existingLine.mBalance == 0)
+				if(existingLine.mLowLimit == zero && existingLine.mHighLimit == zero && existingLine.mBalance == zero)
 				{	// delete line
 					existingLine.storeDelete();
 				} else

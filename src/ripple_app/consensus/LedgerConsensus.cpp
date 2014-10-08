@@ -1436,7 +1436,7 @@ private:
         catch (...)
         {
             WriteLog (lsWARNING, LedgerConsensus) << "Throws";
-            return false;
+            return resultFail;
         }
 
 #endif

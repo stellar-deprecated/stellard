@@ -17,14 +17,21 @@ using namespace std;
 
 namespace stellar {
 
+    // SANITY -- code below does not work
+    // need to rethink the way we store those lines:
+    //     balance, low and high limit share the same currency
+    //     should save/load the currency properly
+    //     currency's issuer should be also first classed if we're going this direction
+
+
     const char *TrustLine::kSQLCreateStatement = "CREATE TABLE IF NOT EXISTS TrustLines (					\
 		trustIndex Blob(32),					\
 		lowAccount	CHARACTER(35),				\
 		highAccount CHARACTER(35),				\
 		currency Blob(20),						\
-		lowLimit BIGINT UNSIGNED,				\
-		highLimit BIGINT UNSIGNED,				\
-		balance BIGINT UNSIGNED,				\
+		lowLimit CHARACTER(100),				\
+		highLimit CHARACTER(100),				\
+		balance CHARACTER(100),					\
 		lowAuthSet BOOL,						\
 		highAuthSet BOOL						\
 	); ";
@@ -36,13 +43,14 @@ namespace stellar {
 
 	TrustLine::TrustLine(SLE::pointer sle)
 	{
-		STAmount lowLimit = sle->getFieldAmount(sfLowLimit);
-		STAmount highLimit = sle->getFieldAmount(sfHighLimit);
-		mBalance = sle->getFieldU64(sfBalance);
+		mLowLimit = sle->getFieldAmount(sfLowLimit);
+		mHighLimit = sle->getFieldAmount(sfHighLimit);
 
-		mLowAccount = lowLimit.getIssuer();
-		mHighAccount = highLimit.getIssuer();
-		mCurrency = lowLimit.getCurrency();
+        mBalance = sle->getFieldAmount(sfBalance);
+
+		mLowAccount = mLowLimit.getIssuer();
+		mHighAccount = mHighLimit.getIssuer();
+		mCurrency = mLowLimit.getCurrency();
 
 
 		uint32 flags = sle->getFlags();
@@ -102,12 +110,12 @@ namespace stellar {
 				return false;
 
 			mCurrency = db->getBigInt("currency");
-			mBalance = db->getBigInt("balance");
+			//mBalance = db->getBigInt("balance");
 			mLowAccount = db->getAccountID("lowAccount");
 			mHighAccount = db->getAccountID("highAccount");
 
-			mLowLimit = db->getBigInt("lowLimit");
-			mHighLimit = db->getBigInt("highLimit");
+			//mLowLimit = db->getBigInt("lowLimit");
+			//mHighLimit = db->getBigInt("highLimit");
 			mLowAuthSet = db->getBool("lowAuthSet");
 			mHighAuthSet = db->getBool("highAuthSet");
 		}
@@ -124,10 +132,10 @@ namespace stellar {
 			% to_string(getIndex())
 			% mLowAccount.base58Encode(RippleAddress::VER_ACCOUNT_ID)
 			% mHighAccount.base58Encode(RippleAddress::VER_ACCOUNT_ID)
-			% mLowLimit
-			% mHighLimit
-			% mCurrency
-			% mBalance
+            % mLowLimit.getText()
+			% mHighLimit.getText()
+            % mCurrency.base58Encode(RippleAddress::VER_ACCOUNT_ID)
+			% mBalance.getText()
 			% mLowAuthSet
 			% mHighAuthSet);
 
