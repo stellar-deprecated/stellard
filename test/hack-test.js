@@ -14,7 +14,7 @@ suite('Hack', function() {
     var $ = { };
 
     this.timeout(0);
-    
+
     setup(function(done) {
         testutils.build_setup().call($, done);
     });
@@ -22,7 +22,7 @@ suite('Hack', function() {
     teardown(function(done) {
         testutils.build_teardown().call($, done);
     });
-
+/*
     test("try to create IOUs out of thin air", function (done) {
         var self = this;
 
@@ -62,10 +62,35 @@ suite('Hack', function() {
                         return testutils.rpc(config,'{"method":"ledger_accept"}'); })
                     .then(function(result){ callback() });
             },
+            function (callback) {
+                self.what = "Alice funds gateway fail";
+
+                var tx = '{ "method": "submit",                                           \
+                    "params": [                                                         \
+                    { "secret": "sfXvgQoXYnjqD3TeazmV3bUdK6qgfsRTa9BAxqZtbepfk7yyYZS",  \
+                        "tx_json": {                                                    \
+                            "TransactionType": "Payment",                               \
+                            "Account" : "gpRqvep69x2dpuVw7jEsVbSUgpfisTPwZa",           \
+                            "Amount" : {\
+                                "currency" : "USD",\
+                                "issuer" : "gD1RB8jG5DTSEnjJ1PQyoHEWXGbGCfCLAZ", \
+                                "value" : "100000"\
+                                },\
+                            "Destination" : "gD1RB8jG5DTSEnjJ1PQyoHEWXGbGCfCLAZ", \
+                            "Fee" : "10",\
+                            "Flags" : 0 \
+                             }}]}';
+
+                testutils.rpc(config,tx)
+                    .then(function(result){
+                        console.log('result '+ JSON.stringify(result));
+                        return testutils.rpc(config,'{"method":"ledger_accept"}'); })
+                    .then(function(result){ callback() });
+            },
 
             function (callback) {
                 self.what = "Alice funds gateway";
-                console.log("hi there");
+
                 var tx = '{ "method": "submit",                                           \
                     "params": [                                                         \
                     { "secret": "sfXvgQoXYnjqD3TeazmV3bUdK6qgfsRTa9BAxqZtbepfk7yyYZS",  \
@@ -91,7 +116,11 @@ suite('Hack', function() {
 
             function (callback) {
                 self.what = "Check outcome.";
-
+                var tx= '{"method":"account_lines", "params":[ {"account":"gD1RB8jG5DTSEnjJ1PQyoHEWXGbGCfCLAZ" }]  }';
+                testutils.rpc(config,tx)
+                    .then(function(result) {
+                        console.log('result ' + JSON.stringify(result));
+                    });
             },
         ]
 
@@ -100,6 +129,7 @@ suite('Hack', function() {
             done();
         });
     });
+    */
 });
 
 
