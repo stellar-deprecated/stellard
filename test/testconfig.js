@@ -6,9 +6,10 @@
 exports.accounts = {
   // Users
   "alice" : {
-  	'account': "gfi2ZyAA1uMng7QFuMxYZ2Nk1ty1sR5e8G", // 4B31289572391ACFDF8C791605FA935D9AFFE496
-    'secret' : "alice",
+  	'account': "gpRqvep69x2dpuVw7jEsVbSUgpfisTPwZa", // 4B31289572391ACFDF8C791605FA935D9AFFE496
+    'secret' : "sfXvgQoXYnjqD3TeazmV3bUdK6qgfsRTa9BAxqZtbepfk7yyYZS",
   },
+
   "bob" : {
   	'account': "gUK9iE1ZdTcPFM4dBYKzKpweHxU45vMouQ", // 7C184206ACDEF2F2E8146F8FD6D0305E0364D3D4
     'secret' : "bob",
