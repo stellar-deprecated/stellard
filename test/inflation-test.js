@@ -32,8 +32,6 @@ suite('Inflation', function() {
     var INFLATION_NUM_WINNERS = 50;
     var INT_SIZE_BITS = 256;
 
-    this.timeout(0);
-
     // calculate balances after inflation, returns total doled coins
     function calcInflation(accountObjects, accNum, pool_fee, total_coins){
 
