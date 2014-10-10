@@ -349,6 +349,9 @@
     <Filter Include="util">
       <UniqueIdentifier>{05d4adbc-388c-44fd-b964-cdc3dbcc922e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="tests">
+      <UniqueIdentifier>{1393f2ef-a196-4365-8a2d-ee6eedd7f3b7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\ripple_basics\containers\RangeSet.cpp">
@@ -1824,7 +1827,6 @@
     <ClCompile Include="..\..\src\ledger\LedgerDatabase.cpp">
       <Filter>ledger</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple_app\transactors\AccountDeleteTransactor.cpp" />
     <ClCompile Include="..\..\src\ripple_app\transactors\AccountMergeTransactor.cpp">
       <Filter>[2] Old Ripple\ripple_app\transactors</Filter>
     </ClCompile>
@@ -3685,7 +3687,6 @@
     <ClInclude Include="..\..\src\ledger\LedgerDatabase.h">
       <Filter>ledger</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\ripple_app\transactors\AccountDeleteTransactor.h" />
     <ClInclude Include="..\..\src\ripple_app\transactors\AccountMergeTransactor.h">
       <Filter>[2] Old Ripple\ripple_app\transactors</Filter>
     </ClInclude>
@@ -3825,6 +3826,75 @@
     </None>
     <None Include="..\..\LICENSE">
       <Filter>[3] doc</Filter>
+    </None>
+    <None Include="..\..\test\account_merge-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\account_set-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\account_tx-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\config.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\config-example.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\gateway-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\indirect-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\inflation-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\jsonrpc-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\monitor-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\nodeutils.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\offer-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\path1-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\path2-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\path-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\path-tests.json">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\remote-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\send-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\server.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\server-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\testconfig.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\testutils.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\websocket-test.js">
+      <Filter>tests</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
