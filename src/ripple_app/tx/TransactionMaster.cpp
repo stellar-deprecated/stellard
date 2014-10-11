@@ -98,8 +98,8 @@ bool TransactionMaster::canonicalize (Transaction::pointer* pTransaction)
     if (!tid)
         return false;
 
-    // VFALCO NOTE canonicalize can change the value of txn!
-    if (mCache.canonicalize (tid, txn))
+    // true = we should not need to use canonicalize
+    if (mCache.canonicalize (tid, txn, true))
     {
         *pTransaction = txn;
         return true;

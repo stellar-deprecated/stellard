@@ -51,38 +51,66 @@ Json::Value RPCHandler::doTx (Json::Value params, Resource::Charge& loadType, Ap
         Json::Value ret = txn->getJson (0, binary);
 #endif
 
+        bool didMeta = false;
+
         if (txn->getLedger () != 0)
         {
             Ledger::pointer lgr = mNetOps->getLedgerBySeq (txn->getLedger ());
+
+            
 
             if (lgr)
             {
                 bool okay = false;
 
-                if (binary)
+                bool isValidLedger = mNetOps->isValidated(lgr);
+
+                // only serve the meta and ledger info if it made it into the network
+                // we may want to have an option to see the intermediate state in the future for debug purpose
+                if (txn->getStatus() == TransStatus::COMMITTED && isValidLedger)
                 {
-                    std::string meta;
+                    didMeta = true;
 
-                    if (lgr->getMetaHex (txid, meta))
+                    if (binary)
                     {
-                        ret[jss::meta] = meta;
-                        okay = true;
-                    }
-                }
-                else
-                {
-                    TransactionMetaSet::pointer set;
+                        std::string meta;
 
-                    if (lgr->getTransactionMeta (txid, set))
+                        if (lgr->getMetaHex (txid, meta))
+                        {
+                            ret[jss::meta] = meta;
+                            okay = true;
+                        }
+                    }
+                    else
                     {
-                        okay = true;
-                        ret[jss::meta] = set->getJson (0);
-                    }
-                }
+                        TransactionMetaSet::pointer set;
 
-                if (okay)
-                    ret[jss::validated] = mNetOps->isValidated (lgr);
+                        if (lgr->getTransactionMeta (txid, set))
+                        {
+                            okay = true;
+                            ret[jss::meta] = set->getJson (0);
+                        }
+                    }
+
+                    if (okay)
+                        ret[jss::validated] = isValidLedger;
+                }
             }
+        }
+
+        if (!didMeta)
+        {
+            Json::Value jvObj (Json::objectValue);
+            std::string sToken;
+            std::string sHuman;
+
+            transResultInfo (txn->getResult(), sToken, sHuman);
+
+            jvObj[jss::engine_result]          = sToken;
+            jvObj[jss::engine_result_code]     = txn->getResult();
+            jvObj[jss::engine_result_message]  = sHuman;
+
+            ret[jss::alt_info] = jvObj;
         }
 
         return ret;

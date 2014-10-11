@@ -1007,6 +1007,7 @@ private:
             LedgerMaster::ScopedLockType sl 
                 (getApp().getLedgerMaster ().peekMutex ());
 
+
             {
                 WriteLog (lsDEBUG, LedgerConsensus) << "Propagating changes from current open ledger";
 
@@ -1016,11 +1017,13 @@ private:
                 oldTxmap->visitLeaves(BIND_TYPE(transactionAdder, std::ref(m_localTX), getApp().getLedgerMaster().getCurrentLedger(),  P_1));
             }
 
+            if (!(getConfig().RUN_STANDALONE))
             {
                 TransactionEngine engine (newOL);
                 m_localTX.apply (engine);
             }
 
+            
              // Apply disputed transactions that didn't get in
             // this occurs after adding everything else into the considered set (locals have priority)
             TransactionEngine engine (newOL);
@@ -1042,9 +1045,12 @@ private:
                                 << "Test applying disputed transaction that did"
                                 << " not get in";
 
-                            if (applyTransaction (engine, txn, newOL, true, false))
+                            if (!(getConfig().RUN_STANDALONE))
                             {
-                                failedTransactions.push_back (txn);
+                                if (applyTransaction (engine, txn, newOL, true, false))
+                                {
+                                    failedTransactions.push_back (txn);
+                                }
                             }
                         }
                     }
@@ -1428,15 +1434,24 @@ private:
             bool didApply;
             TER result = engine.applyTransaction (*txn, parms, didApply);
 
+            bool fatalError = (isTefFailure(result) || isTemMalformed
+                (result) || isTelLocal(result));
+
             if (didApply)
             {
                 WriteLog (lsDEBUG, LedgerConsensus) 
                 << "Transaction success: " << transHuman (result);
                 return resultSuccess;
             }
+            else if (fatalError || (!retryAssured && !openLedger)) // if this is the last attempt on the closing ledger
+            {
+                // so that the transaction gets updated properly for APIs
+                Transaction::pointer trans = boost::make_shared<Transaction>(txn, false);
+                trans->setResult(result);
+                getApp().getMasterTransaction ().canonicalize (&trans);
+            }
 
-            if (isTefFailure (result) || isTemMalformed 
-                (result) || isTelLocal (result))
+            if (fatalError)
             {
                 // failure
                 WriteLog (lsDEBUG, LedgerConsensus) 

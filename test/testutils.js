@@ -363,7 +363,6 @@ function payment(remote, src, dst, amount, callback) {
   assert(arguments.length === 5);
 
   //console.log( "payment src:%s  dst:%s", src, dst );
-  remote.set_account_seq( src, 1 );
   var tx = remote.transaction();
 
   tx.payment(src, dst, amount);
@@ -554,6 +553,45 @@ function verify_owner_counts(remote, counts, callback) {
   async.each( tests, iterator, callback );
 };
 
+function verify_transaction_success ( remote, tx_hash, callback ) {
+    remote.requestTransaction( tx_hash )
+    .on( 'success', function ( m ) {
+        //                console.log( '----> ' + merge_should_fail + JSON.stringify( m ) );
+
+        callback( null, m.meta != undefined, m );
+    } ).on( 'error', function ( m ) {
+        callback(new Error(m));
+    } ).request();
+}
+
+function auto_advance( remote, m, callback ) {
+    ledger_close( remote, function ( cb ) {
+
+        verify_transaction_success( remote, m.tx_json.hash, function ( err, success, m2 ) {
+            var res;
+            if ( success ) {
+                res = m;
+            }
+            else {
+                var res = m2.alt_info || { engine_result: 'unknown' };
+                res.status = "success";
+            }
+            callback( res );
+        } );
+    } );
+}
+
+function auto_advance_default( remote, m, callback ) {
+    auto_advance( remote, m, function ( m2 ) {
+        var success = ( m2.engine_result === 'tesSUCCESS' );
+        if ( success ) {
+            callback( null );
+        } else {
+            callback( new Error( m2.engine_result ) );
+        }
+    } );
+}
+
 // takes an object or a string
 function rpc(config,tx)
 {
@@ -639,7 +677,10 @@ exports.verify_owner_count      = verify_owner_count;
 exports.verify_owner_counts     = verify_owner_counts;
 exports.rpc                     = rpc;
 exports.display_ledger_helper   = display_ledger_helper;
-exports.custom_ledger_helper    = custom_ledger_helper;
+exports.custom_ledger_helper = custom_ledger_helper;
+exports.verify_transaction_success = verify_transaction_success;
+exports.auto_advance            = auto_advance;
+exports.auto_advance_default = auto_advance_default;
 
 process.on('uncaughtException', function() {
   Object.keys(server).forEach(function(host) {
