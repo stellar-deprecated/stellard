@@ -31,7 +31,9 @@ suite('Gateway', function() {
                 testutils.create_accounts($.remote, "root", "10000.0", ["alice", "bob", "mtgox"], callback);
             },
 
-            function (callback) {
+            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
+
+            function ( callback ) {
                 self.what = "Set credit limits.";
 
                 testutils.credit_limits($.remote,
@@ -48,7 +50,9 @@ suite('Gateway', function() {
                 testutils.payments($.remote, { "mtgox" : [ "1/AUD/alice" ] },  callback);
             },
 
-            function (callback) {
+            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
+
+            function ( callback ) {
                 self.what = "Verify balances.";
 
                 testutils.verify_balances($.remote, {
@@ -66,7 +70,7 @@ suite('Gateway', function() {
                     .on('proposed', function (m) {
                         // console.log("proposed: %s", JSON.stringify(m));
 
-                        callback(m.engine_result !== 'tesSUCCESS');
+                        testutils.auto_advance_default( $.remote, m, callback );
                     })
                     .submit();
             },
@@ -103,7 +107,7 @@ suite('Gateway', function() {
                     .on('proposed', function (m) {
                         // console.log("proposed: %s", JSON.stringify(m));
 
-                        callback(m.engine_result !== 'tesSUCCESS');
+                        testutils.auto_advance_default( $.remote, m, callback );
                     })
                     .submit();
             },
@@ -162,7 +166,7 @@ suite('Gateway', function() {
                 self.what = "Create accounts.";
                 testutils.create_accounts($.remote, "root", "10000.0", ["alice", "bob", "mtgox", "bitstamp", "amazon"], callback);
             },
-
+            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
             function (callback) {
                 self.what = "Set credit limits.";
 
@@ -184,7 +188,7 @@ suite('Gateway', function() {
                     callback);
 
             },
-
+            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
             function (callback) {
                 self.what = "Verify balances.";
 
@@ -203,7 +207,7 @@ suite('Gateway', function() {
                     .payment("alice", "bob", "3/BTC/bob")
                     .build_path(true)
                     .once('proposed', function (m) {
-                        callback(m.engine_result !== 'tesSUCCESS');
+                        testutils.auto_advance_default( $.remote, m, callback );
                     })
                     .submit();
 
@@ -240,7 +244,7 @@ suite('Gateway', function() {
                 self.what = "Create accounts.";
                 testutils.create_accounts($.remote, "root", "10000.0", ["alice", "bob", "mtgox"], callback);
             },
-
+            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
             function (callback) {
                 self.what = "Set credit limits.";
 
@@ -259,7 +263,7 @@ suite('Gateway', function() {
                     },
                     callback);
             },
-
+            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
             function (callback) {
                 self.what = "Verify balances.";
 
@@ -278,7 +282,7 @@ suite('Gateway', function() {
                     .once('proposed', function (m) {
                         // console.log("proposed: %s", JSON.stringify(m));
 
-                        callback(m.engine_result !== 'tesSUCCESS');
+                        testutils.auto_advance_default( $.remote, m, callback );
                     })
                     .submit();
             },
@@ -302,7 +306,7 @@ suite('Gateway', function() {
                     .transfer_rate(1e9*1.1)
                     .once('proposed', function (m) {
                         // console.log("proposed: %s", JSON.stringify(m));
-                        callback(m.engine_result !== 'tesSUCCESS');
+                        testutils.auto_advance_default( $.remote, m, callback );
                     })
                     .submit();
             },
@@ -316,7 +320,7 @@ suite('Gateway', function() {
                     .once('proposed', function (m) {
                         // console.log("proposed: %s", JSON.stringify(m));
 
-                        callback(m.engine_result !== 'tesSUCCESS');
+                        testutils.auto_advance_default( $.remote, m, callback );
                     })
                     .submit();
             },
@@ -350,7 +354,7 @@ suite('Gateway', function() {
                 self.what = "Create accounts.";
                 testutils.create_accounts($.remote, "root", "10000.0", ["alice", "bob", "mtgox"], callback);
             },
-
+            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
             function (callback) {
                 self.what = "Set transfer rate.";
 
@@ -359,7 +363,7 @@ suite('Gateway', function() {
                     .transfer_rate(1e9*1.1)
                     .once('submitted', function (m) {
                         // console.log("submitted: %s", JSON.stringify(m));
-                        callback(m.engine_result !== 'tesSUCCESS');
+                        testutils.auto_advance_default( $.remote, m, callback );
                     })
                     .submit();
             },
@@ -382,7 +386,7 @@ suite('Gateway', function() {
                     },
                     callback);
             },
-
+            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
             function (callback) {
                 self.what = "Verify balances.";
 
@@ -401,7 +405,7 @@ suite('Gateway', function() {
                     .once('submitted', function (m) {
                         // console.log("submitted: %s", JSON.stringify(m));
 
-                        callback(m.engine_result !== 'tesSUCCESS');
+                        testutils.auto_advance_default( $.remote, m, callback );
                     })
                     .submit();
             },
@@ -425,7 +429,7 @@ suite('Gateway', function() {
                     .once('submitted', function (m) {
                         // console.log("submitted: %s", JSON.stringify(m));
 
-                        callback(m.engine_result !== 'tesSUCCESS');
+                        testutils.auto_advance_default( $.remote, m, callback );
                     })
                     .submit();
             },
@@ -449,7 +453,16 @@ suite('Gateway', function() {
                     .once('submitted', function (m) {
                         // console.log("submitted: %s", JSON.stringify(m));
 
-                        callback(m.engine_result !== 'tesSUCCESS');
+                        //testutils.auto_advance_default( $.remote, m, callback );
+                        testutils.auto_advance( $.remote, m, function ( m2 ) {
+                            //console.log( "submitted: %s", JSON.stringify( m2 ) );
+                            var success = ( m2.engine_result === 'tesSUCCESS' );
+                            if ( success ) {
+                                callback();
+                            } else {
+                                callback( new Error( m2.engine_result ) );
+                            }
+                        } );
                     })
                     .submit();
             },
@@ -466,7 +479,7 @@ suite('Gateway', function() {
 
             function (callback) {
                 // Must fail, doesn't know to use the mtgox
-                self.what = "Alice sends 1.1/AUD/alice Bob 1/AUD/bob";
+                self.what = "Alice sends 1.1/AUD/alice Bob 1/AUD/bob #2";
 
                 $.remote.transaction()
                     .payment("alice", "bob", "1/AUD/bob")
@@ -474,7 +487,10 @@ suite('Gateway', function() {
                     .once('submitted', function (m) {
                         // console.log("submitted: %s", JSON.stringify(m));
 
-                        callback(m.engine_result !== 'tecPATH_DRY');
+                        testutils.auto_advance( $.remote, m, function ( m2 ) {
+                            callback( m2.engine_result !== 'tecPATH_DRY' );
+                        } );
+                        
                     })
                     .submit();
             },
@@ -543,6 +559,26 @@ suite('Gateway', function() {
             },
 
             function (callback) {
+                self.what  = "Subscribe and accept.";
+                self.ledgercount = 0;
+                self.accountactivity = 0;
+
+                $.remote
+                    .on('transaction', function (m) {
+                        self.accountactivity++;
+                        //console.log("ACCOUNT");
+                    })
+                    .on('ledger_closed', function (m) {
+                        self.ledgercount++;
+                        //console.log( "LEDGER_CLOSE: %d", self.ledgercount);
+                    })
+                    .request_subscribe().accounts("mtgox")
+                    .request();
+
+                callback( null );
+            },
+
+            function (callback) {
                 self.what = "Alice sends Bob 1 AUD";
 
                 $.remote.transaction()
@@ -550,12 +586,10 @@ suite('Gateway', function() {
                     .on('proposed', function (m) {
                         // console.log("proposed: %s", JSON.stringify(m));
 
-                        callback(m.engine_result !== 'tesSUCCESS');
+                        testutils.auto_advance_default( $.remote, m, callback );
                     })
                     .submit();
             },
-
-            function (callback) { testutils.ledger_close($.remote, callback); },
 
             function (callback) {
                 self.what = "Verify balances 2.";
@@ -576,12 +610,10 @@ suite('Gateway', function() {
                     .transfer_rate(1e9*1.1)
                     .once('proposed', function (m) {
                         // console.log("proposed: %s", JSON.stringify(m));
-                        callback(m.engine_result !== 'tesSUCCESS');
+                        testutils.auto_advance_default( $.remote, m, callback );
                     })
                     .submit();
             },
-
-            function (callback) { testutils.ledger_close($.remote, callback); },
 
             function (callback) {
                 self.what = "Bob sends Alice 0.5 AUD";
@@ -592,7 +624,7 @@ suite('Gateway', function() {
                     .on('proposed', function (m) {
                         // console.log("proposed: %s", JSON.stringify(m));
 
-                        callback(m.engine_result !== 'tesSUCCESS');
+                        testutils.auto_advance_default( $.remote, m, callback );
                     })
                     .submit();
             },
@@ -608,30 +640,14 @@ suite('Gateway', function() {
                     callback);
             },
 
-            function (callback) {
-                self.what  = "Subscribe and accept.";
-                self.count = 0;
-                self.found = 0;
+            function ( callback ) {
+                self.what = "verify subscriptions";
 
-                $.remote
-                    .on('transaction', function (m) {
-                        // console.log("ACCOUNT: %s", JSON.stringify(m));
-                        self.found = 1;
-                    })
-                    .on('ledger_closed', function (m) {
-                        // console.log("LEDGER_CLOSE: %d: %s", self.count, JSON.stringify(m));
-                        if (self.count) {
-                            callback(!self.found);
-                        } else {
-                            self.count  = 1;
-                            $.remote.ledger_accept();
-                        }
-                    })
-                    .request_subscribe().accounts("mtgox")
-                    .request();
-
-                $.remote.ledger_accept();
+                assert( self.accountactivity == 3 );
+                assert( self.ledgercount == 3 );
+                callback();
             }
+            
         ]
 
         async.waterfall(steps, function(error) {

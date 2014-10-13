@@ -43,7 +43,6 @@ JSS ( accountState );
 JSS ( accountTreeHash );
 JSS ( affected );
 JSS ( age );
-JSS ( alt_info );
 JSS ( amendment_blocked );
 JSS ( asks );
 JSS ( authorized );

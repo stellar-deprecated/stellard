@@ -123,7 +123,7 @@ suite('Merging accounts', function() {
                 mergeSubmitResult = m;
                 t.tx_fee = m.tx_json.Fee;
                 testutils.auto_advance( $.remote, m, function ( m2 ) {
-                    var success = (m2.engine_result === 'tesSUCCESS');
+                    var success = ( m2.engine_result === 'tesSUCCESS' );
                     assert( merge_should_fail ? !success : success );
                     callback();
                 } );

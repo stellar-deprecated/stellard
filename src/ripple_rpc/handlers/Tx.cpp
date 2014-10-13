@@ -104,13 +104,16 @@ Json::Value RPCHandler::doTx (Json::Value params, Resource::Charge& loadType, Ap
             std::string sToken;
             std::string sHuman;
 
-            transResultInfo (txn->getResult(), sToken, sHuman);
+            TER txRes = txn->getResult();
 
-            jvObj[jss::engine_result]          = sToken;
-            jvObj[jss::engine_result_code]     = txn->getResult();
-            jvObj[jss::engine_result_message]  = sHuman;
+            if (isTesSuccess(txRes)) {
+                txRes = tesPENDING;
+            }
 
-            ret[jss::alt_info] = jvObj;
+            transResultInfo (txRes, sToken, sHuman);
+            jvObj[sfTransactionResult.getJsonName()] = sToken;
+
+            ret[jss::meta] = jvObj;
         }
 
         return ret;

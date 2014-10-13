@@ -556,9 +556,11 @@ function verify_owner_counts(remote, counts, callback) {
 function verify_transaction_success ( remote, tx_hash, callback ) {
     remote.requestTransaction( tx_hash )
     .on( 'success', function ( m ) {
-        //                console.log( '----> ' + merge_should_fail + JSON.stringify( m ) );
-
-        callback( null, m.meta != undefined, m );
+        // console.log( '----> ' + merge_should_fail + JSON.stringify( m ) );
+        if ( m.meta ) {
+            m.meta.engine_result = m.meta.TransactionResult;
+        }
+        callback( null, (m.meta != undefined) && (m.meta.TransactionResult === 'tesSUCCESS'), m );
     } ).on( 'error', function ( m ) {
         callback(new Error(m));
     } ).request();
@@ -568,15 +570,7 @@ function auto_advance( remote, m, callback ) {
     ledger_close( remote, function ( cb ) {
 
         verify_transaction_success( remote, m.tx_json.hash, function ( err, success, m2 ) {
-            var res;
-            if ( success ) {
-                res = m;
-            }
-            else {
-                var res = m2.alt_info || { engine_result: 'unknown' };
-                res.status = "success";
-            }
-            callback( res );
+            callback( m2.meta );
         } );
     } );
 }
@@ -587,6 +581,7 @@ function auto_advance_default( remote, m, callback ) {
         if ( success ) {
             callback( null );
         } else {
+            console.log( "unexpected result: " + JSON.stringify( m2 ) );
             callback( new Error( m2.engine_result ) );
         }
     } );
@@ -680,7 +675,7 @@ exports.display_ledger_helper   = display_ledger_helper;
 exports.custom_ledger_helper = custom_ledger_helper;
 exports.verify_transaction_success = verify_transaction_success;
 exports.auto_advance            = auto_advance;
-exports.auto_advance_default = auto_advance_default;
+exports.auto_advance_default    = auto_advance_default;
 
 process.on('uncaughtException', function() {
   Object.keys(server).forEach(function(host) {
