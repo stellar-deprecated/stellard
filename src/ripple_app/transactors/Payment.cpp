@@ -27,7 +27,7 @@ TER PaymentTransactor::doApply ()
 {
     // Ripple if source or destination is non-native or if there are paths.
     std::uint32_t const uTxFlags = mTxn.getFlags ();
-    bool const bPartialPayment = is_bit_set (uTxFlags, tfPartialPayment);
+	//bool const bPartialPayment = is_bit_set(uTxFlags, tfPartialPayment);
     bool const bLimitQuality = is_bit_set (uTxFlags, tfLimitQuality);
     bool const bNoRippleDirect = is_bit_set (uTxFlags, tfNoRippleDirect);
     bool const bPaths = mTxn.isFieldPresent (sfPaths);
@@ -47,6 +47,7 @@ TER PaymentTransactor::doApply ()
     uint160 const uDstCurrency = saDstAmount.getCurrency ();
     bool const bSTRDirect = uSrcCurrency.isZero () && uDstCurrency.isZero ();
 
+	
     m_journal.trace <<
         "saMaxAmount=" << saMaxAmount.getFullText () <<
         " saDstAmount=" << saDstAmount.getFullText ();
@@ -121,13 +122,6 @@ TER PaymentTransactor::doApply ()
 
         return temBAD_SEND_STR_PATHS;
     }
-    else if (bSTRDirect && bPartialPayment)
-    {
-        m_journal.trace <<
-            "Malformed transaction: Partial payment specified for STR to STR.";
-
-        return temBAD_SEND_STR_PARTIAL;
-    }
     else if (bSTRDirect && bLimitQuality)
     {
         m_journal.trace <<
@@ -158,17 +152,7 @@ TER PaymentTransactor::doApply ()
             // Another transaction could create the account and then this transaction would succeed.
             return tecNO_DST;
         }
-        else if (is_bit_set (mParams, tapOPEN_LEDGER) && bPartialPayment)
-        {
-            // Make retry work smaller, by rejecting this.
-            m_journal.trace <<
-                "Delay transaction: Partial payment not allowed to create account.";
-
-
-            // Another transaction could create the account and then this
-            // transaction would succeed.
-            return telNO_DST_PARTIAL;
-        }
+        
         // Note: Reserve is not scaled by load.
         else if (saDstAmount.getNValue () < mEngine->getLedger ()->getReserve (0))
         {
@@ -243,7 +227,7 @@ TER PaymentTransactor::doApply ()
 				uDstAccountID,
 				mTxnAccountID,
 				spsPaths,
-				bPartialPayment,
+				false,
 				bLimitQuality,
 				bNoRippleDirect, // Always compute for finalizing ledger.
 				false, // Not standalone, delete unfundeds.

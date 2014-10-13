@@ -4,34 +4,35 @@
 
 // Configuration for test accounts.
 exports.accounts = {
-    // Users
-    "alice" : {
-        'account': "gfi2ZyAA1uMng7QFuMxYZ2Nk1ty1sR5e8G", // 4B31289572391ACFDF8C791605FA935D9AFFE496
-        'secret' : "alice",
-    },
-    "bob" : {
-        'account': "gUK9iE1ZdTcPFM4dBYKzKpweHxU45vMouQ", // 7C184206ACDEF2F2E8146F8FD6D0305E0364D3D4
-        'secret' : "bob",
-    },
-    "carol" : {
-        'account' : "gfn9c5iEDHpJMUNL9nk3EGS4K9s2KSMwXa",
-        'secret' : "carol",
-    },
-    "dan" : {
-        'account' : "gDymgnedwrL3gnNtcREa5RFAT5bZPx7vyL",
-        'secret' : "dan",
-    },
+  // Users
+  "alice" : {
+  	'account': "gpRqvep69x2dpuVw7jEsVbSUgpfisTPwZa", // 4B31289572391ACFDF8C791605FA935D9AFFE496
+    'secret' : "sfXvgQoXYnjqD3TeazmV3bUdK6qgfsRTa9BAxqZtbepfk7yyYZS",
+  },
 
-    // Nexuses
-    // note that the account ids are such that they are below/above alice and bob
-    "bitstamp" : {
-        'account': "gnPtWAUQXbcxfzQaxjuqdA46BNXEDmdtwH", // 3034A864256CD841C9D2C1EB0A2E6311C57C88EA
-        'secret': "afHTRZFpsX7yc2VJLvhJzpzjiag5W6ofy9xgZSwuubcLhS1atmv",
-    },
-    "mtgox" : {
-        'account': "gD1RB8jG5DTSEnjJ1PQyoHEWXGbGCfCLAZ", // 8D2A7F3893379F4BEEF805EBB7A33C5ED87C440C
-        'secret' : "sfHTRZFpsX7yc2VJLvhJzpzjiag5W6ofy9xgZSwuubcLhS1atmv",
-    },
+  "bob" : {
+  	'account': "gUK9iE1ZdTcPFM4dBYKzKpweHxU45vMouQ", // 7C184206ACDEF2F2E8146F8FD6D0305E0364D3D4
+    'secret' : "bob",
+  },
+  "carol" : {
+    'account' : "gfn9c5iEDHpJMUNL9nk3EGS4K9s2KSMwXa",
+    'secret' : "carol",
+  },
+  "dan" : {
+    'account' : "gDymgnedwrL3gnNtcREa5RFAT5bZPx7vyL",
+    'secret' : "dan",
+  },
+
+	// Nexuses
+	// note that the account ids are such that they are below/above alice and bob
+  "bitstamp" : {
+  	'account': "gnPtWAUQXbcxfzQaxjuqdA46BNXEDmdtwH", // 3034A864256CD841C9D2C1EB0A2E6311C57C88EA
+  	'secret': "afHTRZFpsX7yc2VJLvhJzpzjiag5W6ofy9xgZSwuubcLhS1atmv",
+  },
+  "mtgox" : {
+  	'account': "gD1RB8jG5DTSEnjJ1PQyoHEWXGbGCfCLAZ", // 8D2A7F3893379F4BEEF805EBB7A33C5ED87C440C
+    'secret' : "sfHTRZFpsX7yc2VJLvhJzpzjiag5W6ofy9xgZSwuubcLhS1atmv",
+  },
 
 
 
