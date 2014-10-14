@@ -219,7 +219,13 @@ function create_accounts(remote, src, amount, accounts, callback) {
     });
 
     tx.submit();
-  }, callback);
+  }, function ( err ) {
+      if ( err ) {
+          callback( err );
+      } else {
+          ledger_close( remote, callback );
+      }
+  });
 };
 
 // Account should be {name,balance}
@@ -257,7 +263,13 @@ function createAccountsFromObjects(remote, src, accounts, callback) {
         });
 
         tx.submit();
-    }, callback);
+    }, function ( err ) {
+        if ( err ) {
+            callback( err );
+        } else {
+            ledger_close( remote, callback );
+        }
+    });
 };
 
 function credit_limit(remote, src, amount, callback) {
@@ -568,13 +580,17 @@ function auto_advance( remote, m, callback ) {
     ledger_close( remote, function ( cb ) {
 
         verify_transaction_success( remote, m.tx_json.hash, function ( err, success, m2 ) {
-            callback( m2.meta );
+            callback( err, m2.meta );
         } );
     } );
 }
 
 function auto_advance_default( remote, m, callback ) {
-    auto_advance( remote, m, function ( m2 ) {
+    auto_advance( remote, m, function ( err, m2 ) {
+        if ( err ) {
+            console.log( "auto advance error: " + JSON.stringify( err ) );
+            callback( new Error( err ) );
+        }
         var success = ( m2.engine_result === 'tesSUCCESS' );
         if ( success ) {
             callback( null );

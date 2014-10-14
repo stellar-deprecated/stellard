@@ -38,6 +38,7 @@ suite('Indirect paths', function() {
                     },
                     callback);
             },
+            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
             function (callback) {
                 self.what = "Find path from alice to carol";
 
@@ -90,6 +91,7 @@ suite('Quality paths', function() {
                     },
                     callback);
             },
+            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
             function (callback) {
                 self.what = "Verify credit limits extended.";
 
@@ -133,7 +135,7 @@ suite('Quality paths', function() {
 //              .build_path(true)
                     .once('submitted', function (m) {
                         //console.log("proposed: %s", JSON.stringify(m));
-                        callback(m.engine_result !== 'tesSUCCESS');
+                        testutils.auto_advance_default( $.remote, m, callback );
                     })
                     .submit();
             },
@@ -186,6 +188,7 @@ suite("Trust auto clear", function() {
                     },
                     callback);
             },
+            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
             function (callback) {
                 self.what = "Verify credit limits.";
 
@@ -202,6 +205,7 @@ suite("Trust auto clear", function() {
                     },
                     callback);
             },
+            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
             function (callback) {
                 self.what = "Verify credit limits.";
 
@@ -246,6 +250,7 @@ suite("Trust auto clear", function() {
                     },
                     callback);
             },
+            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
             function (callback) {
                 self.what = "Clear credit limits.";
 
@@ -256,6 +261,7 @@ suite("Trust auto clear", function() {
                     },
                     callback);
             },
+            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
             function (callback) {
                 self.what = "Verify credit limits.";
 
@@ -270,6 +276,7 @@ suite("Trust auto clear", function() {
                     },
                     callback);
             },
+            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
             function (callback) {
                 self.what = "Verify credit limit gone.";
 

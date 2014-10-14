@@ -31,8 +31,6 @@ suite('Gateway', function() {
                 testutils.create_accounts($.remote, "root", "10000.0", ["alice", "bob", "mtgox"], callback);
             },
 
-            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
-
             function ( callback ) {
                 self.what = "Set credit limits.";
 
@@ -166,8 +164,8 @@ suite('Gateway', function() {
                 self.what = "Create accounts.";
                 testutils.create_accounts($.remote, "root", "10000.0", ["alice", "bob", "mtgox", "bitstamp", "amazon"], callback);
             },
-            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
-            function (callback) {
+
+            function ( callback ) {
                 self.what = "Set credit limits.";
 
                 testutils.credit_limits($.remote, {
@@ -244,8 +242,8 @@ suite('Gateway', function() {
                 self.what = "Create accounts.";
                 testutils.create_accounts($.remote, "root", "10000.0", ["alice", "bob", "mtgox"], callback);
             },
-            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
-            function (callback) {
+
+            function ( callback ) {
                 self.what = "Set credit limits.";
 
                 testutils.credit_limits($.remote, {
@@ -354,8 +352,8 @@ suite('Gateway', function() {
                 self.what = "Create accounts.";
                 testutils.create_accounts($.remote, "root", "10000.0", ["alice", "bob", "mtgox"], callback);
             },
-            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
-            function (callback) {
+
+            function ( callback ) {
                 self.what = "Set transfer rate.";
 
                 $.remote.transaction()
@@ -454,7 +452,7 @@ suite('Gateway', function() {
                         // console.log("submitted: %s", JSON.stringify(m));
 
                         //testutils.auto_advance_default( $.remote, m, callback );
-                        testutils.auto_advance( $.remote, m, function ( m2 ) {
+                        testutils.auto_advance( $.remote, m, function ( err, m2 ) {
                             //console.log( "submitted: %s", JSON.stringify( m2 ) );
                             var success = ( m2.engine_result === 'tesSUCCESS' );
                             if ( success ) {
@@ -487,7 +485,7 @@ suite('Gateway', function() {
                     .once('submitted', function (m) {
                         // console.log("submitted: %s", JSON.stringify(m));
 
-                        testutils.auto_advance( $.remote, m, function ( m2 ) {
+                        testutils.auto_advance( $.remote, m, function ( err, m2 ) {
                             callback( m2.engine_result !== 'tecPATH_DRY' );
                         } );
                         
@@ -522,8 +520,6 @@ suite('Gateway', function() {
                 self.what = "Create accounts.";
                 testutils.create_accounts($.remote, "root", "10000.0", ["alice", "bob", "mtgox"], callback);
             },
-
-            function (callback) { testutils.ledger_close($.remote, callback); },
 
             function (callback) {
                 self.what = "Set credit limits.";

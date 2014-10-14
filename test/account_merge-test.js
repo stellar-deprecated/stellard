@@ -24,7 +24,6 @@ suite('Merging accounts', function() {
 			t.what = "Create accounts.";
 			testutils.create_accounts( $.remote, "root", "10000.0", ["alice", "bob", t.gateways[0], t.gateways[1]], callback );
 		},
-        function ( callback ) { testutils.ledger_close( $.remote, callback ); },
   		function (callback) {
   			t.what = "Set limits";
   			var limits = {
@@ -122,7 +121,7 @@ suite('Merging accounts', function() {
             .once( 'submitted', function ( m ) {
                 mergeSubmitResult = m;
                 t.tx_fee = m.tx_json.Fee;
-                testutils.auto_advance( $.remote, m, function ( m2 ) {
+                testutils.auto_advance( $.remote, m, function ( err, m2 ) {
                     var success = ( m2.engine_result === 'tesSUCCESS' );
                     assert( merge_should_fail ? !success : success );
                     callback();

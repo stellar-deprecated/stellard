@@ -29,8 +29,8 @@ suite('Indirect ripple', function() {
                 self.what = "Create accounts.";
                 testutils.create_accounts($.remote, "root", "10000.0", ["gnnVq3ghZ3xoRE9tG78zCh5AWodVmEey32"], callback);
             },
-            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
-            function (callback) {
+
+            function ( callback ) {
 
 
                 self.what = "Alice pays root via long path";
@@ -95,7 +95,7 @@ suite('Indirect ripple', function() {
                 //console.log(tx);
 
                 testutils.rpc( config, tx ).then( function ( result ) {
-                    testutils.auto_advance( $.remote, result, function ( r2 ) {
+                    testutils.auto_advance( $.remote, result, function ( err, r2 ) {
                         console.log( '!!!!!!!!!!!!!!!!!' + JSON.stringify( r2 ) );
                         // SANITY - getting tecPATH_DRY
                         if ( r2.engine_result != 'telBAD_PATH_COUNT' ) {
@@ -126,8 +126,8 @@ suite('Indirect ripple', function() {
 
                 testutils.create_accounts($.remote, "root", "10000.0", ["alice", "bob", "mtgox"], callback);
             },
-            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
-            function (callback) {
+
+            function ( callback ) {
                 self.what = "Set credit limits.";
 
                 testutils.credit_limits($.remote, {
@@ -161,7 +161,7 @@ suite('Indirect ripple', function() {
                 $.remote.transaction()
                     .payment("alice", "mtgox", "100/USD/mtgox")
                     .once('submitted', function (m) {
-                        testutils.auto_advance( $.remote, m, function ( r2 ) {
+                        testutils.auto_advance( $.remote, m, function ( err, r2 ) {
                             callback( r2.engine_result !== 'tecPATH_PARTIAL' );
                         } );
                     })
@@ -174,7 +174,7 @@ suite('Indirect ripple', function() {
                     .payment("alice", "bob", "100/USD/mtgox")
                     .once('submitted', function (m) {
                         //console.log("proposed: %s", JSON.stringify(m));
-                        testutils.auto_advance( $.remote, m, function ( r2 ) {
+                        testutils.auto_advance( $.remote, m, function ( err, r2 ) {
                             callback( r2.engine_result !== 'tecPATH_PARTIAL' );
                         } );
                     })
@@ -197,7 +197,6 @@ suite('Indirect ripple', function() {
 
                 testutils.create_accounts($.remote, "root", "10000.0", ["alice", "bob", "mtgox"], callback);
             },
-            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
             function (callback) {
                 self.what = "Set credit limits.";
 
@@ -257,7 +256,6 @@ suite('Indirect ripple', function() {
 
                 testutils.create_accounts($.remote, "root", "10000.0", ["alice", "bob", "carol", "amazon", "mtgox"], callback);
             },
-            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
             function (callback) {
                 self.what = "Set credit limits.";
 
@@ -317,7 +315,6 @@ suite('Indirect ripple', function() {
 
                 testutils.create_accounts($.remote, "root", "10000.0", ["alice", "bob", "carol", "amazon", "mtgox"], callback);
             },
-            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
             function (callback) {
                 self.what = "Set mtgox transfer rate.";
 
