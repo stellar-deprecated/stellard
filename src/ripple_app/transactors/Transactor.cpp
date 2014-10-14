@@ -27,7 +27,7 @@
 #include "SetRegularKey.h"
 #include "SetTrust.h"
 #include "InflationTransactor.h"
-#include "AccountDeleteTransactor.h"
+#include "AccountMergeTransactor.h"
 
 namespace ripple {
 
@@ -50,9 +50,9 @@ std::unique_ptr<Transactor> Transactor::makeTransactor (
         return std::unique_ptr<Transactor> (
             new AccountSetTransactor (txn, params, engine));
 
-    // LATER: case ttACCOUNT_DELETE:
-    //    return std::unique_ptr<Transactor>(
-    //        new AccountDeleteTransactor (txn, params, engine));
+    case ttACCOUNT_MERGE:
+        return std::unique_ptr<Transactor>(
+            new AccountMergeTransactor (txn, params, engine));
 
     case ttREGULAR_KEY_SET:
         return std::unique_ptr<Transactor> (

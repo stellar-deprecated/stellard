@@ -6,11 +6,11 @@
 exports.accounts = {
   // Users
   "alice" : {
-    'account' : "gfi2ZyAA1uMng7QFuMxYZ2Nk1ty1sR5e8G",
+  	'account': "gfi2ZyAA1uMng7QFuMxYZ2Nk1ty1sR5e8G", // 4B31289572391ACFDF8C791605FA935D9AFFE496
     'secret' : "alice",
   },
   "bob" : {
-    'account' : "gUK9iE1ZdTcPFM4dBYKzKpweHxU45vMouQ",
+  	'account': "gUK9iE1ZdTcPFM4dBYKzKpweHxU45vMouQ", // 7C184206ACDEF2F2E8146F8FD6D0305E0364D3D4
     'secret' : "bob",
   },
   "carol" : {
@@ -22,13 +22,14 @@ exports.accounts = {
     'secret' : "dan",
   },
 
-  // Nexuses
+	// Nexuses
+	// note that the account ids are such that they are below/above alice and bob
   "bitstamp" : {
-    'account' : "gJs66qyhMs4ciSmcZPRPAqhqKo99rP5irX",
-    'secret' : "bitstamp",
+  	'account': "gnPtWAUQXbcxfzQaxjuqdA46BNXEDmdtwH", // 3034A864256CD841C9D2C1EB0A2E6311C57C88EA
+  	'secret': "afHTRZFpsX7yc2VJLvhJzpzjiag5W6ofy9xgZSwuubcLhS1atmv",
   },
   "mtgox" : {
-    'account' : "gD1RB8jG5DTSEnjJ1PQyoHEWXGbGCfCLAZ",
+  	'account': "gD1RB8jG5DTSEnjJ1PQyoHEWXGbGCfCLAZ", // 8D2A7F3893379F4BEEF805EBB7A33C5ED87C440C
     'secret' : "sfHTRZFpsX7yc2VJLvhJzpzjiag5W6ofy9xgZSwuubcLhS1atmv",
   },
 
@@ -48,56 +49,56 @@ exports.accounts = {
   },
 
   // filler
-    "0": {
+    "A0": {
         'account' : "gaLBK8GoXJJJ5cpsUNj27x4HYjCJYCKTfH",
         'secret' : "0",
     },
-    "1": {
+    "A1": {
         'account' : "gG2xcNhjGtm6LKKei9DN9EonCgoVDMeLf6",
         'secret' : "1",
     },
-    "2": {
-        'account' : "gpvwqBkBrzpd8fgBfm5Yc91W2RXzBoCpPu",
+    "A2": {
+    	'account': "gpvwqBkBrzpd8fgBfm5Yc91W2RXzBoCpPu",
         'secret' : "2",
     },
-    "3": {
-        'account' : "gsLvPQX6safYaMJ4n4tUsXehdJsksN2Y23",
+    "A3": {
+    	'account': "gsLvPQX6safYaMJ4n4tUsXehdJsksN2Y23",
         'secret' : "3",
     },
-    "4": {
-        'account' : "gHJi4gCC13A18RpJqmPoDkz3uSgtBZ1XAH",
+    "A4": {
+    	'account': "gHJi4gCC13A18RpJqmPoDkz3uSgtBZ1XAH",
         'secret' : "4",
     },
-    "5": {
-        'account' : "gMThcQruZ2j9NZW7E4j9HofBSt4UPFHDnb",
+    "A5": {
+    	'account': "gMThcQruZ2j9NZW7E4j9HofBSt4UPFHDnb",
         'secret' : "5",
     },
-    "6": {
-        'account' : "gsp5it8AXeqsCjLsW5bz9Wyu6J7cjA8mQG",
+    "A6": {
+    	'account': "gsp5it8AXeqsCjLsW5bz9Wyu6J7cjA8mQG",
         'secret' : "6",
     },
-    "7": {
-        'account' : "gMSYMsNC8XrfJV1QXy1nyJmTP463o4KwX1",
+    "A7": {
+    	'account': "gMSYMsNC8XrfJV1QXy1nyJmTP463o4KwX1",
         'secret' : "7",
     },
-    "8": {
-        'account' : "gaUvFtfA1QMcdxK2myCkMRv3PWacWPEBNR",
+    "A8": {
+    	'account': "gaUvFtfA1QMcdxK2myCkMRv3PWacWPEBNR",
         'secret' : "8",
     },
-    "9": {
-        'account' : "gsQ8xUVm1MZ6NvoVQAFPVwx3GEzqfBqipy",
+    "A9": {
+    	'account': "gsQ8xUVm1MZ6NvoVQAFPVwx3GEzqfBqipy",
         'secret' : "9",
     },
-    "10": {
-        'account' : "g3FDnCCRUbtNp2wzntBCGw3wqvzgghEVNs",
+    "A10": {
+    	'account': "g3FDnCCRUbtNp2wzntBCGw3wqvzgghEVNs",
         'secret' : "10",
     },
-    "11": {
-        'account' : "gKo29xyJoCe3LKv8pFsKcmdsUvq1deFZ2J",
+    "A11": {
+    	'account': "gKo29xyJoCe3LKv8pFsKcmdsUvq1deFZ2J",
         'secret' : "11",
     },
-    "12": {
-        'account' : "gMcoxTKY6VicXWHbee2vRnqHiFPyoP8qwA",
+    "A12": {
+    	'account': "gMcoxTKY6VicXWHbee2vRnqHiFPyoP8qwA",
         'secret' : "12",
     },
 

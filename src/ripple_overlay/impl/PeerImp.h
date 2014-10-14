@@ -295,26 +295,36 @@ public:
         @param onIOStrand true if called on an I/O strand. It if is not, then
                a callback will be queued up.
     */
-    void detach (const char* rsn, bool graceful = true)
+
+    void drainAndClose (const char* rsn, bool graceful = true)
     {
-        if (! m_strand.running_in_this_thread ())
-        {
-            m_strand.post (BIND_TYPE (&PeerImp::detach,
-                shared_from_this (), rsn, graceful));
+        if (m_journal.trace)
+            m_journal.trace << "PeerImp::drainAndClose";
+
+        // This function should only ever be called form the strand.
+        // If not, the caller is racing on the socket with the strand.
+        bassert(m_strand.running_in_this_thread());
+
+        // Setting m_detaching here will inhibit further queueing-up of writes
+        // in mSendQ, or other work in m_strand.
+        m_detaching = true;
+
+        if (mSendingPacket || !mSendQ.empty()) {
+            if (m_journal.trace)
+                m_journal.trace << "PeerImp::detach() postponing disconnect, "
+                                << "pending writes to " << m_remoteAddress;
             return;
         }
 
-        if (!m_detaching)
+        // Only actually shut the socket down once; multiple drainAndClose()
+        // calls on the strand should be idempotent.
+        if (m_state != stateGracefulClose)
         {
-            // NIKB TODO No - a race is NOT ok. This needs to be fixed
-            //           to have PeerFinder work reliably.
-            m_detaching  = true; // Race is ok.
-
             if (m_was_canceled)
                 m_peerFinder.on_cancel (m_slot);
             else
                 m_peerFinder.on_closed (m_slot);
-            
+
             if (m_state == stateActive)
                 m_overlay.onPeerDisconnect (shared_from_this ());
 
@@ -324,12 +334,15 @@ public:
                 m_journal.warning << "Cluster peer " << m_nodeName <<
                                      " detached: " << rsn;
 
-            mSendQ.clear ();
+            bassert (mSendQ.empty ());
 
             (void) m_timer.cancel ();
 
             if (graceful)
             {
+                if (m_journal.trace)
+                    m_journal.trace << "PeerImp::detach() => socket->async_shutdown() "
+                                    << m_remoteAddress;
                 m_socket->async_shutdown (
                     m_strand.wrap ( boost::bind(
                         &PeerImp::handleShutdown,
@@ -338,6 +351,9 @@ public:
             }
             else
             {
+                if (m_journal.trace)
+                    m_journal.trace << "PeerImp::detach() => socket->cancel() "
+                                    << m_remoteAddress;
                 m_socket->cancel ();
             }
 
@@ -346,6 +362,15 @@ public:
                 m_nodePublicKey.clear ();       // Be idempotent.
         }
     }
+
+    void detach (const char* rsn, bool graceful = true) {
+        if (m_journal.trace)
+            m_journal.trace << "PeerImp::detach(): posting drainAndClose() to strand for "
+                            << m_remoteAddress;
+        m_strand.post (BIND_TYPE (&PeerImp::drainAndClose,
+                                  shared_from_this (), rsn, graceful));
+    }
+
 
     /** Close the connection. */
     void close (bool graceful)
@@ -433,26 +458,83 @@ public:
 
     //--------------------------------------------------------------------------
 
+    void queueOrWritePacket (const Message::pointer& packet)
+    {
+        unsigned len;
+        int type;
+
+        bassert(m_strand.running_in_this_thread());
+
+        if (m_journal.trace) {
+            // Only extract the len and type if we're going to be logging them.
+            len = Message::getLength(packet->getBuffer());
+            type = Message::getType(packet->getBuffer());
+        }
+
+        // If we're still sending something, requeue this event
+        // in the strand, _not_ mSendQ. That's for packets that haven't even
+        // been dispatched to the strand yet.
+        if (mSendingPacket) {
+            if (m_journal.trace)
+                m_journal.trace << "PeerImp::queueOrWritePacket() queueing packet type="
+                                << type << ", len=" << len << " to mSendQ";
+            mSendQ.push_back (packet);
+            return;
+        }
+
+        if (m_journal.trace) {
+            unsigned len = Message::getLength(packet->getBuffer());
+            int type = Message::getType(packet->getBuffer());
+            m_journal.trace << "PeerImp::queueOrWritePacket() => async_write "
+                            << "type=" << type
+                            << ", len=" << len
+                            << " to " << m_remoteAddress
+                            << ", m_detaching=" << m_detaching;
+        }
+
+        mSendingPacket = packet;
+        boost::asio::async_write (getStream (),
+            boost::asio::buffer (packet->getBuffer ()),
+            m_strand.wrap (boost::bind (
+                &PeerImp::handleWrite,
+                boost::static_pointer_cast <PeerImp> (shared_from_this ()),
+                boost::asio::placeholders::error,
+                boost::asio::placeholders::bytes_transferred)));
+    }
+
+    // External interaface to packet-sending; drops null packets, as well as
+    // _all_ packets once shutdown has started. Posts queueOrWritePacket to
+    // the strand.
     void sendPacket (const Message::pointer& packet, bool onStrand)
     {
-        if (packet)
-        {
-            if (!onStrand)
-            {
-                m_strand.post (BIND_TYPE (
-                    &Peer::sendPacket, shared_from_this (), packet, true));
-                return;
-            }
+        unsigned len;
+        int type;
 
-            if (mSendingPacket)
-            {
-                mSendQ.push_back (packet);
-            }
-            else
-            {
-                sendPacketForce (packet);
-            }
+        if (!packet) {
+            if (m_journal.trace)
+                m_journal.trace << "PeerImp::sendPacket(null), ignoring";
+            return;
         }
+
+        if (m_journal.trace) {
+            // Only extract the len and type if we're going to be logging them.
+            len = Message::getLength(packet->getBuffer());
+            type = Message::getType(packet->getBuffer());
+        }
+
+        if (m_detaching) {
+            if (m_journal.trace)
+                m_journal.trace << "PeerImp::sendPacket() while detaching, dropping packet "
+                                << "type=" << type << ", len=" << len;
+            return;
+        }
+
+        if (m_journal.trace)
+            m_journal.trace << "PeerImp::sendPacket() posting packet type="
+                            << type << ", len=" << len << " to strand";
+
+        m_strand.post (BIND_TYPE (
+                           &PeerImp::queueOrWritePacket, shared_from_this (), packet));
     }
 
     void sendGetPeers ()
@@ -579,18 +661,22 @@ private:
 
     void handleWrite (boost::system::error_code const& ec, size_t bytes)
     {
-        if (m_detaching)
-            return;
 
-        // Call on IO strand
+        if (m_journal.trace)
+            m_journal.trace << "handleWrite() bytes=" << bytes
+                            << ", m_detaching=" << m_detaching
+                            << ", m_remoteAddress=" << m_remoteAddress;
+
+        // This function should only ever be called form the strand.
+        // If not, the caller is racing on the socket with the strand.
+        bassert(m_strand.running_in_this_thread());
 
         mSendingPacket.reset ();
 
-        if (ec == boost::asio::error::operation_aborted)
+        if (ec == boost::asio::error::operation_aborted) {
+            m_journal.trace << "handleWrite() : operation aborted";
             return;
-
-        if (m_detaching)
-            return;
+        }
 
         if (ec)
         {
@@ -599,14 +685,26 @@ private:
             return;
         }
 
-        if (!mSendQ.empty ())
+        if (mSendQ.empty ())
+        {
+            if (m_detaching)
+            {
+                // If we're detaching, and just finished a write, and the queue is empty, it's very
+                // likely that a drainAndClose () callback snuck into the strand *before* the final
+                // write, and was dropped awaiting the completion of that write. So we re-post the
+                // drainAndClose here, to finish it off.  This is idempotent.
+                m_strand.post (BIND_TYPE (&PeerImp::drainAndClose,
+                                          shared_from_this (), "drained queue", true));
+            }
+        }
+        else
         {
             Message::pointer packet = mSendQ.front ();
 
             if (packet)
             {
-                sendPacketForce (packet);
                 mSendQ.pop_front ();
+                queueOrWritePacket (packet);
             }
         }
     }
@@ -729,22 +827,6 @@ private:
         }
     }
 
-    void sendPacketForce (const Message::pointer& packet)
-    {
-        // must be on IO strand
-        if (!m_detaching)
-        {
-            mSendingPacket = packet;
-
-            boost::asio::async_write (getStream (),
-                boost::asio::buffer (packet->getBuffer ()),
-                m_strand.wrap (boost::bind (
-                    &PeerImp::handleWrite,
-                    boost::static_pointer_cast <PeerImp> (shared_from_this ()),
-                    boost::asio::placeholders::error,
-                    boost::asio::placeholders::bytes_transferred)));
-        }
-    }
 
     /** Hashes the latest finished message from an SSL stream
 

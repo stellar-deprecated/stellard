@@ -929,7 +929,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple_app\transactors\AccountDeleteTransactor.cpp">
+    <ClCompile Include="..\..\src\ripple_app\transactors\AccountMergeTransactor.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -2257,7 +2257,7 @@
     <ClInclude Include="..\..\src\ripple_app\shamap\SHAMapSyncFilters.h" />
     <ClInclude Include="..\..\src\ripple_app\shamap\RadixMapTest.h" />
     <ClInclude Include="..\..\src\ripple_app\shamap\SHAMapTreeNode.h" />
-    <ClInclude Include="..\..\src\ripple_app\transactors\AccountDeleteTransactor.h" />
+    <ClInclude Include="..\..\src\ripple_app\transactors\AccountMergeTransactor.h" />
     <ClInclude Include="..\..\src\ripple_app\transactors\InflationTransactor.h" />
     <ClInclude Include="..\..\src\ripple_app\transactors\SetAccount.h" />
     <ClInclude Include="..\..\src\ripple_app\transactors\Change.h" />
@@ -2436,16 +2436,6 @@
     <ClInclude Include="..\..\src\sanity\FirmezaMaster.h" />
     <ClInclude Include="..\..\src\sanity\History.h" />
     <ClInclude Include="..\..\src\sanity\TransactionSet.h" />
-    <ClInclude Include="..\..\src\transactions\CancelOfferTx.h" />
-    <ClInclude Include="..\..\src\transactions\CreateOfferTx.h" />
-    <ClInclude Include="..\..\src\transactions\InflationTx.h" />
-    <ClInclude Include="..\..\src\transactions\MergeTx.h" />
-    <ClInclude Include="..\..\src\transactions\PaymentTx.h" />
-    <ClInclude Include="..\..\src\transactions\SetAccountTx.h" />
-    <ClInclude Include="..\..\src\transactions\SetRegularKeyTx.h" />
-    <ClInclude Include="..\..\src\transactions\Transaction.h" />
-    <ClInclude Include="..\..\src\transactions\TransactionSet.h" />
-    <ClInclude Include="..\..\src\transactions\TrustSetTx.h" />
     <ClInclude Include="..\..\src\websocket\src\base64\base64.h" />
     <ClInclude Include="..\..\src\websocket\src\common.hpp" />
     <ClInclude Include="..\..\src\websocket\src\connection.hpp" />
