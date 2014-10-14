@@ -60,7 +60,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\fba\FirmezaMaster.cpp" />
+    <ClCompile Include="..\..\src\fba\FirmezaMaster.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\src\fba\History.cpp" />
     <ClCompile Include="..\..\src\ledger\AccountEntry.cpp" />
     <ClCompile Include="..\..\src\ledger\BucketList.cpp" />
