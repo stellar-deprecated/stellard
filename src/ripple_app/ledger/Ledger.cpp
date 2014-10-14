@@ -1798,7 +1798,76 @@ bool Ledger::assertSane ()
     return false;
 }
 
-// update the skip list with the information from our previous ledger
+/*
+ * There is a set of SLEs of type ltLEDGER_HASHES stored in nodes of each ledger's account-set
+ * SHAMap that collectively make up "the skip list". Every single ledger updates the skip list and
+ * so the account-set SHAMap hash value changes on every ledger close, even when nothing officially
+ * happened.
+ *
+ * The skip list is the only source / user of SLEs of type ltLEDGER_HASHES.
+ *
+ * An SLE of type ltLEDGER_HASHES has format LedgerHashes, which is:
+ *
+ *   SOElement (sfLastLedgerSequence,  SOE_OPTIONAL)
+ *   SOElement (sfHashes,              SOE_REQUIRED)
+ *
+ * That is: an optional UINT3232 for "last ledger sequence" and a VECTOR256 of hashes.
+ *
+ * These are nodes in a "skip list", of sorts. Or at least it's described as one. It is not actually
+ * a skip list in the sense of containing multiple levels pointing to log(height) distant nodes,
+ * such as diagrammed at:
+ *
+ *    https://en.wikipedia.org/wiki/Skip_list
+ *
+ * Rather, it's a two-level affair in which the most recent 256 nodes are pointed-to by one node,
+ * and a pointer to one out of every 256 ledgers is added to a 2nd-level node, one of which which is
+ * created every 256 such additions (i.e. every 65536 ledgers). These are not in turn collected into
+ * 3rd-level nodes as far as I can tell, nor is the classical skip-list structure really
+ * involved. It's more like a plain 2-level trie index, with 256-ary fanout.
+ *
+ * The "skip list's" head is a distinguished node at a fixed ledger index; the index is calculated by
+ * hashing the fixed namespace prefix spaceSkipList alone; that is, the head node is always stored
+ * at the same node index in every ledger. Let's call this node SLH. It gets rewritten / updated on
+ * every ledger close. It always contains the ledger hashes of the previous 256 ledgers closed
+ * (degenerate case being the first 256 ledgers in history, during which it has slightly fewer
+ * entries).
+ *
+ * Every 256 ledger-updates, another node in the "skip list" is created or updated. Let's call it SL#N
+ * for ledger-update U, where N = U >> 16, for reasons we'll see in a moment. That is, at ledger
+ * update U = 0x1 = 1, 0x101 = 257, 0x201 = 513 etc. a "previous" skip list node (SL#N), identified by
+ * hashing [spaceSkipList | U >> 16], is either created or updated, with the previous ledger hash pushed on
+ * the end of this previous skip list node. The next 256 cycles of 256 ledgers (thus, 65536 ledgers)
+ * will get indexed by this "next" skip list node, before moving on to SL#N+1.
+ *
+ * Concretely, if we call ledger-hash N "LH#N", then:
+ *
+ *   at ledger-close #1, node SL#0 will be created as [LH#0]
+ *   at ledger-close #257, SL#0 will be updated to [LH#0, LH#256]
+ *   at ledger-close #513, SL#0 will be updated to [LH#0, LH#256, LH#512]
+ *   ...
+ *   at ledger-close #65281 SL#0 will be updated to [LH#0, ..., LH#65280], its last update
+ *   at ledger-close #65537, node SL#1 will be created as [LH#65536]
+ *   at ledger-close #65793, node SL#1 will be updated to [LH#65536, LH#65792]
+ *   at ledger-close #66049, node SL#1 will be updated to [LH#65536, LH#65792, LH#66048]
+ *   ...
+ *
+ * This scheme seems to exist to permit seeking to the ledger hash of a given sequence number
+ * "relatively quickly", without consulting any external indices outside the node store. Supposing
+ * we want to find the ledger hash for ledger sequence K, let D = current - K, and look in the skip
+ * list head at SLH[256-D] if D <= 256; otherwise (if D is > 256) let P = K>>16, Q = (K >> 8 &
+ * 0xff), R = K & 0xff, and look up SL#P[Q] in the current ledger's SHAMap, let that ledger hash be
+ * H, then look up SLH[R] in the SHAMap of ledger H.
+ *
+ * At least that's the theory; in practice it somewhat seems that the code that implements it (see
+ * below, Ledger::getLedgerHash) does not implement this process correctly, failing to perform the
+ * final SLH[R] lookup for any K not evenly divisible by 256. But it's hard to tell because callers
+ * often handle "didn't find a value" by modifying the query probe themselves and trying again, so
+ * there might be two levels of responsibility split between Ledger::getLedgerHash and its
+ * callers. It's a bit unclear.
+ *
+ * Moreover, it's redundant with the SQL store, in which every ledger is indexed by sequence
+ * anyways.
+ */
 void Ledger::updateSkipList ()
 {
     if (mLedgerSeq == 0) // genesis ledger has no previous ledger
@@ -1813,7 +1882,6 @@ void Ledger::updateSkipList ()
         SLE::pointer skipList = getSLE (hash);
         std::vector<uint256> hashes;
 
-        // VFALCO TODO Document this skip list concept
         if (!skipList)
             skipList = boost::make_shared<SLE> (ltLEDGER_HASHES, hash);
         else
