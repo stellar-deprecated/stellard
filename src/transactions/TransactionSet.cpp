@@ -2,7 +2,13 @@
 
 namespace stellar
 {
-	void TransactionSet::saveHistory()
+	void serialize()
+	{
+
+	}
+
+	// save this tx set to the node store in serialized format
+	void TransactionSet::store()
 	{
 		
 	}

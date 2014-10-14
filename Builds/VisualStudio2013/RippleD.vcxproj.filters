@@ -337,9 +337,6 @@
     <Filter Include="[0] Libraries\libsodium\code">
       <UniqueIdentifier>{16646c2b-531d-4719-ae49-45ae15446183}</UniqueIdentifier>
     </Filter>
-    <Filter Include="sanity">
-      <UniqueIdentifier>{c52865dd-9ab7-4028-9e5d-53ed6637ed3a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ledger">
       <UniqueIdentifier>{cbce24e4-95f4-4834-b93e-01184d4542ca}</UniqueIdentifier>
     </Filter>
@@ -348,6 +345,12 @@
     </Filter>
     <Filter Include="util">
       <UniqueIdentifier>{05d4adbc-388c-44fd-b964-cdc3dbcc922e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="fba">
+      <UniqueIdentifier>{c52865dd-9ab7-4028-9e5d-53ed6637ed3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="main">
+      <UniqueIdentifier>{c7a0c586-e3f6-431b-841e-613ec6a294e8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1776,12 +1779,6 @@
     <ClCompile Include="..\..\src\ripple_app\misc\NetworkOPsImp.cpp">
       <Filter>[2] Old Ripple\ripple_app\misc</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\sanity\FirmezaMaster.cpp">
-      <Filter>sanity</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\sanity\History.cpp">
-      <Filter>sanity</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\ripple\peerfinder\impl\Counts.cpp">
       <Filter>[1] Ripple\peerfinder\impl</Filter>
     </ClCompile>
@@ -1827,6 +1824,15 @@
     <ClCompile Include="..\..\src\ripple_app\transactors\AccountDeleteTransactor.cpp" />
     <ClCompile Include="..\..\src\ripple_app\transactors\AccountMergeTransactor.cpp">
       <Filter>[2] Old Ripple\ripple_app\transactors</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\fba\FirmezaMaster.cpp">
+      <Filter>fba</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\fba\History.cpp">
+      <Filter>fba</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\main\Application.cpp">
+      <Filter>main</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -3607,20 +3613,8 @@
     <ClInclude Include="..\..\src\ripple_data\crypto\StellarPrivateKey.h">
       <Filter>[2] Old Ripple\ripple_data\crypto</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\history.h">
-      <Filter>sanity</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\ripple_app\misc\NetworkOPsImp.h">
       <Filter>[2] Old Ripple\ripple_app\misc</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\sanity\FirmezaMaster.h">
-      <Filter>sanity</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\sanity\TransactionSet.h">
-      <Filter>sanity</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\sanity\History.h">
-      <Filter>sanity</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\ripple\peerfinder\impl\PeerSlotLogic.h">
       <Filter>[1] Ripple\peerfinder\impl</Filter>
@@ -3688,6 +3682,15 @@
     <ClInclude Include="..\..\src\ripple_app\transactors\AccountDeleteTransactor.h" />
     <ClInclude Include="..\..\src\ripple_app\transactors\AccountMergeTransactor.h">
       <Filter>[2] Old Ripple\ripple_app\transactors</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fba\FirmezaMaster.h">
+      <Filter>fba</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fba\History.h">
+      <Filter>fba</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\main\Application.h">
+      <Filter>main</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

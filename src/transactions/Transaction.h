@@ -17,9 +17,10 @@ namespace stellar
 		uint16 mType;
 		uint160 mAccountID;
 		uint32 mSequence;
-		uint32 mMinLedger;
-		uint32 mMaxLedger;
 		uint32 mFee;
+		uint32 mMinLedger;  // window where this tx is valid
+		uint32 mMaxLedger;
+		// mSignature;
 
 		AccountEntry mSigningAccount;	
 

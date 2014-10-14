@@ -14,7 +14,9 @@ namespace stellar
 		// returns the hash of this tx set
 		uint256 getHash();
 
-		void saveHistory();
+		void serialize();
+
+		void store();
 
 	};
 }

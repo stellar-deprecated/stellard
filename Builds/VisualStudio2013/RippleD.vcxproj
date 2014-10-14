@@ -60,6 +60,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\src\fba\FirmezaMaster.cpp" />
+    <ClCompile Include="..\..\src\fba\History.cpp" />
     <ClCompile Include="..\..\src\ledger\AccountEntry.cpp" />
     <ClCompile Include="..\..\src\ledger\BucketList.cpp" />
     <ClCompile Include="..\..\src\ledger\Ledger.cpp" />
@@ -69,6 +71,7 @@
     <ClCompile Include="..\..\src\ledger\LegacyCLF.cpp" />
     <ClCompile Include="..\..\src\ledger\OfferEntry.cpp" />
     <ClCompile Include="..\..\src\ledger\TrustLine.cpp" />
+    <ClCompile Include="..\..\src\main\Application.cpp" />
     <ClCompile Include="..\..\src\ripple\beast\ripple_beast.cpp" />
     <ClCompile Include="..\..\src\ripple\beast\ripple_beastc.c" />
     <ClCompile Include="..\..\src\ripple\common\impl\KeyCache.cpp">
@@ -1806,14 +1809,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\protobuf_core.cpp" />
-    <ClCompile Include="..\..\src\sanity\FirmezaMaster.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\sanity\History.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\..\src\snappy\snappy.unity.cpp" />
     <ClCompile Include="..\..\src\transactions\Transaction.cpp" />
     <ClCompile Include="..\..\src\transactions\TransactionSet.cpp" />
@@ -1926,7 +1921,8 @@
     <ClInclude Include="..\..\..\libsodium\include\sodium\utils.h" />
     <ClInclude Include="..\..\..\libsodium\include\sodium\version.h" />
     <ClInclude Include="..\..\src\BeastConfig.h" />
-    <ClInclude Include="..\..\src\history.h" />
+    <ClInclude Include="..\..\src\fba\FirmezaMaster.h" />
+    <ClInclude Include="..\..\src\fba\History.h" />
     <ClInclude Include="..\..\src\ledger\AccountEntry.h" />
     <ClInclude Include="..\..\src\ledger\BucketList.h" />
     <ClInclude Include="..\..\src\ledger\Ledger.h" />
@@ -1937,6 +1933,7 @@
     <ClInclude Include="..\..\src\ledger\LegacyCLF.h" />
     <ClInclude Include="..\..\src\ledger\OfferEntry.h" />
     <ClInclude Include="..\..\src\ledger\TrustLine.h" />
+    <ClInclude Include="..\..\src\main\Application.h" />
     <ClInclude Include="..\..\src\ripple\algorithm\api\CycledSet.h" />
     <ClInclude Include="..\..\src\ripple\algorithm\api\DecayingSample.h" />
     <ClInclude Include="..\..\src\ripple\common\byte_view.h" />
@@ -2435,9 +2432,6 @@
     <ClInclude Include="..\..\src\leveldb\util\mutexlock.h" />
     <ClInclude Include="..\..\src\leveldb\util\posix_logger.h" />
     <ClInclude Include="..\..\src\leveldb\util\random.h" />
-    <ClInclude Include="..\..\src\sanity\FirmezaMaster.h" />
-    <ClInclude Include="..\..\src\sanity\History.h" />
-    <ClInclude Include="..\..\src\sanity\TransactionSet.h" />
     <ClInclude Include="..\..\src\transactions\CancelOfferTx.h" />
     <ClInclude Include="..\..\src\transactions\CreateOfferTx.h" />
     <ClInclude Include="..\..\src\transactions\InflationTx.h" />
