@@ -79,12 +79,6 @@ rippled-build.log
 vagrant/debug.log
 vagrant/debug-private-ledger.log
 vagrant/debug-public-ledger.log
-
-# Visual Studio
-*.suo
-*.sdf
-*.opensdf
-Builds/VisualStudio2013/db
 /Builds/VisualStudio2013/libsodium.dll
 /Builds/VisualStudio2013/local.cfg
 /Builds/VisualStudio2013/production.cfg
@@ -95,3 +89,8 @@ Builds/VisualStudio2013/db
 /Builds/VisualStudio2013/Debug
 /src/beast/Builds/VisualStudio2013/Debug
 /src/beast/Builds/VisualStudio2013/x64
+# Visual Studio
+*.suo
+*.sdf
+*.opensdf
+Builds/VisualStudio2013/db

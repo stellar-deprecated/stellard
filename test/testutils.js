@@ -239,8 +239,6 @@ function createAccountsFromObjects(remote, src, accounts, callback) {
     	{
     		console.log( "name %s not found in config ", account.name );
     	}
-        //console.log('', account);
-
         remote.set_account_seq(account.name, 1);
 
         var tx = remote.transaction();
