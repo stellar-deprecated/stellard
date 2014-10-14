@@ -13,8 +13,6 @@ var config    = testutils.init_config();
 suite('Hack', function() {
     var $ = { };
 
-    this.timeout(0);
-
     setup(function(done) {
         testutils.build_setup().call($, done);
     });

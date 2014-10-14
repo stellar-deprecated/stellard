@@ -286,7 +286,7 @@ namespace stellar
 		    mCurrentCLF->closeLedger();
 
 		    // save set to the history
-		    txSet->saveHistory();
+		    txSet->store();
         }
         catch (...)
         {

@@ -38,11 +38,10 @@ exports.accounts = {
 
 
     // Merchants
-    "amazon" : {
-        'account' : "gNnUkmdJwdHniGZewYDq9SVJURnTm6JuaP",
-        'secret' : "sfwR6TMGkCwptDvJaJSr6PEGGqFSMw6j5VwjTeAm6P3tmKFvcBA",
-    },
-
+  "amazon" : {
+    'account' : "gNnUkmdJwdHniGZewYDq9SVJURnTm6JuaP",
+    'secret' : "sfwR6TMGkCwptDvJaJSr6PEGGqFSMw6j5VwjTeAm6P3tmKFvcBA",
+  },
 
   // Master account
   "root" : {
@@ -60,47 +59,47 @@ exports.accounts = {
         'secret' : "1",
     },
     "A2": {
-        'account' : "gpvwqBkBrzpd8fgBfm5Yc91W2RXzBoCpPu",
+    	'account': "gpvwqBkBrzpd8fgBfm5Yc91W2RXzBoCpPu",
         'secret' : "2",
     },
     "A3": {
-        'account' : "gsLvPQX6safYaMJ4n4tUsXehdJsksN2Y23",
+    	'account': "gsLvPQX6safYaMJ4n4tUsXehdJsksN2Y23",
         'secret' : "3",
     },
     "A4": {
-        'account' : "gHJi4gCC13A18RpJqmPoDkz3uSgtBZ1XAH",
+    	'account': "gHJi4gCC13A18RpJqmPoDkz3uSgtBZ1XAH",
         'secret' : "4",
     },
     "A5": {
-        'account' : "gMThcQruZ2j9NZW7E4j9HofBSt4UPFHDnb",
+    	'account': "gMThcQruZ2j9NZW7E4j9HofBSt4UPFHDnb",
         'secret' : "5",
     },
     "A6": {
-        'account' : "gsp5it8AXeqsCjLsW5bz9Wyu6J7cjA8mQG",
+    	'account': "gsp5it8AXeqsCjLsW5bz9Wyu6J7cjA8mQG",
         'secret' : "6",
     },
     "A7": {
-        'account' : "gMSYMsNC8XrfJV1QXy1nyJmTP463o4KwX1",
+    	'account': "gMSYMsNC8XrfJV1QXy1nyJmTP463o4KwX1",
         'secret' : "7",
     },
     "A8": {
-        'account' : "gaUvFtfA1QMcdxK2myCkMRv3PWacWPEBNR",
+    	'account': "gaUvFtfA1QMcdxK2myCkMRv3PWacWPEBNR",
         'secret' : "8",
     },
     "A9": {
-        'account' : "gsQ8xUVm1MZ6NvoVQAFPVwx3GEzqfBqipy",
+    	'account': "gsQ8xUVm1MZ6NvoVQAFPVwx3GEzqfBqipy",
         'secret' : "9",
     },
     "A10": {
-        'account' : "g3FDnCCRUbtNp2wzntBCGw3wqvzgghEVNs",
+    	'account': "g3FDnCCRUbtNp2wzntBCGw3wqvzgghEVNs",
         'secret' : "10",
     },
     "A11": {
-        'account' : "gKo29xyJoCe3LKv8pFsKcmdsUvq1deFZ2J",
+    	'account': "gKo29xyJoCe3LKv8pFsKcmdsUvq1deFZ2J",
         'secret' : "11",
     },
     "A12": {
-        'account' : "gMcoxTKY6VicXWHbee2vRnqHiFPyoP8qwA",
+    	'account': "gMcoxTKY6VicXWHbee2vRnqHiFPyoP8qwA",
         'secret' : "12",
     },
 
