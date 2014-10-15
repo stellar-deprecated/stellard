@@ -128,7 +128,7 @@ namespace stellar {
 		//make sure it isn't already in DB
 		deleteFromDB();
 
-		string sql = str(boost::format("INSERT INTO TrustLines (trustIndex, lowAccount,highAccount,lowLimit,highLimit,currency,balance,lowAuthSet,highAuthSet) values (x'%s','%s','%s',%d,%d,%d,%d,%d,%d);")
+		string sql = str(boost::format("INSERT INTO TrustLines (trustIndex, lowAccount,highAccount,lowLimit,highLimit,currency,balance,lowAuthSet,highAuthSet) values (x'%s','%s','%s','%s','%s','%s','%s',%d,%d);")
 			% to_string(getIndex())
 			% mLowAccount.base58Encode(RippleAddress::VER_ACCOUNT_ID)
 			% mHighAccount.base58Encode(RippleAddress::VER_ACCOUNT_ID)
@@ -152,10 +152,10 @@ namespace stellar {
 
 	void TrustLine::updateInDB()
 	{
-		string sql = str(boost::format("UPDATE TrustLines set lowLimit=%d ,highLimit=%d ,balance=%d ,lowAuthSet=%d ,highAuthSet=%d where trustIndex=x'%s';")
-			% mLowLimit
-			% mHighLimit
-			% mBalance
+		string sql = str(boost::format("UPDATE TrustLines set lowLimit='%s' ,highLimit='%s' ,balance='%s' ,lowAuthSet=%d ,highAuthSet=%d where trustIndex=x'%s';")
+            % mLowLimit.getText()
+            % mHighLimit.getText()
+            % mBalance.getText()
 			% mLowAuthSet
 			% mHighAuthSet
 			% to_string(getIndex()));

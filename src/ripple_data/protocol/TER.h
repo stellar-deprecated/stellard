@@ -141,6 +141,7 @@ enum TER    // aka TransactionEngineResult
     // - Applied
     // - Forwarded
     tesSUCCESS      = 0,
+    tesPENDING,             // used when we don't know the result yet
 
     // 100 .. 159 C Claim fee only (ripple transaction with no good paths, pay to non-existent account, no path)
     // Causes:

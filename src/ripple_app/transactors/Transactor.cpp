@@ -262,6 +262,11 @@ TER Transactor::preCheck ()
     return tesSUCCESS;
 }
 
+TER Transactor::finalCheck()
+{
+    return tesSUCCESS;
+}
+
 TER Transactor::apply ()
 {
     TER terResult (preCheck ());
@@ -297,15 +302,26 @@ TER Transactor::apply ()
         mHasAuthKey     = mTxnAccount->isFieldPresent (sfRegularKey);
     }
 
-    terResult = checkSeq ();
-
-    if (terResult != tesSUCCESS) return (terResult);
-
     terResult = payFee ();
 
     if (terResult != tesSUCCESS) return (terResult);
 
     terResult = checkSig ();
+
+    if (terResult != tesSUCCESS) return (terResult);
+
+    terResult = checkSeq ();
+
+    if (!mEngine->mClosingLedger) {
+        if (terResult == terPRE_SEQ) { // accepts future tx promess as they may work out when we resolve ordering
+            terResult = tesSUCCESS;
+        }
+        return (terResult);
+    }
+
+    if (terResult != tesSUCCESS) return (terResult);
+
+    terResult = finalCheck ();
 
     if (terResult != tesSUCCESS) return (terResult);
 

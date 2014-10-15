@@ -34,6 +34,7 @@ namespace jss {
 */
 // VFALCO NOTE Some of these are part of the JSON-RPC API and some aren't
 //        TODO Move the string not part of the JSON-RPC API into another file
+
 JSS ( accepted );
 JSS ( account );
 JSS ( account_hash );

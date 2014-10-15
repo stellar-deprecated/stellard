@@ -45,13 +45,9 @@ static void rippleStateAdder(std::list<uint256>& stateList, SLE::ref rippleState
 	}
 }
 
-TER AccountMergeTransactor::doApply ()
+TER AccountMergeTransactor::finalCheck()
 {
-	
-    WriteLog (lsINFO, AccountMergeTransactor) << "AccountMerge>";
-
-
-	if (!mSigMaster)
+    if (!mSigMaster)
 	{
 		WriteLog(lsINFO, AccountMergeTransactor) << "AccountMerge: Invalid: Not authorized to merge account. (sig)";
 
@@ -93,7 +89,18 @@ TER AccountMergeTransactor::doApply ()
 		return tefDST_TAG_NEEDED;
 	}
 
+    return tesSUCCESS;
+}
+
+TER AccountMergeTransactor::doApply ()
+{
 	
+    WriteLog (lsINFO, AccountMergeTransactor) << "AccountMerge>";
+
+    const RippleAddress aDestination	= mTxn.getFieldAccount(sfDestination);
+	const uint160		uDestinationID	= aDestination.getAccountID();
+
+	SLE::pointer    sleDst = mEngine->entryCache(ltACCOUNT_ROOT, Ledger::getAccountRootIndex(aDestination));
 
 	/// Manage account IOUs
 

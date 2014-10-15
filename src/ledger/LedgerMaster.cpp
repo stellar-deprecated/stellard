@@ -125,6 +125,7 @@ namespace stellar
         assert(mCurrentDB.getTransactionLevel() == 0);
         mCurrentCLF = ledger;
         mLastLedgerHash = ledger->getHash();
+        WriteLog(ripple::lsINFO, ripple::Ledger) << "Store at " << mLastLedgerHash;
     }
 
     void LedgerMaster::abortLedgerClose()
@@ -153,6 +154,9 @@ namespace stellar
 		// new SLE , old SLE
 		SHAMap::Delta delta;
         bool needFull = false;
+
+        WriteLog(ripple::lsINFO, ripple::Ledger) << "catching up from " << mCurrentCLF->getHash() << " to " << updatedCurrentCLF;
+
         try
         {
             if (mCurrentCLF->getHash().isZero())
@@ -164,9 +168,9 @@ namespace stellar
 		        updatedCurrentCLF->getDeltaSince(mCurrentCLF,delta);
             }
         }
-        catch (std::runtime_error const &)
+        catch (std::runtime_error const &e)
         {
-            WriteLog(ripple::lsWARNING, ripple::Ledger) << "Could not compute delta";
+            WriteLog(ripple::lsWARNING, ripple::Ledger) << "Could not compute delta: " << e.what();
             needFull = true;
         };
 

@@ -30,7 +30,7 @@ suite('Indirect ripple', function() {
                 testutils.create_accounts($.remote, "root", "10000.0", ["gnnVq3ghZ3xoRE9tG78zCh5AWodVmEey32"], callback);
             },
 
-            function (callback) {
+            function ( callback ) {
 
 
                 self.what = "Alice pays root via long path";
@@ -94,14 +94,16 @@ suite('Indirect ripple', function() {
 
                 //console.log(tx);
 
-                testutils.rpc(config,tx).then(function(result){
-                    if(result.engine_result!='telBAD_PATH_COUNT')
-                    {
-                        console.log(JSON.stringify(result));
-                        assert(0);
-                    }
-                    callback(result.engine_result!=='telBAD_PATH_COUNT')
-
+                testutils.rpc( config, tx ).then( function ( result ) {
+                    testutils.auto_advance( $.remote, result, function ( err, r2 ) {
+                        console.log( '!!!!!!!!!!!!!!!!!' + JSON.stringify( r2 ) );
+                        // SANITY - getting tecPATH_DRY
+                        if ( r2.engine_result != 'telBAD_PATH_COUNT' ) {
+                            console.log( JSON.stringify( r2 ) );
+                            assert( 0 );
+                        }
+                        callback( r2.engine_result !== 'telBAD_PATH_COUNT' );
+                    } );
                 });
             }
             ];
@@ -124,7 +126,8 @@ suite('Indirect ripple', function() {
 
                 testutils.create_accounts($.remote, "root", "10000.0", ["alice", "bob", "mtgox"], callback);
             },
-            function (callback) {
+
+            function ( callback ) {
                 self.what = "Set credit limits.";
 
                 testutils.credit_limits($.remote, {
@@ -141,6 +144,7 @@ suite('Indirect ripple', function() {
                     },
                     callback);
             },
+            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
             function (callback) {
                 self.what = "Verify alice balance with mtgox.";
 
@@ -157,8 +161,9 @@ suite('Indirect ripple', function() {
                 $.remote.transaction()
                     .payment("alice", "mtgox", "100/USD/mtgox")
                     .once('submitted', function (m) {
-                        // console.log("proposed: %s", JSON.stringify(m));
-                        callback(m.engine_result !== 'tecPATH_PARTIAL');
+                        testutils.auto_advance( $.remote, m, function ( err, r2 ) {
+                            callback( r2.engine_result !== 'tecPATH_PARTIAL' );
+                        } );
                     })
                     .submit();
             },
@@ -169,7 +174,9 @@ suite('Indirect ripple', function() {
                     .payment("alice", "bob", "100/USD/mtgox")
                     .once('submitted', function (m) {
                         //console.log("proposed: %s", JSON.stringify(m));
-                        callback(m.engine_result !== 'tecPATH_PARTIAL');
+                        testutils.auto_advance( $.remote, m, function ( err, r2 ) {
+                            callback( r2.engine_result !== 'tecPATH_PARTIAL' );
+                        } );
                     })
                     .submit();
             }
@@ -215,8 +222,7 @@ suite('Indirect ripple', function() {
                     .path_add( [ { account: "mtgox" } ])
                     .on('proposed', function (m) {
                         // console.log("proposed: %s", JSON.stringify(m));
-
-                        callback(m.engine_result !== 'tesSUCCESS');
+                        testutils.auto_advance_default( $.remote, m, callback );
                     })
                     .submit();
             },
@@ -277,8 +283,7 @@ suite('Indirect ripple', function() {
                     .path_add( [ { account: "carol" } ])
                     .on('proposed', function (m) {
                         // console.log("proposed: %s", JSON.stringify(m));
-                        if(m.engine_result !== 'tesSUCCESS') console.log(JSON.stringify(m));
-                        callback(m.engine_result !== 'tesSUCCESS');
+                        testutils.auto_advance_default( $.remote, m, callback );
                     })
                     .submit();
             },
@@ -343,8 +348,7 @@ suite('Indirect ripple', function() {
                     .path_add( [ { account: "carol" } ])
                     .on('proposed', function (m) {
                         // console.log("proposed: %s", JSON.stringify(m));
-
-                        callback(m.engine_result !== 'tesSUCCESS');
+                        testutils.auto_advance_default( $.remote, m, callback );
                     })
                     .submit();
             },

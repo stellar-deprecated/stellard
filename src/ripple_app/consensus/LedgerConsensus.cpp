@@ -843,6 +843,14 @@ public:
         WriteLog (lsINFO, LedgerConsensus) << "Simulation complete";
     }
 private:
+
+    static void transactionAdder(LocalTxs& txset, Ledger::pointer l, SHAMapItem::ref smi_tx)
+    {
+        SerializedTransaction::pointer tx(l->getSTransaction(smi_tx, SHAMapTreeNode::tnTRANSACTION_NM));
+        txset.push_back(l->getLedgerSeq(), tx);
+    }
+
+
     /** We have a new last closed ledger, process it. Final accept logic
     */
     void accept (SHAMap::pointer set)
@@ -950,6 +958,7 @@ private:
             if (!dbcom)
             {
                 WriteLog(lsFATAL, LedgerConsensus) << "Could not commit to the database";
+                return;
             }
 
             statusChange (protocol::neACCEPTED_LEDGER, *newLCL);
@@ -998,7 +1007,40 @@ private:
             LedgerMaster::ScopedLockType sl 
                 (getApp().getLedgerMaster ().peekMutex ());
 
-            // Apply disputed transactions that didn't get in
+
+            {
+                Ledger::pointer currentLedger = getApp().getLedgerMaster().getCurrentLedger();
+
+                CanonicalTXSet::iterator it = failedTransactions.begin();
+
+                if (it != failedTransactions.end())
+                {
+                    WriteLog (lsDEBUG, LedgerConsensus) << "Propagating failed transactions";
+
+                    for (; it != failedTransactions.end(); it++)
+                    {
+                        m_localTX.push_back(currentLedger->getLedgerSeq(), it->second);
+                    }
+                }
+
+                WriteLog (lsDEBUG, LedgerConsensus) << "Propagating changes from current open ledger";
+
+                SHAMap::ref oldTxmap = currentLedger->peekTransactionMap();
+
+                oldTxmap->visitLeaves(BIND_TYPE(transactionAdder, std::ref(m_localTX), getApp().getLedgerMaster().getCurrentLedger(),  P_1));
+
+                
+            }
+
+            if (!(getConfig().RUN_STANDALONE))
+            {
+                TransactionEngine engine (newOL);
+                m_localTX.apply (engine);
+            }
+
+            
+             // Apply disputed transactions that didn't get in
+            // this occurs after adding everything else into the considered set (locals have priority)
             TransactionEngine engine (newOL);
             BOOST_FOREACH (u256_lct_pair & it, mDisputes)
             {
@@ -1007,17 +1049,25 @@ private:
                     // we voted NO
                     try
                     {
-                        WriteLog (lsDEBUG, LedgerConsensus) 
-                            << "Test applying disputed transaction that did"
-                            << " not get in";
                         SerializerIterator sit (it.second->peekTransaction ());
                         SerializedTransaction::pointer txn 
                             = boost::make_shared<SerializedTransaction> 
                             (boost::ref (sit));
 
-                        if (applyTransaction (engine, txn, newOL, true, false))
+                        if (!m_localTX.contains(txn->getTransactionID()))
                         {
-                            failedTransactions.push_back (txn);
+                            WriteLog (lsDEBUG, LedgerConsensus) 
+                                << "Test applying disputed transaction that did"
+                                << " not get in";
+
+                            if (!(getConfig().RUN_STANDALONE))
+                            {
+                                if (applyTransaction (engine, txn, newOL, true, false))
+                                {
+                                    WriteLog(lsDEBUG, LedgerConsensus)
+                                        << "Still not able to apply transaction " << txn->getTransactionID();
+                                }
+                            }
                         }
                     }
                     catch (...)
@@ -1028,16 +1078,6 @@ private:
                 }
             }
 
-            WriteLog (lsDEBUG, LedgerConsensus) 
-                << "Applying transactions from current open ledger";
-            applyTransactions (getApp().getLedgerMaster ().getCurrentLedger
-                ()->peekTransactionMap (), newOL, newLCL,
-                failedTransactions, true);
-
-            {
-                TransactionEngine engine (newOL);
-                m_localTX.apply (engine);
-            }
 
             getApp().getLedgerMaster ().pushLedger (newLCL, newOL);
             mNewLedgerHash = newLCL->getHash ();
@@ -1410,15 +1450,24 @@ private:
             bool didApply;
             TER result = engine.applyTransaction (*txn, parms, didApply);
 
+            bool fatalError = (isTefFailure(result) || isTemMalformed
+                (result) || isTelLocal(result));
+
             if (didApply)
             {
                 WriteLog (lsDEBUG, LedgerConsensus) 
                 << "Transaction success: " << transHuman (result);
                 return resultSuccess;
             }
+            else if (fatalError || (!retryAssured && !openLedger)) // if this is the last attempt on the closing ledger
+            {
+                // so that the transaction gets updated properly for APIs
+                Transaction::pointer trans = boost::make_shared<Transaction>(txn, false);
+                trans->setResult(result);
+                getApp().getMasterTransaction ().canonicalize (&trans);
+            }
 
-            if (isTefFailure (result) || isTemMalformed 
-                (result) || isTelLocal (result))
+            if (fatalError)
             {
                 // failure
                 WriteLog (lsDEBUG, LedgerConsensus) 

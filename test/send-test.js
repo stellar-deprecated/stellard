@@ -20,7 +20,7 @@ suite('Sending', function() {
   teardown(function(done) {
     testutils.build_teardown().call($, done);
   });
-
+    /*
   test("send STR to non-existent account with insufficient fee", function (done) {
     var self    = this;
     var ledgers = 20;
@@ -30,15 +30,12 @@ suite('Sending', function() {
     .payment('root', 'alice', "1")
     .once('submitted', function (m) {
       // Transaction got an error.
-      // console.log("proposed: %s", JSON.stringify(m));
-      assert.strictEqual(m.engine_result, 'tecNO_DST_INSUF_STR');
-      got_proposed  = true;
-      $.remote.ledger_accept();    // Move it along.
-    })
-    .once('final', function (m) {
-      // console.log("final: %s", JSON.stringify(m, undefined, 2));
-      assert.strictEqual(m.engine_result, 'tecNO_DST_INSUF_STR');
-      done();
+        // console.log("proposed: %s", JSON.stringify(m));
+        testutils.auto_advance( $.remote, m, function ( err, r2 ) {
+            assert.strictEqual( r2.engine_result, 'tecNO_DST_INSUF_STR' );
+            got_proposed = true;
+            done();
+        } );
     })
     .submit();
   });
@@ -48,13 +45,15 @@ suite('Sending', function() {
     $.remote.transaction()
     .ripple_line_set("root", "100/USD/alice")
     .once('submitted', function (m) {
-      //console.log("proposed: %s", JSON.stringify(m));
-      assert.strictEqual(m.engine_result, 'tecNO_DST');
-      done();
+        testutils.auto_advance( $.remote, m, function (err, r2 ) {
+            //console.log("proposed: %s", JSON.stringify(m));
+            assert.strictEqual(r2.engine_result, 'tecNO_DST');
+            done();
+        });
     })
     .submit();
   });
-
+    */
   test("credit_limit", function (done) {
     var self = this;
 
@@ -86,6 +85,8 @@ suite('Sending', function() {
         testutils.credit_limit($.remote, "alice", "800/USD/mtgox", callback);
       },
 
+      function (callback) { testutils.ledger_close($.remote, callback); },
+
       function (callback) {
         $.remote.request_ripple_balance("alice", "mtgox", "USD", 'CURRENT')
         .on('ripple_state', function (m) {
@@ -109,6 +110,8 @@ suite('Sending', function() {
         testutils.credit_limit($.remote, "alice", "700/USD/mtgox", callback);
       },
 
+      function (callback) { testutils.ledger_close($.remote, callback); },
+
       function (callback) {
         $.remote.request_ripple_balance("alice", "mtgox", "USD", 'CURRENT')
         .on('ripple_state', function (m) {
@@ -121,16 +124,25 @@ suite('Sending', function() {
         })
         .request();
       },
+
       // Set negative limit.
       function (callback) {
-        $.remote.transaction()
-        .ripple_line_set("alice", "-1/USD/mtgox")
+          $.remote.transaction().ripple_line_set("alice", "-1/USD/mtgox")
         .once('submitted', function (m) {
-          assert.strictEqual('temBAD_LIMIT', m.engine_result);
-          callback();
+            testutils.auto_advance( $.remote, m, function (err, r2 ) {
+                assert.strictEqual( 'temBAD_LIMIT', r2.engine_result );
+                callback();
+            });
         })
         .submit();
       },
+
+        function ( callback ) { // force load the sequence number for alice as the previous call failed
+
+            $.remote.account( 'alice' )._transactionManager._loadSequence( function ( err, sequence ) {
+                callback();
+            } );
+        },
 
       //          function (callback) {
       //            self.what = "Display ledger";
@@ -149,11 +161,14 @@ suite('Sending', function() {
         testutils.credit_limit($.remote, "alice", "0/USD/mtgox", callback);
       },
 
+      function ( callback ) { testutils.ledger_close( $.remote, callback ); },
+
       function (callback) {
         self.what = "Make sure line is deleted.";
 
         $.remote.request_ripple_balance("alice", "mtgox", "USD", 'CURRENT')
-        .on('ripple_state', function (m) {
+        .on( 'ripple_state', function ( m ) {
+            console.log( "+++++ " + JSON.stringify( m ) );
           // Used to keep lines.
           // assert(m.account_balance.equals("0/USD/alice"));
           // assert(m.account_limit.equals("0/USD/alice"));
@@ -180,6 +195,8 @@ suite('Sending', function() {
         self.what = "Set limit on other side.";
         testutils.credit_limit($.remote, "bob", "500/USD/alice", callback);
       },
+
+      function ( callback ) { testutils.ledger_close( $.remote, callback ); },
 
       function (callback) {
         self.what = "Check ripple_line's state from alice's pov.";
@@ -219,7 +236,8 @@ suite('Sending', function() {
       done();
     });
   });
-});
+} );
+
 
 suite('Sending future', function() {
   var $ = { };
@@ -253,6 +271,8 @@ suite('Sending future', function() {
         testutils.credit_limit($.remote, "bob", "700/USD/alice", callback);
       },
 
+      function ( callback ) { testutils.ledger_close( $.remote, callback ); },
+
       function (callback) {
         self.what = "Set alice send bob partial with alice as issuer.";
 
@@ -260,10 +280,7 @@ suite('Sending future', function() {
         .payment('alice', 'bob', "24/USD/alice")
         .once('submitted', function (m) {
           // console.log("proposed: %s", JSON.stringify(m));
-          callback(m.engine_result !== 'tesSUCCESS');
-        })
-        .once('final', function (m) {
-          assert(m.engine_result !== 'tesSUCCESS');
+          testutils.auto_advance_default( $.remote, m, callback );
         })
         .submit();
       },
@@ -288,10 +305,7 @@ suite('Sending future', function() {
         .payment('alice', 'bob', "33/USD/bob")
         .once('submitted', function (m) {
           // console.log("proposed: %s", JSON.stringify(m));
-          callback(m.engine_result !== 'tesSUCCESS');
-        })
-        .once('final', function (m) {
-          assert(m.engine_result !== 'tesSUCCESS');
+            testutils.auto_advance_default( $.remote, m, callback );
         })
         .submit();
       },
@@ -316,10 +330,7 @@ suite('Sending future', function() {
         .payment('bob', 'alice', "90/USD/bob")
         .once('submitted', function (m) {
           // console.log("proposed: %s", JSON.stringify(m));
-          callback(m.engine_result !== 'tesSUCCESS');
-        })
-        .once('final', function (m) {
-          assert(m.engine_result !== 'tesSUCCESS');
+            testutils.auto_advance_default( $.remote, m, callback );
         })
         .submit();
       },
@@ -343,10 +354,7 @@ suite('Sending future', function() {
         .payment('alice', 'bob', "733/USD/bob")
         .once('submitted', function (m) {
           // console.log("submitted: %s", JSON.stringify(m));
-          callback(m.engine_result !== 'tesSUCCESS');
-        })
-        .once('final', function (m) {
-          assert(m.engine_result !== 'tesSUCCESS');
+            testutils.auto_advance_default( $.remote, m, callback );
         })
         .submit();
       },
@@ -370,10 +378,7 @@ suite('Sending future', function() {
         .payment('bob', 'alice', "1300/USD/bob")
         .once('submitted', function (m) {
           // console.log("submitted: %s", JSON.stringify(m));
-          callback(m.engine_result !== 'tesSUCCESS');
-        })
-        .once('final', function (m) {
-          assert(m.engine_result !== 'tesSUCCESS');
+            testutils.auto_advance_default( $.remote, m, callback );
         })
         .submit();
       },
@@ -397,8 +402,10 @@ suite('Sending future', function() {
         $.remote.transaction()
         .payment('bob', 'alice', "1/USD/bob")
         .once('submitted', function (m) {
-          // console.log("submitted: %s", JSON.stringify(m));
-          callback(m.engine_result !== 'tecPATH_DRY');
+            // console.log("submitted: %s", JSON.stringify(m));
+            testutils.auto_advance( $.remote, m, function ( err, r2 ) {
+                callback( r2.engine_result !== 'tecPATH_DRY' );
+            } );
         })
         .submit();
       },
@@ -450,9 +457,5 @@ suite('Sending future', function() {
     });
   });
 });
-
-
-
-
 
 // vim:sw=2:sts=2:ts=8:et

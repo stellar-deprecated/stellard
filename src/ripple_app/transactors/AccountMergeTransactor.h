@@ -29,6 +29,7 @@ class AccountMergeTransactor : public Transactor
 public:
 	AccountMergeTransactor(const SerializedTransaction& txn, TransactionEngineParams params, TransactionEngine* engine) : Transactor(txn, params, engine) {}
 
+    TER finalCheck();
 	TER doApply();
 };
 

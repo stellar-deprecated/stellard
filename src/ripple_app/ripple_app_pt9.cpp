@@ -34,7 +34,6 @@
 #include "transactors/CreateOfferDirect.cpp"
 #include "transactors/CreateOfferBridged.cpp"
 
-
 #if RIPPLE_USE_OLD_CREATE_TRANSACTOR
 #include "transactors/CreateOfferLegacy.cpp"
 #endif

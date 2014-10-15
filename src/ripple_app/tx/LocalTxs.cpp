@@ -41,6 +41,7 @@ test-applied to all new open ledgers until seen in a fully-
 validated ledger
 */
 
+#include <map>
 
 namespace ripple {
 
@@ -115,10 +116,11 @@ public:
     {
         std::lock_guard <std::mutex> lock (m_lock);
 
-        m_txns.emplace_back (index, txn);
+        LocalTx tx(index, txn);
+        m_txns.insert(make_pair(tx.getID(), tx)); // will not insert if there is already an entry with the same hash
     }
 
-    bool can_remove (LocalTx& txn, Ledger::ref ledger)
+    bool can_remove (LocalTx& txn, Ledger::pointer ledger)
     {
 
         if (txn.isExpired (ledger->getLedgerSeq ()))
@@ -143,13 +145,15 @@ public:
 
         CanonicalTXSet tset (uint256 {});
 
+        doSweep(); // housekeeping
+
         // Get the set of local transactions as a canonical
         // set (so they apply in a valid order)
         {
             std::lock_guard <std::mutex> lock (m_lock);
 
             for (auto& it : m_txns)
-                tset.push_back (it.getTX());
+                tset.push_back (it.second.getTX());
         }
 
         for (auto it : tset)
@@ -170,18 +174,26 @@ public:
         }
     }
 
-    // Remove transactions that have either been accepted into a fully-validated
-    // ledger, are (now) impossible, or have expired
     void sweep (Ledger::ref validLedger) override
     {
-        std::lock_guard <std::mutex> lock (m_lock);
+        mSweepLedger = validLedger;
+    }
 
-        for (auto it = m_txns.begin (); it != m_txns.end (); )
+    // Remove transactions that have either been accepted into a fully-validated
+    // ledger, are (now) impossible, or have expired
+    void doSweep ()
+    {
+        std::lock_guard <std::mutex> lock (m_lock);
+        if (mSweepLedger)
         {
-            if (can_remove (*it, validLedger))
-                it = m_txns.erase (it);
-            else
-                ++it;
+            for (auto it = m_txns.begin (); it != m_txns.end (); )
+            {
+                if (can_remove (it->second, mSweepLedger))
+                    it = m_txns.erase (it);
+                else
+                    ++it;
+            }
+            mSweepLedger.reset();
         }
     }
 
@@ -192,10 +204,17 @@ public:
         return m_txns.size ();
     }
 
+    bool contains(uint256 transactionId) override
+    {
+        std::lock_guard <std::mutex> lock (m_lock);
+        return m_txns.find(transactionId) != m_txns.end();
+    }
+
 private:
 
+    Ledger::pointer mSweepLedger;
     std::mutex m_lock;
-    std::list <LocalTx> m_txns;
+    std::map<uint256, LocalTx> m_txns;
 };
 
 std::unique_ptr <LocalTxs> LocalTxs::New()

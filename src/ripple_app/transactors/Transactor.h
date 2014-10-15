@@ -55,6 +55,7 @@ protected:
     beast::Journal m_journal;
     
     virtual TER preCheck ();
+    virtual TER finalCheck ();
     virtual TER checkSeq ();
     virtual TER payFee ();
 
