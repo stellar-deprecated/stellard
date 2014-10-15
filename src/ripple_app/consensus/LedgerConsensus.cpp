@@ -1009,12 +1009,27 @@ private:
 
 
             {
+                Ledger::pointer currentLedger = getApp().getLedgerMaster().getCurrentLedger();
+
+                CanonicalTXSet::iterator it = failedTransactions.begin();
+
+                if (it != failedTransactions.end())
+                {
+                    WriteLog (lsDEBUG, LedgerConsensus) << "Propagating failed transactions";
+
+                    for (; it != failedTransactions.end(); it++)
+                    {
+                        m_localTX.push_back(currentLedger->getLedgerSeq(), it->second);
+                    }
+                }
+
                 WriteLog (lsDEBUG, LedgerConsensus) << "Propagating changes from current open ledger";
 
-                Ledger::pointer currentLedger = getApp().getLedgerMaster().getCurrentLedger();
                 SHAMap::ref oldTxmap = currentLedger->peekTransactionMap();
 
                 oldTxmap->visitLeaves(BIND_TYPE(transactionAdder, std::ref(m_localTX), getApp().getLedgerMaster().getCurrentLedger(),  P_1));
+
+                
             }
 
             if (!(getConfig().RUN_STANDALONE))
@@ -1049,7 +1064,8 @@ private:
                             {
                                 if (applyTransaction (engine, txn, newOL, true, false))
                                 {
-                                    failedTransactions.push_back (txn);
+                                    WriteLog(lsDEBUG, LedgerConsensus)
+                                        << "Still not able to apply transaction " << txn->getTransactionID();
                                 }
                             }
                         }
