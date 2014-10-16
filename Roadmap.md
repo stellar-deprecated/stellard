@@ -38,5 +38,5 @@ Times, priority, and tasks are all subject to change as the network evolves, we 
 
 ### How you can help
 - Submit issues
-- [Fix issues.](https://github.com/stellar/stellard/labels/help%20wanted) We mark the best ones to get started contributing with the `help wanted` label.
+- [Fix issues.](https://github.com/stellar/stellard/labels/contribute) We mark the best ones to get started contributing with the `contribute` label.
 - Write tests!
