@@ -566,14 +566,29 @@ function verify_owner_counts(remote, counts, callback) {
 function verify_transaction_success ( remote, tx_hash, callback ) {
     remote.requestTransaction( tx_hash )
     .on( 'success', function ( m ) {
-        // console.log( '----> ' + merge_should_fail + JSON.stringify( m ) );
+        //console.log( '----> ' + JSON.stringify( m ) );
         if ( m.meta ) {
             m.meta.engine_result = m.meta.TransactionResult;
         }
         callback( null, (m.meta != undefined) && (m.meta.TransactionResult === 'tesSUCCESS'), m );
     } ).on( 'error', function ( m ) {
-        callback(new Error(m));
+        console.log( ' <verify tx error> ' + JSON.stringify( m ) );
+        callback( new Error( m ) );
     } ).request();
+}
+
+function verify_transactions( remote, hashes, callback, startindex ) {
+    startindex = startindex || 0;
+    if ( startindex >= hashes.length) {
+        callback();
+    }
+    verify_transaction_success( remote, hashes[startindex], function ( err, success, m ) {
+        if ( err || !success) {
+            callback( new Error( "Transaction " + hashes[startindex] + " not found" ) );
+        } else {
+            verify_transactions( remote, hashes, callback, startindex + 1 );
+        }
+    } );
 }
 
 function auto_advance( remote, m, callback ) {
@@ -688,6 +703,7 @@ exports.rpc                     = rpc;
 exports.display_ledger_helper   = display_ledger_helper;
 exports.custom_ledger_helper = custom_ledger_helper;
 exports.verify_transaction_success = verify_transaction_success;
+exports.verify_transactions = verify_transactions;
 exports.auto_advance            = auto_advance;
 exports.auto_advance_default    = auto_advance_default;
 
