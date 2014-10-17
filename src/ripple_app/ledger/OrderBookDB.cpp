@@ -55,11 +55,7 @@ void OrderBookDB::setup (Ledger::ref ledger)
         mSeq = ledger->getLedgerSeq ();
     }
 
-    if (getConfig().RUN_STANDALONE)
-        update(ledger);
-    else
-        getApp().getJobQueue().addJob(jtUPDATE_PF, "OrderBookDB::update",
-            BIND_TYPE(&OrderBookDB::update, this, ledger));
+    //update(ledger);
 }
 
 static void updateHelper (SLE::ref entry,

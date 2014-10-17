@@ -56,10 +56,7 @@ namespace stellar
 
 	void  AccountEntry::insertIntoDB()
 	{
-		//make sure it isn't already in DB
-		deleteFromDB();
-
-		string sql = str(boost::format("INSERT INTO Accounts (accountID,balance,sequence,owenerCount,transferRate,inflationDest,publicKey,requireDest,requireAuth) values ('%s',%d,%d,%d,%d,'%s','%s',%d,%d);")
+		string sql = str(boost::format("INSERT OR REPLACE INTO Accounts (accountID,balance,sequence,owenerCount,transferRate,inflationDest,publicKey,requireDest,requireAuth) values ('%s',%d,%d,%d,%d,'%s','%s',%d,%d);")
 			% mAccountID.base58Encode(RippleAddress::VER_ACCOUNT_ID)
 			% mBalance
 			% mSequence
@@ -72,7 +69,7 @@ namespace stellar
 
 		Database* db = getApp().getWorkingLedgerDB()->getDB();
 
-		if(!db->executeSQL(sql, true))
+		if(!db->executeSQL(sql, false))
 		{
 			WriteLog(lsWARNING, ripple::Ledger) << "SQL failed: " << sql;
 		}
@@ -92,7 +89,7 @@ namespace stellar
 
 		Database* db = getApp().getWorkingLedgerDB()->getDB();
 
-		if(!db->executeSQL(sql, true))
+		if(!db->executeSQL(sql, false))
 		{
 			WriteLog(lsWARNING, ripple::Ledger) << "SQL failed: " << sql;
 		}
@@ -104,7 +101,7 @@ namespace stellar
 
 		Database* db = getApp().getWorkingLedgerDB()->getDB();
 
-		if(!db->executeSQL(sql, true))
+		if(!db->executeSQL(sql, false))
 		{
 			WriteLog(lsWARNING, ripple::Ledger) << "SQL failed: " << sql;
 		}

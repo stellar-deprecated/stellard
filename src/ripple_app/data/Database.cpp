@@ -244,7 +244,7 @@ void Database::beginTransaction()
         sql = "SAVEPOINT L1;";
     }
 
-    if(!executeSQL(sql, true))
+    if(!executeSQL(sql, false))
     {
         throw std::runtime_error("Could not perform transaction");
     }
@@ -261,7 +261,7 @@ void Database::endTransaction(bool rollback)
         sql = rollback ? "ROLLBACK TO SAVEPOINT L1;" : "RELEASE SAVEPOINT L1";
     }
 
-    bool success = executeSQL(sql, true);
+    bool success = executeSQL(sql, false);
         
     if (!success)
     {

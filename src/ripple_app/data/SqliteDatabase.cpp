@@ -81,6 +81,10 @@ void SqliteDatabase::connect ()
         sqlite3_close (mConnection);
         assert ((rc != SQLITE_BUSY) && (rc != SQLITE_LOCKED));
     }
+    else
+    {
+        sqlite3_busy_timeout(mConnection, getConfig().DATABASE_TIMEOUTMS);
+    }
 }
 
 sqlite3* SqliteDatabase::getAuxConnection ()
@@ -166,11 +170,9 @@ bool SqliteDatabase::executeSQL (const char* sql, bool fail_ok)
 
         if (!fail_ok)
         {
-#ifdef BEAST_DEBUG
             WriteLog (lsWARNING, SqliteDatabase) << "SQL Serror:" << mHost << ": " << rc;
             WriteLog (lsWARNING, SqliteDatabase) << "Statement: " << sql;
             WriteLog (lsWARNING, SqliteDatabase) << "Error: " << sqlite3_errmsg (mConnection);
-#endif
         }
 
         endIterRows ();

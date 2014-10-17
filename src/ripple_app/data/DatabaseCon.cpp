@@ -34,7 +34,7 @@ DatabaseCon::DatabaseCon (const std::string& strName, const char* initStrings[],
     mDatabase->connect ();
 
     for (int i = 0; i < initCount; ++i)
-        mDatabase->executeSQL (initStrings[i], true);
+        mDatabase->executeSQL (initStrings[i], false);
 }
 
 DatabaseCon::~DatabaseCon ()

@@ -131,7 +131,7 @@ Error session::open(String fileName, std::string options)
 
     int mode = 0;
     int flags = 0;
-    int timeout = 0;
+    int timeout = 1000; // in ms
 
     std::stringstream ssconn(options);
 

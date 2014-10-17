@@ -103,10 +103,10 @@ namespace stellar {
 		sql.append("';");
 
 		{
-			DeprecatedScopedLock sl(getApp().getLedgerDB()->getDBLock());
-			Database* db = getApp().getLedgerDB()->getDB();
+			DeprecatedScopedLock sl(getApp().getWorkingLedgerDB()->getDBLock());
+			Database* db = getApp().getWorkingLedgerDB()->getDB();
 
-			if (!db->executeSQL(sql, true) || !db->startIterRows())
+			if (!db->executeSQL(sql, false) || !db->startIterRows())
 				return false;
 
 			mCurrency = db->getBigInt("currency");
@@ -125,10 +125,7 @@ namespace stellar {
 
 	void TrustLine::insertIntoDB()
 	{
-		//make sure it isn't already in DB
-		deleteFromDB();
-
-		string sql = str(boost::format("INSERT INTO TrustLines (trustIndex, lowAccount,highAccount,lowLimit,highLimit,currency,balance,lowAuthSet,highAuthSet) values (x'%s','%s','%s','%s','%s','%s','%s',%d,%d);")
+		string sql = str(boost::format("INSERT OR REPLACE INTO TrustLines (trustIndex, lowAccount,highAccount,lowLimit,highLimit,currency,balance,lowAuthSet,highAuthSet) values (x'%s','%s','%s','%s','%s','%s','%s',%d,%d);")
 			% to_string(getIndex())
 			% mLowAccount.base58Encode(RippleAddress::VER_ACCOUNT_ID)
 			% mHighAccount.base58Encode(RippleAddress::VER_ACCOUNT_ID)
@@ -140,10 +137,10 @@ namespace stellar {
 			% mHighAuthSet);
 
 		{
-			DeprecatedScopedLock sl(getApp().getLedgerDB()->getDBLock());
-			Database* db = getApp().getLedgerDB()->getDB();
+			DeprecatedScopedLock sl(getApp().getWorkingLedgerDB()->getDBLock());
+			Database* db = getApp().getWorkingLedgerDB()->getDB();
 
-			if(!db->executeSQL(sql, true))
+			if(!db->executeSQL(sql, false))
 			{
 				WriteLog(lsWARNING, ripple::Ledger) << "SQL failed: " << sql;
 			}
@@ -161,10 +158,10 @@ namespace stellar {
 			% to_string(getIndex()));
 
 		{
-			DeprecatedScopedLock sl(getApp().getLedgerDB()->getDBLock());
-			Database* db = getApp().getLedgerDB()->getDB();
+			DeprecatedScopedLock sl(getApp().getWorkingLedgerDB()->getDBLock());
+			Database* db = getApp().getWorkingLedgerDB()->getDB();
 
-			if(!db->executeSQL(sql, true))
+			if(!db->executeSQL(sql, false))
 			{
 				WriteLog(lsWARNING, ripple::Ledger) << "SQL failed: " << sql;
 			}
@@ -178,10 +175,10 @@ namespace stellar {
 		sql.append("';");
 
 		{
-			DeprecatedScopedLock sl(getApp().getLedgerDB()->getDBLock());
-			Database* db = getApp().getLedgerDB()->getDB();
+			DeprecatedScopedLock sl(getApp().getWorkingLedgerDB()->getDBLock());
+			Database* db = getApp().getWorkingLedgerDB()->getDB();
 
-			if(!db->executeSQL(sql, true))
+			if(!db->executeSQL(sql, false))
 			{
 				WriteLog(lsWARNING, ripple::Ledger) << "SQL failed: " << sql;
 			}

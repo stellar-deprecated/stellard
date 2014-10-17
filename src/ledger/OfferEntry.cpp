@@ -23,7 +23,7 @@ namespace stellar
 			takerGetsAmount BIGINT UNSIGNED,	\
 			takerGetsIssuer CHARACTER(3),		\
 			expiration INT UNSIGNED,			\
-			BOOL passive						\
+			passive BOOL						\
 	);";
 
 	OfferEntry::OfferEntry(SLE::pointer sle)
@@ -56,14 +56,10 @@ namespace stellar
 
 	void OfferEntry::insertIntoDB()
 	{
-		//make sure it isn't already in DB
-		deleteFromDB();
-
-		
 		uint160 paysIssuer = mTakerPays.getIssuer();
 		uint160 getsIssuer = mTakerGets.getIssuer();
 
-		string sql = str(boost::format("INSERT INTO Offers (accountID,sequence,takerPaysCurrency,takerPaysAmount,takerPaysIssuer,takerGetsCurrency,takerGetsAmount,takerGetsIssuer,expiration,passive) values ('%s',%d,x'%s',%d,'%s',x'%s',%d,'%s',%d,%d);")
+		string sql = str(boost::format("INSERT OR REPLACE INTO Offers (accountID,sequence,takerPaysCurrency,takerPaysAmount,takerPaysIssuer,takerGetsCurrency,takerGetsAmount,takerGetsIssuer,expiration,passive) values ('%s',%d,x'%s',%d,'%s',x'%s',%d,'%s',%d,%d);")
 			% mAccountID.base58Encode(RippleAddress::VER_ACCOUNT_ID)
 			% mSequence
 			% to_string(mTakerPays.getCurrency())
@@ -76,10 +72,10 @@ namespace stellar
 			% mPassive);
 
 		{
-			DeprecatedScopedLock sl(getApp().getLedgerDB()->getDBLock());
-			Database* db = getApp().getLedgerDB()->getDB();
+			DeprecatedScopedLock sl(getApp().getWorkingLedgerDB()->getDBLock());
+			Database* db = getApp().getWorkingLedgerDB()->getDB();
 
-			if(!db->executeSQL(sql, true))
+			if(!db->executeSQL(sql, false))
 			{
 				WriteLog(lsWARNING, ripple::Ledger) << "SQL failed: " << sql;
 			}
@@ -103,10 +99,10 @@ namespace stellar
 			% mSequence);
 
 		{
-			DeprecatedScopedLock sl(getApp().getLedgerDB()->getDBLock());
-			Database* db = getApp().getLedgerDB()->getDB();
+			DeprecatedScopedLock sl(getApp().getWorkingLedgerDB()->getDBLock());
+			Database* db = getApp().getWorkingLedgerDB()->getDB();
 
-			if(!db->executeSQL(sql, true))
+			if(!db->executeSQL(sql, false))
 			{
 				WriteLog(lsWARNING, ripple::Ledger) << "SQL failed: " << sql;
 			}
@@ -119,10 +115,10 @@ namespace stellar
 			% mSequence);
 
 		{
-			DeprecatedScopedLock sl(getApp().getLedgerDB()->getDBLock());
-			Database* db = getApp().getLedgerDB()->getDB();
+			DeprecatedScopedLock sl(getApp().getWorkingLedgerDB()->getDBLock());
+			Database* db = getApp().getWorkingLedgerDB()->getDB();
 
-			if(!db->executeSQL(sql, true))
+			if(!db->executeSQL(sql, false))
 			{
 				WriteLog(lsWARNING, ripple::Ledger) << "SQL failed: " << sql;
 			}
