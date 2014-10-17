@@ -1011,6 +1011,9 @@ private:
             {
                 Ledger::pointer currentLedger = getApp().getLedgerMaster().getCurrentLedger();
 
+#if 0
+                // nicolas: tx was in consensus set, logic in applytransactions should take care of issues with few dependencies
+                // if there are more issues, we just drop the tx
                 CanonicalTXSet::iterator it = failedTransactions.begin();
 
                 if (it != failedTransactions.end())
@@ -1022,6 +1025,13 @@ private:
                         m_localTX.push_back(currentLedger->getLedgerSeq(), it->second);
                     }
                 }
+#else
+                mFailedTransactions.clear();
+                BOOST_FOREACH(auto tx, failedTransactions)
+                {
+                    mFailedTransactions.push_back(tx.second->getTransactionID());
+                }
+#endif
 
                 WriteLog (lsDEBUG, LedgerConsensus) << "Propagating changes from current open ledger";
 
@@ -1054,7 +1064,8 @@ private:
                             = boost::make_shared<SerializedTransaction> 
                             (boost::ref (sit));
 
-                        if (!m_localTX.contains(txn->getTransactionID()))
+                        if (!m_localTX.contains(txn->getTransactionID()) &&
+                            failedTransactions.find(txn) == failedTransactions.end()) // don't bother with failed transactions
                         {
                             WriteLog (lsDEBUG, LedgerConsensus) 
                                 << "Test applying disputed transaction that did"
@@ -1669,6 +1680,11 @@ private:
             }
         }
 
+        BOOST_FOREACH(auto &txid, mFailedTransactions)
+        {
+            if (ourPosition->hasItem(txid))
+                ourPosition->delItem(txid);
+        }
 
         int neededWeight;
 
@@ -1989,6 +2005,9 @@ private:
     // Disputed transactions
     ripple::unordered_map<uint256, DisputedTx::pointer> mDisputes;
     boost::unordered_set<uint256> mCompares;
+
+    // known bad transactions
+    std::vector<uint256> mFailedTransactions;
 
     // Close time estimates
     std::map<std::uint32_t, int> mCloseTimes;
