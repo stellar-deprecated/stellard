@@ -19,8 +19,9 @@ namespace stellar
 		publicKey		CHARACTER(56),		\
 		requireDest		BOOL,				\
 		requireAuth		BOOL				\
-	);";
-
+	); \
+    CREATE INDEX IF NOT EXISTS inflationDest ON Accounts ( InflationDest );\
+    CREATE INDEX IF NOT EXISTS Balance on Accounts ( balance );";
 	
 	AccountEntry::AccountEntry(SLE::pointer sle)
 	{

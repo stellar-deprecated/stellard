@@ -108,7 +108,8 @@ namespace ripple {
 
 		WriteLog(lsDEBUG, InflationTransactor) << "minBalance: " << minBalance;
 
-		string sql("SELECT sum(balance) as votes,inflationDest from Accounts where inflationDest is not NULL AND inflationDest is NOT 'ggggggggggggggggggggghoLvTs' group by inflationDest order by votes desc limit 50");
+        // limit to large accounts for now, will need different logic to perform well
+		string sql("SELECT sum(balance) as votes,inflationDest from Accounts where inflationDest is not NULL AND inflationDest is NOT 'ggggggggggggggggggggghoLvTs' AND balance > 1000000000 group by inflationDest order by votes desc limit 50");
 		
 		vector< pair<uint160, boost::multiprecision::cpp_int> > winners;
 
