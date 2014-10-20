@@ -21,6 +21,7 @@
 #define RIPPLE_SQLITEDATABASE_H_INCLUDED
 
 #include "../../beast/beast/threads/Thread.h"
+#include "../../beast/modules/beast_sqlite/beast_sqlite.h"
 
 namespace ripple {
 

@@ -4,15 +4,49 @@
 #include <boost/format.hpp>
 #include "ripple_basics/log/Log.h"
 
+#include "ripple_basics/utility/platformMacros.h"
+
+#include "ripple_app/data/SqliteDatabase.h"
+
+#include "LedgerEntry.h"
+
 using namespace ripple;
 
 namespace stellar
 {
+
+    vector<const char*> LedgerDatabase::getSQLInit(){ 
+        vector<const char*> res;
+
+        const char* base[] =
+        {
+            "PRAGMA synchronous=NORMAL;",
+            "PRAGMA journal_mode=WAL;",
+            "PRAGMA journal_size_limit=1582080;",
+    
+            "BEGIN TRANSACTION;",
+
+            "CREATE TABLE IF NOT EXISTS StoreState (        \
+                    StateName   CHARACTER(32) PRIMARY KEY,  \
+                    State       BLOB                        \
+            );",
+        };
+
+        res.insert(res.end(), &base[0], &base[NUMBER(base)]);
+
+        LedgerEntry::appendSQLInit(res);
+
+        res.push_back("END TRANSACTION;");
+
+        return res;
+    }
+
+
     LedgerDatabase::LedgerDatabase(ripple::DatabaseCon *dbCon) : mDBCon(dbCon) {
     }
 
     const char *LedgerDatabase::getStoreStateName(StoreStateName n) {
-        static const char *mapping[kLastEntry] = { "lastClosedLedger" };
+        static const char *mapping[kLastEntry] = { "lastClosedLedger", "lastClosedLedgerContent" };
         if (n < 0 || n >= kLastEntry) {
             throw out_of_range("unknown entry");
         }
@@ -24,20 +58,31 @@ namespace stellar
         string sql = str(boost::format("SELECT State FROM StoreState WHERE StateName = '%s';")
             % stateName
             );
-        if (mDBCon->getDB()->executeSQL(sql))
+        SqliteStatement stmt(mDBCon->getDB()->getSqliteDB(), sql);
+
+        int iRet = stmt.step();
+        if (stmt.isDone(iRet) || !stmt.isRow(iRet)) {
+            res = "";
+        }
+        else
         {
-            mDBCon->getDB()->getStr(0, res);
+            Blob b = stmt.getBlob(0);
+            res.assign(reinterpret_cast<char*>(b.data()), b.size());
         }
         return res;
     }
 
-    void LedgerDatabase::setState(const char *stateName, const char *value) {
-        string sql = str(boost::format("INSERT OR REPLACE INTO StoreState (StateName, State) VALUES ('%s','%s');")
+    void LedgerDatabase::setState(const char *stateName, const string &value) {
+        string sql = str(boost::format("INSERT OR REPLACE INTO StoreState (StateName, State) VALUES ('%s', ? );")
             % stateName
-            % value
             );
-        if (!mDBCon->getDB()->executeSQL(sql))
-        {
+
+        SqliteStatement stmt(mDBCon->getDB()->getSqliteDB(), sql);
+
+        stmt.bindStatic (1, value.data(), value.size());
+
+        int iRet = stmt.step();
+        if (!stmt.isDone(iRet)) {
             WriteLog(ripple::lsWARNING, ripple::Ledger) << "SQL failed: " << sql;
             throw std::runtime_error("could not update state in database");
         }

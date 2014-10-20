@@ -9,20 +9,25 @@
 namespace stellar
 {
 
-    const char *AccountEntry::kSQLCreateStatement = 	"CREATE TABLE IF NOT EXISTS Accounts (						\
-		accountID		CHARACTER(35) PRIMARY KEY,	\
-		balance			BIGINT UNSIGNED,			\
-		sequence		INT UNSIGNED,				\
-		owenerCount		INT UNSIGNED,			\
-		transferRate	INT UNSIGNED,		\
-		inflationDest	CHARACTER(35),		\
-		publicKey		CHARACTER(56),		\
-		requireDest		BOOL,				\
-		requireAuth		BOOL				\
-	); \
-    CREATE INDEX IF NOT EXISTS inflationDest ON Accounts ( InflationDest );\
-    CREATE INDEX IF NOT EXISTS Balance on Accounts ( balance );";
-	
+    void AccountEntry::appendSQLInit(vector<const char*> &init)
+    {
+        init.push_back("CREATE TABLE IF NOT EXISTS Accounts (						\
+		    accountID		CHARACTER(35) PRIMARY KEY,	\
+		    balance			BIGINT UNSIGNED,			\
+		    sequence		INT UNSIGNED,				\
+		    owenerCount		INT UNSIGNED,			\
+		    transferRate	INT UNSIGNED,		\
+		    inflationDest	CHARACTER(35),		\
+		    publicKey		CHARACTER(56),		\
+		    requireDest		BOOL,				\
+		    requireAuth		BOOL				\
+	    ); ");
+
+        init.push_back("CREATE INDEX IF NOT EXISTS inflationDest ON Accounts ( InflationDest );");
+
+        init.push_back("CREATE INDEX IF NOT EXISTS Balance on Accounts ( balance );");
+    }
+
 	AccountEntry::AccountEntry(SLE::pointer sle)
 	{
 		mAccountID=sle->getFieldAccount160(sfAccount);
@@ -133,10 +138,6 @@ namespace stellar
         if (!db.getDBCon()->getDB()->executeSQL("DROP TABLE IF EXISTS Accounts;"))
 		{
             throw std::runtime_error("Could not drop Account data");
-		}
-        if (!db.getDBCon()->getDB()->executeSQL(kSQLCreateStatement))
-        {
-            throw std::runtime_error("Could not recreate Account data");
 		}
     }
 }

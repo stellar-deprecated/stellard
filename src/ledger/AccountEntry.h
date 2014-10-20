@@ -42,7 +42,7 @@ namespace stellar
 		TER tryToIncreaseOwnerCount();
 
         static void dropAll(LedgerDatabase &db);
-        static const char *kSQLCreateStatement;
+        static void appendSQLInit(vector<const char*> &init);
 	};
 }
 

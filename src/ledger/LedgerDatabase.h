@@ -1,6 +1,7 @@
 #ifndef __LEDGERDATABASE__
 #define __LEDGERDATABASE__
 
+#include <string>
 #include "ripple_app/ledger/Ledger.h"
 #include "ripple_app/data/DatabaseCon.h"
 
@@ -15,11 +16,12 @@ namespace stellar
         // state store
         enum StoreStateName {
             kLastClosedLedger = 0,
+            kLastClosedLedgerContent,
             kLastEntry };
 
         const char *getStoreStateName(StoreStateName n);
         string getState(const char *stateName);
-        void setState(const char *stateName, const char *value);
+        void setState(const char *stateName, const string &value);
 
         // transaction helpers
         void beginTransaction();
@@ -28,6 +30,7 @@ namespace stellar
 
         ripple::DatabaseCon *getDBCon() { return mDBCon; }
 
+        static vector<const char*> getSQLInit();
     private:
         ripple::DatabaseCon *mDBCon;
     };

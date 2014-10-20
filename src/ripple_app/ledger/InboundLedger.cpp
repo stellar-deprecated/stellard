@@ -135,8 +135,7 @@ bool InboundLedger::tryLocal ()
         }
         else
         {
-            mLedger = boost::make_shared<Ledger> (
-                strCopy (node->getData ()), true);
+            mLedger = boost::make_shared<Ledger> (node->getData (), true);
         }
 
         if (mLedger->getHash () != mHash)

@@ -42,6 +42,7 @@ validated ledger
 */
 
 #include <map>
+#include <vector>
 
 namespace ripple {
 
@@ -176,7 +177,8 @@ public:
 
     void sweep (Ledger::ref validLedger) override
     {
-        mSweepLedger = validLedger;
+        std::lock_guard <std::mutex> lock (m_lock);
+        mSweepLedgers.push_back(validLedger);
     }
 
     // Remove transactions that have either been accepted into a fully-validated
@@ -184,17 +186,17 @@ public:
     void doSweep ()
     {
         std::lock_guard <std::mutex> lock (m_lock);
-        if (mSweepLedger)
+        for (auto ledger = mSweepLedgers.begin(); ledger != mSweepLedgers.end(); ledger++)
         {
             for (auto it = m_txns.begin (); it != m_txns.end (); )
             {
-                if (can_remove (it->second, mSweepLedger))
+                if (can_remove (it->second, *ledger))
                     it = m_txns.erase (it);
                 else
                     ++it;
             }
-            mSweepLedger.reset();
         }
+        mSweepLedgers.clear();
     }
 
     std::size_t size () override
@@ -212,7 +214,7 @@ public:
 
 private:
 
-    Ledger::pointer mSweepLedger;
+    vector<Ledger::pointer> mSweepLedgers;
     std::mutex m_lock;
     std::map<uint256, LocalTx> m_txns;
 };

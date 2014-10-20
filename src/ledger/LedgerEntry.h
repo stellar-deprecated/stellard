@@ -26,7 +26,7 @@ namespace stellar
 
 		virtual void calculateIndex() = 0;
 	public:
-		typedef boost::shared_ptr<LedgerEntry> pointer;
+		typedef std::shared_ptr<LedgerEntry> pointer;
 
 		// calculate the index if you don't have it already
 		uint256 getIndex();
@@ -41,7 +41,10 @@ namespace stellar
 		void storeChange();
 		void storeAdd();
 
+        virtual void setFromCurrentRow(Database *db);
+
         static void dropAll(LedgerDatabase &db); // deletes all data from DB
+        static void appendSQLInit(vector<const char*> &init);
 	};
 }
 

@@ -28,9 +28,13 @@ namespace ripple {
 //         what purpose it is really trying to serve and do it better.
 class DatabaseCon : beast::LeakChecked <DatabaseCon>
 {
+    void connectHelper(const std::string& name);
 public:
     DatabaseCon (const std::string& name, const char* initString[], int countInit);
+    DatabaseCon (const std::string& name, const std::vector<const char *> &init);
+
     ~DatabaseCon ();
+
     Database* getDB ()
     {
         return mDatabase;

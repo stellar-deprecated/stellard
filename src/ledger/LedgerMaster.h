@@ -1,3 +1,5 @@
+#ifndef __STELLAR_LEDGERMASTER_H
+#define __STELLAR_LEDGERMASTER_H
 
 #include "Ledger.h"
 #include "ripple_app/ledger/Ledger.h"  // I know I know. It is temporary
@@ -24,10 +26,9 @@ namespace stellar
 
     public:
 
-        typedef boost::shared_ptr<LedgerMaster>           pointer;
-        typedef const boost::shared_ptr<LedgerMaster>&    ref;
+        typedef std::shared_ptr<LedgerMaster>           pointer;
 
-		LedgerMaster();
+        LedgerMaster();
 
 		// called on startup to get the last CLF we knew about
 		void loadLastKnownCLF();
@@ -35,7 +36,7 @@ namespace stellar
         // legacy interop
 		
         // establishes that our internal representation is in sync with passed ledger
-        bool ensureSync(ripple::Ledger::pointer lastClosedLedger);
+        bool ensureSync(ripple::Ledger::pointer lastClosedLedger, bool checkLocal);
 
         // called before starting to make changes to the db
         void beginClosingLedger();
@@ -49,6 +50,8 @@ namespace stellar
 		void closeLedger(TransactionSet::pointer txSet);
 		CanonicalLedgerForm::pointer getCurrentCLF(){ return(mCurrentCLF); }
 
+        LedgerDatabase &getLedgerDatabase() { return mCurrentDB; }
+
     private:
 
         // helper methods: returns new value of CLF in database 
@@ -57,6 +60,8 @@ namespace stellar
 		CanonicalLedgerForm::pointer catchUp(CanonicalLedgerForm::pointer currentCLF);
         CanonicalLedgerForm::pointer importLedgerState(uint256 ledgerHash);
         
+        void commitTransaction(CanonicalLedgerForm::pointer newLCL);
+
         void updateDBFromLedger(CanonicalLedgerForm::pointer ledger);
         
         void setLastClosedLedger(CanonicalLedgerForm::pointer ledger);
@@ -68,6 +73,4 @@ namespace stellar
 	extern LedgerMaster::pointer gLedgerMaster;
 }
 
-
-
-
+#endif

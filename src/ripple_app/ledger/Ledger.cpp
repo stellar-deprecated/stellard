@@ -101,22 +101,8 @@ Ledger::Ledger (uint256 const& parentHash,
         std::ref (getApp().getFullBelowCache())))
 {
     updateHash ();
-    loaded = true;
 
-    if (mTransHash.isNonZero () && !mTransactionMap->fetchRoot (mTransHash, nullptr))
-    {
-        loaded = false;
-        WriteLog (lsWARNING, Ledger) << "Don't have TX root for ledger";
-    }
-
-    if (mAccountHash.isNonZero () && !mAccountStateMap->fetchRoot (mAccountHash, nullptr))
-    {
-        loaded = false;
-        WriteLog (lsWARNING, Ledger) << "Don't have AS root for ledger";
-    }
-
-    mTransactionMap->setImmutable ();
-    mAccountStateMap->setImmutable ();
+    loaded = loadMaps();
 
     initializeFees ();
 }
@@ -215,6 +201,7 @@ Ledger::Ledger (const std::string& rawLedger, bool hasPrefix)
 {
     Serializer s (rawLedger);
     setRaw (s, hasPrefix);
+
     initializeFees ();
 }
 
@@ -229,6 +216,28 @@ Ledger::~Ledger ()
     {
         logTimedDestroy <Ledger> (mAccountStateMap, "mAccountStateMap");
     }
+}
+
+bool Ledger::loadMaps()
+{
+    bool loaded = true;
+
+    if (mTransHash.isNonZero () && !mTransactionMap->fetchRoot (mTransHash, nullptr))
+    {
+        loaded = false;
+        WriteLog (lsWARNING, Ledger) << "Don't have TX root for ledger";
+    }
+
+    if (mAccountHash.isNonZero () && !mAccountStateMap->fetchRoot (mAccountHash, nullptr))
+    {
+        loaded = false;
+        WriteLog (lsWARNING, Ledger) << "Don't have AS root for ledger";
+    }
+
+    mTransactionMap->setImmutable ();
+    mAccountStateMap->setImmutable ();
+
+    return loaded;
 }
 
 void Ledger::setImmutable ()
@@ -601,10 +610,6 @@ bool Ledger::saveValidatedLedger (bool current)
     {
         WriteLog (lsWARNING, Ledger) << "An accepted ledger was missing nodes";
         getApp().getLedgerMaster().failedSave(mLedgerSeq, mHash);
-        { // Clients can now trust the database for information about this ledger sequence
-            StaticScopedLockType sl (sPendingSaveLock);
-            sPendingSaves.erase(getLedgerSeq());
-        }
         return false;
     }
 
@@ -685,11 +690,6 @@ bool Ledger::saveValidatedLedger (bool current)
 			to_string(mAccountHash) % to_string(mTransHash)));
     }
 
-    if (res)
-    { // Clients can now trust the database for information about this ledger sequence
-        StaticScopedLockType sl (sPendingSaveLock);
-        sPendingSaves.erase(getLedgerSeq());
-    }
     return res;
 }
 
@@ -1748,7 +1748,7 @@ bool Ledger::walkLedger ()
     std::vector <SHAMapMissingNode> missingNodes1;
     std::vector <SHAMapMissingNode> missingNodes2;
 
-    mAccountStateMap->walkMap (missingNodes1, 32);
+    mAccountStateMap->walkMap (missingNodes1, 1);
 
     if (ShouldLog (lsINFO, Ledger) && !missingNodes1.empty ())
     {
@@ -1756,7 +1756,7 @@ bool Ledger::walkLedger ()
         Log (lsINFO) << "First: " << missingNodes1[0];
     }
 
-    mTransactionMap->walkMap (missingNodes2, 32);
+    mTransactionMap->walkMap (missingNodes2, 1);
 
     if (ShouldLog (lsINFO, Ledger) && !missingNodes2.empty ())
     {
@@ -1947,22 +1947,13 @@ bool Ledger::pendSaveValidated (bool isSynchronous, bool isCurrent)
         }
     }
 
-    if (isSynchronous)
-    {
-        return saveValidatedLedger(isCurrent);
-    }
-    else if (isCurrent)
-    {
-        getApp().getJobQueue ().addJob (jtPUBLEDGER, "Ledger::pendSave",
-            BIND_TYPE (&Ledger::saveValidatedLedgerAsync, shared_from_this (), P_1, isCurrent));
-    }
-    else
-    {
-        getApp().getJobQueue ().addJob (jtPUBOLDLEDGER, "Ledger::pendOldSave",
-            BIND_TYPE (&Ledger::saveValidatedLedgerAsync, shared_from_this (), P_1, isCurrent));
-    }
+    bool res = saveValidatedLedger(isCurrent);
 
-    return true;
+    { // Clients can now trust the database for information about this ledger sequence
+        StaticScopedLockType sl (sPendingSaveLock);
+        sPendingSaves.erase(getLedgerSeq());
+    }
+    return res;
 }
 
 std::set<std::uint32_t> Ledger::getPendingSaves()

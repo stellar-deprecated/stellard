@@ -22,6 +22,9 @@
 
 #include <tuple>
 #include "ripple_net/rpc/InfoSub.h"
+#include "ripple_app/ledger/SerializedValidation.h"
+#include "ripple_app/ledger/LedgerProposal.h"
+#include "ripple/proto/ripple.pb.h"
 
 namespace ripple {
 

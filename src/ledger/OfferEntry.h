@@ -22,11 +22,14 @@ namespace stellar
 		uint32 mExpiration;
 
 
- 		OfferEntry();
-		OfferEntry(SLE::pointer sle);
+        OfferEntry();
+        OfferEntry(SLE::pointer sle);
+        OfferEntry(Database *db);
+
+        void setFromCurrentRow(Database *db);
 
         static void dropAll(LedgerDatabase &db);
-        static const char *kSQLCreateStatement;
+        static void appendSQLInit(vector<const char*> &init);
 	};
 }
 

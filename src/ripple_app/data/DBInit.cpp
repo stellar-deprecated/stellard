@@ -92,11 +92,7 @@ const char* LedgerDBInit[] =
 	);",
     "CREATE INDEX IF NOT EXISTS SeqLedger ON Ledgers(LedgerSeq);",
 
-    stellar::AccountEntry::kSQLCreateStatement,
-
-	stellar::OfferEntry::kSQLCreateStatement,
-
-	stellar::TrustLine::kSQLCreateStatement,
+    
 
     "CREATE TABLE IF NOT EXISTS Validations	(					\
 		LedgerHash	CHARACTER(64),					\
@@ -109,10 +105,6 @@ const char* LedgerDBInit[] =
     "CREATE INDEX IF NOT EXISTS ValidationsByTime ON				\
 		Validations(SignTime);",
 
-    "CREATE TABLE IF NOT EXISTS StoreState (                      \
-            StateName   CHARACTER(32) PRIMARY KEY,  \
-            State       CHARACTER(32)               \
-    );",
 
     "END TRANSACTION;"
 };

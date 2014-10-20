@@ -18,10 +18,14 @@ namespace stellar
 	class CanonicalLedgerForm
 	{
 	public:
-		typedef boost::shared_ptr<CanonicalLedgerForm> pointer;
+		typedef std::shared_ptr<CanonicalLedgerForm> pointer;
 
-		// load up our last known version - hash passed in is used for verification purpose
+        // load/save methods: hash passed in is used for verification purpose
+		// load up our last known version 
 		virtual bool load(uint256 ledgerHash) = 0;
+        // save last known version
+        virtual void save(uint256 ledgerHash) = 0;
+
 
         // ledger state manipulation
 		virtual void addEntry(uint256& newHash, SLE::pointer newEntry)=0;

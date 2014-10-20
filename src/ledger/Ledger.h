@@ -34,7 +34,7 @@ namespace stellar
 		std::uint64_t      mBaseFee;                           // Ripple cost of the reference transaction
 
 	public:
-		typedef boost::shared_ptr<Ledger>           pointer;
+		typedef std::shared_ptr<Ledger>           pointer;
 
 		Ledger();
 

@@ -21,6 +21,7 @@
 #define RIPPLE_RESOURCE_CONSUMER_H_INCLUDED
 
 #include "Disposition.h"
+#include "Charge.h"
 
 namespace ripple {
 namespace Resource {

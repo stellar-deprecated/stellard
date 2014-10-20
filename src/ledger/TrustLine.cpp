@@ -17,24 +17,24 @@ using namespace std;
 
 namespace stellar {
 
-    // SANITY -- code below does not work
-    // need to rethink the way we store those lines:
-    //     balance, low and high limit share the same currency
-    //     should save/load the currency properly
-    //     currency's issuer should be also first classed if we're going this direction
+    void TrustLine::appendSQLInit(vector<const char*> &init)
+    {
+        init.push_back("CREATE TABLE IF NOT EXISTS TrustLines ( \
+            trustIndex CHARACTER(32),       \
+            lowAccount	CHARACTER(35),      \
+            highAccount CHARACTER(35),      \
+            currency CHARACTER(40),         \
+            lowLimit CHARACTER(39),         \
+            highLimit CHARACTER(39),        \
+            balance CHARACTER(39),          \
+            lowAuthSet BOOL,                \
+            highAuthSet BOOL,               \
+            PRIMARY KEY ( trustIndex )      \
+	    );");
 
-
-    const char *TrustLine::kSQLCreateStatement = "CREATE TABLE IF NOT EXISTS TrustLines (					\
-		trustIndex Blob(32),					\
-		lowAccount	CHARACTER(35),				\
-		highAccount CHARACTER(35),				\
-		currency Blob(20),						\
-		lowLimit CHARACTER(100),				\
-		highLimit CHARACTER(100),				\
-		balance CHARACTER(100),					\
-		lowAuthSet BOOL,						\
-		highAuthSet BOOL						\
-	); ";
+        init.push_back("CREATE INDEX IF NOT EXISTS TrustLinesIndex1 ON TrustLines ( lowAccount );");
+        init.push_back("CREATE INDEX IF NOT EXISTS TrustLinesIndex2 ON TrustLines ( highAccount );");
+    }
 
 	TrustLine::TrustLine()
 	{
@@ -52,6 +52,7 @@ namespace stellar {
 		mHighAccount = mHighLimit.getIssuer();
 		mCurrency = mLowLimit.getCurrency();
 
+        assert(mHighLimit.getCurrency() == mCurrency);
 
 		uint32 flags = sle->getFlags();
 
@@ -95,10 +96,35 @@ namespace stellar {
 		return(tesSUCCESS);
 	}
 
+    void TrustLine::setFromCurrentRow(Database *db)
+    {
+        std::string currency, amount;
+
+        mLowAccount = db->getAccountID("lowAccount");
+        mHighAccount = db->getAccountID("highAccount");
+
+
+        db->getStr("currency", currency);
+        STAmount::currencyFromString(mCurrency, currency);
+
+        db->getStr("balance", amount);
+        mBalance.setFullValue(amount, currency);
+
+
+        db->getStr("lowLimit", amount);
+        mLowLimit.setFullValue(amount, currency);
+
+        db->getStr("highLimit", amount);
+        mHighLimit.setFullValue(amount, currency);
+
+        mLowAuthSet = db->getBool("lowAuthSet");
+        mHighAuthSet = db->getBool("highAuthSet");
+    }
+
 	bool TrustLine::loadFromDB(const uint256& index)
 	{
 		mIndex = index;
-		std::string sql = "SELECT * FROM TrustLines WHERE trustIndex=x'";
+		std::string sql = "SELECT * FROM TrustLines WHERE trustIndex='";
 		sql.append(to_string(index));
 		sql.append("';");
 
@@ -109,15 +135,7 @@ namespace stellar {
 			if (!db->executeSQL(sql, false) || !db->startIterRows())
 				return false;
 
-			mCurrency = db->getBigInt("currency");
-			//mBalance = db->getBigInt("balance");
-			mLowAccount = db->getAccountID("lowAccount");
-			mHighAccount = db->getAccountID("highAccount");
-
-			//mLowLimit = db->getBigInt("lowLimit");
-			//mHighLimit = db->getBigInt("highLimit");
-			mLowAuthSet = db->getBool("lowAuthSet");
-			mHighAuthSet = db->getBool("highAuthSet");
+            setFromCurrentRow(db);
 		}
 
 		return(true);
@@ -125,13 +143,13 @@ namespace stellar {
 
 	void TrustLine::insertIntoDB()
 	{
-		string sql = str(boost::format("INSERT OR REPLACE INTO TrustLines (trustIndex, lowAccount,highAccount,lowLimit,highLimit,currency,balance,lowAuthSet,highAuthSet) values (x'%s','%s','%s','%s','%s','%s','%s',%d,%d);")
+		string sql = str(boost::format("INSERT OR REPLACE INTO TrustLines (trustIndex, lowAccount,highAccount,currency,lowLimit,highLimit,balance,lowAuthSet,highAuthSet) values ('%s','%s','%s','%s','%s','%s','%s',%d,%d);")
 			% to_string(getIndex())
 			% mLowAccount.base58Encode(RippleAddress::VER_ACCOUNT_ID)
 			% mHighAccount.base58Encode(RippleAddress::VER_ACCOUNT_ID)
+            % STAmount::createHumanCurrency(mCurrency)
             % mLowLimit.getText()
 			% mHighLimit.getText()
-            % mCurrency.base58Encode(RippleAddress::VER_ACCOUNT_ID)
 			% mBalance.getText()
 			% mLowAuthSet
 			% mHighAuthSet);
@@ -149,7 +167,7 @@ namespace stellar {
 
 	void TrustLine::updateInDB()
 	{
-		string sql = str(boost::format("UPDATE TrustLines set lowLimit='%s' ,highLimit='%s' ,balance='%s' ,lowAuthSet=%d ,highAuthSet=%d where trustIndex=x'%s';")
+		string sql = str(boost::format("UPDATE TrustLines set lowLimit='%s' ,highLimit='%s' ,balance='%s' ,lowAuthSet=%d ,highAuthSet=%d where trustIndex='%s';")
             % mLowLimit.getText()
             % mHighLimit.getText()
             % mBalance.getText()
@@ -170,7 +188,7 @@ namespace stellar {
 
 	void TrustLine::deleteFromDB()
 	{
-		std::string sql = "DELETE FROM TrustLines where trustIndex=x'";
+		std::string sql = "DELETE FROM TrustLines where trustIndex='";
 		sql.append(to_string(getIndex()));
 		sql.append("';");
 
@@ -190,10 +208,6 @@ namespace stellar {
         if (!db.getDBCon()->getDB()->executeSQL("DROP TABLE IF EXISTS TrustLines;"))
 		{
             throw std::runtime_error("Could not drop TrustLines data");
-		}
-        if (!db.getDBCon()->getDB()->executeSQL(kSQLCreateStatement))
-        {
-            throw std::runtime_error("Could not recreate Account data");
 		}
     }
 }

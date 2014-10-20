@@ -893,7 +893,7 @@ private:
 
             CanonicalTXSet failedTransactions (set->getHash ());
 
-            if (!stellar::gLedgerMaster->ensureSync(mPreviousLedger))
+            if (!stellar::gLedgerMaster->ensureSync(mPreviousLedger, true))
             {
                 WriteLog(lsDEBUG, LedgerConsensus) << "Cannot perform transactions, database not in sync";
                 return;

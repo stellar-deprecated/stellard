@@ -18,7 +18,7 @@ namespace stellar
 
     void LedgerMaster::reset()
     {
-        mCurrentCLF = LegacyCLF::pointer(new LegacyCLF()); // change this to BucketList when we are ready
+        mCurrentCLF = LegacyCLF::pointer(new LegacyCLF(this)); // change this to BucketList when we are ready
         mLastLedgerHash = uint256();
     }
 
@@ -27,22 +27,25 @@ namespace stellar
 		return(Ledger::pointer());
 	}
 
-    bool LedgerMaster::ensureSync(ripple::Ledger::pointer lastClosedLedger)
+    bool LedgerMaster::ensureSync(ripple::Ledger::pointer lastClosedLedger, bool checkLocal)
     {
         bool res = false;
         // first, make sure we're in sync with the world
         if (lastClosedLedger->getHash() != mLastLedgerHash)
         {
-            std::vector<uint256> needed=lastClosedLedger->getNeededAccountStateHashes(1,NULL);
-            if(needed.size())
+            if (checkLocal)
             {
-                // we're missing some nodes
-                return false;
+                std::vector<uint256> needed=lastClosedLedger->getNeededAccountStateHashes(1,NULL);
+                if(needed.size())
+                {
+                    // we're missing some nodes
+                    return false;
+                }
             }
 
             try
             {
-                CanonicalLedgerForm::pointer newCLF, currentCLF(new LegacyCLF(lastClosedLedger));
+                CanonicalLedgerForm::pointer newCLF, currentCLF(new LegacyCLF(this, lastClosedLedger));
                 mCurrentDB.beginTransaction();
                 try
                 {
@@ -55,8 +58,7 @@ namespace stellar
 
                 if (newCLF)
                 {
-                    mCurrentDB.endTransaction(false);
-                    setLastClosedLedger(newCLF);
+                    commitTransaction(newCLF);
                     res = true;
                 }
             }
@@ -81,6 +83,16 @@ namespace stellar
         assert(mCurrentDB.getTransactionLevel() == 1); // should be top level transaction
     }
 
+    void LedgerMaster::commitTransaction(CanonicalLedgerForm::pointer newLCL)
+    {
+        mCurrentDB.endTransaction(false);
+        if (mCurrentDB.getTransactionLevel() == 0)
+        {
+            setLastClosedLedger(newLCL);
+        }
+        
+    }
+
 	bool  LedgerMaster::commitLedgerClose(ripple::Ledger::pointer ledger)
 	{
         bool res = false;
@@ -90,7 +102,7 @@ namespace stellar
 
         try
         {
-            CanonicalLedgerForm::pointer nl(new LegacyCLF(ledger));
+            CanonicalLedgerForm::pointer nl(new LegacyCLF(this, ledger));
             try
             {
                 // only need to update ledger related fields as the account state is already in SQL
@@ -104,8 +116,7 @@ namespace stellar
 
             if (newCLF != nullptr)
             {
-                mCurrentDB.endTransaction(false);
-                setLastClosedLedger(newCLF);
+                commitTransaction(newCLF);
                 res = true;
             }
             else
@@ -139,6 +150,7 @@ namespace stellar
         uint256 lkcl = getLastClosedLedgerHash();
         if (lkcl.isNonZero()) {
             // there is a ledger in the database
+            string ledgerData = mCurrentDB.getState(mCurrentDB.getStoreStateName(LedgerDatabase::kLastClosedLedgerContent));
             if (mCurrentCLF->load(lkcl)) {
                 mLastLedgerHash = lkcl;
                 needreset = false;
@@ -212,7 +224,7 @@ namespace stellar
             throw;
         }
 
-        mCurrentDB.endTransaction(false);
+        commitTransaction(updatedCurrentCLF);
 
         return updatedCurrentCLF;
 	}
@@ -232,7 +244,7 @@ namespace stellar
 
         WriteLog(ripple::lsINFO, ripple::Ledger) << "Importing full ledger " << ledgerHash;
 
-        CanonicalLedgerForm::pointer newLedger = LegacyCLF::pointer(new LegacyCLF());
+        CanonicalLedgerForm::pointer newLedger = LegacyCLF::pointer(new LegacyCLF(this));
 
         if (newLedger->load(ledgerHash)) {
             mCurrentDB.beginTransaction();
@@ -250,7 +262,7 @@ namespace stellar
                 WriteLog(ripple::lsWARNING, ripple::Ledger) << "Could not import state";
                 return CanonicalLedgerForm::pointer();
             }
-            mCurrentDB.endTransaction(false);
+            commitTransaction(newLedger);
             res = newLedger;
         }
         return res;
@@ -261,7 +273,11 @@ namespace stellar
         uint256 currentHash = ledger->getHash();
         string hex(to_string(currentHash));
 
-        mCurrentDB.setState(mCurrentDB.getStoreStateName(LedgerDatabase::kLastClosedLedger), hex.c_str());
+        // saves last hash
+        mCurrentDB.setState(mCurrentDB.getStoreStateName(LedgerDatabase::kLastClosedLedger),
+            hex);
+
+        ledger->save(currentHash);
     }
 
     uint256 LedgerMaster::getLastClosedLedgerHash()

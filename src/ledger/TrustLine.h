@@ -38,10 +38,11 @@ namespace stellar {
 
 		bool loadFromDB(const uint256& index);
 		TER fromTx(AccountEntry& signingAccount, TrustSetTx* tx);
+
+        void setFromCurrentRow(Database *db);
 		
         static void dropAll(LedgerDatabase &db);
-        static const char *kSQLCreateStatement;
-		
+        static void appendSQLInit(vector<const char*> &init);
 	};
 }
 

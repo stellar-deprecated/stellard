@@ -11,20 +11,22 @@ using namespace std;
 namespace stellar
 {
 
-    // SANITY: deal with amounts properly (see TrustLines)
-
-    const char *OfferEntry::kSQLCreateStatement = "CREATE TABLE IF NOT EXISTS Offers (						\
-			accountID		CHARACTER(35),		\
-			sequence		INT UNSIGNED,		\
-			takerPaysCurrency Blob(20),			\
-			takerPaysAmount BIGINT UNSIGNED,	\
-			takerPaysIssuer CHARACTER(35),		\
-			takerGetsCurrency Blob(20),			\
-			takerGetsAmount BIGINT UNSIGNED,	\
-			takerGetsIssuer CHARACTER(3),		\
-			expiration INT UNSIGNED,			\
-			passive BOOL						\
-	);";
+    void OfferEntry::appendSQLInit(vector<const char*> &init)
+    {
+        init.push_back("CREATE TABLE IF NOT EXISTS Offers ( \
+            accountID           CHARACTER(35),  \
+            sequence            INT UNSIGNED,   \
+            takerPaysCurrency   CHARACTER(40),  \
+            takerPaysAmount CHARACTER(39),      \
+            takerPaysIssuer CHARACTER(35),      \
+            takerGetsCurrency CHARACTER(40),    \
+            takerGetsAmount CHARACTER(39),      \
+            takerGetsIssuer CHARACTER(35),      \
+            expiration INT UNSIGNED,            \
+            passive BOOL,                       \
+            PRIMARY KEY ( accountID, sequence ) \
+            );");
+    }
 
 	OfferEntry::OfferEntry(SLE::pointer sle)
 	{
@@ -40,8 +42,16 @@ namespace stellar
 
 		uint32 flags = sle->getFlags();
 		
-		mPassive = flags & lsfPassive;  
+		mPassive = flags & lsfPassive;
+
+        // lsfSell??
  	}
+
+    OfferEntry::OfferEntry(Database *db)
+    {
+        setFromCurrentRow(db);
+    }
+
 
 	void OfferEntry::calculateIndex()
 	{
@@ -59,13 +69,13 @@ namespace stellar
 		uint160 paysIssuer = mTakerPays.getIssuer();
 		uint160 getsIssuer = mTakerGets.getIssuer();
 
-		string sql = str(boost::format("INSERT OR REPLACE INTO Offers (accountID,sequence,takerPaysCurrency,takerPaysAmount,takerPaysIssuer,takerGetsCurrency,takerGetsAmount,takerGetsIssuer,expiration,passive) values ('%s',%d,x'%s',%d,'%s',x'%s',%d,'%s',%d,%d);")
+		string sql = str(boost::format("INSERT OR REPLACE INTO Offers (accountID,sequence,takerPaysCurrency,takerPaysAmount,takerPaysIssuer,takerGetsCurrency,takerGetsAmount,takerGetsIssuer,expiration,passive) values ('%s',%d,'%s',%d,'%s','%s',%d,'%s',%d,%d);")
 			% mAccountID.base58Encode(RippleAddress::VER_ACCOUNT_ID)
 			% mSequence
-			% to_string(mTakerPays.getCurrency())
+			% mTakerPays.getHumanCurrency()
             % mTakerPays.getText()
 			% paysIssuer.base58Encode(RippleAddress::VER_ACCOUNT_ID)
-			% to_string(mTakerGets.getCurrency())
+			% mTakerGets.getHumanCurrency()
 			% mTakerGets.getText()
 			% getsIssuer.base58Encode(RippleAddress::VER_ACCOUNT_ID)
 			% mExpiration
@@ -81,16 +91,17 @@ namespace stellar
 			}
 		}
 	}
+
 	void OfferEntry::updateInDB()
 	{
 		uint160 paysIssuer = mTakerPays.getIssuer();
 		uint160 getsIssuer = mTakerGets.getIssuer();
 
-		string sql = str(boost::format("UPDATE Offers set takerPaysCurrency=x'%s', takerPaysAmount=%d, takerPaysIssuer='%s', takerGetsCurrency=x'%s' ,takerGetsAmount=%d, takerGetsIssuer='%s' ,expiration=%d, passive=%d where accountID='%s' AND sequence=%d;")	
-			% to_string(mTakerPays.getCurrency())
+		string sql = str(boost::format("UPDATE Offers set takerPaysCurrency='%s', takerPaysAmount=%d, takerPaysIssuer='%s', takerGetsCurrency='%s' ,takerGetsAmount=%d, takerGetsIssuer='%s' ,expiration=%d, passive=%d where accountID='%s' AND sequence=%d;")	
+			% mTakerPays.getHumanCurrency()
 			% mTakerPays.getText()
 			% paysIssuer.base58Encode(RippleAddress::VER_ACCOUNT_ID)
-			% to_string(mTakerGets.getCurrency())
+			% mTakerGets.getHumanCurrency()
 			% mTakerGets.getText()
 			% getsIssuer.base58Encode(RippleAddress::VER_ACCOUNT_ID)
 			% mExpiration
@@ -108,6 +119,27 @@ namespace stellar
 			}
 		}
 	}
+
+    void OfferEntry::setFromCurrentRow(Database *db)
+    {
+        mAccountID = db->getAccountID("accountID");
+        mSequence = db->getBigInt("sequence");
+
+        std::string currency, amount, issuer;
+        db->getStr("takerPaysCurrency", currency);
+        db->getStr("takerPaysAmount", amount);
+        db->getStr("takerPaysIssuer", issuer);
+        mTakerPays.setFullValue(amount, currency, issuer);
+
+        db->getStr("takerGetsCurrency", currency);
+        db->getStr("takerGetsAmount", amount);
+        db->getStr("takerGetsIssuer", issuer);
+        mTakerGets.setFullValue(amount, currency, issuer);
+		
+        mExpiration = db->getInt("expiration");
+        mPassive = db->getBool("passive");
+    }
+
 	void OfferEntry::deleteFromDB()
 	{
 		string sql = str(boost::format("DELETE FROM Offers where accountID='%s' AND sequence=%d;")
@@ -130,10 +162,6 @@ namespace stellar
         if (!db.getDBCon()->getDB()->executeSQL("DROP TABLE IF EXISTS Offers;"))
 		{
             throw std::runtime_error("Could not drop Offers data");
-		}
-        if (!db.getDBCon()->getDB()->executeSQL(kSQLCreateStatement))
-        {
-            throw std::runtime_error("Could not recreate Offers data");
 		}
     }
 }

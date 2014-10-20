@@ -1,3 +1,5 @@
+#ifndef __TRANSACTIONSET_H__
+#define __TRANSACTIONSET_H__
 
 #include "transactions/Transaction.h"
 
@@ -20,3 +22,5 @@ namespace stellar
 
 	};
 }
+
+#endif

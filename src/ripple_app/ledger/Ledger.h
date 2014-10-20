@@ -455,16 +455,14 @@ public:
     bool walkLedger ();
     bool assertSane ();
 
+    bool loadMaps(); // attempts to load the state and tx maps
+
 protected:
     SLE::pointer getASNode (LedgerStateParms & parms, uint256 const & nodeID, LedgerEntryType let);
 
     // returned SLE is immutable
     SLE::pointer getASNodeI (uint256 const & nodeID, LedgerEntryType let);
 
-    void saveValidatedLedgerAsync(Job&, bool current)
-    {
-        saveValidatedLedger(current);
-    }
     bool saveValidatedLedger (bool current);
 
     void updateFees ();
