@@ -1,4 +1,4 @@
-# DRAFT
+# Roadmap
 
 This is our general plan for developing **stellard**. Until December we are mostly working on changing the core data structures and simplifying the protocol. The goal is to get much higher performance and scalability and make it a tractable task for people to build alternate implementations.
 
