@@ -66,7 +66,7 @@
 #include "data/SqliteDatabase.h"
 #include "data/DBInit.h"
 #include "shamap/SHAMapItem.h"
-#include "shamap/SHAMapNode.h"
+#include "shamap/SHAMapNodeID.h"
 #include "shamap/SHAMapTreeNode.h"
 #include "shamap/SHAMapMissingNode.h"
 #include "shamap/SHAMapSyncFilter.h"

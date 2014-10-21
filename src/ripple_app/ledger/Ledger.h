@@ -253,17 +253,6 @@ public:
     {
         return mAccountStateMap;
     }
-    void dropCache ()
-    {
-        assert (isImmutable ());
-
-        if (mTransactionMap)
-            mTransactionMap->dropCache ();
-
-        if (mAccountStateMap)
-            mAccountStateMap->dropCache ();
-    }
-
     // ledger sync functions
     void setAcquiring (void);
     bool isAcquiring (void);
