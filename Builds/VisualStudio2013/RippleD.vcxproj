@@ -85,6 +85,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\src\main\main.cpp" />
+    <ClCompile Include="..\..\src\overlay\Peer.cpp" />
+    <ClCompile Include="..\..\src\overlay\PeerMaster.cpp" />
     <ClCompile Include="..\..\src\ripple\beast\ripple_beast.cpp" />
     <ClCompile Include="..\..\src\ripple\beast\ripple_beastc.c" />
     <ClCompile Include="..\..\src\ripple\common\impl\KeyCache.cpp">
@@ -1930,8 +1933,12 @@
     <ClInclude Include="..\..\..\libsodium\include\sodium\utils.h" />
     <ClInclude Include="..\..\..\libsodium\include\sodium\version.h" />
     <ClInclude Include="..\..\src\BeastConfig.h" />
+    <ClInclude Include="..\..\src\fba\Ballot.h" />
     <ClInclude Include="..\..\src\fba\FirmezaMaster.h" />
     <ClInclude Include="..\..\src\fba\History.h" />
+    <ClInclude Include="..\..\src\fba\Node.h" />
+    <ClInclude Include="..\..\src\fba\QuorumSet.h" />
+    <ClInclude Include="..\..\src\fba\Slot.h" />
     <ClInclude Include="..\..\src\ledger\AccountEntry.h" />
     <ClInclude Include="..\..\src\ledger\BucketList.h" />
     <ClInclude Include="..\..\src\ledger\Ledger.h" />
@@ -1943,6 +1950,9 @@
     <ClInclude Include="..\..\src\ledger\OfferEntry.h" />
     <ClInclude Include="..\..\src\ledger\TrustLine.h" />
     <ClInclude Include="..\..\src\main\Application.h" />
+    <ClInclude Include="..\..\src\overlay\Peer.h" />
+    <ClInclude Include="..\..\src\overlay\PeerDoor.h" />
+    <ClInclude Include="..\..\src\overlay\PeerMaster.h" />
     <ClInclude Include="..\..\src\ripple\algorithm\api\CycledSet.h" />
     <ClInclude Include="..\..\src\ripple\algorithm\api\DecayingSample.h" />
     <ClInclude Include="..\..\src\ripple\common\byte_view.h" />
@@ -2566,6 +2576,7 @@
     <None Include="..\..\test\testutils.js" />
     <None Include="..\..\test\websocket-test.js" />
     <None Include="..\QtCreator\rippled.pro" />
+    <None Include="protocol.x" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\doc\stellar-example.txt" />

@@ -9,6 +9,8 @@ namespace stellar
 	{
 	public:
 		vector<Transaction> mTransactions;
+		//uint256 mPreviousLedgerHash;
+
 		typedef boost::shared_ptr<TransactionSet>           pointer;
 
 		// returns the hash of this tx set

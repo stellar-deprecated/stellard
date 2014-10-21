@@ -20,6 +20,7 @@
 #include "ledger/AccountEntry.h"
 #include "ledger/TrustLine.h"
 #include "ledger/OfferEntry.h"
+#include "overlay/Peer.h"
 
 namespace ripple {
 
@@ -97,6 +98,8 @@ const char* LedgerDBInit[] =
 	stellar::OfferEntry::kSQLCreateStatement,
 
 	stellar::TrustLine::kSQLCreateStatement,
+
+	stellar::Peer::kSQLCreateStatement,
 
     "CREATE TABLE IF NOT EXISTS Validations	(					\
 		LedgerHash	CHARACTER(64),					\
