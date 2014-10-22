@@ -26,8 +26,6 @@ std::mutex SHAMapTreeNode::childLock;
 SHAMapTreeNode::SHAMapTreeNode (std::uint32_t seq)
     : mSeq (seq)
     , mType (tnERROR)
-    , mIsBranch (0)
-    , mFullBelow (false)
 {
 }
 
@@ -35,19 +33,19 @@ SHAMapTreeNode::SHAMapTreeNode (const SHAMapTreeNode& node, std::uint32_t seq)
     : mHash (node.mHash)
     , mSeq (seq)
     , mType (node.mType)
-    , mIsBranch (node.mIsBranch)
-    , mFullBelow (false)
 {
-    if (node.mItem)
+    if (!isInner())
         mItem = node.mItem;
-    else
-    {
-        memcpy (mHashes, node.mHashes, sizeof (mHashes));
+    else {
+        mInner = make_unique<InnerData>();
+        mInner->mFullBelow = node.mInner->mFullBelow;
+        mInner->mIsBranch = node.mInner->mIsBranch;
+        memcpy (mInner->mHashes, node.mInner->mHashes, sizeof (mInner->mHashes));
 
         std::unique_lock <std::mutex> lock (childLock);
 
         for (int i = 0; i < 16; ++i)
-            mChildren[i] = node.mChildren[i];
+            mInner->mChildren[i] = node.mInner->mChildren[i];
     }
 }
 
@@ -56,9 +54,8 @@ SHAMapTreeNode::SHAMapTreeNode (SHAMapItem::ref item,
     : mItem (item)
     , mSeq (seq)
     , mType (type)
-    , mIsBranch (0)
-    , mFullBelow (false)
 {
+    assert(!isInner());
     assert (item->peekData ().size () >= 12);
     updateHash ();
 }
@@ -68,8 +65,6 @@ SHAMapTreeNode::SHAMapTreeNode (Blob const& rawNode,
                                 uint256 const& hash, bool hashValid)
     : mSeq (seq)
     , mType (tnERROR)
-    , mIsBranch (0)
-    , mFullBelow (false)
 {
     if (format == snfWIRE)
     {
@@ -110,22 +105,24 @@ SHAMapTreeNode::SHAMapTreeNode (Blob const& rawNode,
         }
         else if (type == 2)
         {
+            mInner = make_unique<InnerData>();
             // full inner
             if (len != 512)
                 throw std::runtime_error ("invalid FI node");
 
             for (int i = 0; i < 16; ++i)
             {
-                s.get256 (mHashes[i], i * 32);
+                s.get256 (mInner->mHashes[i], i * 32);
 
-                if (mHashes[i].isNonZero ())
-                    mIsBranch |= (1 << i);
+                if (mInner->mHashes[i].isNonZero ())
+                    mInner->mIsBranch |= (1 << i);
             }
 
             mType = tnINNER;
         }
         else if (type == 3)
         {
+            mInner = make_unique<InnerData>();
             // compressed inner
             for (int i = 0; i < (len / 33); ++i)
             {
@@ -134,10 +131,10 @@ SHAMapTreeNode::SHAMapTreeNode (Blob const& rawNode,
 
                 if ((pos < 0) || (pos >= 16)) throw std::runtime_error ("invalid CI node");
 
-                s.get256 (mHashes[pos], i * 33);
+                s.get256 (mInner->mHashes[pos], i * 33);
 
-                if (mHashes[pos].isNonZero ())
-                    mIsBranch |= (1 << pos);
+                if (mInner->mHashes[pos].isNonZero ())
+                    mInner->mIsBranch |= (1 << pos);
             }
 
             mType = tnINNER;
@@ -202,15 +199,16 @@ SHAMapTreeNode::SHAMapTreeNode (Blob const& rawNode,
         }
         else if (prefix == HashPrefix::innerNode)
         {
+            mInner = make_unique<InnerData>();
             if (s.getLength () != 512)
                 throw std::runtime_error ("invalid PIN node");
 
             for (int i = 0; i < 16; ++i)
             {
-                s.get256 (mHashes[i], i * 32);
+                s.get256 (mInner->mHashes[i], i * 32);
 
-                if (mHashes[i].isNonZero ())
-                    mIsBranch |= (1 << i);
+                if (mInner->mHashes[i].isNonZero ())
+                    mInner->mIsBranch |= (1 << i);
             }
 
             mType = tnINNER;
@@ -258,15 +256,15 @@ bool SHAMapTreeNode::updateHash ()
 
     if (mType == tnINNER)
     {
-        if (mIsBranch != 0)
+        if (mInner->mIsBranch != 0)
         {
-            nh = Serializer::getPrefixHash (HashPrefix::innerNode, reinterpret_cast<unsigned char*> (mHashes), sizeof (mHashes));
+            nh = Serializer::getPrefixHash (HashPrefix::innerNode, reinterpret_cast<unsigned char*> (mInner->mHashes), sizeof (mInner->mHashes));
 #if RIPPLE_VERIFY_NODEOBJECT_KEYS
             Serializer s;
             s.add32 (HashPrefix::innerNode);
 
             for (int i = 0; i < 16; ++i)
-                s.add256 (mHashes[i]);
+                s.add256 (mInner->mHashes[i]);
 
             assert (nh == s.getSHA512Half ());
 #endif
@@ -324,7 +322,7 @@ void SHAMapTreeNode::addRaw (Serializer& s, SHANodeFormat format)
             s.add32 (HashPrefix::innerNode);
 
             for (int i = 0; i < 16; ++i)
-                s.add256 (mHashes[i]);
+                s.add256 (mInner->mHashes[i]);
         }
         else
         {
@@ -334,7 +332,7 @@ void SHAMapTreeNode::addRaw (Serializer& s, SHANodeFormat format)
                 for (int i = 0; i < 16; ++i)
                     if (!isEmptyBranch (i))
                     {
-                        s.add256 (mHashes[i]);
+                        s.add256 (mInner->mHashes[i]);
                         s.add8 (i);
                     }
 
@@ -343,7 +341,7 @@ void SHAMapTreeNode::addRaw (Serializer& s, SHANodeFormat format)
             else
             {
                 for (int i = 0; i < 16; ++i)
-                    s.add256 (mHashes[i]);
+                    s.add256 (mInner->mHashes[i]);
 
                 s.add8 (2);
             }
@@ -399,6 +397,7 @@ void SHAMapTreeNode::addRaw (Serializer& s, SHANodeFormat format)
 bool SHAMapTreeNode::setItem (SHAMapItem::ref i, TNType type)
 {
     mType = type;
+    assert(!isInner());
     mItem = i;
     assert (isLeaf ());
     assert (mSeq != 0);
@@ -407,7 +406,7 @@ bool SHAMapTreeNode::setItem (SHAMapItem::ref i, TNType type)
 
 bool SHAMapTreeNode::isEmpty () const
 {
-    return mIsBranch == 0;
+    return mInner->mIsBranch == 0;
 }
 
 int SHAMapTreeNode::getBranchCount () const
@@ -425,8 +424,9 @@ int SHAMapTreeNode::getBranchCount () const
 void SHAMapTreeNode::makeInner ()
 {
     mItem.reset ();
-    mIsBranch = 0;
-    memset (mHashes, 0, sizeof (mHashes));
+    mInner = make_unique<InnerData>();
+    mInner->mIsBranch = 0;
+    memset (mInner->mHashes, 0, sizeof (mInner->mHashes));
     mType = tnINNER;
     mHash.zero ();
 }
@@ -452,7 +452,7 @@ std::string SHAMapTreeNode::getString (const SHAMapNodeID & id) const
                 ret += "\nb";
                 ret += beast::lexicalCastThrow <std::string> (i);
                 ret += " = ";
-                ret += to_string (mHashes[i]);
+                ret += to_string (mInner->mHashes[i]);
             }
     }
 
@@ -486,23 +486,23 @@ bool SHAMapTreeNode::setChild (int m, uint256 const& hash, SHAMapTreeNode::ref c
     assert (mSeq != 0);
     assert (child.get() != this);
 
-    if (mHashes[m] == hash)
+    if (mInner->mHashes[m] == hash)
         return false;
 
-    mHashes[m] = hash;
+    mInner->mHashes[m] = hash;
 
     if (hash.isNonZero ())
     {
         assert (child && (child->getNodeHash() == hash));
-        mIsBranch |= (1 << m);
+        mInner->mIsBranch |= (1 << m);
     }
     else
     {
         assert (!child);
-        mIsBranch &= ~ (1 << m);
+        mInner->mIsBranch &= ~ (1 << m);
     }
 
-    mChildren[m] = child;
+    mInner->mChildren[m] = child;
 
     return updateHash ();
 }
@@ -515,9 +515,9 @@ void SHAMapTreeNode::shareChild (int m, SHAMapTreeNode::ref child)
     assert (mSeq != 0);
     assert (child);
     assert (child.get() != this);
-    assert (child->getNodeHash() == mHashes[m]);
+    assert (child->getNodeHash() == mInner->mHashes[m]);
 
-    mChildren[m] = child;
+    mInner->mChildren[m] = child;
 }
 
 SHAMapTreeNode* SHAMapTreeNode::getChildPointer (int branch)
@@ -526,7 +526,7 @@ SHAMapTreeNode* SHAMapTreeNode::getChildPointer (int branch)
     assert (isInnerNode ());
 
     std::unique_lock <std::mutex> lock (childLock);
-    return mChildren[branch].get ();
+    return mInner->mChildren[branch].get ();
 }
 
 SHAMapTreeNode::pointer SHAMapTreeNode::getChild (int branch)
@@ -535,8 +535,8 @@ SHAMapTreeNode::pointer SHAMapTreeNode::getChild (int branch)
     assert (isInnerNode ());
 
     std::unique_lock <std::mutex> lock (childLock);
-    assert (!mChildren[branch] || (mHashes[branch] == mChildren[branch]->getNodeHash()));
-    return mChildren[branch];
+    assert (!mInner->mChildren[branch] || (mInner->mHashes[branch] == mInner->mChildren[branch]->getNodeHash()));
+    return mInner->mChildren[branch];
 }
 
 void SHAMapTreeNode::canonicalizeChild (int branch, SHAMapTreeNode::pointer& node)
@@ -544,18 +544,18 @@ void SHAMapTreeNode::canonicalizeChild (int branch, SHAMapTreeNode::pointer& nod
     assert (branch >= 0 && branch < 16);
     assert (isInnerNode ());
     assert (node);
-    assert (node->getNodeHash() == mHashes[branch]);
+    assert (node->getNodeHash() == mInner->mHashes[branch]);
 
     std::unique_lock <std::mutex> lock (childLock);
-    if (mChildren[branch])
+    if (mInner->mChildren[branch])
     {
         // There is already a node hooked up, return it
-        node = mChildren[branch];
+        node = mInner->mChildren[branch];
     }
     else
     {
         // Hook this node up
-        mChildren[branch] = node;
+        mInner->mChildren[branch] = node;
     }
 }
 

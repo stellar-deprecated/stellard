@@ -227,18 +227,10 @@ public:
 class LevelDBFactory : public Factory
 {
 public:
-    std::unique_ptr <leveldb::Cache> m_lruCache;
-
     class BackendImp;
 
     LevelDBFactory ()
-        : m_lruCache (nullptr)
     {
-        leveldb::Options options;
-        options.create_if_missing = true;
-        options.block_cache = leveldb::NewLRUCache (
-            getConfig ().getSize (siHashNodeDBCache) * 1024 * 1024);
-        m_lruCache.reset (options.block_cache);
     }
 
     ~LevelDBFactory()

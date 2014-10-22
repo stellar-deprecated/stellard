@@ -41,11 +41,13 @@ public:
     // Larger key/value storage, but not necessarily persistent.
     std::unique_ptr <Backend> m_fastBackend;
 
+#if 0
     // Positive cache
     TaggedCache <uint256, NodeObject> m_cache;
 
     // Negative cache
     KeyCache <uint256> m_negCache;
+#endif
 
     std::mutex                m_readLock;
     std::condition_variable   m_readCondVar;
@@ -66,10 +68,12 @@ public:
         , m_scheduler (scheduler)
         , m_backend (std::move (backend))
         , m_fastBackend (std::move (fastBackend))
+#if 0
         , m_cache ("NodeStore", cacheTargetSize, cacheTargetSeconds,
             get_seconds_clock (), LogPartition::getJournal <TaggedCacheLog> ())
         , m_negCache ("NodeStore", get_seconds_clock (),
             cacheTargetSize, cacheTargetSeconds)
+#endif
         , m_readShut (false)
         , m_readGen (0)
     {
@@ -99,11 +103,12 @@ public:
 
     bool asyncFetch (uint256 const& hash, NodeObject::pointer& object)
     {
+#if 0
         // See if the object is in cache
         object = m_cache.fetch (hash);
         if (object || m_negCache.touch_if_exists (hash))
             return true;
-
+#endif
         {
             // No. Post a read
             std::unique_lock <std::mutex> lock (m_readLock);
@@ -130,10 +135,14 @@ public:
 
     int getDesiredAsyncReadCount ()
     {
+#if 0
         // We prefer a client not fill our cache
         // We don't want to push data out of the cache
         // before it's retrieved
         return m_cache.getTargetSize() / asyncDivider;
+#else
+        return 100;
+#endif
     }
 
     NodeObject::Ptr fetch (uint256 const& hash) override
@@ -161,6 +170,7 @@ public:
 
     NodeObject::Ptr doFetch (uint256 const& hash, FetchReport &report)
     {
+#if 0
         // See if the object already exists in the cache
         //
         NodeObject::Ptr obj = m_cache.fetch (hash);
@@ -172,7 +182,9 @@ public:
             return obj;
 
         // Check the database(s).
-
+#else
+        NodeObject::Ptr obj = nullptr;
+#endif
         bool foundInFastBackend = false;
         report.wentToDisk = true;
 
@@ -198,7 +210,7 @@ public:
 
         if (obj == nullptr)
         {
-
+#if 0
             // Just in case a write occurred
             obj = m_cache.fetch (hash);
 
@@ -207,13 +219,15 @@ public:
                 // We give up
                 m_negCache.insert (hash);
             }
+#endif
         }
         else
         {
+#if 0
             // Ensure all threads get the same object
             //
             m_cache.canonicalize (hash, obj);
-
+#endif
             if (! foundInFastBackend)
             {
                 // If we have a fast back end, store it there for later.
@@ -273,11 +287,14 @@ public:
         assert (hash == Serializer::getSHA512Half (data));
         #endif
 
+#if 0
         m_cache.canonicalize (hash, object, true);
-
+#endif
         m_backend->store (object);
 
+#if 0
         m_negCache.erase (hash);
+#endif
 
         if (m_fastBackend)
             m_fastBackend->store (object);
@@ -287,21 +304,29 @@ public:
 
     float getCacheHitRate ()
     {
+#if 0
         return m_cache.getHitRate ();
+#else
+        return 1.0f;
+#endif
     }
 
     void tune (int size, int age)
     {
+#if 0
         m_cache.setTargetSize (size);
         m_cache.setTargetAge (age);
         m_negCache.setTargetSize (size);
         m_negCache.setTargetAge (age);
+#endif
     }
 
     void sweep ()
     {
+#if 0
         m_cache.sweep ();
         m_negCache.sweep ();
+#endif
     }
 
     int getWriteLoad ()
