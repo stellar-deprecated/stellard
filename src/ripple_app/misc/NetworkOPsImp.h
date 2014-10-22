@@ -216,7 +216,7 @@ namespace ripple {
 		void processTrustedProposal(LedgerProposal::pointer proposal, boost::shared_ptr<protocol::TMProposeSet> set,
 			RippleAddress nodePublic, uint256 checkLedger, bool sigGood);
 		SHAMapAddNode gotTXData(const boost::shared_ptr<Peer>& peer, uint256 const& hash,
-			const std::list<SHAMapNode>& nodeIDs, const std::list< Blob >& nodeData);
+			const std::list<SHAMapNodeID>& nodeIDs, const std::list< Blob >& nodeData);
 		bool recvValidation(SerializedValidation::ref val, const std::string& source);
 		void takePosition(int seq, SHAMap::ref position);
 		SHAMap::pointer getTXMap(uint256 const& hash);

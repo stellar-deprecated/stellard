@@ -25,49 +25,52 @@ namespace ripple {
 
 static const uint256 uZero;
 
-void SHAMap::visitLeaves (std::function<void (SHAMapItem::ref item)> function)
+static void visitLeavesHelper (
+    std::function <void (SHAMapItem::ref)> const& function,
+    SHAMapTreeNode& node)
 {
-    // Make a snapshot of this map so we don't need to hold
-    // a lock on the map we're visiting
-    snapShot (false)->visitLeavesInternal (function);
+    // Adapt visitNodes to visitLeaves
+    if (!node.isInner ())
+        function (node.peekItem ());
 }
 
-void SHAMap::visitLeavesInternal (std::function<void (SHAMapItem::ref item)>& function)
+void SHAMap::visitLeaves (std::function<void (SHAMapItem::ref item)> const& leafFunction)
 {
+    visitNodes (std::bind (visitLeavesHelper,
+            std::cref (leafFunction), std::placeholders::_1));
+}
+
+void SHAMap::visitNodes(std::function<void (SHAMapTreeNode&)> const& function)
+{
+    // Visit every node in a SHAMap
     assert (root->isValid ());
 
     if (!root || root->isEmpty ())
         return;
 
+    function (*root);
+
     if (!root->isInner ())
-    {
-        function (root->peekItem ());
         return;
-    }
 
-    typedef std::pair<int, SHAMapTreeNode*> posPair;
+    using StackEntry = std::pair <int, SHAMapTreeNode::pointer>;
+    std::stack <StackEntry, std::vector <StackEntry>> stack;
 
-    std::stack<posPair> stack;
-    SHAMapTreeNode* node = root.get ();
+    SHAMapTreeNode::pointer node = root;
     int pos = 0;
 
     while (1)
     {
         while (pos < 16)
         {
-            if (node->isEmptyBranch (pos))
+            uint256 childHash;
+            if (!node->isEmptyBranch (pos))
             {
-                ++pos; // move to next position
-            }
-            else
-            {
-                SHAMapTreeNode* child = getNodePointer (node->getChildNodeID (pos), node->getChildHash (pos));
+                SHAMapTreeNode::pointer child = descendNoStore (node, pos);
+                function (*child);
+
                 if (child->isLeaf ())
-                {
-                    function (child->peekItem ());
-                    mTNByID.erase (*child); // don't need this leaf anymore
                     ++pos;
-                }
                 else
                 {
                     // If there are no more children, don't push this node
@@ -75,54 +78,39 @@ void SHAMap::visitLeavesInternal (std::function<void (SHAMapItem::ref item)>& fu
                            ++pos;
 
                     if (pos != 15)
-                        stack.push (posPair (pos + 1, node)); // save next position to resume at
-                    else
-                        mTNByID.erase (*node); // don't need this inner node anymore
+                    {
+                        // save next position to resume at
+                        stack.push (std::make_pair(pos + 1, std::move (node)));
+                    }
 
                     // descend to the child's first position
                     node = child;
                     pos = 0;
                 }
             }
+            else
+            {
+                ++pos; // move to next position
+            }
         }
-
-        // We are done with this inner node
-        mTNByID.erase (*node);
 
         if (stack.empty ())
             break;
 
-        pos = stack.top ().first;
-        node = stack.top ().second;
+        std::tie(pos, node) = stack.top ();
         stack.pop ();
     }
 }
 
-class GMNEntry
-{
-public:
-
-    GMNEntry (SHAMapTreeNode* n, int fc, int cc, bool fb)
-        : node(n), firstChild (fc), currentChild (cc), fullBelow (fb)
-    { ; }
-
-    SHAMapTreeNode* node;
-    int             firstChild;
-    int             currentChild;
-    bool            fullBelow;
-};
-
-/** Get a list of node IDs and hashes for nodes that are part of this SHAMap but not available locally.
-    The filter can hold alternate sources of nodes that are not permanently stored locally
+/** Get a list of node IDs and hashes for nodes that are part of this SHAMap
+    but not available locally.  The filter can hold alternate sources of
+    nodes that are not permanently stored locally
 */
-void SHAMap::getMissingNodes (std::vector<SHAMapNode>& nodeIDs, std::vector<uint256>& hashes, int max,
+void SHAMap::getMissingNodes (std::vector<SHAMapNodeID>& nodeIDs, std::vector<uint256>& hashes, int max,
                               SHAMapSyncFilter* filter)
 {
-    ScopedReadLockType sl (mLock);
-
     assert (root->isValid ());
     assert (root->getNodeHash().isNonZero ());
-
 
     if (root->isFullBelow ())
     {
@@ -144,14 +132,22 @@ void SHAMap::getMissingNodes (std::vector<SHAMapNode>& nodeIDs, std::vector<uint
 
     while (1)
     {
-        std::vector <std::pair <SHAMapNode, uint256>> deferredReads;
+        std::vector <std::tuple <SHAMapTreeNode*, int, SHAMapNodeID>> deferredReads;
         deferredReads.reserve (maxDefer + 16);
 
-        std::stack <GMNEntry> stack;
+        using StackEntry = std::tuple<SHAMapTreeNode*, SHAMapNodeID, int, int, bool>;
+        std::stack <StackEntry, std::vector<StackEntry>> stack;
 
         // Traverse the map without blocking
 
         SHAMapTreeNode *node = root.get ();
+        SHAMapNodeID nodeID;
+
+        // The firstChild value is selected randomly so if multiple threads
+        // are traversing the map, each thread will start at a different
+        // (randomly selected) inner node.  This increases the likelihood
+        // that the two threads will produce different request sets (which is
+        // more efficient than sending identical requests).
         int firstChild = rand() % 256;
         int currentChild = 0;
         bool fullBelow = true;
@@ -165,11 +161,11 @@ void SHAMap::getMissingNodes (std::vector<SHAMapNode>& nodeIDs, std::vector<uint
                 {
                     uint256 const& childHash = node->getChildHash (branch);
 
-                    if (! m_fullBelowCache.touch_if_exists (childHash))
+                    if (! mBacked || ! m_fullBelowCache.touch_if_exists (childHash))
                     {
-                        SHAMapNode childID = node->getChildNodeID (branch);
+                        SHAMapNodeID childID = nodeID.getChildNodeID (branch);
                         bool pending = false;
-                        SHAMapTreeNode* d = getNodeAsync (childID, childHash, filter, pending);
+                        SHAMapTreeNode* d = descendAsync (node, branch, childID, filter, pending);
 
                         if (!d)
                         {
@@ -187,17 +183,19 @@ void SHAMap::getMissingNodes (std::vector<SHAMapNode>& nodeIDs, std::vector<uint
                             else
                             {
                                 // read is deferred
-                                deferredReads.emplace_back (childID, childHash);
+                                deferredReads.emplace_back (node, branch, childID);
                             }
 
                             fullBelow = false; // This node is not known full below
                         }
                         else if (d->isInner () && !d->isFullBelow ())
                         {
-                            stack.push (GMNEntry (node, firstChild, currentChild, fullBelow));
+                            stack.push (std::make_tuple (node, nodeID,
+                                          firstChild, currentChild, fullBelow));
 
                             // Switch to processing the child node
                             node = d;
+                            nodeID = childID;
                             firstChild = rand() % 256;
                             currentChild = 0;
                             fullBelow = true;
@@ -211,7 +209,7 @@ void SHAMap::getMissingNodes (std::vector<SHAMapNode>& nodeIDs, std::vector<uint
             if (fullBelow)
             { // No partial node encountered below this node
                 node->setFullBelow ();
-                if (mType == smtSTATE)
+                if (mBacked)
                     m_fullBelowCache.insert (node->getNodeHash ());
             }
 
@@ -219,11 +217,9 @@ void SHAMap::getMissingNodes (std::vector<SHAMapNode>& nodeIDs, std::vector<uint
                 node = nullptr; // Finished processing the last node, we are done
             else
             { // Pick up where we left off (above this node)
-                GMNEntry& next = stack.top ();
-                node = next.node;
-                firstChild = next.firstChild;
-                currentChild = next.currentChild;
-                fullBelow = (fullBelow && next.fullBelow); // was and still is
+                bool was;
+                std::tie(node, nodeID, firstChild, currentChild, was) = stack.top ();
+                fullBelow = was && fullBelow; // was and still is
                 stack.pop ();
             }
 
@@ -239,10 +235,19 @@ void SHAMap::getMissingNodes (std::vector<SHAMapNode>& nodeIDs, std::vector<uint
         // Process all deferred reads
         for (auto const& node : deferredReads)
         {
-            auto const& nodeID = node.first;
-            auto const& nodeHash = node.second;
-            SHAMapNode *nodePtr = getNodePointerNT (nodeID, nodeHash, filter);
-            if (!nodePtr && missingHashes.insert (nodeHash).second)
+            auto parent = std::get<0>(node);
+            auto branch = std::get<1>(node);
+            auto const& nodeID = std::get<2>(node);
+            auto const& nodeHash = parent->getChildHash (branch);
+
+            SHAMapTreeNode::pointer nodePtr = fetchNodeNT (nodeID, nodeHash, filter);
+            if (nodePtr)
+            {
+                if (mBacked)
+                    canonicalize (nodeHash, nodePtr);
+                parent->canonicalizeChild (branch, nodePtr);
+            }
+            else if (missingHashes.insert (nodeHash).second)
             {
                 nodeIDs.push_back (nodeID);
                 hashes.push_back (nodeHash);
@@ -263,22 +268,30 @@ std::vector<uint256> SHAMap::getNeededHashes (int max, SHAMapSyncFilter* filter)
     std::vector<uint256> nodeHashes;
     nodeHashes.reserve(max);
 
-    std::vector<SHAMapNode> nodeIDs;
+    std::vector<SHAMapNodeID> nodeIDs;
     nodeIDs.reserve(max);
 
     getMissingNodes(nodeIDs, nodeHashes, max, filter);
     return nodeHashes;
 }
 
-bool SHAMap::getNodeFat (const SHAMapNode& wanted, std::vector<SHAMapNode>& nodeIDs,
+bool SHAMap::getNodeFat (SHAMapNodeID wanted, std::vector<SHAMapNodeID>& nodeIDs,
                          std::list<Blob >& rawNodes, bool fatRoot, bool fatLeaves)
 {
     // Gets a node and some of its children
-    ScopedReadLockType sl (mLock);
 
-    SHAMapTreeNode* node = getNodePointer(wanted);
+    SHAMapTreeNode* node = root.get ();
 
-    if (!node)
+    SHAMapNodeID nodeID;
+
+    while (node && node->isInner () && (nodeID.getDepth() < wanted.getDepth()))
+    {
+        int branch = nodeID.selectBranch (wanted.getNodeID());
+        node = descendThrow (node, branch);
+        nodeID = nodeID.getChildNodeID (branch);
+    }
+
+    if (!node || (nodeID != wanted))
     {
         WriteLog (lsWARNING, SHAMap) << "peer requested node that is not in the map: " << wanted;
         throw std::runtime_error ("Peer requested node not in map");
@@ -301,32 +314,37 @@ bool SHAMap::getNodeFat (const SHAMapNode& wanted, std::vector<SHAMapNode>& node
         {
             Serializer s;
             node->addRaw (s, snfWIRE);
-            nodeIDs.push_back(*node);
-            rawNodes.push_back (s.peekData ());
+            nodeIDs.push_back (wanted);
+            rawNodes.push_back (std::move (s.peekData ()));
         }
 
-        if ((!fatRoot && node->isRoot ()) || node->isLeaf ()) // don't get a fat root, can't get a fat leaf
+        if ((!fatRoot && wanted.isRoot ()) || node->isLeaf ()) // don't get a fat root, can't get a fat leaf
             return true;
 
         SHAMapTreeNode* nextNode = nullptr;
+        SHAMapNodeID nextNodeID;
 
         count = 0;
         for (int i = 0; i < 16; ++i)
+        {
             if (!node->isEmptyBranch (i))
             {
-                nextNode = getNodePointer (node->getChildNodeID (i), node->getChildHash (i));
+                SHAMapNodeID nextNodeID = wanted.getChildNodeID (i);
+                nextNode = descendThrow (node, i);
                 ++count;
                 if (fatLeaves || nextNode->isInner ())
                 {
                     Serializer s;
                     nextNode->addRaw (s, snfWIRE);
-                    nodeIDs.push_back (*nextNode);
-                    rawNodes.push_back (s.peekData ());
+                    nodeIDs.push_back (nextNodeID);
+                    rawNodes.push_back (std::move (s.peekData ()));
                     skipNode = true; // Don't add this node again if we loop
                 }
             }
+        }
 
         node = nextNode;
+        wanted = nextNodeID;
 
     // So long as there's exactly one inner node, we take it
     } while ((count == 1) && node->isInner());
@@ -336,7 +354,6 @@ bool SHAMap::getNodeFat (const SHAMapNode& wanted, std::vector<SHAMapNode>& node
 
 bool SHAMap::getRootNode (Serializer& s, SHANodeFormat format)
 {
-    ScopedReadLockType sl (mLock);
     root->addRaw (s, format);
     return true;
 }
@@ -344,8 +361,6 @@ bool SHAMap::getRootNode (Serializer& s, SHANodeFormat format)
 SHAMapAddNode SHAMap::addRootNode (Blob const& rootNode, SHANodeFormat format,
                                    SHAMapSyncFilter* filter)
 {
-    ScopedWriteLockType sl (mLock);
-
     // we already have a root node
     if (root->getNodeHash ().isNonZero ())
     {
@@ -355,17 +370,20 @@ SHAMapAddNode SHAMap::addRootNode (Blob const& rootNode, SHANodeFormat format,
 
     assert (mSeq >= 1);
     SHAMapTreeNode::pointer node =
-        boost::make_shared<SHAMapTreeNode> (SHAMapNode (), rootNode, mSeq - 1, format, uZero, false);
+        boost::make_shared<SHAMapTreeNode> (rootNode, 0,
+                                            format, uZero, false);
 
     if (!node)
         return SHAMapAddNode::invalid ();
 
 #ifdef BEAST_DEBUG
-    node->dump ();
+    node->dump (SHAMapNodeID ());
 #endif
 
+    if (mBacked)
+        canonicalize (node->getNodeHash (), node);
+
     root = node;
-    mTNByID.replace(*root, root);
 
     if (root->isLeaf())
         clearSynching ();
@@ -374,7 +392,8 @@ SHAMapAddNode SHAMap::addRootNode (Blob const& rootNode, SHANodeFormat format,
     {
         Serializer s;
         root->addRaw (s, snfPREFIX);
-        filter->gotNode (false, *root, root->getNodeHash (), s.modData (), root->getType ());
+        filter->gotNode (false, SHAMapNodeID{}, root->getNodeHash (),
+                         s.modData (), root->getType ());
     }
 
     return SHAMapAddNode::useful ();
@@ -383,8 +402,6 @@ SHAMapAddNode SHAMap::addRootNode (Blob const& rootNode, SHANodeFormat format,
 SHAMapAddNode SHAMap::addRootNode (uint256 const& hash, Blob const& rootNode, SHANodeFormat format,
                                    SHAMapSyncFilter* filter)
 {
-    ScopedWriteLockType sl (mLock);
-
     // we already have a root node
     if (root->getNodeHash ().isNonZero ())
     {
@@ -395,13 +412,16 @@ SHAMapAddNode SHAMap::addRootNode (uint256 const& hash, Blob const& rootNode, SH
 
     assert (mSeq >= 1);
     SHAMapTreeNode::pointer node =
-        boost::make_shared<SHAMapTreeNode> (SHAMapNode (), rootNode, mSeq - 1, format, uZero, false);
+        boost::make_shared<SHAMapTreeNode> (rootNode, 0,
+                                            format, uZero, false);
 
     if (!node || node->getNodeHash () != hash)
         return SHAMapAddNode::invalid ();
 
+    if (mBacked)
+        canonicalize (hash, node);
+
     root = node;
-    mTNByID.replace(*root, root);
 
     if (root->isLeaf())
         clearSynching ();
@@ -410,16 +430,17 @@ SHAMapAddNode SHAMap::addRootNode (uint256 const& hash, Blob const& rootNode, SH
     {
         Serializer s;
         root->addRaw (s, snfPREFIX);
-        filter->gotNode (false, *root, root->getNodeHash (), s.modData (), root->getType ());
+        filter->gotNode (false, SHAMapNodeID{}, root->getNodeHash (), s.modData (),
+                         root->getType ());
     }
 
     return SHAMapAddNode::useful ();
 }
 
-SHAMapAddNode SHAMap::addKnownNode (const SHAMapNode& node, Blob const& rawNode, SHAMapSyncFilter* filter)
+SHAMapAddNode
+SHAMap::addKnownNode (const SHAMapNodeID& node, Blob const& rawNode,
+                      SHAMapSyncFilter* filter)
 {
-    ScopedWriteLockType sl (mLock);
-
     // return value: true=okay, false=error
     assert (!node.isRoot ());
 
@@ -429,66 +450,73 @@ SHAMapAddNode SHAMap::addKnownNode (const SHAMapNode& node, Blob const& rawNode,
         return SHAMapAddNode::duplicate ();
     }
 
-    if (checkCacheNode (node)) // Do we already have this node?
-        return SHAMapAddNode::duplicate ();
+    SHAMapNodeID iNodeID;
+    SHAMapTreeNode* iNode = root.get ();
 
-    SHAMapTreeNode::pointer parent = checkCacheNode(node.getParentNodeID());
-    SHAMapTreeNode* iNode = parent ? parent.get() : root.get ();
-
-    while (!iNode->isLeaf () && !iNode->isFullBelow () && (iNode->getDepth () < node.getDepth ()))
+    while (iNode->isInner () && !iNode->isFullBelow () &&
+           (iNodeID.getDepth () < node.getDepth ()))
     {
-        int branch = iNode->selectBranch (node.getNodeID ());
+        int branch = iNodeID.selectBranch (node.getNodeID ());
         assert (branch >= 0);
 
         if (iNode->isEmptyBranch (branch))
         {
-            WriteLog (lsWARNING, SHAMap) << "Add known node for empty branch" << node;
+            WriteLog (lsWARNING, SHAMap) << "Add known node for empty branch"
+                                         << node;
             return SHAMapAddNode::invalid ();
         }
 
-        if (m_fullBelowCache.touch_if_exists (iNode->getChildHash (branch)))
+        uint256 childHash = iNode->getChildHash (branch);
+        if (m_fullBelowCache.touch_if_exists (childHash))
             return SHAMapAddNode::duplicate ();
 
-        SHAMapTreeNode *nextNode = getNodePointerNT (iNode->getChildNodeID (branch), iNode->getChildHash (branch), filter);
-        if (!nextNode)
+        SHAMapTreeNode* prevNode = iNode;
+        std::tie (iNode, iNodeID) = descend (iNode, iNodeID, branch, filter);
+
+        if (!iNode)
         {
-            if (iNode->getDepth () != (node.getDepth () - 1))
+            if (iNodeID != node)
             {
                 // Either this node is broken or we didn't request it (yet)
                 WriteLog (lsWARNING, SHAMap) << "unable to hook node " << node;
-                WriteLog (lsINFO, SHAMap) << " stuck at " << *iNode;
-                WriteLog (lsINFO, SHAMap) << "got depth=" << node.getDepth () << ", walked to= " << iNode->getDepth ();
+                WriteLog (lsINFO, SHAMap) << " stuck at " << iNodeID;
+                WriteLog (lsINFO, SHAMap) << "got depth=" << node.getDepth ()
+                                          << ", walked to= "
+                                          << iNodeID.getDepth ();
                 return SHAMapAddNode::invalid ();
             }
 
             SHAMapTreeNode::pointer newNode =
-                boost::make_shared<SHAMapTreeNode> (node, rawNode, 0, snfWIRE, uZero, false);
+                boost::make_shared<SHAMapTreeNode> (rawNode, 0, snfWIRE, uZero, false);
 
-            if (iNode->getChildHash (branch) != newNode->getNodeHash ())
-            {
-                WriteLog (lsWARNING, SHAMap) << "Corrupt node received";
-                return SHAMapAddNode::invalid ();
-            }
-
-            canonicalize (iNode->getChildHash (branch), newNode);
-
-            if (!iNode->isInBounds ())
+            if (!newNode->isInBounds (iNodeID))
             {
                 // Map is provably invalid
                 mState = smsInvalid;
                 return SHAMapAddNode::useful ();
             }
 
-            if (mTNByID.canonicalize(node, &newNode) && filter)
+            if (childHash != newNode->getNodeHash ())
+            {
+                WriteLog (lsWARNING, SHAMap) << "Corrupt node received";
+                return SHAMapAddNode::invalid ();
+            }
+
+            if (mBacked)
+                canonicalize (childHash, newNode);
+
+            prevNode->canonicalizeChild (branch, newNode);
+
+            if (filter)
             {
                 Serializer s;
                 newNode->addRaw (s, snfPREFIX);
-                filter->gotNode (false, node, iNode->getChildHash (branch), s.modData (), newNode->getType ());
+                filter->gotNode (false, node, childHash,
+                                 s.modData (), newNode->getType ());
             }
 
             return SHAMapAddNode::useful ();
         }
-        iNode = nextNode;
     }
 
     WriteLog (lsTRACE, SHAMap) << "got node, already had it (late)";
@@ -498,44 +526,39 @@ SHAMapAddNode SHAMap::addKnownNode (const SHAMapNode& node, Blob const& rawNode,
 bool SHAMap::deepCompare (SHAMap& other)
 {
     // Intended for debug/test only
-    std::stack<SHAMapTreeNode::pointer> stack;
-    ScopedReadLockType sl (mLock);
+    std::stack <std::pair <SHAMapTreeNode*, SHAMapTreeNode*> > stack;
 
-    stack.push (root);
+    stack.push ({root.get(), other.root.get()});
 
     while (!stack.empty ())
     {
-        SHAMapTreeNode::pointer node = stack.top ();
+        SHAMapTreeNode *node, *otherNode;
+        std::tie(node, otherNode) = stack.top ();
         stack.pop ();
 
-        SHAMapTreeNode::pointer otherNode;
-
-        if (node->isRoot ()) otherNode = other.root;
-        else otherNode = other.getNode (*node, node->getNodeHash (), false);
-
-        if (!otherNode)
+        if (!node || !otherNode)
         {
             WriteLog (lsINFO, SHAMap) << "unable to fetch node";
             return false;
         }
         else if (otherNode->getNodeHash () != node->getNodeHash ())
         {
-            WriteLog (lsWARNING, SHAMap) << "node hash mismatch " << *node;
+            WriteLog (lsWARNING, SHAMap) << "node hash mismatch";
             return false;
         }
 
         //      WriteLog (lsTRACE) << "Comparing inner nodes " << *node;
 
-        if (node->getNodeHash () != otherNode->getNodeHash ())
-            return false;
-
         if (node->isLeaf ())
         {
-            if (!otherNode->isLeaf ()) return false;
-
-            if (node->peekItem ()->getTag () != otherNode->peekItem ()->getTag ()) return false;
-
-            if (node->peekItem ()->peekData () != otherNode->peekItem ()->peekData ()) return false;
+            if (!otherNode->isLeaf ())
+                 return false;
+            auto nodePeek = node->peekItem();
+            auto otherNodePeek = otherNode->peekItem();
+            if (nodePeek->getTag() != otherNodePeek->getTag())
+                return false;
+            if (nodePeek->peekData() != otherNodePeek->peekData())
+                return false;
         }
         else if (node->isInner ())
         {
@@ -546,19 +569,22 @@ bool SHAMap::deepCompare (SHAMap& other)
             {
                 if (node->isEmptyBranch (i))
                 {
-                    if (!otherNode->isEmptyBranch (i)) return false;
+                    if (!otherNode->isEmptyBranch (i))
+                        return false;
                 }
                 else
                 {
-                    SHAMapTreeNode::pointer next = getNode (node->getChildNodeID (i), node->getChildHash (i), false);
+                    if (otherNode->isEmptyBranch (i))
+                       return false;
 
-                    if (!next)
+                    SHAMapTreeNode *next = descend (node, i);
+                    SHAMapTreeNode *otherNext = other.descend (otherNode, i);
+                    if (!next || !otherNext)
                     {
                         WriteLog (lsWARNING, SHAMap) << "unable to fetch inner node";
                         return false;
                     }
-
-                    stack.push (next);
+                    stack.push ({next, otherNext});
                 }
             }
         }
@@ -568,87 +594,68 @@ bool SHAMap::deepCompare (SHAMap& other)
 }
 
 /** Does this map have this inner node?
-    You must hold a read lock to call this function
 */
-bool SHAMap::hasInnerNode (const SHAMapNode& nodeID, uint256 const& nodeHash)
+bool
+SHAMap::hasInnerNode (SHAMapNodeID const& targetNodeID,
+                      uint256 const& targetNodeHash)
 {
-    SHAMapTreeNode::pointer ptr = mTNByID.retrieve (nodeID);
-    if (ptr)
-        return ptr->getNodeHash() == nodeHash;
-
     SHAMapTreeNode* node = root.get ();
+    SHAMapNodeID nodeID;
 
-    while (node->isInner () && (node->getDepth () < nodeID.getDepth ()))
+    while (node->isInner () && (nodeID.getDepth () < targetNodeID.getDepth ()))
     {
-        int branch = node->selectBranch (nodeID.getNodeID ());
+        int branch = nodeID.selectBranch (targetNodeID.getNodeID ());
 
         if (node->isEmptyBranch (branch))
             return false;
 
-        node = getNodePointer (node->getChildNodeID (branch), node->getChildHash (branch));
+        node = descendThrow (node, branch);
+        nodeID = nodeID.getChildNodeID (branch);
     }
 
-    return node->getNodeHash () == nodeHash;
+    return (node->isInner()) && (node->getNodeHash() == targetNodeHash);
 }
 
 /** Does this map have this leaf node?
-    You must hold a read lock to call this function
 */
-bool SHAMap::hasLeafNode (uint256 const& tag, uint256 const& nodeHash)
+bool SHAMap::hasLeafNode (uint256 const& tag, uint256 const& targetNodeHash)
 {
     SHAMapTreeNode* node = root.get ();
+    SHAMapNodeID nodeID;
 
     if (!node->isInner()) // only one leaf node in the tree
-        return node->getNodeHash() == nodeHash;
+        return node->getNodeHash() == targetNodeHash;
 
     do
     {
-        int branch = node->selectBranch (tag);
+        int branch = nodeID.selectBranch (tag);
 
-        if (node->isEmptyBranch (branch)) // Dead end, node must not be here
-            return false;
+        if (node->isEmptyBranch (branch))
+            return false;   // Dead end, node must not be here
 
-        const uint256& nextHash = node->getChildHash (branch);
-
-        if (nextHash == nodeHash) // Matching leaf, no need to retrieve it
+        if (node->getChildHash (branch) == targetNodeHash) // Matching leaf, no need to retrieve it
             return true;
 
-        node = getNodePointer (node->getChildNodeID (branch), nextHash);
+        node = descendThrow (node, branch);
+        nodeID = nodeID.getChildNodeID (branch);
     }
     while (node->isInner());
 
     return false; // If this was a matching leaf, we would have caught it already
 }
 
-static void addFPtoList (std::list<SHAMap::fetchPackEntry_t>& list, const uint256& hash, const Blob& blob)
-{
-    list.push_back (SHAMap::fetchPackEntry_t (hash, blob));
-}
+/**
+@param have A pointer to the map that the recipient already has (if any).
+@param includeLeaves True if leaf nodes should be included.
+@param max The maximum number of nodes to return.
+@param func The functor to call for each node added to the FetchPack.
 
-std::list<SHAMap::fetchPackEntry_t> SHAMap::getFetchPack (SHAMap* have, bool includeLeaves, int max)
-{
-    std::list<fetchPackEntry_t> ret;
-    getFetchPack (have, includeLeaves, max, BIND_TYPE (addFPtoList, boost::ref (ret), P_1, P_2));
-    return ret;
-}
-
+Note: a caller should set includeLeaves to false for transaction trees.
+There's no point in including the leaves of transaction trees.
+*/
 void SHAMap::getFetchPack (SHAMap* have, bool includeLeaves, int max,
-                           std::function<void (const uint256&, const Blob&)> func)
+                           std::function<void (uint256 const&, const Blob&)> func)
 {
-    ScopedReadLockType ul1 (mLock), ul2;
-
-    if (have)
-    {
-        ul2 = std::move (ScopedReadLockType (have->mLock, boost::try_to_lock));
-
-        if (! ul2.owns_lock ())
-        {
-            WriteLog (lsINFO, SHAMap) << "Unable to create pack due to lock";
-            return;
-        }
-    }
-
-
     if (root->getNodeHash ().isZero ())
         return;
 
@@ -668,13 +675,17 @@ void SHAMap::getFetchPack (SHAMap* have, bool includeLeaves, int max,
 
         return;
     }
+    // contains unexplored non-matching inner node entries
+    using StackEntry = std::pair <SHAMapTreeNode*, SHAMapNodeID>;
+    std::stack <StackEntry, std::vector<StackEntry>> stack;
 
-    std::stack<SHAMapTreeNode*> stack; // contains unexplored non-matching inner node entries
-    stack.push (root.get());
+    stack.push ({root.get(), SHAMapNodeID{}});
 
     while (!stack.empty() && (max > 0))
     {
-        SHAMapTreeNode* node = stack.top ();
+        SHAMapTreeNode* node;
+        SHAMapNodeID nodeID;
+        std::tie (node, nodeID) = stack.top ();
         stack.pop ();
 
         // 1) Add this node to the pack
@@ -689,14 +700,13 @@ void SHAMap::getFetchPack (SHAMap* have, bool includeLeaves, int max,
             if (!node->isEmptyBranch (i))
             {
                 uint256 const& childHash = node->getChildHash (i);
-                SHAMapNode childID = node->getChildNodeID (i);
-
-                SHAMapTreeNode* next = getNodePointer (childID, childHash);
+                SHAMapNodeID childID = nodeID.getChildNodeID (i);
+                SHAMapTreeNode* next = descendThrow (node, i);
 
                 if (next->isInner ())
                 {
-                    if (!have || !have->hasInnerNode (*next, childHash))
-                        stack.push (next);
+                    if (!have || !have->hasInnerNode (childID, childHash))
+                        stack.push ({next, childID});
                 }
                 else if (includeLeaves && (!have || !have->hasLeafNode (next->getTag(), childHash)))
                 {
@@ -710,13 +720,10 @@ void SHAMap::getFetchPack (SHAMap* have, bool includeLeaves, int max,
     }
 }
 
-std::list<Blob > SHAMap::getTrustedPath (uint256 const& index)
+std::list <Blob> SHAMap::getTrustedPath (uint256 const& index)
 {
-    ScopedReadLockType sl (mLock);
-
-    std::stack<SHAMapTreeNode::pointer> stack = SHAMap::getStack (index, false);
-
-    if (stack.empty () || !stack.top ()->isLeaf ())
+    auto stack = getStack (index, false);
+    if (stack.empty () || !stack.top ().first->isLeaf ())
         throw std::runtime_error ("requested leaf not present");
 
     std::list< Blob > path;
@@ -724,7 +731,7 @@ std::list<Blob > SHAMap::getTrustedPath (uint256 const& index)
 
     while (!stack.empty ())
     {
-        stack.top ()->addRaw (s, snfWIRE);
+        stack.top ().first->addRaw (s, snfWIRE);
         path.push_back (s.getData ());
         s.erase ();
         stack.pop ();
@@ -768,6 +775,7 @@ public:
             {
                 log <<
                     "Unable to add item to map";
+                assert (false);
                 return false;
             }
         }
@@ -778,6 +786,7 @@ public:
             {
                 log <<
                     "Unable to remove item from map";
+                assert (false);
                 return false;
             }
         }
@@ -785,7 +794,8 @@ public:
         if (beforeHash != map.getHash ())
         {
             log <<
-                "Hashes do not match";
+                "Hashes do not match " << beforeHash << " " << map.getHash ();
+            assert (false);
             return false;
         }
 
@@ -814,11 +824,11 @@ public:
 
         source.setImmutable ();
 
-        std::vector<SHAMapNode> nodeIDs, gotNodeIDs;
+        std::vector<SHAMapNodeID> nodeIDs, gotNodeIDs;
         std::list< Blob > gotNodes;
         std::vector<uint256> hashes;
 
-        std::vector<SHAMapNode>::iterator nodeIDIterator;
+        std::vector<SHAMapNodeID>::iterator nodeIDIterator;
         std::list< Blob >::iterator rawNodeIterator;
 
         int passes = 0;
@@ -826,7 +836,7 @@ public:
 
         destination.setSynching ();
 
-        unexpected (!source.getNodeFat (SHAMapNode (), nodeIDs, gotNodes, (rand () % 2) == 0, (rand () % 2) == 0),
+        unexpected (!source.getNodeFat (SHAMapNodeID (), nodeIDs, gotNodes, (rand () % 2) == 0, (rand () % 2) == 0),
             "GetNodeFat");
 
         unexpected (gotNodes.size () < 1, "NodeSize");

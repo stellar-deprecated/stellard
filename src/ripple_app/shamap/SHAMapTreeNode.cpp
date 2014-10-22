@@ -17,39 +17,59 @@
 */
 //==============================================================================
 
+#include "../../ripple_basics/utility/StringUtilities.h"
+
 namespace ripple {
 
-SHAMapTreeNode::SHAMapTreeNode (std::uint32_t seq, const SHAMapNode& nodeID)
-    : SHAMapNode (nodeID)
-    , mHash (std::uint64_t(0))
-    , mSeq (seq)
-    , mAccessSeq (seq)
+std::mutex SHAMapTreeNode::childLock;
+
+SHAMapTreeNode::SHAMapTreeNode (std::uint32_t seq)
+    : mSeq (seq)
     , mType (tnERROR)
     , mIsBranch (0)
     , mFullBelow (false)
 {
 }
 
-SHAMapTreeNode::SHAMapTreeNode (const SHAMapTreeNode& node, std::uint32_t seq) : SHAMapNode (node),
-    mHash (node.mHash), mSeq (seq), mType (node.mType), mIsBranch (node.mIsBranch), mFullBelow (false)
+SHAMapTreeNode::SHAMapTreeNode (const SHAMapTreeNode& node, std::uint32_t seq)
+    : mHash (node.mHash)
+    , mSeq (seq)
+    , mType (node.mType)
+    , mIsBranch (node.mIsBranch)
+    , mFullBelow (false)
 {
     if (node.mItem)
         mItem = node.mItem;
     else
+    {
         memcpy (mHashes, node.mHashes, sizeof (mHashes));
+
+        std::unique_lock <std::mutex> lock (childLock);
+
+        for (int i = 0; i < 16; ++i)
+            mChildren[i] = node.mChildren[i];
+    }
 }
 
-SHAMapTreeNode::SHAMapTreeNode (const SHAMapNode& node, SHAMapItem::ref item,
-                                TNType type, std::uint32_t seq) :
-    SHAMapNode (node), mItem (item), mSeq (seq), mType (type), mIsBranch (0), mFullBelow (false)
+SHAMapTreeNode::SHAMapTreeNode (SHAMapItem::ref item,
+                                TNType type, std::uint32_t seq)
+    : mItem (item)
+    , mSeq (seq)
+    , mType (type)
+    , mIsBranch (0)
+    , mFullBelow (false)
 {
     assert (item->peekData ().size () >= 12);
     updateHash ();
 }
 
-SHAMapTreeNode::SHAMapTreeNode (const SHAMapNode& id, Blob const& rawNode, std::uint32_t seq,
-                                SHANodeFormat format, uint256 const& hash, bool hashValid) :
-    SHAMapNode (id), mSeq (seq), mType (tnERROR), mIsBranch (0), mFullBelow (false)
+SHAMapTreeNode::SHAMapTreeNode (Blob const& rawNode,
+                                std::uint32_t seq, SHANodeFormat format,
+                                uint256 const& hash, bool hashValid)
+    : mSeq (seq)
+    , mType (tnERROR)
+    , mIsBranch (0)
+    , mFullBelow (false)
 {
     if (format == snfWIRE)
     {
@@ -144,7 +164,7 @@ SHAMapTreeNode::SHAMapTreeNode (const SHAMapNode& id, Blob const& rawNode, std::
     {
         if (rawNode.size () < 4)
         {
-            WriteLog (lsINFO, SHAMapNode) << "size < 4";
+            WriteLog (lsINFO, SHAMapNodeID) << "size < 4";
             throw std::runtime_error ("invalid P node");
         }
 
@@ -173,7 +193,7 @@ SHAMapTreeNode::SHAMapTreeNode (const SHAMapNode& id, Blob const& rawNode, std::
 
             if (u.isZero ())
             {
-                WriteLog (lsINFO, SHAMapNode) << "invalid PLN node";
+                WriteLog (lsINFO, SHAMapNodeID) << "invalid PLN node";
                 throw std::runtime_error ("invalid PLN node");
             }
 
@@ -209,7 +229,7 @@ SHAMapTreeNode::SHAMapTreeNode (const SHAMapNode& id, Blob const& rawNode, std::
         }
         else
         {
-            WriteLog (lsINFO, SHAMapNode) << "Unknown node prefix " << std::hex << prefix << std::dec;
+            WriteLog (lsINFO, SHAMapNodeID) << "Unknown node prefix " << std::hex << prefix << std::dec;
             throw std::runtime_error ("invalid node prefix");
         }
     }
@@ -411,17 +431,17 @@ void SHAMapTreeNode::makeInner ()
     mHash.zero ();
 }
 
-void SHAMapTreeNode::dump ()
+void SHAMapTreeNode::dump (const SHAMapNodeID & id)
 {
-    WriteLog (lsDEBUG, SHAMapNode) << "SHAMapTreeNode(" << getNodeID () << ")";
+    WriteLog (lsDEBUG, SHAMapNodeID) << "SHAMapTreeNode(" << id.getNodeID () << ")";
 }
 
-std::string SHAMapTreeNode::getString () const
+std::string SHAMapTreeNode::getString (const SHAMapNodeID & id) const
 {
     std::string ret = "NodeID(";
-    ret += beast::lexicalCastThrow <std::string> (getDepth ());
+    ret += beast::lexicalCastThrow <std::string> (id.getDepth ());
     ret += ",";
-    ret += to_string (getNodeID ());
+    ret += to_string (id.getNodeID ());
     ret += ")";
 
     if (isInner ())
@@ -458,11 +478,13 @@ std::string SHAMapTreeNode::getString () const
     return ret;
 }
 
-bool SHAMapTreeNode::setChildHash (int m, uint256 const& hash)
+// We are modifying an inner node
+bool SHAMapTreeNode::setChild (int m, uint256 const& hash, SHAMapTreeNode::ref child)
 {
     assert ((m >= 0) && (m < 16));
     assert (mType == tnINNER);
     assert (mSeq != 0);
+    assert (child.get() != this);
 
     if (mHashes[m] == hash)
         return false;
@@ -470,11 +492,72 @@ bool SHAMapTreeNode::setChildHash (int m, uint256 const& hash)
     mHashes[m] = hash;
 
     if (hash.isNonZero ())
+    {
+        assert (child && (child->getNodeHash() == hash));
         mIsBranch |= (1 << m);
+    }
     else
+    {
+        assert (!child);
         mIsBranch &= ~ (1 << m);
+    }
+
+    mChildren[m] = child;
 
     return updateHash ();
 }
+
+// finished modifying, now make shareable
+void SHAMapTreeNode::shareChild (int m, SHAMapTreeNode::ref child)
+{
+    assert ((m >= 0) && (m < 16));
+    assert (mType == tnINNER);
+    assert (mSeq != 0);
+    assert (child);
+    assert (child.get() != this);
+    assert (child->getNodeHash() == mHashes[m]);
+
+    mChildren[m] = child;
+}
+
+SHAMapTreeNode* SHAMapTreeNode::getChildPointer (int branch)
+{
+    assert (branch >= 0 && branch < 16);
+    assert (isInnerNode ());
+
+    std::unique_lock <std::mutex> lock (childLock);
+    return mChildren[branch].get ();
+}
+
+SHAMapTreeNode::pointer SHAMapTreeNode::getChild (int branch)
+{
+    assert (branch >= 0 && branch < 16);
+    assert (isInnerNode ());
+
+    std::unique_lock <std::mutex> lock (childLock);
+    assert (!mChildren[branch] || (mHashes[branch] == mChildren[branch]->getNodeHash()));
+    return mChildren[branch];
+}
+
+void SHAMapTreeNode::canonicalizeChild (int branch, SHAMapTreeNode::pointer& node)
+{
+    assert (branch >= 0 && branch < 16);
+    assert (isInnerNode ());
+    assert (node);
+    assert (node->getNodeHash() == mHashes[branch]);
+
+    std::unique_lock <std::mutex> lock (childLock);
+    if (mChildren[branch])
+    {
+        // There is already a node hooked up, return it
+        node = mChildren[branch];
+    }
+    else
+    {
+        // Hook this node up
+        mChildren[branch] = node;
+    }
+}
+
 
 } // ripple

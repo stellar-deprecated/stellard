@@ -757,7 +757,6 @@ public:
         m_ledgerMaster->tune (getConfig ().getSize (siLedgerSize), getConfig ().getSize (siLedgerAge));
         m_sleCache.setTargetSize (getConfig ().getSize (siSLECacheSize));
         m_sleCache.setTargetAge (getConfig ().getSize (siSLECacheAge));
-        SHAMap::setTreeCache (getConfig ().getSize (siTreeCacheSize), getConfig ().getSize (siTreeCacheAge));
 
 		// SANITY is this the correct place to do this?
 		stellar::gLedgerMaster->loadLastKnownCLF();
