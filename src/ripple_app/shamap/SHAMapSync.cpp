@@ -232,6 +232,8 @@ void SHAMap::getMissingNodes (std::vector<SHAMapNodeID>& nodeIDs, std::vector<ui
 
         getApp().getNodeStore().waitReads();
 
+        bool gotNewNodes = false;
+
         // Process all deferred reads
         for (auto const& node : deferredReads)
         {
@@ -246,6 +248,7 @@ void SHAMap::getMissingNodes (std::vector<SHAMapNodeID>& nodeIDs, std::vector<ui
                 if (mBacked)
                     canonicalize (nodeHash, nodePtr);
                 parent->canonicalizeChild (branch, nodePtr);
+                gotNewNodes = true;
             }
             else if (missingHashes.insert (nodeHash).second)
             {
@@ -256,6 +259,10 @@ void SHAMap::getMissingNodes (std::vector<SHAMapNodeID>& nodeIDs, std::vector<ui
                     return;
             }
         }
+
+        // no need to loop if we're still waiting for nodes and can't make progress
+        if (!gotNewNodes)
+            break;
 
     }
 
