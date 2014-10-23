@@ -4,7 +4,7 @@
 #include <boost/format.hpp>
 #include "ripple_basics/log/Log.h"
 
-#include "ripple_basics/utility/platformMacros.h"
+#include "ripple_basics/utility/PlatformMacros.h"
 
 #include "ripple_app/data/SqliteDatabase.h"
 

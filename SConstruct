@@ -253,7 +253,7 @@ COMPILED_FILES.extend([
 	'src/ripple_websocket/autosocket/AutoSocket.cpp',
 	'src/ripple/peerfinder/impl/PeerSlotLogic.cpp',
 	'src/ripple/peerfinder/impl/Counts.cpp',
-	'src/ripple_app/transactors/AccountMergeTransactor.cpp'
+	'src/ripple_app/transactors/AccountMergeTransactor.cpp',
 	'src/ripple_app/transactors/InflationTransactor.cpp'
     ])
 
