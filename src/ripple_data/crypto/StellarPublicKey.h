@@ -12,10 +12,14 @@ one half of the signing key
 */
 namespace ripple
 {
+    class RippleAddress_test;
 
 	class StellarPublicKey : public CBase58Data
 	{
 		bool    mIsValid;
+
+    friend class RippleAddress_test;
+
 	public:
 		StellarPublicKey();
 

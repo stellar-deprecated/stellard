@@ -60,18 +60,15 @@ namespace ripple
 		return(verifySignature(hash, vchSig));
 	}
 
-	bool StellarPublicKey::verifySignature(uint256 const& hash, Blob const& vchSig) const
-	{
-		if (vchData.size() != crypto_sign_PUBLICKEYBYTES
-			|| vchSig.size() != crypto_sign_BYTES)
-			throw std::runtime_error("bad inputs to verifySignature");
+    bool StellarPublicKey::verifySignature(uint256 const& hash, Blob const& vchSig) const
+    {
+        if (vchData.size() != crypto_sign_PUBLICKEYBYTES
+            || vchSig.size() != crypto_sign_BYTES)
+            throw std::runtime_error("bad inputs to verifySignature");
 
-		return crypto_sign_verify_detached(vchSig.data(),
-			hash.data(), hash.bytes, vchData.data()) == 0;
-
-	}
-
-	
-
-
+    bool verified = crypto_sign_verify_detached(vchSig.data(),
+                 hash.data(), hash.bytes, vchData.data()) == 0;
+    bool canonical = RippleAddress::signatureIsCanonical (vchSig);
+    return verified && canonical;
+    }
 }
