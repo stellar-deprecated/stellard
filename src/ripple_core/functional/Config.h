@@ -401,7 +401,7 @@ public:
 
     // Note: The following parameters do not relate to the UNL or trust at all
     unsigned int                NETWORK_QUORUM;         // Minimum number of nodes to consider the network present
-    int                         VALIDATION_QUORUM;      // Minimum validations to consider ledger authoritative
+    unsigned int                VALIDATION_QUORUM;      // Minimum validations to consider ledger authoritative
 
     // Peer networking parameters
     std::string                 PEER_IP;

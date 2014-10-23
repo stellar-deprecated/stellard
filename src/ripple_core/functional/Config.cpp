@@ -537,11 +537,13 @@ void Config::load ()
             if (SectionSingleB (secConfig, SECTION_PEER_CONNECT_LOW_WATER, strTemp))
                 PEER_CONNECT_LOW_WATER = std::max (1, beast::lexicalCastThrow <int> (strTemp));
 
+            if (SectionSingleB (secConfig, SECTION_VALIDATION_QUORUM, strTemp))
+                VALIDATION_QUORUM   = std::max (0, beast::lexicalCastThrow <int> (strTemp));
+
             if (SectionSingleB (secConfig, SECTION_NETWORK_QUORUM, strTemp))
                 NETWORK_QUORUM      = std::max (0, beast::lexicalCastThrow <int> (strTemp));
 
-            if (SectionSingleB (secConfig, SECTION_VALIDATION_QUORUM, strTemp))
-                VALIDATION_QUORUM   = std::max (0, beast::lexicalCastThrow <int> (strTemp));
+            NETWORK_QUORUM = std::max(NETWORK_QUORUM, VALIDATION_QUORUM); // need at least the number of hosts required for quorum to be present before considering ourselves connected
 
             if (SectionSingleB (secConfig, SECTION_FEE_ACCOUNT_RESERVE, strTemp))
                 FEE_ACCOUNT_RESERVE = beast::lexicalCastThrow <std::uint64_t> (strTemp);
