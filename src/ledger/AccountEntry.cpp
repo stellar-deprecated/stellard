@@ -11,17 +11,17 @@ namespace stellar
 
     void AccountEntry::appendSQLInit(vector<const char*> &init)
     {
-        init.push_back("CREATE TABLE IF NOT EXISTS Accounts (						\
-		    accountID		CHARACTER(35) PRIMARY KEY,	\
-		    balance			BIGINT UNSIGNED,			\
-		    sequence		INT UNSIGNED,				\
-		    owenerCount		INT UNSIGNED,			\
-		    transferRate	INT UNSIGNED,		\
-		    inflationDest	CHARACTER(35),		\
-		    publicKey		CHARACTER(56),		\
-		    requireDest		BOOL,				\
-		    requireAuth		BOOL				\
-	    ); ");
+        init.push_back("CREATE TABLE IF NOT EXISTS Accounts (   \
+            accountID       CHARACTER(35) PRIMARY KEY,          \
+            balance         BIGINT UNSIGNED,                    \
+            sequence        INT UNSIGNED,                       \
+            owenerCount     INT UNSIGNED,                       \
+            transferRate    INT UNSIGNED,                       \
+            inflationDest   CHARACTER(35),                      \
+            publicKey       CHARACTER(56),                      \
+            requireDest     BOOL,                               \
+            requireAuth     BOOL                                \
+        ); ");
 
         init.push_back("CREATE INDEX IF NOT EXISTS inflationDest ON Accounts ( InflationDest );");
 

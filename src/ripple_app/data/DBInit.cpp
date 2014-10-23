@@ -37,15 +37,19 @@ const char* TxnDBInit[] =
     "BEGIN TRANSACTION;",
 
     "CREATE TABLE IF NOT EXISTS Transactions (				\
-		TransID		CHARACTER(64) PRIMARY KEY,	\
-		TransType	CHARACTER(24),				\
-		FromAcct	CHARACTER(35),				\
-		FromSeq		BIGINT UNSIGNED,			\
-		LedgerSeq	BIGINT UNSIGNED,			\
-		Status		CHARACTER(1),				\
-		RawTxn		BLOB,						\
-		TxnMeta		BLOB						\
+		TransID		CHARACTER(64) ,      \
+		TransType	CHARACTER(24),       \
+		FromAcct	CHARACTER(35),       \
+		FromSeq		BIGINT UNSIGNED,     \
+		LedgerSeq	BIGINT UNSIGNED,     \
+		Status		CHARACTER(1),        \
+		RawTxn		BLOB,                \
+		TxnMeta		BLOB,                \
+        PRIMARY KEY (TransID, LedgerSeq) \
 	);",
+    "CREATE INDEX IF NOT EXISTS TransIDIndex ON                 \
+		Transactions(TransID);",
+
     "CREATE INDEX IF NOT EXISTS TxLgrIndex ON                 \
 		Transactions(LedgerSeq);",
 
@@ -301,43 +305,6 @@ const char* NetNodeDBInit[] =
 int NetNodeDBCount = NUMBER (NetNodeDBInit);
 */
 
-
-const char* LedgerEntryDBInit[] =
-{
-    "PRAGMA synchronous = OFF;            ",
-
-    "DROP TABLE TrustLines;               ",
-
-    "CREATE TABLE TrustLines {            "
-	"trustIndex blob(32),"
-    "lowAccount	blob(20),"  
-    "highAccount blob(20)," 
-    "currency blob(20)," 
-    "lowLimit BIGINT UNSIGNED,"
-	"highLimit BIGINT UNSIGNED,"
-	"balance BIGINT UNSIGNED,"
-	"lowAuthSet INT,"
-	"highAuthSet INT"
-    "}; ",
-
-    "CREATE INDEX TLBy ON TrustLines(By, Currency, Use);",
-    "CREATE INDEX TLTo ON TrustLines(To, Currency, Use);",
-
-    "DROP TABLE Exchanges;",
-
-    "CREATE TABLE Exchanges {             "
-    "From			CHARACTER(80),    "
-    "To				CHARACTER(80),    "
-    "Currency       CHARACTER(80),    "
-    "Use            INTEGER,          "
-    "Seq            BIGINT UNSIGNED   "
-    "};                                   ",
-
-    "CREATE INDEX ExBy ON Exchanges(By, Currency, Use);",
-    "CREATE INDEX ExTo ON Exchanges(To, Currency, Use);",
-};
-
-int LedgerEntryDBCount = NUMBER (LedgerEntryDBInit);
 
 
 } // ripple
