@@ -221,8 +221,6 @@ bool SerializedTransaction::checkSign (const RippleAddress& naAccountPublic) con
 {
     try
     {
-        const ECDSA fullyCanonical = (getFlags() & tfFullyCanonicalSig) ?
-                                              ECDSA::strict : ECDSA::not_strict;
         return naAccountPublic.verifySignature (getSigningHash (), getFieldVL (sfTxnSignature));
     }
     catch (...)

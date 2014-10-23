@@ -190,8 +190,9 @@ public:
         return createAccountPrivate (vPrivate).humanAccountPrivate ();
     }
   
-	bool verifySignature(uint256 const& hash, const std::string& strSig) const;
-	bool verifySignature(uint256 const& hash, Blob const& vchSig) const;
+    bool verifySignature(uint256 const& hash, const std::string& strSig) const;
+    bool verifySignature(uint256 const& hash, Blob const& vchSig) const;
+    static bool signatureIsCanonical(Blob const& vchSig);
  
     //
     // Seeds

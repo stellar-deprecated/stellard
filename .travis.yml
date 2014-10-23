@@ -20,9 +20,9 @@ before_install:
   # For faster linking
   - sudo apt-get -y install binutils-gold
   # Install libsodium (note: there is a PPA, could use that too but it seems a bit old)
-  - wget http://download.libsodium.org/libsodium/releases/libsodium-0.6.0.tar.gz
-  - tar -xzf libsodium-0.6.0.tar.gz
-  - pushd libsodium-0.6.0
+  - wget http://download.libsodium.org/libsodium/releases/libsodium-1.0.0.tar.gz
+  - tar -xzf libsodium-1.0.0.tar.gz
+  - pushd libsodium-1.0.0
   - ./configure
   - make
   - sudo make install

@@ -189,65 +189,77 @@ bool RippleAddress::verifySignature(uint256 const& hash, const std::string& strS
 
 bool RippleAddress::verifySignature(uint256 const& hash, Blob const& vchSig) const
 {
-	if (vchData.size() != crypto_sign_PUBLICKEYBYTES
+    if (vchData.size() != crypto_sign_PUBLICKEYBYTES
         || vchSig.size () != crypto_sign_BYTES)
-		throw std::runtime_error("bad inputs to verifySignature");
-	/*
-	 unsigned char signed_buf[crypto_sign_BYTES + hash.bytes];
-	 memcpy (signed_buf, vchSig.data(), crypto_sign_BYTES);
-	 memcpy (signed_buf+crypto_sign_BYTES, hash.data(), hash.bytes);
+        throw std::runtime_error("bad inputs to verifySignature");
 
-	 unsigned char ignored_buf[hash.bytes];
-	 unsigned long long ignored_len;
-	 return crypto_sign_open (ignored_buf, &ignored_len,
-	 signed_buf, sizeof (signed_buf),
-	 vchData.data()) == 0;
-	*/
-
-    unsigned char signed_buf[crypto_sign_BYTES + hash.bytes];
-	memcpy(signed_buf , vchSig.data(), crypto_sign_BYTES);
-	memcpy(signed_buf + crypto_sign_BYTES, hash.data(), hash.bytes);
-	
-
-    unsigned char ignored_buf[hash.bytes];
-    unsigned long long ignored_len;
-    return crypto_sign_open (ignored_buf, &ignored_len,
-			     signed_buf, sizeof (signed_buf),
-				 vchData.data()) == 0;
+    bool verified = crypto_sign_verify_detached(vchSig.data(),
+                 hash.data(), hash.bytes, vchData.data()) == 0;
+    bool canonical = signatureIsCanonical (vchSig);
+    return verified && canonical;
 }
 
-/*
-void StellarPrivateKey::sign(uint256 const& message, Blob& retSignature) const
+/**
+ * This is a helper function that appeared briedly in libsodium:
+ *
+ *   https://github.com/jedisct1/libsodium/commit/4099618de2cce5099ac2ec5ce8f2d80f4585606e
+ *
+ * and was subsequently removed to maintain backward compatibility:
+ *
+ *   https://github.com/jedisct1/libsodium/commit/cb07df046f19ee0d5ad600c579df97aaa4295cc3
+ *
+ * It is used to check canonical representation of signatures; that is, to
+ * prevent anyone from presenting multiple forms of valid signature, which
+ * might permit a "transaction malleability" attack on certain gateways or
+ * wallets that treat transactions as identified by their hash.
+ *
+ * At present (2014-10-22, v1.0.0) libsodium is still deciding on the
+ * interface with which to expose this functionality (likely to add an
+ * is_standard()/is_canonical() function) but has not done so yet, so for
+ * the time being we copy-and-paste their code here. We contacted Frank
+ * Denis (jedisct1) about this and this was his recommended course of
+ * action.
+ *
+ * When libsodium presents such an interface, delete this code and
+ * use their interface instead.
+ */
+static int
+crypto_sign_check_S_lt_l(const unsigned char *S)
 {
-	unsigned char out[crypto_sign_BYTES + message.bytes];
-	unsigned long long len;
-	const unsigned char *key = mPair.mPrivateKey.data();
+    static const unsigned char l[32] =
+      { 0xed, 0xd3, 0xf5, 0x5c, 0x1a, 0x63, 0x12, 0x58,
+        0xd6, 0x9c, 0xf7, 0xa2, 0xde, 0xf9, 0xde, 0x14,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10 };
+    unsigned char c = 0;
+    unsigned char n = 1;
+    unsigned int  i = 32;
 
-	// contrary to the docs it puts the signature in front
-	crypto_sign(out, &len,
-		(unsigned char*)message.begin(), message.size(),
-		key);
+    do {
+        i--;
+        c |= ((S[i] - l[i]) >> 8) & n;
+        n &= ((S[i] ^ l[i]) - 1) >> 8;
+    } while (i != 0);
 
-	retSignature.resize(crypto_sign_BYTES);
-	memcpy(&retSignature[0], out, crypto_sign_BYTES);
+    return -(c == 0);
 }
-*/
+
+bool RippleAddress::signatureIsCanonical(Blob const& vchSig)
+{
+    return crypto_sign_check_S_lt_l(
+        ((const unsigned char*) vchSig.data ()) + 32
+        ) == 0;
+}
 
 void RippleAddress::sign(uint256 const& message, Blob& retSignature) const
 {
 	assert(vchData.size() == 64);
 
-	unsigned char out[crypto_sign_BYTES + message.bytes];
-	unsigned long long len;
 	const unsigned char *key = vchData.data();
-
-	// contrary to the docs it puts the signature in front
-	crypto_sign(out, &len,
+	retSignature.resize(crypto_sign_BYTES);
+	crypto_sign_detached(&retSignature[0], NULL,
 		(unsigned char*)message.begin(), message.size(),
 		key);
-
-	retSignature.resize(crypto_sign_BYTES);
-	memcpy(&retSignature[0], out, crypto_sign_BYTES);
 }
 
 
@@ -769,6 +781,24 @@ class RippleAddress_test : public beast::unit_test::suite
 		expect(human[0] == first, human);
 	}
 
+    void add_l(unsigned char * const S)
+    {
+        static const unsigned char l[32] =
+            { 0xed, 0xd3, 0xf5, 0x5c, 0x1a, 0x63, 0x12, 0x58,
+              0xd6, 0x9c, 0xf7, 0xa2, 0xde, 0xf9, 0xde, 0x14,
+              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10 };
+        unsigned char c = 0U;
+        unsigned int  i;
+        unsigned int  s;
+
+        for (i = 0U; i < 32U; i++) {
+            s = S[i] + l[i] + c;
+            S[i] = (unsigned char) s;
+            c = (s >> 8) & 1;
+        }
+    }
+
 public:
     void run()
     {
@@ -805,6 +835,14 @@ public:
 		expect(publicKey.getAccountID() == accountPrivateKey.getAccountID(), "Account Id's mis match");
 		expect(publicKey.base58AccountID() == accountPrivateKey.base58AccountID(), "Account Id's mis match");
 
+        Blob nonCanonicalSig(sig);
+        add_l(nonCanonicalSig.data() + 32);
+        expect(sig != nonCanonicalSig, "Non-canonical signature equal to canonical signature");
+        expect(crypto_sign_verify_detached(nonCanonicalSig.data(),
+                                           message.data(), message.bytes,
+                                           publicKey.vchData.data()) == 0,
+               "Non-canonical signature didn't verify (ignoring canonical-ness)");
+        expect(!publicKey.verifySignature(message, nonCanonicalSig), "Non-canonical signature verified");
 		
 		AccountPrivateKey privateKey2;
 		privateKey2.fromString(strBase58Seed); // key from base58seed
