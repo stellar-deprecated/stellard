@@ -337,6 +337,9 @@
     <Filter Include="[0] Libraries\libsodium\code">
       <UniqueIdentifier>{16646c2b-531d-4719-ae49-45ae15446183}</UniqueIdentifier>
     </Filter>
+    <Filter Include="sanity">
+      <UniqueIdentifier>{c52865dd-9ab7-4028-9e5d-53ed6637ed3a}</UniqueIdentifier>
+    </Filter>
     <Filter Include="ledger">
       <UniqueIdentifier>{cbce24e4-95f4-4834-b93e-01184d4542ca}</UniqueIdentifier>
     </Filter>
@@ -346,14 +349,8 @@
     <Filter Include="util">
       <UniqueIdentifier>{05d4adbc-388c-44fd-b964-cdc3dbcc922e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="fba">
-      <UniqueIdentifier>{c52865dd-9ab7-4028-9e5d-53ed6637ed3a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="main">
-      <UniqueIdentifier>{c7a0c586-e3f6-431b-841e-613ec6a294e8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="overlay">
-      <UniqueIdentifier>{c8a26c99-696d-4128-9854-6d03232ed8eb}</UniqueIdentifier>
+    <Filter Include="tests">
+      <UniqueIdentifier>{1393f2ef-a196-4365-8a2d-ee6eedd7f3b7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1782,6 +1779,12 @@
     <ClCompile Include="..\..\src\ripple_app\misc\NetworkOPsImp.cpp">
       <Filter>[2] Old Ripple\ripple_app\misc</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\sanity\FirmezaMaster.cpp">
+      <Filter>sanity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\sanity\History.cpp">
+      <Filter>sanity</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\ripple\peerfinder\impl\Counts.cpp">
       <Filter>[1] Ripple\peerfinder\impl</Filter>
     </ClCompile>
@@ -1826,24 +1829,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\ripple_app\transactors\AccountMergeTransactor.cpp">
       <Filter>[2] Old Ripple\ripple_app\transactors</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\fba\FirmezaMaster.cpp">
-      <Filter>fba</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\fba\History.cpp">
-      <Filter>fba</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\main\Application.cpp">
-      <Filter>main</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\overlay\PeerMaster.cpp">
-      <Filter>overlay</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\overlay\Peer.cpp">
-      <Filter>overlay</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\main\main.cpp">
-      <Filter>main</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -3624,8 +3609,20 @@
     <ClInclude Include="..\..\src\ripple_data\crypto\StellarPrivateKey.h">
       <Filter>[2] Old Ripple\ripple_data\crypto</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\history.h">
+      <Filter>sanity</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\ripple_app\misc\NetworkOPsImp.h">
       <Filter>[2] Old Ripple\ripple_app\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\sanity\FirmezaMaster.h">
+      <Filter>sanity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\sanity\TransactionSet.h">
+      <Filter>sanity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\sanity\History.h">
+      <Filter>sanity</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\ripple\peerfinder\impl\PeerSlotLogic.h">
       <Filter>[1] Ripple\peerfinder\impl</Filter>
@@ -3692,36 +3689,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\ripple_app\transactors\AccountMergeTransactor.h">
       <Filter>[2] Old Ripple\ripple_app\transactors</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\fba\FirmezaMaster.h">
-      <Filter>fba</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\fba\History.h">
-      <Filter>fba</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\main\Application.h">
-      <Filter>main</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\overlay\Peer.h">
-      <Filter>overlay</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\overlay\PeerDoor.h">
-      <Filter>overlay</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\overlay\PeerMaster.h">
-      <Filter>overlay</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\fba\Slot.h">
-      <Filter>fba</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\fba\Node.h">
-      <Filter>fba</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\fba\QuorumSet.h">
-      <Filter>fba</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\fba\Ballot.h">
-      <Filter>fba</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -3860,34 +3827,74 @@
     <None Include="..\..\LICENSE">
       <Filter>[3] doc</Filter>
     </None>
-    <None Include="..\..\test\account_merge-test.js" />
-    <None Include="..\..\test\account_set-test.js" />
-    <None Include="..\..\test\account_tx-test.js" />
-    <None Include="..\..\test\config-example.js" />
-    <None Include="..\..\test\config.js" />
-    <None Include="..\..\test\gateway-test.js" />
-    <None Include="..\..\test\indirect-test.js" />
-    <None Include="..\..\test\inflation-test.js" />
-    <None Include="..\..\test\jsonrpc-test.js" />
-    <None Include="..\..\test\monitor-test.js" />
-    <None Include="..\..\test\nodeutils.js" />
-    <None Include="..\..\test\offer-test.js" />
-    <None Include="..\..\test\path-test.js" />
-    <None Include="..\..\test\path-tests.json" />
-    <None Include="..\..\test\path1-test.js" />
-    <None Include="..\..\test\path2-test.js" />
-    <None Include="..\..\test\remote-test.js" />
-    <None Include="..\..\test\send-test.js" />
-    <None Include="..\..\test\server-test.js" />
-    <None Include="..\..\test\server.js" />
-    <None Include="..\..\test\testconfig.js" />
-    <None Include="..\..\test\testutils.js" />
-    <None Include="..\..\test\websocket-test.js" />
-    <None Include="protocol.x">
-      <Filter>overlay</Filter>
+    <None Include="..\..\test\account_merge-test.js">
+      <Filter>tests</Filter>
     </None>
-    <None Include="..\..\src\overlay\stellar.proto">
-      <Filter>overlay</Filter>
+    <None Include="..\..\test\account_set-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\account_tx-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\config.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\config-example.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\gateway-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\indirect-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\inflation-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\jsonrpc-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\monitor-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\nodeutils.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\offer-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\path1-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\path2-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\path-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\path-tests.json">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\remote-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\send-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\server.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\server-test.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\testconfig.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\testutils.js">
+      <Filter>tests</Filter>
+    </None>
+    <None Include="..\..\test\websocket-test.js">
+      <Filter>tests</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

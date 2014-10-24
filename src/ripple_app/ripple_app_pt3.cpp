@@ -23,7 +23,7 @@
 
 #include "ledger/Ledger.cpp"
 #include "shamap/SHAMapDelta.cpp"
-#include "shamap/SHAMapNode.cpp"
+#include "shamap/SHAMapNodeID.cpp"
 #include "shamap/SHAMapTreeNode.cpp"
 #include "misc/AccountItems.cpp"
 #include "misc/AccountState.cpp"

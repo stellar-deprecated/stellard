@@ -96,8 +96,8 @@ public:
     std::vector<neededHash_t> getNeededHashes ();
 
     // VFALCO TODO Replace uint256 with something semanticallyh meaningful
-    void filterNodes (std::vector<SHAMapNode>& nodeIDs, std::vector<uint256>& nodeHashes,
-                             std::set<SHAMapNode>& recentNodes, int max, bool aggressive);
+    void filterNodes (std::vector<SHAMapNodeID>& nodeIDs, std::vector<uint256>& nodeHashes,
+                             std::set<SHAMapNodeID>& recentNodes, int max, bool aggressive);
 
     Json::Value getJson (int);
     void runData ();
@@ -117,7 +117,7 @@ private:
     int processData (boost::shared_ptr<Peer> peer, protocol::TMLedgerData& data);
 
     bool takeBase (const std::string& data);
-    bool takeTxNode (const std::list<SHAMapNode>& IDs, const std::list<Blob >& data,
+    bool takeTxNode (const std::list<SHAMapNodeID>& IDs, const std::list<Blob >& data,
                      SHAMapAddNode&);
     bool takeTxRootNode (Blob const& data, SHAMapAddNode&);
 
@@ -125,7 +125,7 @@ private:
     //             Don't use acronyms, but if we are going to use them at least
     //             capitalize them correctly.
     //
-    bool takeAsNode (const std::list<SHAMapNode>& IDs, const std::list<Blob >& data,
+    bool takeAsNode (const std::list<SHAMapNodeID>& IDs, const std::list<Blob >& data,
                      SHAMapAddNode&);
     bool takeAsRootNode (Blob const& data, SHAMapAddNode&);
 
@@ -140,8 +140,8 @@ private:
     std::uint32_t      mSeq;
     fcReason           mReason;
 
-    std::set <SHAMapNode> mRecentTXNodes;
-    std::set <SHAMapNode> mRecentASNodes;
+    std::set <SHAMapNodeID> mRecentTXNodes;
+    std::set <SHAMapNodeID> mRecentASNodes;
 
 
     // Data we have received from peers

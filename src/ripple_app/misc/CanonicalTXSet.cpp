@@ -71,15 +71,18 @@ bool CanonicalTXSet::Key::operator>= (Key const& rhs)const
     return mTXid >= rhs.mTXid;
 }
 
-void CanonicalTXSet::push_back (SerializedTransaction::ref txn)
+std::map <CanonicalTXSet::Key, SerializedTransaction::pointer>::key_type CanonicalTXSet::getKey(const SerializedTransaction::ref txn) const
 {
     uint256 effectiveAccount = mSetHash;
 
     effectiveAccount ^= to256 (txn->getSourceAccount ().getAccountID ());
 
-    mMap.insert (std::make_pair (
-                     Key (effectiveAccount, txn->getSequence (), txn->getTransactionID ()),
-                     txn));
+    return Key(effectiveAccount, txn->getSequence(), txn->getTransactionID());
+}
+
+void CanonicalTXSet::push_back (SerializedTransaction::ref txn)
+{
+    mMap.insert (std::make_pair (getKey(txn), txn));
 }
 
 CanonicalTXSet::iterator CanonicalTXSet::erase (iterator const& it)
@@ -88,6 +91,11 @@ CanonicalTXSet::iterator CanonicalTXSet::erase (iterator const& it)
     ++tmp;
     mMap.erase (it);
     return tmp;
+}
+
+CanonicalTXSet::iterator CanonicalTXSet::find(const SerializedTransaction::ref txn)
+{
+    return mMap.find(getKey(txn));
 }
 
 } // ripple

@@ -17,43 +17,63 @@
 */
 //==============================================================================
 
-#ifndef RIPPLE_SHAMAPNODE_H
-#define RIPPLE_SHAMAPNODE_H
+#ifndef RIPPLE_SHAMAPNODEID_H
+#define RIPPLE_SHAMAPNODEID_H
 
-#include <functional>
+#include "../ripple/types/api/base_uint.h"
+#include <ostream>
+#include <string>
+#include <tuple>
 
 namespace ripple {
 
 // Identifies a node in a SHA256 hash map
-class SHAMapNode
+class SHAMapNodeID
 {
-public:
-    SHAMapNode () : mDepth (0), mHash (0)
-    {
-        ;
-    }
-    SHAMapNode (int depth, uint256 const& hash);
+private:
+    uint256 mNodeID;
+    int mDepth;
+    mutable size_t  mHash;
 
+public:
+    SHAMapNodeID () : mDepth (0), mHash (0)
+    {
+    }
+
+    SHAMapNodeID (int depth, uint256 const& hash);
+    SHAMapNodeID (void const* ptr, int len);
+
+protected:
+    SHAMapNodeID (int depth, uint256 const& id, bool)
+        : mNodeID (id), mDepth (depth), mHash (0)
+    {
+    }
+
+public:
     int getDepth () const
     {
         return mDepth;
     }
+
     uint256 const& getNodeID ()  const
     {
         return mNodeID;
     }
+
     bool isValid () const
     {
         return (mDepth >= 0) && (mDepth < 64);
     }
+
     bool isRoot () const
     {
         return mDepth == 0;
     }
+
     size_t getMHash () const
     {
-        if (mHash == 0) setMHash ();
-
+        if (mHash == 0)
+            mHash = calculate_hash (mNodeID, mDepth);
         return mHash;
     }
 
@@ -62,47 +82,38 @@ public:
         return false;
     }
 
-    SHAMapNode getParentNodeID () const
+    SHAMapNodeID getParentNodeID () const
     {
         assert (mDepth);
-        return SHAMapNode (mDepth - 1, mNodeID);
+        return SHAMapNodeID (mDepth - 1, mNodeID);
     }
 
-    SHAMapNode getChildNodeID (int m) const;
+    SHAMapNodeID getChildNodeID (int m) const;
     int selectBranch (uint256 const& hash) const;
 
-    bool operator< (const SHAMapNode&) const;
-    bool operator> (const SHAMapNode&) const;
-    bool operator<= (const SHAMapNode&) const;
-    bool operator>= (const SHAMapNode&) const;
+    bool operator< (const SHAMapNodeID& n) const
+    {
+        return std::tie(mDepth, mNodeID) < std::tie(n.mDepth, n.mNodeID);
+    }
+    bool operator> (const SHAMapNodeID& n) const {return n < *this;}
+    bool operator<= (const SHAMapNodeID& n) const {return !(*this < n);}
+    bool operator>= (const SHAMapNodeID& n) const {return !(n < *this);}
 
-    bool operator== (const SHAMapNode& n) const
+    bool operator== (const SHAMapNodeID& n) const
     {
         return (mDepth == n.mDepth) && (mNodeID == n.mNodeID);
     }
+    bool operator!= (const SHAMapNodeID& n) const {return !(*this == n);}
+
     bool operator== (uint256 const& n) const
     {
         return n == mNodeID;
     }
-    bool operator!= (const SHAMapNode& n) const
-    {
-        return (mDepth != n.mDepth) || (mNodeID != n.mNodeID);
-    }
-    bool operator!= (uint256 const& n) const
-    {
-        return n != mNodeID;
-    }
-    void set (SHAMapNode const& from)
-    {
-        mNodeID = from.mNodeID;
-        mDepth = from.mDepth;
-        mHash = from.mHash;
-    }
+    bool operator!= (uint256 const& n) const {return !(*this == n);}
 
     virtual std::string getString () const;
     void dump () const;
 
-    static bool ClassInit ();
     static uint256 getNodeID (int depth, uint256 const& hash);
 
     // Convert to/from wire format (256-bit nodeID, 1-byte depth)
@@ -112,36 +123,30 @@ public:
     {
         return 33;
     }
-    SHAMapNode (const void* ptr, int len);
-
-protected:
-    SHAMapNode (int depth, uint256 const& id, bool) : mNodeID (id), mDepth (depth), mHash (0)
-    {
-        ;
-    }
 
 private:
-	// JED: why?
-    static uint256 smMasks[65]; // AND with hash to get node id
+    static
+    uint256 const&
+    Masks (int depth);
 
-    uint256 mNodeID;
-    int     mDepth;   // JED: what is this?
-    mutable size_t  mHash;
-
-    void setMHash () const;
+    static
+    std::size_t
+    calculate_hash (uint256 const& node, int depth);
 };
 
-extern std::size_t hash_value (const SHAMapNode& mn);
+//------------------------------------------------------------------------------
 
-inline std::ostream& operator<< (std::ostream& out, const SHAMapNode& node)
+inline std::ostream& operator<< (std::ostream& out, SHAMapNodeID const& node)
 {
     return out << node.getString ();
 }
 
-class SHAMapNode_hash
+//------------------------------------------------------------------------------
+
+class SHAMapNodeID_hash
 {
 public:
-    typedef ripple::SHAMapNode argument_type;
+    typedef ripple::SHAMapNodeID argument_type;
     typedef std::size_t result_type;
 
     result_type
@@ -151,36 +156,6 @@ public:
     }
 };
 
-}
-
-//------------------------------------------------------------------------------
-
-/*
-namespace std {
-
-template <>
-struct hash <ripple::SHAMapNode>
-{
-    std::size_t operator() (ripple::SHAMapNode const& value) const
-    {
-        return value.getMHash ();
-    }
-};
-
-}
-*/
-
-//------------------------------------------------------------------------------
-
-/*
-namespace boost {
-
-template <>
-struct hash <ripple::SHAMapNode> : std::hash <ripple::SHAMapNode>
-{
-};
-
-}
-*/
+} // ripple
 
 #endif

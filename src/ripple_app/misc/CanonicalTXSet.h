@@ -114,7 +114,11 @@ public:
         return mMap.empty ();
     }
 
+    iterator find(const SerializedTransaction::ref txn);
+
 private:
+    std::map <Key, SerializedTransaction::pointer>::key_type getKey(const SerializedTransaction::ref txn) const;
+
     // Used to salt the accounts so people can't mine for low account numbers
     uint256 mSetHash;
 

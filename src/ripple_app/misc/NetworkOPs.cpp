@@ -1128,7 +1128,7 @@ void NetworkOPsImp::takePosition (int seq, SHAMap::ref position)
 
 // Call with the master lock for now
 SHAMapAddNode NetworkOPsImp::gotTXData (const boost::shared_ptr<Peer>& peer, uint256 const& hash,
-                                     const std::list<SHAMapNode>& nodeIDs, const std::list< Blob >& nodeData)
+                                     const std::list<SHAMapNodeID>& nodeIDs, const std::list< Blob >& nodeData)
 {
 
     if (!mConsensus)

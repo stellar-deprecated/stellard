@@ -808,7 +808,7 @@ public:
     /** A peer has sent us some nodes from a transaction set
     */
     SHAMapAddNode peerGaveNodes (Peer::ptr const& peer
-        , uint256 const& setHash, const std::list<SHAMapNode>& nodeIDs
+        , uint256 const& setHash, const std::list<SHAMapNodeID>& nodeIDs
         , const std::list< Blob >& nodeData)
     {
         ripple::unordered_map<uint256
@@ -905,37 +905,21 @@ private:
 
             // Set up to write SHAMap changes to our database, 
             //   perform updates, extract changes
-            newLCL->peekTransactionMap ()->armDirty ();
-            newLCL->peekAccountStateMap ()->armDirty ();
             stellar::gLedgerMaster->beginClosingLedger();
 
-            WriteLog (lsDEBUG, LedgerConsensus) 
+            WriteLog (lsDEBUG, LedgerConsensus)
                 << "Applying consensus set transactions to the"
                 << " last closed ledger";
             applyTransactions (set, newLCL, newLCL, failedTransactions, false);
             newLCL->updateSkipList ();
             newLCL->setClosed ();
-            boost::shared_ptr<SHAMap::DirtySet> acctNodes
-                = newLCL->peekAccountStateMap ()->disarmDirty ();
-            boost::shared_ptr<SHAMap::DirtySet> txnNodes
-                = newLCL->peekTransactionMap ()->disarmDirty ();
 
-            // write out dirty nodes (temporarily done here)
-            int fc;
-
-            while ((fc = newLCL->peekAccountStateMap()->flushDirty (
-                *acctNodes, 256, hotACCOUNT_NODE, newLCL->getLedgerSeq ())) > 0)
-            {
-                WriteLog (lsTRACE, LedgerConsensus) 
-                    << "Flushed " << fc << " dirty state nodes";
-            }
-
-            while ((fc = newLCL->peekTransactionMap()->flushDirty (
-                *txnNodes, 256, hotTRANSACTION_NODE, newLCL->getLedgerSeq ())) > 0)
-            {
-                WriteLog (lsTRACE, LedgerConsensus) 
-                    << "Flushed " << fc << " dirty transaction nodes";
-            }
+            int asf = newLCL->peekAccountStateMap ()->flushDirty (
+                hotACCOUNT_NODE, newLCL->getLedgerSeq());
+            int tmf = newLCL->peekTransactionMap ()->flushDirty (
+                hotTRANSACTION_NODE, newLCL->getLedgerSeq());
+            WriteLog (lsDEBUG, LedgerConsensus) << "Flushed " << asf << " account and " <<
+                tmf << "transaction nodes";
 
             newLCL->setAccepted (closeTime, mCloseResolution, closeTimeCorrect);
 
@@ -1011,6 +995,9 @@ private:
             {
                 Ledger::pointer currentLedger = getApp().getLedgerMaster().getCurrentLedger();
 
+#if 0
+                // nicolas: tx was in consensus set, logic in applytransactions should take care of issues with few dependencies
+                // if there are more issues, we just drop the tx
                 CanonicalTXSet::iterator it = failedTransactions.begin();
 
                 if (it != failedTransactions.end())
@@ -1022,6 +1009,13 @@ private:
                         m_localTX.push_back(currentLedger->getLedgerSeq(), it->second);
                     }
                 }
+#else
+                mFailedTransactions.clear();
+                BOOST_FOREACH(auto tx, failedTransactions)
+                {
+                    mFailedTransactions.push_back(tx.second->getTransactionID());
+                }
+#endif
 
                 WriteLog (lsDEBUG, LedgerConsensus) << "Propagating changes from current open ledger";
 
@@ -1054,7 +1048,8 @@ private:
                             = boost::make_shared<SerializedTransaction> 
                             (boost::ref (sit));
 
-                        if (!m_localTX.contains(txn->getTransactionID()))
+                        if (!m_localTX.contains(txn->getTransactionID()) &&
+                            failedTransactions.find(txn) == failedTransactions.end()) // don't bother with failed transactions
                         {
                             WriteLog (lsDEBUG, LedgerConsensus) 
                                 << "Test applying disputed transaction that did"
@@ -1669,6 +1664,11 @@ private:
             }
         }
 
+        BOOST_FOREACH(auto &txid, mFailedTransactions)
+        {
+            if (ourPosition->hasItem(txid))
+                ourPosition->delItem(txid);
+        }
 
         int neededWeight;
 
@@ -1989,6 +1989,9 @@ private:
     // Disputed transactions
     ripple::unordered_map<uint256, DisputedTx::pointer> mDisputes;
     boost::unordered_set<uint256> mCompares;
+
+    // known bad transactions
+    std::vector<uint256> mFailedTransactions;
 
     // Close time estimates
     std::map<std::uint32_t, int> mCloseTimes;
