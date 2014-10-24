@@ -3886,6 +3886,9 @@
     <None Include="protocol.x">
       <Filter>overlay</Filter>
     </None>
+    <None Include="..\..\src\overlay\stellar.proto">
+      <Filter>overlay</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\doc\stellar-example.txt">

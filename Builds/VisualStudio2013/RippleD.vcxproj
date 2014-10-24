@@ -2501,6 +2501,7 @@
     <None Include="..\..\doc\stellard-example.cfg" />
     <None Include="..\..\doc\stellard.init" />
     <None Include="..\..\LICENSE" />
+    <None Include="..\..\src\overlay\stellar.proto" />
     <None Include="..\..\src\ripple\algorithm\README.md" />
     <None Include="..\..\src\ripple\algorithm\TODO.md" />
     <None Include="..\..\src\ripple\beast\ripple_beastobjc.mm">
