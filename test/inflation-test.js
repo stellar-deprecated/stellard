@@ -150,7 +150,7 @@ suite('Inflation', function() {
     	$t.inflation($.remote.account('root')._account_id, seq);
     	return $t;
     }
-
+    
     test('Inflation #1 - two guys over threshold', function(done) {
         var self = this;
         var tx_fee = 12; //TODO: get tx fee
@@ -238,7 +238,7 @@ suite('Inflation', function() {
             assert(!error, self.what);
             done();
         });
-    });
+    } );
 
     // When no one gets over the min %
     // so choose the top 50 guys (or all 12 in this case)
@@ -251,8 +251,10 @@ suite('Inflation', function() {
             return n+1;
         };
 
-        var balanceFun = function(n){
-            return (n+1)*1000;
+        var balanceFun = function ( n ) {
+            //SANITY - with the minimum at 1000, one account is below the filtering threshold
+            // put back 1000 when inflation doesn't do that that
+            return ( n + 1 ) * 1500;
         };
 
         var accountObjects=makeTestAccounts(12, balanceFun, voteFun, tx_fee).accountObjects;

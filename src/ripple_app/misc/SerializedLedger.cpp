@@ -144,7 +144,15 @@ bool SerializedLedgerEntry::thread (uint256 const& txID, std::uint32_t ledgerSeq
     uint256 oldPrevTxID = getFieldH256 (sfPreviousTxnID);
     WriteLog (lsTRACE, SerializedLedgerLog) << "Thread Tx:" << txID << " prev:" << oldPrevTxID;
 
-    prevTxID = oldPrevTxID; // note that because of account merge, the txID could be the same but the ledger ID will not
+    if (oldPrevTxID == txID)
+    {
+        // this transaction is already threaded
+        // note that because of account merge, the txID could be the same but the ledger ID will not
+        // assert (getFieldU32 (sfPreviousTxnLgrSeq) == ledgerSeq);
+        return false;
+    }
+
+    prevTxID = oldPrevTxID;
     prevLedgerID = getFieldU32 (sfPreviousTxnLgrSeq);
     setFieldH256 (sfPreviousTxnID, txID);
     setFieldU32 (sfPreviousTxnLgrSeq, ledgerSeq);
