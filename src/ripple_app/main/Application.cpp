@@ -1199,7 +1199,7 @@ bool ApplicationImp::loadOldLedger (const std::string& l, bool bReplay, Canonica
 
         if (l.empty() || (l == "latest"))
         {
-            if (ledgerInDB != nullptr)
+            if (ledgerInDB != nullptr && ledgerInDB->getHash().isNonZero())
             {
                 loadLedger = ledgerInDB->getLegacyLedger();
             }

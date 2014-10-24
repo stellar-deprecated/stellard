@@ -3,6 +3,7 @@
 #include "ripple_app/main/Application.h"
 #include "ripple_basics/log/Log.h"
 #include "ripple_basics/ripple_basics.h"
+#include "ripple_app/main/LoadManager.h"
 
 using namespace ripple; // needed for logging...
 
@@ -230,12 +231,30 @@ namespace stellar
 	}
 
 
-    static void importHelper(SLE::ref curEntry, LedgerMaster &lm) {
+    static void importHelper(SLE::ref curEntry, int &counter, int &totalImports, time_t start) {
+        static const int kProgressCount = 100000;
+        
+        totalImports++;
+        
+        if (++counter == kProgressCount)
+        {
+            int elapsed = time(nullptr) - start;
+            int rate = totalImports / (elapsed?elapsed:1);
+            WriteLog(ripple::lsINFO, ripple::Ledger) << "Imported " << totalImports << " items @" << rate;
+            counter = 0;
+
+            // SANITY: should instead work on batching into the DB and not mess with deadlock
+            Application& app (getApp ());
+            LoadManager& mgr (app.getLoadManager ());
+            mgr.resetDeadlockDetector ();
+        }
+
         LedgerEntry::pointer entry = LedgerEntry::makeEntry(curEntry);
         if(entry) {
             entry->storeAdd();
         }
         // else entry type we don't care about
+        
     }
     
     CanonicalLedgerForm::pointer LedgerMaster::importLedgerState(uint256 ledgerHash)
@@ -252,8 +271,13 @@ namespace stellar
                 // delete all
                 LedgerEntry::dropAll(mCurrentDB);
 
+                int counter = 0, totalImports = 0;
+                time_t start = time(nullptr);
+
                 // import all anew
-                newLedger->getLegacyLedger()->visitStateItems(BIND_TYPE (&importHelper, P_1, boost::ref (*this)));
+                newLedger->getLegacyLedger()->visitStateItems(BIND_TYPE (&importHelper, P_1, boost::ref(counter), boost::ref(totalImports), start));
+
+                WriteLog(ripple::lsINFO, ripple::Ledger) << "Imported " << totalImports << " items";
 
                 updateDBFromLedger(newLedger);
             }
