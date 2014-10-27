@@ -151,7 +151,6 @@ namespace stellar
         uint256 lkcl = getLastClosedLedgerHash();
         if (lkcl.isNonZero()) {
             // there is a ledger in the database
-            string ledgerData = mCurrentDB.getState(mCurrentDB.getStoreStateName(LedgerDatabase::kLastClosedLedgerContent));
             if (mCurrentCLF->load(lkcl)) {
                 mLastLedgerHash = lkcl;
                 needreset = false;
