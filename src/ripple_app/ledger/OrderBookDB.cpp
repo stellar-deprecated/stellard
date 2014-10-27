@@ -104,7 +104,7 @@ void OrderBookDB::update (Ledger::pointer ledger)
         }
     }
 
-    WriteLog (lsDEBUG, OrderBookDB) << "OrderBookDB::update< " << books << " books found";
+    WriteLog (lsINFO, OrderBookDB) << "OrderBookDB::update< " << books << " books found";
     {
         ScopedLockType sl (mLock);
 

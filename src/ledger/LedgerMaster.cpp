@@ -168,7 +168,7 @@ namespace stellar
 		SHAMap::Delta delta;
         bool needFull = false;
 
-        WriteLog(ripple::lsINFO, ripple::Ledger) << "catching up from " << mCurrentCLF->getHash() << " to " << updatedCurrentCLF;
+        WriteLog(ripple::lsINFO, ripple::Ledger) << "catching up from " << mCurrentCLF->getHash() << " to " << updatedCurrentCLF->getHash();
 
         try
         {
@@ -227,6 +227,8 @@ namespace stellar
 
         commitTransaction(updatedCurrentCLF);
 
+        WriteLog(ripple::lsINFO, ripple::Ledger) << "done catching up with " << updatedCurrentCLF->getHash();
+
         return updatedCurrentCLF;
 	}
 
@@ -275,15 +277,15 @@ namespace stellar
                 time_t start = time(nullptr);
 
                 // import all anew
-                newLedger->getLegacyLedger()->visitStateItems(BIND_TYPE (&importHelper, P_1, boost::ref(counter), boost::ref(totalImports), start));
+                newLedger->getLegacyLedger()->visitStateItems(std::bind(&importHelper, P_1, std::ref(counter), std::ref(totalImports), start));
 
                 WriteLog(ripple::lsINFO, ripple::Ledger) << "Imported " << totalImports << " items";
 
                 updateDBFromLedger(newLedger);
             }
             catch (...) {
-                mCurrentDB.endTransaction(true);
                 WriteLog(ripple::lsWARNING, ripple::Ledger) << "Could not import state";
+                mCurrentDB.endTransaction(true);
                 return CanonicalLedgerForm::pointer();
             }
             commitTransaction(newLedger);

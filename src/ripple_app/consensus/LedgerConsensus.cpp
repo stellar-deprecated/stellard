@@ -1010,7 +1010,6 @@ private:
                     }
                 }
 #else
-                //SANITY: need lock for mFailedTransactions
                 mFailedTransactions.clear();
                 BOOST_FOREACH(auto tx, failedTransactions)
                 {
@@ -1665,7 +1664,6 @@ private:
             }
         }
 
-        // SANITYL: need lock for mFailedTransactions
         BOOST_FOREACH(auto &txid, mFailedTransactions)
         {
             if (ourPosition->hasItem(txid))

@@ -136,11 +136,9 @@ bool SqliteDatabase::executeSQL (const char* sql, bool fail_ok)
     {
         if (!fail_ok)
         {
-#ifdef BEAST_DEBUG
             WriteLog (lsWARNING, SqliteDatabase) << "Perror:" << mHost << ": " << rc;
             WriteLog (lsWARNING, SqliteDatabase) << "Statement: " << sql;
             WriteLog (lsWARNING, SqliteDatabase) << "Error: " << sqlite3_errmsg (mConnection);
-#endif
         }
 
         endIterRows ();
