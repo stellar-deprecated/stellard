@@ -50,13 +50,16 @@ namespace ripple {
 		return tesSUCCESS;
 	}
 
-	TER InflationTransactor::payFee()
-	{
-		STAmount saPaid = mTxn.getTransactionFee();
-		if (saPaid == zero)
-			return tesSUCCESS;
-		return temBAD_FEE;
-	}
+    TER InflationTransactor::payFee()
+    {
+        STAmount saPaid = mTxn.getTransactionFee();
+        if (saPaid == zero)
+            return tesSUCCESS;
+        if (LedgerDump::enactHistoricalQuirk (QuirkNonzeroInflationFees))
+            return Transactor::payFee ();
+        else
+            return temBAD_FEE;
+    }
 
 	TER InflationTransactor::doApply()
 	{
