@@ -1118,10 +1118,10 @@ public:
         m_sweepTimer.setExpiration (getConfig ().getSize (siSweepInterval));
     }
 
+    void startNewLedger (std::uint32_t closeTime = 0);
 
 private:
     void updateTables ();
-    void startNewLedger ();
     bool loadOldLedger (const std::string&, bool);
 
     void onAnnounceAddress ();
@@ -1129,7 +1129,7 @@ private:
 
 //------------------------------------------------------------------------------
 
-void ApplicationImp::startNewLedger ()
+void ApplicationImp::startNewLedger (std::uint32_t closeTime)
 {
     // New stuff.
     RippleAddress   rootSeedMaster      = RippleAddress::createSeedGeneric ("masterpassphrase");
@@ -1145,12 +1145,17 @@ void ApplicationImp::startNewLedger ()
         assert (!!firstLedger->getAccountState (rootAddress));
         // WRITEME: Add any default amendments
         // WRITEME: Set default fee/reserve
+        if (closeTime != 0)
+            firstLedger->setCloseTime (closeTime);
         firstLedger->updateHash ();
         firstLedger->setClosed ();
         firstLedger->setAccepted ();
         m_ledgerMaster->pushLedger (firstLedger);
 
         Ledger::pointer secondLedger = boost::make_shared<Ledger> (true, boost::ref (*firstLedger));
+        if (closeTime != 0)
+            secondLedger->setCloseTime (closeTime);
+        secondLedger->updateHash ();
         secondLedger->setClosed ();
         secondLedger->setAccepted ();
         m_ledgerMaster->pushLedger (secondLedger, boost::make_shared<Ledger> (true, boost::ref (*secondLedger)));

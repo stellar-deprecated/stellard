@@ -120,6 +120,8 @@ public:
     virtual int          getWebsocketConnCount() = 0;
     virtual uint32_t     getUptime() = 0;
 
+    // Restart the ledger history, optionally at a given timestamp.
+    virtual void startNewLedger (std::uint32_t closeTime = 0) = 0;
     /** Retrieve the "wallet database"
 
         It looks like this is used to store the unique node list.
