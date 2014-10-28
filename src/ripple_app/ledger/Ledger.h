@@ -54,6 +54,7 @@ enum LedgerStateParms
     lepERROR        = 32,   // error
 };
 
+#define LEDGER_JSON_BULK        0x08000000
 #define LEDGER_JSON_DUMP_TSTR   0x10000000
 #define LEDGER_JSON_DUMP_STATE  0x20000000
 #define LEDGER_JSON_EXPAND      0x40000000

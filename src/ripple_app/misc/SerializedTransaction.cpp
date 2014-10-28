@@ -239,8 +239,14 @@ void SerializedTransaction::setSourceAccount (const RippleAddress& naSource)
     setFieldAccount (sfAccount, naSource);
 }
 
-Json::Value SerializedTransaction::getJson (int) const
+Json::Value SerializedTransaction::getJson (int options) const
 {
+    if (is_bit_set(options, LEDGER_JSON_BULK))
+    {
+        Serializer s = STObject::getSerializer ();
+        return Json::Value(strHex (s.peekData ()));
+    }
+
     Json::Value ret = STObject::getJson (0);
     ret["hash"] = to_string (getTransactionID ());
     return ret;
