@@ -974,10 +974,10 @@ int NetworkOPsImp::beginConsensus (uint256 const& networkClosed, Ledger::pointer
     }
     else if (!stellar::gLedgerMaster->ensureSync(prevLedger, true))
     {
-        if (mMode == omFULL)
+        if (mMode == omTRACKING || mMode == omFULL)
         {
-            m_journal.warning << "Don't have LCL in database, going to tracking";
-            setMode (omTRACKING);
+            m_journal.warning << "Don't have LCL in database, going back to syncing";
+            setMode (omSYNCING);
         }
         return 3;
     }
