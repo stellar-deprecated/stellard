@@ -78,6 +78,14 @@ public:
 
     // test/debug
     virtual void simulate () = 0;
+
+    // static helpers
+    static void applyTransactions (SHAMap::ref set, Ledger::ref applyLedger,
+                                   Ledger::ref checkLedger, CanonicalTXSet& failedTransactions, 
+                                   bool openLgr);
+    static int applyTransaction (TransactionEngine& engine
+                                 , SerializedTransaction::ref txn, Ledger::ref ledger
+                                 , bool openLedger, bool retryAssured);
 };
 
 boost::shared_ptr <LedgerConsensus>
