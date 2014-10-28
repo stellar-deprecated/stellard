@@ -47,6 +47,7 @@ static std::map<HistoricalQuirk, std::pair<LedgerSeq, LedgerSeq>> const gQuirks 
     { QuirkAsymmetricTrustlines, { 0, 900000 } },
     { QuirkUseLsfDisableMaster,  { 0, 100000 } },
     { QuirkUseLsfPasswordSpent,  { 0, 129706 } },
+    { QuirkSameCurrencyOffer, { 87668, 100000 } },
 };
 
 bool

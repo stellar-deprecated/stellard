@@ -37,6 +37,7 @@ namespace ripple
         QuirkAsymmetricTrustlines,
         QuirkUseLsfDisableMaster,
         QuirkUseLsfPasswordSpent,
+        QuirkSameCurrencyOffer,
     };
 
     // Struct merely exists to attach logging to. Container for static methods.
