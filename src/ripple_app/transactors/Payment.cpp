@@ -202,7 +202,7 @@ TER PaymentTransactor::doApply ()
             bool const openLedger = is_bit_set (mParams, tapOPEN_LEDGER);
 			bool tooManyPaths = false;
 			if (spsPaths.size() > MAX_NUM_PATHS) tooManyPaths = true;
-			else
+			else if (! LedgerDump::enactHistoricalQuirk (QuirkLongPaymentPaths))
 			{
 				for (auto const& path : spsPaths)
 				{
