@@ -233,6 +233,14 @@ public:
     {
         return mCloseResolution;
     }
+    std::uint32_t getCloseFlags () const
+    {
+        return mCloseFlags;
+    }
+    void setCloseFlags (std::uint32_t flags)
+    {
+        mCloseFlags = flags;
+    }
     bool getCloseAgree () const
     {
         return (mCloseFlags & sLCF_NoConsensusTime) == 0;
