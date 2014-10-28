@@ -99,6 +99,7 @@ enum LedgerNameSpace
 enum LedgerSpecificFlags
 {
     // ltACCOUNT_ROOT
+    lsfPasswordSpent    = 0x00010000,   // True, if password set fee is spent.
     lsfRequireDestTag   = 0x00020000,   // True, to require a DestinationTag for payments.
     lsfRequireAuth      = 0x00040000,   // True, to require a authorization to hold IOUs.
     lsfDisallowSTR      = 0x00080000,   // True, to disallow sending STR.
