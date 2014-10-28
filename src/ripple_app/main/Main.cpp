@@ -197,6 +197,9 @@ int run (int argc, char** argv)
     ("verbose,v", "Verbose logging.")
     ("load", "Load the current ledger from the local DB.")
     ("replay","Replay a ledger close.")
+    ("dump_transactions", po::value <std::string> (), "Write a log of all transactions to a sequential file.")
+    ("load_transactions", po::value <std::string> (), "Load and apply a log of transactions from a sequential file.")
+    ("dump_ledger", po::value <int> (), "Emit a ledger in full, including account-state.")
     ("ledger", po::value<std::string> (), "Load the specified ledger and start from .")
     ("start", "Start from a fresh Ledger.")
     ("net", "Get the initial ledger from the network.")
@@ -260,7 +263,10 @@ int run (int argc, char** argv)
         && !vm.count ("parameters")
         && !vm.count ("fg")
         && !vm.count ("standalone")
-        && !vm.count ("unittest"))
+        && !vm.count ("unittest")
+        && !vm.count ("dump_ledger")
+        && !vm.count ("dump_transactions")
+        && !vm.count ("load_transactions"))
     {
         std::string logMe = DoSustain (getConfig ().DEBUG_LOGFILE.string());
 
@@ -334,6 +340,33 @@ int run (int argc, char** argv)
 
         if (getConfig ().VALIDATION_QUORUM < 2)
             getConfig ().VALIDATION_QUORUM = 2;
+    }
+
+    if (vm.count ("dump_transactions"))
+    {
+        getConfig ().RUN_STANDALONE = true;
+        getConfig ().START_UP = Config::LOAD;
+        auto filename = vm["dump_transactions"].as<std::string> ();
+        LedgerDump::dumpTransactions (filename);
+        return EXIT_SUCCESS;
+    }
+
+    if (vm.count ("dump_ledger"))
+    {
+        getConfig ().RUN_STANDALONE = true;
+        getConfig ().START_UP = Config::LOAD;
+        auto ledgerNum = vm["dump_ledger"].as<int> ();
+        LedgerDump::dumpLedger (ledgerNum);
+        return EXIT_SUCCESS;
+    }
+
+    if (vm.count ("load_transactions"))
+    {
+        getConfig ().RUN_STANDALONE = true;
+        getConfig ().START_UP = Config::FRESH;
+        auto filename = vm["load_transactions"].as<std::string> ();
+        LedgerDump::loadTransactions (filename);
+        return EXIT_SUCCESS;
     }
 
     if (iResult == 0)

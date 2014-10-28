@@ -26,7 +26,9 @@ DatabaseCon::DatabaseCon (const std::string& strName, const char* initStrings[],
     //         or Config to compute this path.
     //
     boost::filesystem::path pPath   = (getConfig ().RUN_STANDALONE &&
-                                          ((getConfig ().START_UP != Config::LOAD) && (getConfig ().START_UP != Config::REPLAY)))
+                                          ((getConfig ().START_UP != Config::LOAD) &&
+                                           (getConfig ().START_UP != Config::REPLAY) &&
+                                           (getConfig ().START_UP != Config::FRESH)))
                                       ? ""                                // Use temporary files.
                                       : (getConfig ().DATA_DIR / strName);       // Use regular db files.
 
