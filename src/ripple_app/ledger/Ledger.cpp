@@ -610,6 +610,10 @@ bool Ledger::saveValidatedLedger (bool current)
     {
         WriteLog (lsWARNING, Ledger) << "An accepted ledger was missing nodes";
         getApp().getLedgerMaster().failedSave(mLedgerSeq, mHash);
+        { // Clients can now trust the database for information about this ledger sequence
+            StaticScopedLockType sl (sPendingSaveLock);
+            sPendingSaves.erase(getLedgerSeq());
+        }
         return false;
     }
 
@@ -629,7 +633,8 @@ bool Ledger::saveValidatedLedger (bool current)
                 uint256 txID = vt.second->getTransactionID ();
                 getApp().getMasterTransaction ().inLedger (txID, mLedgerSeq);
 
-                res = res && db->executeSQL (boost::str (deleteAcctTrans % to_string (txID)));
+                // do not delete by tx id as we can have transactions pointing to several ledgers
+                // res = res && db->executeSQL (boost::str (deleteAcctTrans % to_string (txID)));
 
                 const std::vector<RippleAddress>& accts = vt.second->getAffected ();
 
@@ -688,6 +693,11 @@ bool Ledger::saveValidatedLedger (bool current)
 			beast::lexicalCastThrow <std::string>(mTotCoins) % mInflationSeq % mFeePool % mCloseTime %
 			mParentCloseTime % mCloseResolution % mCloseFlags %
 			to_string(mAccountHash) % to_string(mTransHash)));
+    }
+
+    { // Clients can now trust the database for information about this ledger sequence
+        StaticScopedLockType sl (sPendingSaveLock);
+        sPendingSaves.erase(getLedgerSeq());
     }
 
     return res;
@@ -1748,7 +1758,7 @@ bool Ledger::walkLedger ()
     std::vector <SHAMapMissingNode> missingNodes1;
     std::vector <SHAMapMissingNode> missingNodes2;
 
-    mAccountStateMap->walkMap (missingNodes1, 1);
+    mAccountStateMap->walkMap (missingNodes1, 32);
 
     if (ShouldLog (lsINFO, Ledger) && !missingNodes1.empty ())
     {
@@ -1756,7 +1766,7 @@ bool Ledger::walkLedger ()
         Log (lsINFO) << "First: " << missingNodes1[0];
     }
 
-    mTransactionMap->walkMap (missingNodes2, 1);
+    mTransactionMap->walkMap (missingNodes2, 32);
 
     if (ShouldLog (lsINFO, Ledger) && !missingNodes2.empty ())
     {
@@ -1936,6 +1946,14 @@ std::uint32_t Ledger::roundCloseTime (std::uint32_t closeTime, std::uint32_t clo
 */
 bool Ledger::pendSaveValidated (bool isSynchronous, bool isCurrent)
 {
+#ifdef NICOLAS5
+    if (!getApp().getHashRouter ().setFlag (getHash (), SF_SAVED))
+    {
+        WriteLog (lsDEBUG, Ledger) << "Double pend save for " << getLedgerSeq();
+        return true;
+    }
+#endif
+
     assert (isImmutable ());
 
     {
@@ -1947,13 +1965,22 @@ bool Ledger::pendSaveValidated (bool isSynchronous, bool isCurrent)
         }
     }
 
-    bool res = saveValidatedLedger(isCurrent);
-
-    { // Clients can now trust the database for information about this ledger sequence
-        StaticScopedLockType sl (sPendingSaveLock);
-        sPendingSaves.erase(getLedgerSeq());
+    if (isSynchronous)
+    {
+        return saveValidatedLedger(isCurrent);
     }
-    return res;
+    else if (isCurrent)
+    {
+        getApp().getJobQueue ().addJob (jtPUBLEDGER, "Ledger::pendSave",
+            BIND_TYPE (&Ledger::saveValidatedLedgerAsync, shared_from_this (), P_1, isCurrent));
+    }
+    else
+    {
+        getApp().getJobQueue ().addJob (jtPUBOLDLEDGER, "Ledger::pendOldSave",
+            BIND_TYPE (&Ledger::saveValidatedLedgerAsync, shared_from_this (), P_1, isCurrent));
+    }
+
+    return true;
 }
 
 std::set<std::uint32_t> Ledger::getPendingSaves()

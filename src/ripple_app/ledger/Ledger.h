@@ -463,6 +463,11 @@ protected:
     // returned SLE is immutable
     SLE::pointer getASNodeI (uint256 const & nodeID, LedgerEntryType let);
 
+    void saveValidatedLedgerAsync(Job&, bool current)
+    {
+        saveValidatedLedger(current);
+    }
+
     bool saveValidatedLedger (bool current);
 
     void updateFees ();
