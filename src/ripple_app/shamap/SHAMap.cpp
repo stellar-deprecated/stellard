@@ -60,10 +60,12 @@ SHAMap::SHAMap (SHAMapType t, uint256 const& hash, FullBelowCache& fullBelowCach
     root->makeInner ();
 }
 
+#ifdef ENABLE_SHAMAP_CACHE
 TaggedCache <uint256, SHAMapTreeNode>
     SHAMap::treeNodeCache ("TreeNodeCache", 65536, 60,
         get_seconds_clock (),
             LogPartition::getJournal <TaggedCacheLog> ());
+#endif
 
 SHAMap::~SHAMap ()
 {
@@ -1151,9 +1153,13 @@ void SHAMap::dump (bool hash)
 
 SHAMapTreeNode::pointer SHAMap::getCache (uint256 const& hash)
 {
+#ifdef ENABLE_SHAMAP_CACHE
     SHAMapTreeNode::pointer ret = treeNodeCache.fetch (hash);
     assert (!ret || !ret->getSeq());
     return ret;
+#else
+    return SHAMapTreeNode::pointer();
+#endif
 }
 
 void SHAMap::canonicalize (uint256 const& hash, SHAMapTreeNode::pointer& node)
@@ -1162,7 +1168,9 @@ void SHAMap::canonicalize (uint256 const& hash, SHAMapTreeNode::pointer& node)
     assert (node->getSeq() == 0);
     assert (node->getNodeHash() == hash);
 
+#ifdef ENABLE_SHAMAP_CACHE
     treeNodeCache.canonicalize (hash, node);
+#endif
 
 }
 

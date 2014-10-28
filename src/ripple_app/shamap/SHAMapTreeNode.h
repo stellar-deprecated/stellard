@@ -208,7 +208,9 @@ private:
     static std::mutex       childLock;
 };
 
+#ifdef ENABLE_SHAMAP_CACHE
 typedef TaggedCache <uint256, SHAMapTreeNode> TreeNodeCache;
+#endif
 
 } // ripple
 

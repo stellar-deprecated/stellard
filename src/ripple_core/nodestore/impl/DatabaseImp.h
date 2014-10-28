@@ -41,7 +41,7 @@ public:
     // Larger key/value storage, but not necessarily persistent.
     std::unique_ptr <Backend> m_fastBackend;
 
-#if 0
+#ifdef ENABLEBACKENDCACHE
     // Positive cache
     TaggedCache <uint256, NodeObject> m_cache;
 
@@ -68,7 +68,7 @@ public:
         , m_scheduler (scheduler)
         , m_backend (std::move (backend))
         , m_fastBackend (std::move (fastBackend))
-#if 0
+#ifdef ENABLEBACKENDCACHE
         , m_cache ("NodeStore", cacheTargetSize, cacheTargetSeconds,
             get_seconds_clock (), LogPartition::getJournal <TaggedCacheLog> ())
         , m_negCache ("NodeStore", get_seconds_clock (),
@@ -103,7 +103,7 @@ public:
 
     bool asyncFetch (uint256 const& hash, NodeObject::pointer& object)
     {
-#if 0
+#ifdef ENABLEBACKENDCACHE
         // See if the object is in cache
         object = m_cache.fetch (hash);
         if (object || m_negCache.touch_if_exists (hash))
@@ -135,7 +135,7 @@ public:
 
     int getDesiredAsyncReadCount ()
     {
-#if 0
+#ifdef ENABLEBACKENDCACHE
         // We prefer a client not fill our cache
         // We don't want to push data out of the cache
         // before it's retrieved
@@ -170,7 +170,7 @@ public:
 
     NodeObject::Ptr doFetch (uint256 const& hash, FetchReport &report)
     {
-#if 0
+#ifdef ENABLEBACKENDCACHE
         // See if the object already exists in the cache
         //
         NodeObject::Ptr obj = m_cache.fetch (hash);
@@ -210,7 +210,7 @@ public:
 
         if (obj == nullptr)
         {
-#if 0
+#ifdef ENABLEBACKENDCACHE
             // Just in case a write occurred
             obj = m_cache.fetch (hash);
 
@@ -223,7 +223,7 @@ public:
         }
         else
         {
-#if 0
+#ifdef ENABLEBACKENDCACHE
             // Ensure all threads get the same object
             //
             m_cache.canonicalize (hash, obj);
@@ -287,12 +287,12 @@ public:
         assert (hash == Serializer::getSHA512Half (data));
         #endif
 
-#if 0
+#ifdef ENABLEBACKENDCACHE
         m_cache.canonicalize (hash, object, true);
 #endif
         m_backend->store (object);
 
-#if 0
+#ifdef ENABLEBACKENDCACHE
         m_negCache.erase (hash);
 #endif
 
@@ -304,7 +304,7 @@ public:
 
     float getCacheHitRate ()
     {
-#if 0
+#ifdef ENABLEBACKENDCACHE
         return m_cache.getHitRate ();
 #else
         return 1.0f;
@@ -313,7 +313,7 @@ public:
 
     void tune (int size, int age)
     {
-#if 0
+#ifdef ENABLEBACKENDCACHE
         m_cache.setTargetSize (size);
         m_cache.setTargetAge (age);
         m_negCache.setTargetSize (size);
@@ -323,7 +323,7 @@ public:
 
     void sweep ()
     {
-#if 0
+#ifdef ENABLEBACKENDCACHE
         m_cache.sweep ();
         m_negCache.sweep ();
 #endif

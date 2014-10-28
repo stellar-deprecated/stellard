@@ -1138,8 +1138,10 @@ public:
         logTimedCall (m_journal.warning, "AcceptedLedger::sweep", __FILE__, __LINE__,
             &AcceptedLedger::sweep);
 
+#ifdef ENABLE_SHAMAP_CACHE
         logTimedCall (m_journal.warning, "SHAMap::sweep", __FILE__, __LINE__,
             &SHAMap::sweep);
+#endif
 
         logTimedCall (m_journal.warning, "NetworkOPs::sweepFetchPack", __FILE__, __LINE__, boost::bind (
             &NetworkOPs::sweepFetchPack, m_networkOPs.get ()));
