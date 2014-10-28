@@ -122,6 +122,10 @@ public:
 
     // Restart the ledger history, optionally at a given timestamp.
     virtual void startNewLedger (std::uint32_t closeTime = 0) = 0;
+    virtual void doSweep (Job& j) = 0;
+    virtual bool loadOldLedger (const std::string& l, bool bReplay) = 0;
+
+
     /** Retrieve the "wallet database"
 
         It looks like this is used to store the unique node list.

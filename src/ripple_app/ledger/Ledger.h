@@ -168,6 +168,10 @@ public:
     void setRaw (Serializer & s, bool hasPrefix);
 
     uint256 getHash ();
+    void setParentHash (uint256 h)
+    {
+        mParentHash = h;
+    }
     uint256 const& getParentHash () const
     {
         return mParentHash;

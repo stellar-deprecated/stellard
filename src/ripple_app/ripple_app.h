@@ -109,6 +109,7 @@
 #include "misc/NetworkOPs.h"
 #include "tx/TransactionMaster.h"
 #include "main/LocalCredentials.h"
+#include "main/LedgerDump.h"
 #include "main/Application.h"
 #include "ledger/OrderBookDB.h"
 #include "tx/TransactionAcquire.h"
