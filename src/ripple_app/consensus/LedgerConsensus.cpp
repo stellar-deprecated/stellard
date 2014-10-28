@@ -1777,79 +1777,115 @@ make_LedgerConsensus (LedgerConsensus::clock_type& clock, LocalTxs& localtx,
 void
 LedgerConsensus::applyTransactions (SHAMap::ref set, Ledger::ref applyLedger,
                                     Ledger::ref checkLedger, CanonicalTXSet& failedTransactions,
-                                    bool openLgr)
+                                    bool openLgr, std::vector<uint256> & applyOrder)
 {
     TransactionEngine engine (applyLedger);
 
+    std::map<uint256, SerializedTransaction::pointer> txns;
+    bool explicitApplyOrder = !applyOrder.empty ();
+
     for (SHAMapItem::pointer item = set->peekFirstItem (); !!item;
          item = set->peekNextItem (item->getTag ()))
+    {
         if (!checkLedger->hasTransaction (item->getTag ()))
         {
-            WriteLog (lsINFO, LedgerConsensus)
-                << "Processing candidate transaction: " << item->getTag ();
-#ifndef TRUST_NETWORK
-
-            try
-            {
-#endif
-                SerializerIterator sit (item->peekSerializer ());
-                SerializedTransaction::pointer txn
-                    = boost::make_shared<SerializedTransaction>
-                    (boost::ref (sit));
-
-                if (applyTransaction (engine, txn,
-                                      applyLedger, openLgr, true) == resultRetry)
-                {
-                    failedTransactions.push_back (txn);
-                }
-
-#ifndef TRUST_NETWORK
-            }
-            catch (...)
-            {
-                WriteLog (lsWARNING, LedgerConsensus) << "  Throws";
-            }
-
-#endif
+            SerializerIterator sit (item->peekSerializer ());
+            SerializedTransaction::pointer txn
+                = boost::make_shared<SerializedTransaction>
+                (boost::ref (sit));
+            txns[item->getTag ()] = txn;
         }
+    }
+
+    if (! explicitApplyOrder)
+    {
+        for (auto const& pair : txns)
+        {
+            applyOrder.push_back (pair.first);
+        }
+    }
+
+    for (auto const& hash : applyOrder)
+    {
+        WriteLog (lsINFO, LedgerConsensus)
+            << "Processing candidate transaction: " << hash;
+#ifndef TRUST_NETWORK
+
+        try
+        {
+#endif
+            auto txn = txns.at (hash);
+            if (applyTransaction (engine, txn,
+                                  applyLedger, openLgr, true) == resultRetry)
+            {
+                failedTransactions.push_back (txn);
+            }
+            else
+            {
+                txns.erase (hash);
+            }
+
+#ifndef TRUST_NETWORK
+        }
+        catch (...)
+        {
+            WriteLog (lsWARNING, LedgerConsensus) << "  Throws";
+        }
+
+#endif
+    }
 
     int changes;
     bool certainRetry = true;
 
+    if (!explicitApplyOrder)
+    {
+        applyOrder.clear ();
+        for (auto const& pair : failedTransactions)
+        {
+            applyOrder.push_back (pair.second->getTransactionID ());
+        }
+    }
+
     for (int pass = 0; pass < LEDGER_TOTAL_PASSES; ++pass)
     {
-        WriteLog (lsDEBUG, LedgerConsensus) << "Pass: " << pass << " Txns: "
+        WriteLog (lsINFO, LedgerConsensus) << "Pass: " << pass << " Txns: "
                                             << failedTransactions.size ()
                                             << (certainRetry ? " retriable" : " final");
         changes = 0;
 
-        CanonicalTXSet::iterator it = failedTransactions.begin ();
-
-        while (it != failedTransactions.end ())
+        for (auto const& hash : applyOrder)
         {
+            auto it = txns.find (hash);
+            if (it == txns.end ())
+                continue;
+            auto txn = it->second;
             try
             {
-                switch (applyTransaction (engine, it->second,
+                switch (applyTransaction (engine, txn,
                                           applyLedger, openLgr, certainRetry))
                 {
                 case resultSuccess:
-                    it = failedTransactions.erase (it);
+                    failedTransactions.erase (txn);
+                    txns.erase (hash);
                     ++changes;
                     break;
 
                 case resultFail:
-                    it = failedTransactions.erase (it);
+                    failedTransactions.erase (txn);
+                    txns.erase (hash);
                     break;
 
                 case resultRetry:
-                    ++it;
+                    break;
                 }
             }
             catch (...)
             {
                 WriteLog (lsWARNING, LedgerConsensus)
                     << "Transaction throws";
-                it = failedTransactions.erase (it);
+                failedTransactions.erase (txn);
+                txns.erase (hash);
             }
         }
 
@@ -1865,6 +1901,19 @@ LedgerConsensus::applyTransactions (SHAMap::ref set, Ledger::ref applyLedger,
             certainRetry = false;
     }
 }
+
+/** Overload for when no explicit apply-order is known (order is determined from hashes and
+ * CanonicalTxSet order).
+ */
+void
+LedgerConsensus::applyTransactions (SHAMap::ref set, Ledger::ref applyLedger,
+                                    Ledger::ref checkLedger, CanonicalTXSet& failedTransactions,
+                                    bool openLgr)
+{
+    std::vector<uint256> applyOrder;
+    applyTransactions (set, applyLedger, checkLedger, failedTransactions, openLgr, applyOrder);
+}
+
 
 /** Apply a transaction to a ledger
  */

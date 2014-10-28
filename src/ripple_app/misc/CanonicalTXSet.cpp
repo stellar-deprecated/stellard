@@ -82,6 +82,14 @@ void CanonicalTXSet::push_back (SerializedTransaction::ref txn)
                      txn));
 }
 
+void CanonicalTXSet::erase (SerializedTransaction::ref txn)
+{
+    uint256 effectiveAccount = mSetHash;
+    effectiveAccount ^= to256 (txn->getSourceAccount ().getAccountID ());
+    Key k(Key (effectiveAccount, txn->getSequence (), txn->getTransactionID ()));
+    mMap.erase (k);
+}
+
 CanonicalTXSet::iterator CanonicalTXSet::erase (iterator const& it)
 {
     iterator tmp = it;
