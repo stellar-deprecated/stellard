@@ -21,19 +21,20 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # This looks a bit funny, but we want to avoid touching any files if we've already
     # built this version of libsodium. And we need to make sure we don't behave badly
     # if we get killed in the middle of this.
-    libsodium=libsodium-1.0.0
-    if [[ ! -f $libsodium/.stellard.stamp ]]; then
-        if ! wget -nv -O $libsodium.download https://download.libsodium.org/libsodium/releases/$libsodium.tar.gz; then
+    libsodium_vers=1.0.0
+    libsodium_stamp=libsodium-${libsodium_vers}/.stellard.stamp
+    if [[ ! -f ${libsodium_stamp} ]]; then
+        if ! wget -nv -O libsodium.download https://github.com/jedisct1/libsodium/releases/download/${libsodium_vers}/libsodium-${libsodium_vers}.tar.gz; then
             # download failed?
-            rm -f $libsodium.download
+            rm -f libsodium.download
             exit 1
         fi
-        mv -f $libsodium.download $libsodium.tar.gz
-        tar -xzvf $libsodium.tar.gz
+        mv -f libsodium.download libsodium-${libsodium_vers}.tar.gz
+        tar -xzvf libsodium-${libsodium_vers}.tar.gz
         # the stamp file says we finished untarring successfully
-        touch $libsodium/.stellard.stamp
+        touch ${libsodium_stamp}
     fi
-    cd $libsodium
+    cd libsodium-${libsodium_vers}
     ./configure && make && sudo make install
 
     # build stellard
