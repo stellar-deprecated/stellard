@@ -202,7 +202,7 @@ TER PaymentTransactor::doApply ()
             bool const openLedger = is_bit_set (mParams, tapOPEN_LEDGER);
 			bool tooManyPaths = false;
 			if (spsPaths.size() > MAX_NUM_PATHS) tooManyPaths = true;
-			else
+			else if (! LedgerDump::enactHistoricalQuirk (QuirkLongPaymentPaths))
 			{
 				for (auto const& path : spsPaths)
 				{
@@ -271,6 +271,10 @@ TER PaymentTransactor::doApply ()
             mTxnAccount->setFieldAmount (sfBalance, mSourceBalance - saDstAmount);
             sleDst->setFieldAmount (sfBalance, sleDst->getFieldAmount (sfBalance) + saDstAmount);
 
+            // re-arm the password change fee if we can and need to
+            if (LedgerDump::enactHistoricalQuirk (QuirkUseLsfPasswordSpent) &&
+                (sleDst->getFlags () & lsfPasswordSpent))
+                sleDst->clearFlag (lsfPasswordSpent);
 
             terResult = tesSUCCESS;
         }

@@ -34,7 +34,7 @@ LogPartition::getPartitionName <RegularKeySetTransactorLog> ()
 class RegularKeySetTransactor
     : public Transactor
 {
-    
+    std::uint64_t calculateBaseFee ();
 
 public:
     RegularKeySetTransactor (

@@ -93,6 +93,33 @@ TER AccountSetTransactor::doApply ()
     }
 
   
+    if (LedgerDump::enactHistoricalQuirk (QuirkUseLsfDisableMaster))
+    {
+        //
+        // DisableMaster
+        //
+        if ((uSetFlag == asfDisableMaster) && (uClearFlag == asfDisableMaster))
+        {
+            m_journal.trace << "Malformed transaction: Contradictory flags set.";
+            return temINVALID_FLAG;
+        }
+
+        if ((uSetFlag == asfDisableMaster) && !is_bit_set (uFlagsIn, lsfDisableMaster))
+        {
+            if (!mTxnAccount->isFieldPresent (sfRegularKey))
+                return tecNO_REGULAR_KEY;
+
+            m_journal.trace << "Set lsfDisableMaster.";
+            uFlagsOut   |= lsfDisableMaster;
+        }
+
+        if ((uClearFlag == asfDisableMaster) && is_bit_set (uFlagsIn, lsfDisableMaster))
+        {
+            m_journal.trace << "Clear lsfDisableMaster.";
+            uFlagsOut   &= ~lsfDisableMaster;
+        }
+    }
+
     //
     // InflationDest
     //

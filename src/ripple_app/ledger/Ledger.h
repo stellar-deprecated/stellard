@@ -54,6 +54,7 @@ enum LedgerStateParms
     lepERROR        = 32,   // error
 };
 
+#define LEDGER_JSON_BULK        0x08000000
 #define LEDGER_JSON_DUMP_TSTR   0x10000000
 #define LEDGER_JSON_DUMP_STATE  0x20000000
 #define LEDGER_JSON_EXPAND      0x40000000
@@ -167,6 +168,10 @@ public:
     void setRaw (Serializer & s, bool hasPrefix);
 
     uint256 getHash ();
+    void setParentHash (uint256 h)
+    {
+        mParentHash = h;
+    }
     uint256 const& getParentHash () const
     {
         return mParentHash;
@@ -227,6 +232,14 @@ public:
     int getCloseResolution () const
     {
         return mCloseResolution;
+    }
+    std::uint32_t getCloseFlags () const
+    {
+        return mCloseFlags;
+    }
+    void setCloseFlags (std::uint32_t flags)
+    {
+        mCloseFlags = flags;
     }
     bool getCloseAgree () const
     {

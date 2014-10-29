@@ -453,10 +453,19 @@ bool LedgerEntrySet::threadOwners (SLE::ref node, Ledger::ref ledger,
 #ifdef META_DEBUG
         WriteLog (lsTRACE, LedgerEntrySet) << "Thread to two owners";
 #endif
-		// propagates to both owners. note that we want both threadTx to be executed
-		// in case of users not found
-		bool res = threadTx(node->getFirstOwner(), ledger, newMods);
-		return threadTx (node->getSecondOwner (), ledger, newMods) && res;
+        if (LedgerDump::enactHistoricalQuirk (QuirkAsymmetricTrustlines))
+        {
+            return
+                threadTx (node->getFirstOwner (), ledger, newMods) &&
+                threadTx (node->getSecondOwner (), ledger, newMods);
+        }
+        else
+        {
+            // propagates to both owners. note that we want both threadTx to be executed
+            // in case of users not found
+            bool res = threadTx(node->getFirstOwner(), ledger, newMods);
+            return threadTx (node->getSecondOwner (), ledger, newMods) && res;
+        }
     }
     else
         return false;

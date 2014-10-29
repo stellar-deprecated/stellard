@@ -25,13 +25,14 @@ SETUP_LOG (LedgerConsensus)
 
 // #define TRUST_NETWORK
 
+enum {resultSuccess, resultFail, resultRetry};
+
 class LedgerConsensusImp
     : public LedgerConsensus
     , public boost::enable_shared_from_this <LedgerConsensusImp>
     , public CountedObject <LedgerConsensusImp>
 {
 public:
-    enum {resultSuccess, resultFail, resultRetry};
 
     static char const* getCountedObjectName () { return "LedgerConsensus"; }
 
@@ -1248,168 +1249,6 @@ private:
                 msg, protocol::mtHAVE_SET)));        
     }
 
-    /** Apply a set of transactions to a ledger
-    */
-    void applyTransactions (SHAMap::ref set, Ledger::ref applyLedger,
-        Ledger::ref checkLedger, CanonicalTXSet& failedTransactions, 
-        bool openLgr)
-    {
-        TransactionEngine engine (applyLedger);
-
-        for (SHAMapItem::pointer item = set->peekFirstItem (); !!item; 
-            item = set->peekNextItem (item->getTag ()))
-            if (!checkLedger->hasTransaction (item->getTag ()))
-            {
-                WriteLog (lsINFO, LedgerConsensus) 
-                << "Processing candidate transaction: " << item->getTag ();
-#ifndef TRUST_NETWORK
-
-                try
-                {
-#endif
-                    SerializerIterator sit (item->peekSerializer ());
-                    SerializedTransaction::pointer txn 
-                        = boost::make_shared<SerializedTransaction> 
-                        (boost::ref (sit));
-
-                    if (applyTransaction (engine, txn, 
-                        applyLedger, openLgr, true) == resultRetry)
-                    {
-                        failedTransactions.push_back (txn);
-                    }
-
-#ifndef TRUST_NETWORK
-                }
-                catch (...)
-                {
-                    WriteLog (lsWARNING, LedgerConsensus) << "  Throws";
-                }
-
-#endif
-            }
-
-        int changes;
-        bool certainRetry = true;
-
-        for (int pass = 0; pass < LEDGER_TOTAL_PASSES; ++pass)
-        {
-            WriteLog (lsDEBUG, LedgerConsensus) << "Pass: " << pass << " Txns: " 
-                << failedTransactions.size () 
-                << (certainRetry ? " retriable" : " final");
-            changes = 0;
-
-            CanonicalTXSet::iterator it = failedTransactions.begin ();
-
-            while (it != failedTransactions.end ())
-            {
-                try
-                {
-                    switch (applyTransaction (engine, it->second, 
-                        applyLedger, openLgr, certainRetry))
-                    {
-                    case resultSuccess:
-                        it = failedTransactions.erase (it);
-                        ++changes;
-                        break;
-
-                    case resultFail:
-                        it = failedTransactions.erase (it);
-                        break;
-
-                    case resultRetry:
-                        ++it;
-                    }
-                }
-                catch (...)
-                {
-                    WriteLog (lsWARNING, LedgerConsensus) 
-                        << "Transaction throws";
-                    it = failedTransactions.erase (it);
-                }
-            }
-
-            WriteLog (lsDEBUG, LedgerConsensus) << "Pass: " 
-                << pass << " finished " << changes << " changes";
-
-            // A non-retry pass made no changes
-            if (!changes && !certainRetry)
-                return;
-
-            // Stop retriable passes
-            if ((!changes) || (pass >= LEDGER_RETRY_PASSES))
-                certainRetry = false;
-        }
-    }
-
-    /** Apply a transaction to a ledger
-    */
-    int applyTransaction (TransactionEngine& engine
-        , SerializedTransaction::ref txn, Ledger::ref ledger
-        , bool openLedger, bool retryAssured)
-    {
-        // Returns false if the transaction has need not be retried.
-        TransactionEngineParams parms = openLedger ? tapOPEN_LEDGER : tapNONE;
-
-        if (retryAssured)
-        {
-            parms = static_cast<TransactionEngineParams> (parms | tapRETRY);
-        }
-
-        if (getApp().getHashRouter ().setFlag (txn->getTransactionID ()
-            , SF_SIGGOOD))
-        {
-            parms = static_cast<TransactionEngineParams> 
-                (parms | tapNO_CHECK_SIGN);
-        }
-        WriteLog (lsDEBUG, LedgerConsensus) << "TXN " 
-            << txn->getTransactionID ()
-            << (openLedger ? " open" : " closed")
-            << (retryAssured ? "/retry" : "/final");
-        WriteLog (lsTRACE, LedgerConsensus) << txn->getJson (0);
-
-        // VFALCO TODO figure out what this "trust network"
-        //  is all about and why it needs exceptions.
-#ifndef TRUST_NETWORK
-
-        try
-        {
-#endif
-
-            bool didApply;
-            TER result = engine.applyTransaction (*txn, parms, didApply);
-
-            if (didApply)
-            {
-                WriteLog (lsDEBUG, LedgerConsensus) 
-                << "Transaction success: " << transHuman (result);
-                return resultSuccess;
-            }
-
-            if (isTefFailure (result) || isTemMalformed 
-                (result) || isTelLocal (result))
-            {
-                // failure
-                WriteLog (lsDEBUG, LedgerConsensus) 
-                    << "Transaction failure: " << transHuman (result);
-                return resultFail;
-            }
-
-            WriteLog (lsDEBUG, LedgerConsensus) 
-                << "Transaction retry: " << transHuman (result);
-            assert (!ledger->hasTransaction (txn->getTransactionID ()));
-            return resultRetry;
-
-#ifndef TRUST_NETWORK
-        }
-        catch (...)
-        {
-            WriteLog (lsWARNING, LedgerConsensus) << "Throws";
-            return false;
-        }
-
-#endif
-    }
-
     std::uint32_t roundCloseTime (std::uint32_t closeTime)
     {
         return Ledger::roundCloseTime (closeTime, mCloseResolution);
@@ -1930,5 +1769,222 @@ make_LedgerConsensus (LedgerConsensus::clock_type& clock, LocalTxs& localtx,
     return boost::make_shared <LedgerConsensusImp> (clock, localtx,
         prevLCLHash, previousLedger, closeTime, feeVote);
 }
+
+
+
+/** Apply a set of transactions to a ledger
+ */
+void
+LedgerConsensus::applyTransactions (SHAMap::ref set, Ledger::ref applyLedger,
+                                    Ledger::ref checkLedger, CanonicalTXSet& failedTransactions,
+                                    bool openLgr, std::vector<uint256> & applyOrder)
+{
+    TransactionEngine engine (applyLedger);
+
+    std::map<uint256, SerializedTransaction::pointer> txns;
+    bool explicitApplyOrder = !applyOrder.empty ();
+
+    for (SHAMapItem::pointer item = set->peekFirstItem (); !!item;
+         item = set->peekNextItem (item->getTag ()))
+    {
+        if (!checkLedger->hasTransaction (item->getTag ()))
+        {
+            SerializerIterator sit (item->peekSerializer ());
+            SerializedTransaction::pointer txn
+                = boost::make_shared<SerializedTransaction>
+                (boost::ref (sit));
+            txns[item->getTag ()] = txn;
+        }
+    }
+
+    if (! explicitApplyOrder)
+    {
+        for (auto const& pair : txns)
+        {
+            applyOrder.push_back (pair.first);
+        }
+    }
+
+    for (auto const& hash : applyOrder)
+    {
+        WriteLog (lsINFO, LedgerConsensus)
+            << "Processing candidate transaction: " << hash;
+#ifndef TRUST_NETWORK
+
+        try
+        {
+#endif
+            auto txn = txns.at (hash);
+            if (applyTransaction (engine, txn,
+                                  applyLedger, openLgr, true) == resultRetry)
+            {
+                failedTransactions.push_back (txn);
+            }
+            else
+            {
+                txns.erase (hash);
+            }
+
+#ifndef TRUST_NETWORK
+        }
+        catch (...)
+        {
+            WriteLog (lsWARNING, LedgerConsensus) << "  Throws";
+        }
+
+#endif
+    }
+
+    int changes;
+    bool certainRetry = true;
+
+    if (!explicitApplyOrder)
+    {
+        applyOrder.clear ();
+        for (auto const& pair : failedTransactions)
+        {
+            applyOrder.push_back (pair.second->getTransactionID ());
+        }
+    }
+
+    for (int pass = 0; pass < LEDGER_TOTAL_PASSES; ++pass)
+    {
+        WriteLog (lsINFO, LedgerConsensus) << "Pass: " << pass << " Txns: "
+                                            << failedTransactions.size ()
+                                            << (certainRetry ? " retriable" : " final");
+        changes = 0;
+
+        for (auto const& hash : applyOrder)
+        {
+            auto it = txns.find (hash);
+            if (it == txns.end ())
+                continue;
+            auto txn = it->second;
+            try
+            {
+                switch (applyTransaction (engine, txn,
+                                          applyLedger, openLgr, certainRetry))
+                {
+                case resultSuccess:
+                    failedTransactions.erase (txn);
+                    txns.erase (hash);
+                    ++changes;
+                    break;
+
+                case resultFail:
+                    failedTransactions.erase (txn);
+                    txns.erase (hash);
+                    break;
+
+                case resultRetry:
+                    break;
+                }
+            }
+            catch (...)
+            {
+                WriteLog (lsWARNING, LedgerConsensus)
+                    << "Transaction throws";
+                failedTransactions.erase (txn);
+                txns.erase (hash);
+            }
+        }
+
+        WriteLog (lsDEBUG, LedgerConsensus) << "Pass: "
+                                            << pass << " finished " << changes << " changes";
+
+        // A non-retry pass made no changes
+        if (!changes && !certainRetry)
+            return;
+
+        // Stop retriable passes
+        if ((!changes) || (pass >= LEDGER_RETRY_PASSES))
+            certainRetry = false;
+    }
+}
+
+/** Overload for when no explicit apply-order is known (order is determined from hashes and
+ * CanonicalTxSet order).
+ */
+void
+LedgerConsensus::applyTransactions (SHAMap::ref set, Ledger::ref applyLedger,
+                                    Ledger::ref checkLedger, CanonicalTXSet& failedTransactions,
+                                    bool openLgr)
+{
+    std::vector<uint256> applyOrder;
+    applyTransactions (set, applyLedger, checkLedger, failedTransactions, openLgr, applyOrder);
+}
+
+
+/** Apply a transaction to a ledger
+ */
+int
+LedgerConsensus::applyTransaction (TransactionEngine& engine
+                                   , SerializedTransaction::ref txn, Ledger::ref ledger
+                                   , bool openLedger, bool retryAssured)
+{
+    // Returns false if the transaction has need not be retried.
+    TransactionEngineParams parms = openLedger ? tapOPEN_LEDGER : tapNONE;
+
+    if (retryAssured)
+    {
+        parms = static_cast<TransactionEngineParams> (parms | tapRETRY);
+    }
+
+    if (getApp().getHashRouter ().setFlag (txn->getTransactionID ()
+                                           , SF_SIGGOOD))
+    {
+        parms = static_cast<TransactionEngineParams>
+            (parms | tapNO_CHECK_SIGN);
+    }
+    WriteLog (lsDEBUG, LedgerConsensus) << "TXN "
+                                        << txn->getTransactionID ()
+                                        << (openLedger ? " open" : " closed")
+                                        << (retryAssured ? "/retry" : "/final");
+    WriteLog (lsTRACE, LedgerConsensus) << txn->getJson (0);
+
+    // VFALCO TODO figure out what this "trust network"
+    //  is all about and why it needs exceptions.
+#ifndef TRUST_NETWORK
+
+    try
+    {
+#endif
+
+        bool didApply;
+        TER result = engine.applyTransaction (*txn, parms, didApply);
+
+        if (didApply)
+        {
+            WriteLog (lsDEBUG, LedgerConsensus)
+                << "Transaction success: " << transHuman (result);
+            return resultSuccess;
+        }
+
+        if (isTefFailure (result) || isTemMalformed
+            (result) || isTelLocal (result))
+        {
+            // failure
+            WriteLog (lsDEBUG, LedgerConsensus)
+                << "Transaction failure: " << transHuman (result);
+            return resultFail;
+        }
+
+        WriteLog (lsDEBUG, LedgerConsensus)
+            << "Transaction retry: " << transHuman (result);
+        assert (!ledger->hasTransaction (txn->getTransactionID ()));
+        return resultRetry;
+
+#ifndef TRUST_NETWORK
+    }
+    catch (...)
+    {
+        WriteLog (lsWARNING, LedgerConsensus) << "Throws";
+        return false;
+    }
+
+#endif
+}
+
+
 
 } // ripple

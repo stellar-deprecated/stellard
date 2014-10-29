@@ -1033,55 +1033,75 @@ Json::Value Ledger::getJson (int options)
 
     ScopedLockType sl (mLock);
 
-    ledger[jss::seqNum]                = beast::lexicalCastThrow <std::string> (mLedgerSeq); // DEPRECATED
-    ledger[jss::parent_hash]           = to_string (mParentHash);
-    ledger[jss::ledger_index]          = beast::lexicalCastThrow <std::string> (mLedgerSeq);
+    if (is_bit_set(options, LEDGER_JSON_BULK)) {
+        Serializer s (128);
+        s.add32 (HashPrefix::ledgerMaster);
+        addRaw (s);
+        ledger[Json::StaticString("seq")] = mLedgerSeq;
+        ledger[Json::StaticString("raw")] = strHex (s.peekData ());
 
-    if (mClosed || bFull)
-    {
-        if (mClosed)
-            ledger[jss::closed] = true;
+    } else {
 
-        ledger[jss::hash]           = to_string (mHash);                             // DEPRECATED
-        ledger[jss::totalCoins]     = beast::lexicalCastThrow <std::string> (mTotCoins); // DEPRECATED
-        ledger[jss::ledger_hash]       = to_string (mHash);
-        ledger[jss::transaction_hash]  = to_string (mTransHash);
-        ledger[jss::account_hash]      = to_string (mAccountHash);
-        ledger[jss::accepted]          = mAccepted;
-        ledger[jss::total_coins]       = beast::lexicalCastThrow <std::string> (mTotCoins);
-		ledger["inflate_seq"]			= beast::lexicalCastThrow <std::string>(mInflationSeq);
-		ledger["fee_pool"]				= beast::lexicalCastThrow <std::string>(mFeePool);
+        ledger[jss::seqNum]                = beast::lexicalCastThrow <std::string> (mLedgerSeq); // DEPRECATED
+        ledger[jss::parent_hash]           = to_string (mParentHash);
+        ledger[jss::ledger_index]          = beast::lexicalCastThrow <std::string> (mLedgerSeq);
 
-        if (mCloseTime != 0)
+        if (mClosed || bFull)
         {
-            ledger[jss::close_time]            = mCloseTime;
-            ledger[jss::close_time_human]      = boost::posix_time::to_simple_string (ptFromSeconds (mCloseTime));
-            ledger[jss::close_time_resolution] = mCloseResolution;
+            if (mClosed)
+                ledger[jss::closed] = true;
 
-            if ((mCloseFlags & sLCF_NoConsensusTime) != 0)
-                ledger[jss::close_time_estimated] = true;
+            ledger[jss::hash]           = to_string (mHash);                             // DEPRECATED
+            ledger[jss::totalCoins]     = beast::lexicalCastThrow <std::string> (mTotCoins); // DEPRECATED
+            ledger[jss::ledger_hash]       = to_string (mHash);
+            ledger[jss::transaction_hash]  = to_string (mTransHash);
+            ledger[jss::account_hash]      = to_string (mAccountHash);
+            ledger[jss::accepted]          = mAccepted;
+            ledger[jss::total_coins]       = beast::lexicalCastThrow <std::string> (mTotCoins);
+            ledger["inflate_seq"]			= beast::lexicalCastThrow <std::string>(mInflationSeq);
+            ledger["fee_pool"]				= beast::lexicalCastThrow <std::string>(mFeePool);
+
+            if (mCloseTime != 0)
+            {
+                ledger[jss::close_time]            = mCloseTime;
+                ledger[jss::close_time_human]      = boost::posix_time::to_simple_string (ptFromSeconds (mCloseTime));
+                ledger[jss::close_time_resolution] = mCloseResolution;
+
+                if ((mCloseFlags & sLCF_NoConsensusTime) != 0)
+                    ledger[jss::close_time_estimated] = true;
+            }
+        }
+        else
+        {
+            ledger[jss::closed] = false;
         }
     }
-    else
-    {
-        ledger[jss::closed] = false;
-    }
 
-    if (mTransactionMap && (bFull || is_bit_set (options, LEDGER_JSON_DUMP_TSTR)))
+    if (mTransactionMap && (bFull
+                            || is_bit_set (options, LEDGER_JSON_DUMP_TSTR)
+                            || is_bit_set (options, LEDGER_JSON_BULK)))
     {
-        Json::Value& txns = (ledger[jss::transactions] = Json::arrayValue);
+        auto k = jss::transactions;
+        if (is_bit_set (options, LEDGER_JSON_BULK))
+            k = Json::StaticString("txs");
+        Json::Value& txns = (ledger[k] = Json::arrayValue);
         SHAMapTreeNode::TNType type;
 
         for (SHAMapItem::pointer item = mTransactionMap->peekFirstItem (type); !!item;
                 item = mTransactionMap->peekNextItem (item->getTag (), type))
         {
-            if (bFull || is_bit_set (options, LEDGER_JSON_EXPAND))
+            if (bFull
+                || is_bit_set (options, LEDGER_JSON_EXPAND)
+                || is_bit_set (options, LEDGER_JSON_BULK))
             {
                 if (type == SHAMapTreeNode::tnTRANSACTION_NM)
                 {
                     SerializerIterator sit (item->peekSerializer ());
                     SerializedTransaction txn (sit);
-                    txns.append (txn.getJson (0));
+                    if (is_bit_set(options, LEDGER_JSON_BULK))
+                        txns.append (txn.getJson (options));
+                    else
+                        txns.append (txn.getJson (0));
                 }
                 else if (type == SHAMapTreeNode::tnTRANSACTION_MD)
                 {
@@ -1092,9 +1112,14 @@ Json::Value Ledger::getJson (int options)
                     SerializedTransaction txn (tsit);
 
                     TransactionMetaSet meta (item->getTag (), mLedgerSeq, sit.getVL ());
-                    Json::Value txJson = txn.getJson (0);
-                    txJson[jss::metaData] = meta.getJson (0);
-                    txns.append (txJson);
+                    if (is_bit_set(options, LEDGER_JSON_BULK))
+                        txns[meta.getIndex()] = txn.getJson (options);
+                    else
+                    {
+                        Json::Value txJson = txn.getJson (0);
+                        txJson[jss::metaData] = meta.getJson (0);
+                        txns.append (txJson);
+                    }
                 }
                 else
                 {

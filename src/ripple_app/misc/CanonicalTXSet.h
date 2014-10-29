@@ -87,6 +87,7 @@ public:
         mMap.clear ();
     }
 
+    void erase (SerializedTransaction::ref txn);
     iterator erase (iterator const& it);
 
     iterator begin ()
