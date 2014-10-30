@@ -56,6 +56,11 @@ public:
             options.block_cache = leveldb::NewLRUCache (keyValues["cache_mb"].getIntValue() * 1024L * 1024L);
         }
 
+        if (!keyValues["block_size_kb"].isEmpty())
+        {
+            options.block_size = keyValues["block_size_kb"].getIntValue() * 1024L;
+        }
+
         if (keyValues["filter_bits"].isEmpty())
         {
             if (getConfig ().NODE_SIZE >= 2)
