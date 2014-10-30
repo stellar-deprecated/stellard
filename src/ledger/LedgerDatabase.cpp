@@ -21,9 +21,9 @@ namespace stellar
         const char* base[] =
         {
             "PRAGMA synchronous=NORMAL;",
-            "PRAGMA journal_mode=WAL;",
+//            "PRAGMA journal_mode=WAL;",
             "PRAGMA journal_size_limit=1582080;",
-    
+
             "BEGIN TRANSACTION;",
 
             "CREATE TABLE IF NOT EXISTS StoreState (        \

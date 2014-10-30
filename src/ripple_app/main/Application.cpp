@@ -698,7 +698,7 @@ public:
 
         getApp().getWorkingLedgerDB ()->getDB ()->executeSQL (boost::str (boost::format ("PRAGMA cache_size=-%d;") %
                 (getConfig ().getSize (siWorkingLgrDBCache) * 1024)));
-        getApp().getWorkingLedgerDB ()->getDB ()->setupCheckpointing (m_jobQueue.get());
+        //getApp().getWorkingLedgerDB ()->getDB ()->setupCheckpointing (m_jobQueue.get());
 
         if (!getConfig ().RUN_STANDALONE)
             updateTables ();
