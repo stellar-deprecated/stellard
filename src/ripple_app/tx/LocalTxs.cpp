@@ -127,8 +127,13 @@ public:
         if (txn.isExpired (ledger->getLedgerSeq ()))
             return true;
 
-        if (ledger->hasTransaction (txn.getID ()))
-            return true;
+        try {
+            if (ledger->hasTransaction (txn.getID ()))
+                return true;
+        }
+        catch (SHAMapMissingNode) { // can't tell at this time, safer to keep the tx around
+            return false;
+        }
 
         SLE::pointer sle = ledger->getAccountRoot (txn.getAccount ());
         if (!sle)
