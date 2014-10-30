@@ -73,7 +73,8 @@ void OrderBookDB::update (Ledger::pointer ledger)
 
     string sql("SELECT * FROM Offers;");
     {
-		// SANITY: need lock here
+        ScopedLockType sqlLock(getApp().getWorkingLedgerDB()->getDBLock());
+
         Database* db = getApp().getWorkingLedgerDB()->getDB();
 
         if(db->executeSQL(sql, true))
