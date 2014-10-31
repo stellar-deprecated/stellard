@@ -67,34 +67,36 @@ namespace ripple {
 		return temBAD_FEE;
 	}
 
+    TER InflationTransactor::finalCheck()
+    {
+        // make sure it is time to apply inflation
+        // make sure the seq number of this inflation transaction is correct
+
+        uint32 seq = mTxn.getFieldU32(sfInflateSeq);
+        if (seq != mEngine->getLedger()->getInflationSeq())
+        {
+            WriteLog(lsINFO, InflationTransactor) << "doInflation: Invalid Seq number.";
+
+            return telNOT_TIME;
+        }
+
+        uint32 closeTime=mEngine->getLedger()->getParentCloseTimeNC();
+        uint32 nextTime = (INFLATION_START_TIME + seq*INFLATION_FREQUENCY);
+        if (closeTime < nextTime)
+        {
+            WriteLog(lsINFO, InflationTransactor) << "doInflation: Too early.";
+
+            return telNOT_TIME;
+        }
+        return tesSUCCESS;
+    }
+
 	TER InflationTransactor::doApply()
 	{
 		WriteLog(lsWARNING, InflationTransactor) << "InflationTransactor::doApply() ****************************** ";
 
 		TER terResult = tesSUCCESS;
 		
-		// make sure it is time to apply inflation
-		// make sure the seq number of this inflation transaction is correct
-
-		uint32 seq = mTxn.getFieldU32(sfInflateSeq);
-		
-
-		if (seq != mEngine->getLedger()->getInflationSeq())
-		{
-			WriteLog(lsINFO, InflationTransactor) << "doInflation: Invalid Seq number.";
-
-			return telNOT_TIME;
-		}
-
-		uint32 closeTime=mEngine->getLedger()->getParentCloseTimeNC();
-		uint32 nextTime = (INFLATION_START_TIME + seq*INFLATION_FREQUENCY);
-		if (closeTime < nextTime)
-		{
-			WriteLog(lsINFO, InflationTransactor) << "doInflation: Too early.";
-
-			return telNOT_TIME;
-		}
-
 		// don't bother to process on the first apply
 		if(!mEngine->mClosingLedger) return tesSUCCESS;
 
@@ -114,6 +116,7 @@ namespace ripple {
 		vector< pair<uint160, boost::multiprecision::cpp_int> > winners;
 
 		{
+            // lock is already taken as we're running inside processor
 			Database* db = getApp().getWorkingLedgerDB()->getDB();
 
 			if(db->executeSQL(sql, true) && db->startIterRows())
@@ -145,8 +148,6 @@ namespace ripple {
 				WriteLog(lsERROR, InflationTransactor) << "SELECT failed";
 			}
 		}
-
-	
 
 		boost::multiprecision::cpp_int biCoinsToDole( mEngine->getLedger()->getTotalCoins() );
 		boost::multiprecision::cpp_int inflRateMultiplier( INFLATION_RATE_TRILLIONTHS );
@@ -181,6 +182,7 @@ namespace ripple {
 			}
 			else
 			{
+                // SANITY: maybe we should just redistribute votes to the actual accounts in that case?
 				RippleAddress tempAddr;
 				tempAddr.setAccountID(winners[n].first);
 				WriteLog(lsERROR, InflationTransactor) << "Inflation dest account not found: " << tempAddr.ToString();

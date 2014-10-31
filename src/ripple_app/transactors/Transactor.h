@@ -54,7 +54,7 @@ protected:
 
     beast::Journal m_journal;
     
-    virtual TER preCheck ();
+    virtual TER preCheck (); // ledger is not locked for this one
     virtual TER finalCheck ();
     virtual TER checkSeq ();
     virtual TER payFee ();

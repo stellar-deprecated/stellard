@@ -316,14 +316,17 @@ TER Transactor::apply ()
         if (terResult == terPRE_SEQ) { // accepts future tx promess as they may work out when we resolve ordering
             terResult = tesSUCCESS;
         }
-        return (terResult);
     }
 
     if (terResult != tesSUCCESS) return (terResult);
 
-    terResult = finalCheck ();
+    terResult = finalCheck();
 
     if (terResult != tesSUCCESS) return (terResult);
+
+    if (!mEngine->mClosingLedger) {
+        return tesSUCCESS;
+    }
 
     if (mTxnAccount)
         mEngine->entryModify (mTxnAccount);

@@ -593,10 +593,15 @@ function verify_transactions( remote, hashes, callback, startindex ) {
 
 function auto_advance( remote, m, callback ) {
     ledger_close( remote, function ( cb ) {
-
-        verify_transaction_success( remote, m.tx_json.hash, function ( err, success, m2 ) {
-            callback( err, m2.meta );
-        } );
+        // note that here we're checking for the original request,
+        // this is to ensure that we also close ledger properly
+        if ( m.engine_result === 'tesSUCCESS' ) {
+            verify_transaction_success( remote, m.tx_json.hash, function ( err, success, m2 ) {
+                callback( err, m2.meta );
+            } );
+        } else {
+            callback( new Error( m ), m );
+        }
     } );
 }
 
@@ -604,7 +609,7 @@ function auto_advance_default( remote, m, callback ) {
     auto_advance( remote, m, function ( err, m2 ) {
         if ( err ) {
             console.log( "auto advance error: " + JSON.stringify( err ) );
-            callback( new Error( err ) );
+            callback( err );
         }
         var success = ( m2.engine_result === 'tesSUCCESS' );
         if ( success ) {
