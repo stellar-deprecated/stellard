@@ -418,7 +418,8 @@ public:
         auto result = stringConcat({});
         expect(result == "", result);
 
-        result = stringConcat({"hello, ", std::string("world.")});
+        std::string s(std::string("world."));
+        result = stringConcat({"hello, ", s});
         expect(result == "hello, world.", result);
 
         result = stringConcat({"hello, ", 23});

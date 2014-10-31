@@ -31,6 +31,7 @@
 #include <mutex>
 #include <unordered_map>
 #include <vector>
+#include <list>
 
 namespace ripple {
 
@@ -89,6 +90,11 @@ public:
         , m_hits (0)
         , m_misses (0)
     {
+#ifdef SIMPLELRU
+        if (size <= 0)
+            m_target_size = 1000; // default behavior of non LRU seems to be entirely timed based
+#endif
+
     }
 
 public:
@@ -107,6 +113,10 @@ public:
     void setTargetSize (int s)
     {
         lock_guard lock (m_mutex);
+#ifdef SIMPLELRU
+        if (s <= 0)
+            s = 1000; // default behavior of non LRU seems to be entirely timed based
+#endif
         m_target_size = s;
 
         if (s > 0)
@@ -160,10 +170,14 @@ public:
         lock_guard lock (m_mutex);
         m_cache.clear ();
         m_cache_count = 0;
+#ifdef SIMPLELRU
+        mCacheData.clear();
+#endif
     }
 
     void sweep ()
     {
+#ifndef SIMPLELRU
         int cacheRemovals = 0;
         int mapRemovals = 0;
         int cc = 0;
@@ -244,20 +258,30 @@ public:
                 }
             }
         }
-
         if (m_journal.trace && (mapRemovals || cacheRemovals)) m_journal.trace <<
             m_name << ": cache = " << m_cache.size () << "-" << cacheRemovals <<
                 ", map-=" << mapRemovals;
 
         // At this point stuffToSweep will go out of scope outside the lock
         // and decrement the reference count on each strong pointer.
+#endif
+
     }
 
     bool del (const key_type& key, bool valid)
     {
         // Remove from cache, if !valid, remove from map too. Returns true if removed from cache
         lock_guard lock (m_mutex);
+#ifdef SIMPLELRU
+        auto cit = m_cache.find (key);
+        if (cit == m_cache.end())
+            return false;
 
+        mCacheData.erase(cit->second);
+        m_cache.erase(cit);
+        m_cache_count--;
+        return true;
+#else
         cache_iterator cit = m_cache.find (key);
 
         if (cit == m_cache.end ())
@@ -278,6 +302,7 @@ public:
             m_cache.erase (cit);
 
         return ret;
+#endif
     }
 
     /** Replace aliased objects with originals.
@@ -298,7 +323,37 @@ public:
         // Return canonical value, store if needed, refresh in cache
         // Return values: true=we had the data already
         lock_guard lock (m_mutex);
-
+#ifdef SIMPLELRU
+        bool res = false;
+        auto cit = m_cache.find (key);
+        if (cit == m_cache.end())
+        {
+            mCacheData.push_front(LRUElem(key, data));
+            m_cache.emplace(key, mCacheData.begin());
+            if (m_cache_count++ == m_target_size)
+            {
+                auto oldest = --(mCacheData.end());
+                m_cache.erase(oldest->first);
+                mCacheData.erase(oldest);
+                --m_cache_count;
+            }
+        }
+        else
+        {
+            // move to the front
+            mCacheData.splice(mCacheData.begin(), mCacheData, cit->second);
+            res = true;
+            if (replace)
+            {
+                cit->second->second = data;
+            }
+            else
+            {
+                data = cit->second->second;
+            }
+        }
+        return res;
+#else
         cache_iterator cit = m_cache.find (key);
 
         if (cit == m_cache.end ())
@@ -350,13 +405,25 @@ public:
         ++m_cache_count;
 
         return false;
+#endif
     }
 
     boost::shared_ptr<T> fetch (const key_type& key)
     {
         // fetch us a shared pointer to the stored data object
         lock_guard lock (m_mutex);
-
+#ifdef SIMPLELRU
+        auto cit = m_cache.find (key);
+        if (cit == m_cache.end())
+        {
+            m_misses++;
+            return mapped_ptr ();
+        }
+        m_hits++;
+        // move to the front of the list
+        mCacheData.splice(mCacheData.begin(), mCacheData, cit->second);
+        return cit->second->second;
+#else
         cache_iterator cit = m_cache.find (key);
 
         if (cit == m_cache.end ())
@@ -386,6 +453,7 @@ public:
         m_cache.erase (cit);
         ++m_misses;
         return mapped_ptr ();
+#endif
     }
 
     /** Insert the element into the container.
@@ -423,6 +491,9 @@ public:
     */
     bool refreshIfPresent (const key_type& key)
     {
+#ifdef SIMPLELRU
+        return fetch(key);
+#else
         bool found = false;
 
         // If present, make current in cache
@@ -466,6 +537,7 @@ public:
         }
 
         return found;
+#endif
     }
 
     mutex_type& peekMutex ()
@@ -490,7 +562,6 @@ private:
         }
     }
 
-private:
     struct Stats
     {
         template <class Handler>
@@ -506,6 +577,16 @@ private:
         beast::insight::Gauge hit_rate;
     };
 
+#ifdef SIMPLELRU
+    typedef std::pair<Key, mapped_ptr> LRUElem;
+    typedef std::list<LRUElem> LRUList;
+    typedef typename LRUList::iterator LRUIterator;
+    typedef ripple::unordered_map <key_type, LRUIterator, Hash, KeyEqual> cache_type;
+
+    typedef typename cache_type::iterator cache_iterator;
+
+    LRUList mCacheData; // actually holds the data, hash is indirection to this
+#else
     class Entry
     {
     public:
@@ -532,9 +613,11 @@ private:
     typedef ripple::unordered_map <key_type, Entry, Hash, KeyEqual> cache_type;
     typedef typename cache_type::iterator cache_iterator;
 
+#endif
+    Stats m_stats;
     beast::Journal m_journal;
     clock_type& m_clock;
-    Stats m_stats;
+    
 
     mutex_type mutable m_mutex;
 

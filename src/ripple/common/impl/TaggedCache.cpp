@@ -65,11 +65,16 @@ public:
             }
 
             ++clock;
+#ifdef SIMPLELRU
+            c.insert(-1, "1 purge");
+            c.del(-1, false);
+#endif
             c.sweep ();
             expect (c.getCacheSize () == 0);
             expect (c.getTrackSize () == 0);
         }
 
+#ifndef SIMPLELRU
         // Insert an item, maintain a strong pointer, age it, and
         // verify that the entry still exists.
         {
@@ -92,6 +97,7 @@ public:
             expect (c.getCacheSize() == 0);
             expect (c.getTrackSize() == 0);
         }
+#endif
 
         // Insert the same key/value pair and make sure we get the same result
         {
@@ -103,6 +109,10 @@ public:
                 c.canonicalize (3, p2);
                 expect (p1.get() == p2.get());
             }
+#ifdef SIMPLELRU
+            c.insert(-1, "1 purge");
+            c.del(-1, false);
+#endif
             ++clock;
             c.sweep ();
             expect (c.getCacheSize() == 0);
@@ -127,7 +137,9 @@ public:
                 // Advance the clock a lot
                 ++clock;
                 c.sweep ();
+#ifndef SIMPLELRU
                 expect (c.getCacheSize() == 0);
+#endif
                 expect (c.getTrackSize() == 1);
                 // Canonicalize a new object with the same key
                 Cache::mapped_ptr p2 (boost::make_shared <std::string> ("four"));
@@ -138,6 +150,10 @@ public:
                 expect (p1.get() == p2.get());
             }
 
+#ifdef SIMPLELRU
+            c.insert(-1, "1 purge");
+            c.del(-1, false);
+#endif
             ++clock;
             c.sweep ();
             expect (c.getCacheSize() == 0);

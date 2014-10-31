@@ -356,7 +356,7 @@ if not OSX:
         '-pthread',
         ])
 
-DEBUGFLAGS  = ['-g', '-DDEBUG', '-D_DEBUG', '-DENABLE_SHAMAP_CACHE', "-DENABLEBACKENDCACHE"]
+DEBUGFLAGS  = ['-g', '-DDEBUG', '-D_DEBUG', '-DENABLE_SHAMAP_CACHE', '-DSIMPLELRU', '-DENABLEBACKENDCACHE']
 
 env.Append(CCFLAGS = ['-pthread', '-Wall', '-Wno-sign-compare', '-Wno-char-subscripts']+DEBUGFLAGS)
 if not USING_CLANG:
