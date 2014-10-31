@@ -43,10 +43,10 @@ an issue number.
 
 # Additional Resources
 
-* [Bug tracker (Github)](https://github.com/stellar/stex/issues)
-* <a href="https://www.clahub.com/agreements/stellar/stex">Contributor License Agreement</a>
+* [Bug tracker (Github)](https://github.com/stellar/stellard/issues)
+* <a href="https://www.clahub.com/agreements/stellar/stellard">Contributor License Agreement</a>
 * [Explore the API](https://www.stellar.org/api/)
-* [Readme for stex](https://github.com/stellar/stex/blob/master/README.md)
+* [Readme for stex](https://github.com/stellar/stellard/blob/master/README.md)
 * #stellar-dev IRC channel on freenode.org
 
 
