@@ -56,7 +56,7 @@ public:
             (boost::posix_time::microsec_clock::universal_time ())
     {
         WriteLog (lsDEBUG, LedgerConsensus) << "Creating consensus object";
-        WriteLog (lsTRACE, LedgerConsensus) 
+        WriteLog (lsDEBUG, LedgerConsensus) 
             << "LCL:" << previousLedger->getHash () << ", ct=" << closeTime;
         mPreviousProposers = getApp().getOPs ().getPreviousProposers ();
         mPreviousMSeconds = getApp().getOPs ().getPreviousConvergeTime ();

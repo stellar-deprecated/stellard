@@ -106,25 +106,43 @@ bool ContinuousLedgerTiming::haveConsensus (
     bool forReal,               // deciding whether to stop consensus process
     bool& failed)               // we can't reach a consensus
 {
-    WriteLog (lsTRACE, LedgerTiming) <<
+    WriteLog (lsDEBUG, LedgerTiming) <<
         "CLC::haveConsensus: prop=" << currentProposers <<
         "/" << previousProposers <<
         " agree=" << currentAgree << " validated=" << currentFinished <<
         " time=" << currentAgreeTime <<  "/" << previousAgreeTime <<
         (forReal ? "" : "X");
 
-    if (currentAgreeTime <= LEDGER_MIN_CONSENSUS)
+    // move on asap if we are behind
+    // If 80% of the nodes on your UNL have moved on, you should declare consensus
+    if (((currentFinished * 100) / (currentProposers + 1)) > 80)
+    {
+        CondLog (forReal, lsWARNING, LedgerTiming) <<
+            "We see no consensus, but 80% of nodes have moved on";
+        failed = true;
+        return true;
+    }
+
+    if (currentAgreeTime <= LEDGER_MIN_CONSENSUS) {
         return false;
+    }
 
     if (currentProposers < (previousProposers * 3 / 4))
     {
+        /* SANITY: probably need to not allow for this and replace the code with :
+        CondLog (forReal, lsDEBUG, LedgerTiming) << "cannot enter consensus: too few proposers";
+        return false;
+        */
+
         // Less than 3/4 of the last ledger's proposers are present, we may need more time
         if (currentAgreeTime < (previousAgreeTime + LEDGER_MIN_CONSENSUS))
         {
-            CondLog (forReal, lsTRACE, LedgerTiming) <<
+            CondLog (forReal, lsDEBUG, LedgerTiming) <<
                 "too fast, not enough proposers";
             return false;
         }
+        CondLog (forReal, lsDEBUG, LedgerTiming) <<
+                "Ignoring lack of proposers as we're " << (currentAgreeTime - previousAgreeTime) << " ms passed last concensus";
     }
 
     // If 80% of current proposers (plus us) agree on a set, we have consensus
@@ -135,17 +153,8 @@ bool ContinuousLedgerTiming::haveConsensus (
         return true;
     }
 
-    // If 80% of the nodes on your UNL have moved on, you should declare consensus
-    if (((currentFinished * 100) / (currentProposers + 1)) > 80)
-    {
-        CondLog (forReal, lsWARNING, LedgerTiming) <<
-            "We see no consensus, but 80% of nodes have moved on";
-        failed = true;
-        return true;
-    }
-
     // no consensus yet
-    CondLog (forReal, lsTRACE, LedgerTiming) << "no consensus";
+    CondLog (forReal, lsDEBUG, LedgerTiming) << "no consensus";
     return false;
 }
 
