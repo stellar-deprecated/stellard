@@ -93,6 +93,7 @@ Config::Config ()
     //
     // Defaults
     //
+	DONT_WALK_LOADED_LEDGER = false;
 
     NETWORK_START_TIME      = 1319844908;
 
@@ -532,6 +533,9 @@ void Config::load ()
 
             if (SectionSingleB (secConfig, SECTION_VALIDATION_QUORUM, strTemp))
                 VALIDATION_QUORUM   = std::max (0, beast::lexicalCastThrow <int> (strTemp));
+
+			if(SectionSingleB(secConfig, SECTION_DONT_WALK_LOADED_LEDGER, strTemp))
+				DONT_WALK_LOADED_LEDGER = beast::lexicalCastThrow <bool>(strTemp);
 
             if (SectionSingleB (secConfig, SECTION_FEE_ACCOUNT_RESERVE, strTemp))
                 FEE_ACCOUNT_RESERVE = beast::lexicalCastThrow <std::uint64_t> (strTemp);

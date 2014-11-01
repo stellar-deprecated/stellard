@@ -337,9 +337,6 @@ int run (int argc, char** argv)
     else if (vm.count ("net"))
     {
         getConfig ().START_UP = Config::NETWORK;
-
-        if (getConfig ().VALIDATION_QUORUM < 2)
-            getConfig ().VALIDATION_QUORUM = 2;
     }
 
     if (vm.count ("dump_transactions"))

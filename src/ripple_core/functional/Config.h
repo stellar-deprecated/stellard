@@ -371,6 +371,8 @@ public:
     };
     StartUpType                 START_UP;
 
+	bool DONT_WALK_LOADED_LEDGER;
+
 
 
     std::string                 START_LEDGER;

@@ -1211,7 +1211,7 @@ bool ApplicationImp::loadOldLedger (const std::string& l, bool bReplay)
             return false;
         }
 
-        if (!loadLedger->walkLedger ())
+		if(!getConfig().DONT_WALK_LOADED_LEDGER && !loadLedger->walkLedger())
         {
             m_journal.fatal << "Ledger is missing nodes.";
             return false;
