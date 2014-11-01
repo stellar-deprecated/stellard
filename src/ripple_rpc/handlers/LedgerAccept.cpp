@@ -20,6 +20,7 @@
 
 namespace ripple {
 
+bool gFORCE_CLOSE=false;
 Json::Value RPCHandler::doLedgerAccept (Json::Value, Resource::Charge& loadType, Application::ScopedLockType& masterLockHolder)
 {
     Json::Value jvResult;
@@ -27,6 +28,7 @@ Json::Value RPCHandler::doLedgerAccept (Json::Value, Resource::Charge& loadType,
     if (!getConfig ().RUN_STANDALONE)
     {
         jvResult["error"]   = "notStandAlone";
+		gFORCE_CLOSE=true;
     }
     else
     {

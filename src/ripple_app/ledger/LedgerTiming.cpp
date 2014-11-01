@@ -28,6 +28,7 @@ SETUP_LOG (LedgerTiming)
 // NOTE: First and last times must be repeated
 int ContinuousLedgerTiming::LedgerTimeResolution[] = { 10, 10, 20, 30, 60, 90, 120, 120 };
 
+extern bool gFORCE_CLOSE;
 // Called when a ledger is open and no close is in progress -- when a transaction is received and no close
 // is in process, or when a close completes. Returns the number of seconds the ledger should be be open.
 bool ContinuousLedgerTiming::shouldClose (
@@ -40,6 +41,11 @@ bool ContinuousLedgerTiming::shouldClose (
     int openMSeconds,           // milliseconds since the previous LCL was computed
     int idleInterval)           // network's desired idle interval
 {
+	if(gFORCE_CLOSE)
+	{
+		gFORCE_CLOSE = false;
+		return true;
+	}
     if ((previousMSeconds < -1000) || (previousMSeconds > 600000) ||
             (currentMSeconds < -1000) || (currentMSeconds > 600000))
     {
