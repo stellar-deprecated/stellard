@@ -1971,7 +1971,6 @@ LedgerConsensus::applyTransaction (TransactionEngine& engine
 
         WriteLog (lsDEBUG, LedgerConsensus)
             << "Transaction retry: " << transHuman (result);
-        assert (!ledger->hasTransaction (txn->getTransactionID ()));
         return resultRetry;
 
 #ifndef TRUST_NETWORK
