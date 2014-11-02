@@ -35,7 +35,7 @@ namespace ripple {
 #   define LEDGER_EARLY_INTERVAL    180
 
 // The number of milliseconds we wait minimum to ensure participation
-#   define LEDGER_MIN_CONSENSUS     2000
+#   define LEDGER_MIN_CONSENSUS_TIME     3000
 
 // The number of milliseconds we wait minimum to ensure others have computed the LCL
 #   define LEDGER_MIN_CLOSE         2000

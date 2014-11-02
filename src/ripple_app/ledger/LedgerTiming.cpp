@@ -43,6 +43,9 @@ bool ContinuousLedgerTiming::shouldClose (
 {
 	if(gFORCE_CLOSE)
 	{
+		WriteLog(lsWARNING, LedgerTiming) <<
+			"CLC::shouldClose gFORCE_CLOSE ";
+
 		gFORCE_CLOSE = false;
 		return true;
 	}
@@ -119,15 +122,24 @@ bool ContinuousLedgerTiming::haveConsensus (
         " time=" << currentAgreeTime <<  "/" << previousAgreeTime <<
         (forReal ? "" : "X");
 
-    if (currentAgreeTime <= LEDGER_MIN_CONSENSUS)
+	if(gFORCE_CLOSE)
+	{
+		WriteLog(lsWARNING, LedgerTiming) <<
+			"CLC::haveConsensus gFORCE_CLOSE ";
+
+		gFORCE_CLOSE = false;
+		return true;
+	}
+
+	if(currentAgreeTime <= LEDGER_MIN_CONSENSUS_TIME)
         return false;
 
     if (currentProposers < (previousProposers * 3 / 4))
     {
         // Less than 3/4 of the last ledger's proposers are present, we may need more time
-        if (currentAgreeTime < (previousAgreeTime + LEDGER_MIN_CONSENSUS))
+		if(currentAgreeTime < (previousAgreeTime + LEDGER_MIN_CONSENSUS_TIME))
         {
-            CondLog (forReal, lsTRACE, LedgerTiming) <<
+			WriteLog(lsTRACE, LedgerTiming) <<
                 "too fast, not enough proposers";
             return false;
         }
@@ -136,7 +148,7 @@ bool ContinuousLedgerTiming::haveConsensus (
     // If 80% of current proposers (plus us) agree on a set, we have consensus
     if (((currentAgree * 100 + 100) / (currentProposers + 1)) > 80)
     {
-        CondLog (forReal, lsINFO, LedgerTiming) << "normal consensus";
+		WriteLog(lsTRACE, LedgerTiming) << "normal consensus";
         failed = false;
         return true;
     }
@@ -144,14 +156,14 @@ bool ContinuousLedgerTiming::haveConsensus (
     // If 80% of the nodes on your UNL have moved on, you should declare consensus
     if (((currentFinished * 100) / (currentProposers + 1)) > 80)
     {
-        CondLog (forReal, lsWARNING, LedgerTiming) <<
+		WriteLog(lsTRACE, LedgerTiming) <<
             "We see no consensus, but 80% of nodes have moved on";
         failed = true;
         return true;
     }
 
     // no consensus yet
-    CondLog (forReal, lsTRACE, LedgerTiming) << "no consensus";
+	WriteLog(lsTRACE, LedgerTiming) << "no consensus";
     return false;
 }
 
