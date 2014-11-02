@@ -26,8 +26,8 @@ Times, priority, and tasks are all subject to change as the network evolves, we 
 
 #### New features
 1. Merge accounts. This will allow people to clean up accounts they are no longer using and recover the reserve balance.  (done)
-2. Pull changes from rippled. This is an ongoing process but we will spend some time looking through the rippled commits since we diverged and see what makes sense to pull in. (in progress - october)
-3. Improve deployment pipeline. (october)
+2. Pull changes from rippled. This is an ongoing process but we will spend some time looking through the rippled commits since we diverged and see what makes sense to pull in. (in progress - november)
+3. Improve deployment pipeline. (november)
 4. New consensus algorithm. (in progress - november)
 5. Merge various transaction memo fields into one. (december)
 6. Clean up API. *please [let us know](https://github.com/stellar/stellar-protocol/issues) anything you would like to see changed* (december)
