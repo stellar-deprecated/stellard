@@ -47,21 +47,9 @@ namespace stellar
             try
             {
                 CanonicalLedgerForm::pointer newCLF, currentCLF(new LegacyCLF(this, lastClosedLedger));
-                mCurrentDB.beginTransaction();
-                try
-                {
-                    newCLF = catchUp(currentCLF);
-                }
-                catch (...)
-                {
-                    mCurrentDB.endTransaction(true);
-                }
-
-                if (newCLF)
-                {
-                    commitTransaction(newCLF);
-                    res = true;
-                }
+                newCLF = catchUp(currentCLF);
+                res = (newCLF != nullptr);
+                assert(res);
             }
             catch (...)
             {
@@ -232,13 +220,26 @@ namespace stellar
 	}
 
 
-    static void importHelper(SLE::ref curEntry, int &counter, int &totalImports, time_t start) {
+    void LedgerMaster::importHelper(SLE::ref curEntry, int &counter, int &totalImports, time_t start, bool &activeTx) {
         static const int kProgressCount = 100000;
         
         totalImports++;
-        
-        if (++counter == kProgressCount)
+
+        LedgerEntry::pointer entry = LedgerEntry::makeEntry(curEntry);
+        if(entry) {
+            entry->storeAdd();
+        }
+
+        if (++counter >= kProgressCount)
         {
+            if (activeTx) {
+                activeTx = false;
+                mCurrentDB.endTransaction(false);
+            }
+
+            mCurrentDB.beginTransaction();
+            activeTx = true;
+
             int elapsed = time(nullptr) - start;
             int rate = totalImports / (elapsed?elapsed:1);
             WriteLog(ripple::lsINFO, ripple::Ledger) << "Imported " << totalImports << " items @" << rate;
@@ -250,10 +251,6 @@ namespace stellar
             mgr.resetDeadlockDetector ();
         }
 
-        LedgerEntry::pointer entry = LedgerEntry::makeEntry(curEntry);
-        if(entry) {
-            entry->storeAdd();
-        }
         // else entry type we don't care about
         
     }
@@ -267,7 +264,13 @@ namespace stellar
         CanonicalLedgerForm::pointer newLedger = LegacyCLF::pointer(new LegacyCLF(this));
 
         if (newLedger->load(ledgerHash)) {
-            mCurrentDB.beginTransaction();
+
+            // invalidates last closed ledger as we're about to destroy the database
+            mCurrentDB.setState(mCurrentDB.getStoreStateName(LedgerDatabase::kLastClosedLedger), "");
+
+            Database* db = mCurrentDB.getDBCon()->getDB();
+
+            bool hasActiveTx = false;
             try {
                 // delete all
                 LedgerEntry::dropAll(mCurrentDB);
@@ -275,8 +278,11 @@ namespace stellar
                 int counter = 0, totalImports = 0;
                 time_t start = time(nullptr);
 
+                mCurrentDB.beginTransaction();
+                hasActiveTx = true;
+
                 // import all anew
-                newLedger->getLegacyLedger()->visitStateItems(std::bind(&importHelper, P_1, std::ref(counter), std::ref(totalImports), start));
+                newLedger->getLegacyLedger()->visitStateItems(std::bind(&LedgerMaster::importHelper, this, P_1, std::ref(counter), std::ref(totalImports), start, std::ref(hasActiveTx)));
 
                 WriteLog(ripple::lsINFO, ripple::Ledger) << "Imported " << totalImports << " items";
 
@@ -284,10 +290,15 @@ namespace stellar
             }
             catch (...) {
                 WriteLog(ripple::lsWARNING, ripple::Ledger) << "Could not import state";
-                mCurrentDB.endTransaction(true);
+                if (hasActiveTx) {
+                    mCurrentDB.endTransaction(true);
+                }
                 return CanonicalLedgerForm::pointer();
             }
-            commitTransaction(newLedger);
+            if (hasActiveTx) {
+                mCurrentDB.endTransaction(false);
+            }
+            setLastClosedLedger(newLedger);
             res = newLedger;
         }
         return res;

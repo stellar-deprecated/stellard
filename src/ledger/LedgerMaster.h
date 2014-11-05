@@ -67,6 +67,8 @@ namespace stellar
         void setLastClosedLedger(CanonicalLedgerForm::pointer ledger);
         uint256 getLastClosedLedgerHash();
 
+        void importHelper(SLE::ref curEntry, int &counter, int &totalImports, time_t start, bool &activeTx);
+
         void reset();
 	};
 

@@ -15,7 +15,7 @@ namespace stellar
             accountID       CHARACTER(35) PRIMARY KEY,          \
             balance         BIGINT UNSIGNED,                    \
             sequence        INT UNSIGNED,                       \
-            owenerCount     INT UNSIGNED,                       \
+            ownerCount     INT UNSIGNED,                       \
             transferRate    INT UNSIGNED,                       \
             inflationDest   CHARACTER(35),                      \
             publicKey       CHARACTER(56),                      \
@@ -62,7 +62,7 @@ namespace stellar
 
 	void  AccountEntry::insertIntoDB()
 	{
-		string sql = str(boost::format("INSERT OR REPLACE INTO Accounts (accountID,balance,sequence,owenerCount,transferRate,inflationDest,publicKey,requireDest,requireAuth) values ('%s',%d,%d,%d,%d,'%s','%s',%d,%d);")
+		string sql = str(boost::format("INSERT OR REPLACE INTO Accounts (accountID,balance,sequence,ownerCount,transferRate,inflationDest,publicKey,requireDest,requireAuth) values ('%s',%d,%d,%d,%d,'%s','%s',%d,%d);")
 			% mAccountID.base58Encode(RippleAddress::VER_ACCOUNT_ID)
 			% mBalance
 			% mSequence
@@ -82,7 +82,7 @@ namespace stellar
 	}
 	void AccountEntry::updateInDB()
 	{
-		string sql = str(boost::format("UPDATE Accounts set balance=%d, sequence=%d,owenerCount=%d,transferRate=%d,inflationDest='%s',publicKey='%s',requireDest=%d,requireAuth=%d where accountID='%s';")
+		string sql = str(boost::format("UPDATE Accounts set balance=%d, sequence=%d,ownerCount=%d,transferRate=%d,inflationDest='%s',publicKey='%s',requireDest=%d,requireAuth=%d where accountID='%s';")
 			% mBalance
 			% mSequence
 			% mOwnerCount

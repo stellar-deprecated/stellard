@@ -417,7 +417,9 @@ Blob SqliteStatement::getBlob (int column)
 {
     int size = sqlite3_column_bytes (statement, column);
     Blob ret (size);
-    memcpy (& (ret.front ()), sqlite3_column_blob (statement, column), size);
+    if (size > 0) {
+        memcpy (& (ret.front ()), sqlite3_column_blob (statement, column), size);
+    }
     return ret;
 }
 

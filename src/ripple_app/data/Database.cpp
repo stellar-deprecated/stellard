@@ -236,11 +236,11 @@ void Database::connect()
 void Database::beginTransaction()
 {
     const char *sql = nullptr;
-    if (mTransactionLevel++ == 0) {
+    if (mTransactionLevel == 0) {
         sql = "BEGIN;";
     }
     else {
-        assert(mTransactionLevel <= 2); // no need for more levels for now
+        assert(mTransactionLevel <= 1); // no need for more levels for now
         sql = "SAVEPOINT L1;";
     }
 
@@ -248,6 +248,7 @@ void Database::beginTransaction()
     {
         throw std::runtime_error("Could not perform transaction");
     }
+    ++mTransactionLevel;
 }
 
 void Database::endTransaction(bool rollback)
