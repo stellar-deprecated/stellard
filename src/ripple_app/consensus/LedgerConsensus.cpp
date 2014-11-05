@@ -1472,7 +1472,7 @@ private:
 
             WriteLog (lsDEBUG, LedgerConsensus) 
                 << "Transaction retry: " << transHuman (result);
-            assert (!ledger->hasTransaction (txn->getTransactionID ()));
+            assert (openLedger || !ledger->hasTransaction (txn->getTransactionID ()));
             return resultRetry;
 
 #ifndef TRUST_NETWORK
