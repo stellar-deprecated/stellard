@@ -455,7 +455,7 @@ public:
     bool walkLedger ();
     bool assertSane ();
 
-    bool loadMaps(); // attempts to load the state and tx maps
+    bool loadMaps(bool forceFull); // attempts to load the state and tx maps
 
 protected:
     SLE::pointer getASNode (LedgerStateParms & parms, uint256 const & nodeID, LedgerEntryType let);

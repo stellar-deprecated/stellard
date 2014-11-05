@@ -281,6 +281,8 @@ public:
     }
 #endif
 
+    void markAsFull();
+
 private:
     // trusted path operations - prove a particular node is in a particular ledger
     std::list<Blob > getTrustedPath (uint256 const& index);

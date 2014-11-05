@@ -32,7 +32,7 @@ namespace stellar
         {
             ripple::Ledger::pointer ledger = boost::make_shared<ripple::Ledger> (s, true);
             if (ledger && ledger->getHash() == ledgerHash) {
-                if (ledger->loadMaps()) {
+                if (ledger->loadMaps(true)) {
                     mLedger = ledger;
 
                     mLedger->setClosed ();

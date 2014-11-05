@@ -21,8 +21,8 @@
 #include "../ripple_rpc/api/Manager.h"
 #include "../ripple_overlay/api/make_Overlay.h"
 #include "../src/ledger/LedgerMaster.h"
-//#include "ledger/AccountEntry.h"
 #include "Tuning.h"
+#include "../../beast/beast/utility/Debug.h"
 
 using namespace stellar;
 
@@ -645,6 +645,13 @@ public:
     }
 #endif
 
+    static void terminateHandler()
+    {
+        beast::Debug::breakPoint();
+        std::cerr << "unhandled exception: terminate handler called";
+        abort();
+    }
+
     // VFALCO TODO Break this function up into many small initialization segments.
     //             Or better yet refactor these initializations into RAII classes
     //             which are members of the Application object.
@@ -653,6 +660,8 @@ public:
     {
         // VFALCO NOTE: 0 means use heuristics to determine the thread count.
         m_jobQueue->setThreadCount (0, getConfig ().RUN_STANDALONE);
+
+        std::set_terminate(terminateHandler);
 
     #if ! BEAST_WIN32
     #ifdef SIGINT
@@ -717,18 +726,6 @@ public:
         // VFALCO NOTE this starts the UNL
         m_localCredentials.start ();
 
-        //
-        // Set up UNL.
-        //
-        if (!getConfig ().RUN_STANDALONE)
-            getUNL ().nodeBootstrap ();
-
-        mValidations->tune (getConfig ().getSize (siValidationsSize), getConfig ().getSize (siValidationsAge));
-        m_nodeStore->tune (getConfig ().getSize (siNodeCacheSize), getConfig ().getSize (siNodeCacheAge));
-        m_ledgerMaster->tune (getConfig ().getSize (siLedgerSize), getConfig ().getSize (siLedgerAge));
-        m_sleCache.setTargetSize (getConfig ().getSize (siSLECacheSize));
-        m_sleCache.setTargetAge (getConfig ().getSize (siSLECacheAge));
-
 		// SANITY is this the correct place to do this?
 		stellar::gLedgerMaster->loadLastKnownCLF();
 
@@ -769,7 +766,17 @@ public:
 
         m_orderBookDB.setup (getApp().getLedgerMaster ().getCurrentLedger ());
 
+        //
+        // Set up UNL.
+        //
+        if (!getConfig ().RUN_STANDALONE)
+            getUNL ().nodeBootstrap ();
 
+        mValidations->tune (getConfig ().getSize (siValidationsSize), getConfig ().getSize (siValidationsAge));
+        m_nodeStore->tune (getConfig ().getSize (siNodeCacheSize), getConfig ().getSize (siNodeCacheAge));
+        m_ledgerMaster->tune (getConfig ().getSize (siLedgerSize), getConfig ().getSize (siLedgerAge));
+        m_sleCache.setTargetSize (getConfig ().getSize (siSLECacheSize));
+        m_sleCache.setTargetAge (getConfig ().getSize (siSLECacheAge));
 
         //----------------------------------------------------------------------
         //

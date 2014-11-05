@@ -330,7 +330,8 @@ public:
         {
             mCacheData.push_front(LRUElem(key, data));
             m_cache.emplace(key, mCacheData.begin());
-            if (m_cache_count++ == m_target_size)
+            m_cache_count++;
+            while (m_cache_count > m_target_size)
             {
                 auto oldest = --(mCacheData.end());
                 m_cache.erase(oldest->first);

@@ -22,14 +22,18 @@ namespace NodeStore {
 
 class LevelDBBackend
     : public Backend
+#ifdef BACKENDBATCHING
     , public BatchWriter::Callback
+#endif
     , public beast::LeakChecked <LevelDBBackend>
 {
 public:
     beast::Journal m_journal;
     size_t const m_keyBytes;
     Scheduler& m_scheduler;
+#ifdef BACKENDBATCHING
     BatchWriter m_batch;
+#endif
     std::string m_name;
     std::unique_ptr <leveldb::DB> m_db;
 
@@ -38,7 +42,9 @@ public:
         : m_journal (journal)
         , m_keyBytes (keyBytes)
         , m_scheduler (scheduler)
+#ifdef BACKENDBATCHING
         , m_batch (*this, scheduler)
+#endif
         , m_name (keyValues ["path"].toStdString ())
     {
         if (m_name.empty())
@@ -150,7 +156,22 @@ public:
     void
     store (NodeObject::ref object)
     {
+#ifdef BACKENDBATCHING
         m_batch.store (object);
+#else
+        EncodedBlob encoded;
+
+        encoded.prepare (object);
+
+        leveldb::WriteOptions write_options;
+        write_options.sync = false;
+
+        leveldb::Status res = m_db->Put(write_options, leveldb::Slice (reinterpret_cast <char const*> (
+                    encoded.getKey ()), m_keyBytes),
+                leveldb::Slice (reinterpret_cast <char const*> (
+                    encoded.getData ()), encoded.getSize ()));
+        assert(res.ok());
+#endif
     }
 
     void
@@ -215,16 +236,21 @@ public:
     int
     getWriteLoad ()
     {
+#ifdef BACKENDBATCHING
         return m_batch.getWriteLoad ();
+#else
+        return 0;
+#endif
     }
 
     //--------------------------------------------------------------------------
-
+#ifdef BACKENDBATCHING
     void
     writeBatch (Batch const& batch)
     {
         storeBatch (batch);
     }
+#endif
 };
 
 //------------------------------------------------------------------------------

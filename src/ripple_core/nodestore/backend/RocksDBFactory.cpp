@@ -76,14 +76,18 @@ public:
 
 class RocksDBBackend
     : public Backend
+#ifdef BACKENDBATCHING
     , public BatchWriter::Callback
+#endif
     , public beast::LeakChecked <RocksDBBackend>
 {
 public:
     beast::Journal m_journal;
     size_t const m_keyBytes;
     Scheduler& m_scheduler;
+#ifdef BACKENDBATCHING
     BatchWriter m_batch;
+#endif
     std::string m_name;
     std::unique_ptr <rocksdb::DB> m_db;
 
@@ -92,7 +96,9 @@ public:
         : m_journal (journal)
         , m_keyBytes (keyBytes)
         , m_scheduler (scheduler)
+#ifdef BACKENDBATCHING
         , m_batch (*this, scheduler)
+#endif
         , m_name (keyValues ["path"].toStdString ())
     {
         if (m_name.empty())
@@ -236,7 +242,20 @@ public:
     void
     store (NodeObject::ref object)
     {
+#ifdef BACKENDBATCHING
         m_batch.store (object);
+#else
+        EncodedBlob encoded;
+
+        encoded.prepare (object);
+
+        rocksdb::Status res = m_db->Put(rocksdb::WriteOptions(),
+            rocksdb::Slice (reinterpret_cast <char const*> (
+                encoded.getKey ()), m_keyBytes),
+            rocksdb::Slice (reinterpret_cast <char const*> (
+                encoded.getData ()), encoded.getSize ()));
+        assert(res.ok());
+#endif
     }
 
     void
@@ -301,16 +320,23 @@ public:
     int
     getWriteLoad ()
     {
+#ifdef BACKENDBATCHING
         return m_batch.getWriteLoad ();
+#else
+        return 0;
+#endif
     }
 
     //--------------------------------------------------------------------------
 
+#ifdef BACKENDBATCHING
     void
     writeBatch (Batch const& batch)
     {
         storeBatch (batch);
     }
+#endif
+
 };
 
 //------------------------------------------------------------------------------

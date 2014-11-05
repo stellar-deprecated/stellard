@@ -102,7 +102,7 @@ Ledger::Ledger (uint256 const& parentHash,
 {
     updateHash ();
 
-    loaded = loadMaps();
+    loaded = loadMaps(false);
 
     initializeFees ();
 }
@@ -218,7 +218,7 @@ Ledger::~Ledger ()
     }
 }
 
-bool Ledger::loadMaps()
+bool Ledger::loadMaps(bool forceFull)
 {
     bool loaded = true;
 
@@ -236,6 +236,12 @@ bool Ledger::loadMaps()
 
     mTransactionMap->setImmutable ();
     mAccountStateMap->setImmutable ();
+
+    if (loaded && forceFull)
+    {
+        mTransactionMap->markAsFull();
+        mAccountStateMap->markAsFull();
+    }
 
     return loaded;
 }
@@ -1946,13 +1952,11 @@ std::uint32_t Ledger::roundCloseTime (std::uint32_t closeTime, std::uint32_t clo
 */
 bool Ledger::pendSaveValidated (bool isSynchronous, bool isCurrent)
 {
-#ifdef NICOLAS5
     if (!getApp().getHashRouter ().setFlag (getHash (), SF_SAVED))
     {
         WriteLog (lsDEBUG, Ledger) << "Double pend save for " << getLedgerSeq();
         return true;
     }
-#endif
 
     assert (isImmutable ());
 

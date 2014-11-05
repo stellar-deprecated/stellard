@@ -38,7 +38,7 @@ SHAMapTreeNode::SHAMapTreeNode (const SHAMapTreeNode& node, std::uint32_t seq)
         mItem = node.mItem;
     else {
         mInner = make_unique<InnerData>();
-        mInner->mFullBelow = node.mInner->mFullBelow;
+        mInner->mFullBelow = false;
         mInner->mIsBranch = node.mInner->mIsBranch;
         memcpy (mInner->mHashes, node.mInner->mHashes, sizeof (mInner->mHashes));
 
