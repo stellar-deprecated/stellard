@@ -352,15 +352,6 @@
     <Filter Include="tests">
       <UniqueIdentifier>{1393f2ef-a196-4365-8a2d-ee6eedd7f3b7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="fba">
-      <UniqueIdentifier>{aa6b911a-eb3c-4987-a828-60a79f356e74}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="main">
-      <UniqueIdentifier>{e6a2e586-7595-4a0e-82ca-ca4ccee6559d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="overlay">
-      <UniqueIdentifier>{bb16c815-c1f6-4840-81c4-5272a79b6a43}</UniqueIdentifier>
-    </Filter>
     <Filter Include="generated">
       <UniqueIdentifier>{2d0f916b-6dbe-48fa-bcd9-58617069e256}</UniqueIdentifier>
     </Filter>
@@ -1835,27 +1826,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\ripple_app\transactors\AccountMergeTransactor.cpp">
       <Filter>[2] Old Ripple\ripple_app\transactors</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\fba\FirmezaMaster.cpp">
-      <Filter>fba</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\main\main.cpp">
-      <Filter>main</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\fba\History.cpp">
-      <Filter>fba</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\main\Application.cpp">
-      <Filter>main</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\overlay\Peer.cpp">
-      <Filter>overlay</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\overlay\PeerMaster.cpp">
-      <Filter>overlay</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\generated\stellar.server.cc">
-      <Filter>generated</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -3705,42 +3675,6 @@
     <ClInclude Include="..\..\src\ripple_app\transactors\AccountMergeTransactor.h">
       <Filter>[2] Old Ripple\ripple_app\transactors</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\fba\FirmezaMaster.h">
-      <Filter>fba</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\fba\Ballot.h">
-      <Filter>fba</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\fba\Node.h">
-      <Filter>fba</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\fba\History.h">
-      <Filter>fba</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\main\Application.h">
-      <Filter>main</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\overlay\Peer.h">
-      <Filter>overlay</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\overlay\PeerDoor.h">
-      <Filter>overlay</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\overlay\PeerMaster.h">
-      <Filter>overlay</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\fba\QuorumSet.h">
-      <Filter>fba</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\fba\Slot.h">
-      <Filter>fba</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\generated\stellar.hh">
-      <Filter>generated</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\generated\stellar.server.hh">
-      <Filter>generated</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\doc\Doxyfile">
@@ -3946,12 +3880,6 @@
     </None>
     <None Include="..\..\test\websocket-test.js">
       <Filter>tests</Filter>
-    </None>
-    <None Include="protocol.x">
-      <Filter>overlay</Filter>
-    </None>
-    <None Include="..\..\src\overlay\stellar.proto">
-      <Filter>overlay</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
