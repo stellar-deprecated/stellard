@@ -9,5 +9,6 @@
                                          "src/snappy/snappy"
                                          "src/snappy/config"
                                          ))
+         (eval . (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode)))
          (c-file-style . "stroustrup")
          (compile-command . "scons ccache=1 -D -j $(nproc)"))))
