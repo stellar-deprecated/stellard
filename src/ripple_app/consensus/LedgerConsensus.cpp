@@ -18,6 +18,7 @@
 //==============================================================================
 
 #include "../../ripple_overlay/api/predicates.h"
+#include "../src/ledger/LedgerMaster.h"
 
 namespace ripple {
 
@@ -886,12 +887,20 @@ private:
 
             CanonicalTXSet failedTransactions (set->getHash ());
 
+            if (!stellar::gLedgerMaster->ensureSync(mPreviousLedger, true))
+            {
+                WriteLog(lsFATAL, LedgerConsensus) << "Cannot perform transactions, database not in sync";
+                return;
+            }
+
             Ledger::pointer newLCL 
                 = boost::make_shared<Ledger> (false
                 , boost::ref (*mPreviousLedger));
 
             // Set up to write SHAMap changes to our database, 
             //   perform updates, extract changes
+            stellar::gLedgerMaster->beginClosingLedger();
+
             WriteLog (lsDEBUG, LedgerConsensus)
                 << "Applying consensus set transactions to the"
                 << " last closed ledger";
@@ -922,6 +931,13 @@ private:
                 << "Report: NewL  = " << newLCL->getHash () 
                 << ":" << newLCL->getLedgerSeq ();
             uint256 newLCLHash = newLCL->getHash ();
+
+            bool dbcom = stellar::gLedgerMaster->commitLedgerClose(newLCL);
+            if (!dbcom)
+            {
+                WriteLog(lsFATAL, LedgerConsensus) << "Could not commit to the database";
+                return;
+            }
 
             statusChange (protocol::neACCEPTED_LEDGER, *newLCL);
 

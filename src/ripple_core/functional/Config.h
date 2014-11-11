@@ -81,6 +81,7 @@ enum SizedItemName
     siHashNodeDBCache,
     siTxnDBCache,
     siLgrDBCache,
+    siWorkingLgrDBCache
 };
 
 struct SizedItem
@@ -379,6 +380,7 @@ public:
 
     // Database
     std::string                 DATABASE_PATH;
+    int                         DATABASE_TIMEOUTMS;
 
     // Network parameters
     int                         NETWORK_START_TIME;     // The Unix time we start ledger 0.

@@ -20,8 +20,11 @@
 #include "../ripple/common/seconds_clock.h"
 #include "../ripple_rpc/api/Manager.h"
 #include "../ripple_overlay/api/make_Overlay.h"
-
+#include "../src/ledger/LedgerMaster.h"
 #include "Tuning.h"
+#include "../../beast/beast/utility/Debug.h"
+
+using namespace stellar;
 
 namespace ripple {
     
@@ -217,6 +220,7 @@ public:
     std::unique_ptr <DatabaseCon> mRpcDB;
     std::unique_ptr <DatabaseCon> mTxnDB;
     std::unique_ptr <DatabaseCon> mLedgerDB;
+    std::unique_ptr <DatabaseCon> mWorkingLedgerDB;
     std::unique_ptr <DatabaseCon> mWalletDB;
 
     std::unique_ptr <beast::asio::SSLContext> m_peerSSLContext;
@@ -584,6 +588,10 @@ public:
     {
         return mLedgerDB.get();
     }
+    DatabaseCon* getWorkingLedgerDB ()
+    {
+        return mWorkingLedgerDB.get();
+    }
     DatabaseCon* getWalletDB ()
     {
         return mWalletDB.get();
@@ -603,6 +611,11 @@ public:
         return new DatabaseCon (fileName, dbInit, dbCount);
     }
 
+    static DatabaseCon* openDatabaseCon(const char* fileName, vector<const char *> init)
+    {
+        return new DatabaseCon (fileName, init);
+    }
+
     void initSqliteDb (int index)
     {
         switch (index)
@@ -611,6 +624,7 @@ public:
         case 1: mTxnDB.reset (openDatabaseCon ("transaction.db", TxnDBInit, TxnDBCount)); break;
         case 2: mLedgerDB.reset (openDatabaseCon ("ledger.db", LedgerDBInit, LedgerDBCount)); break;
         case 3: mWalletDB.reset (openDatabaseCon ("wallet.db", WalletDBInit, WalletDBCount)); break;
+        case 4: mWorkingLedgerDB.reset(openDatabaseCon ("workingLedger.db", stellar::LedgerDatabase::getSQLInit())); break;
         };
     }
 
@@ -620,7 +634,7 @@ public:
         //             dont want unowned threads and because ParallelFor
         //             is broken.
         //
-        for (int i = 0; i < 4; ++i)
+        for (int i = 0; i < 5; ++i)
             initSqliteDb (i);
     }
 
@@ -681,43 +695,54 @@ public:
                 (getConfig ().getSize (siTxnDBCache) * 1024)));
 
         mTxnDB->getDB ()->setupCheckpointing (m_jobQueue.get());
-        mLedgerDB->getDB ()->setupCheckpointing (m_jobQueue.get());
+
+        getApp().getWorkingLedgerDB ()->getDB ()->executeSQL (boost::str (boost::format ("PRAGMA cache_size=-%d;") %
+                (getConfig ().getSize (siWorkingLgrDBCache) * 1024)));
 
         if (!getConfig ().RUN_STANDALONE)
             updateTables ();
+
+        stellar::gLedgerMaster =std::make_shared<stellar::LedgerMaster>();
 
         m_amendmentTable->addInitial();
         Pathfinder::initPathTable ();
 
         m_ledgerMaster->setMinValidations (getConfig ().VALIDATION_QUORUM);
 
+        stellar::gLedgerMaster->loadLastKnownCLF();
+
+        std::string ledgerToLoad;
+
         if (getConfig ().START_UP == Config::FRESH)
         {
             m_journal.info << "Starting new Ledger";
-
-            startNewLedger ();
         }
         else if ((getConfig ().START_UP == Config::LOAD) || (getConfig ().START_UP == Config::REPLAY))
         {
             m_journal.info << "Loading specified Ledger";
-
-            if (!loadOldLedger (getConfig ().START_LEDGER, getConfig ().START_UP == Config::REPLAY))
-            {
-                // wtf?
-                getApp().signalStop ();
-                exit (-1);
-            }
+            ledgerToLoad = getConfig().START_LEDGER;
         }
         else if (getConfig ().START_UP == Config::NETWORK)
         {
             // This should probably become the default once we have a stable network
             if (!getConfig ().RUN_STANDALONE)
                 m_networkOPs->needNetworkLedger ();
-
-            startNewLedger ();
+            ledgerToLoad = "latest";
         }
         else
+        {
+            ledgerToLoad = "latest";
+        }
+
+        if (!ledgerToLoad.empty() && !loadOldLedger (ledgerToLoad, getConfig ().START_UP == Config::REPLAY, stellar::gLedgerMaster->getCurrentCLF()))
+        {
+            m_journal.info << "defaulting to new ledger";
+            ledgerToLoad = "";
+        }
+        if (ledgerToLoad.empty())
+        {
             startNewLedger ();
+        }
 
         m_orderBookDB.setup (getApp().getLedgerMaster ().getCurrentLedger ());
 
@@ -739,7 +764,6 @@ public:
         m_ledgerMaster->tune (getConfig ().getSize (siLedgerSize), getConfig ().getSize (siLedgerAge));
         m_sleCache.setTargetSize (getConfig ().getSize (siSLECacheSize));
         m_sleCache.setTargetAge (getConfig ().getSize (siSLECacheAge));
-
 
         //----------------------------------------------------------------------
         //
@@ -1122,7 +1146,9 @@ public:
 
 private:
     void updateTables ();
-    bool loadOldLedger (const std::string&, bool);
+    
+    bool loadOldLedger(const std::string& l, bool bReplay) { return loadOldLedger(l, bReplay, nullptr); }
+    bool loadOldLedger (const std::string&, bool, CanonicalLedgerForm::pointer ledgerInDB);
 
     void onAnnounceAddress ();
 };
@@ -1135,6 +1161,8 @@ void ApplicationImp::startNewLedger (std::uint32_t closeTime)
     RippleAddress   rootSeedMaster      = RippleAddress::createSeedGeneric ("masterpassphrase");
     //RippleAddress   rootGeneratorMaster = RippleAddress::createGeneratorPublic (rootSeedMaster);
 	RippleAddress   rootAddress = RippleAddress::createAccountPublic(rootSeedMaster);
+
+    m_journal.info << "Starting new ledger (" << closeTime << ")";
 
     // Print enough information to be able to claim root account.
     m_journal.info << "Root master seed: " << rootSeedMaster.humanSeed ();
@@ -1161,17 +1189,28 @@ void ApplicationImp::startNewLedger (std::uint32_t closeTime)
         m_ledgerMaster->pushLedger (secondLedger, boost::make_shared<Ledger> (true, boost::ref (*secondLedger)));
         assert (!!secondLedger->getAccountState (rootAddress));
         m_networkOPs->setLastCloseTime (secondLedger->getCloseTimeNC ());
+
+        stellar::gLedgerMaster->ensureSync(secondLedger, false);
     }
 }
 
-bool ApplicationImp::loadOldLedger (const std::string& l, bool bReplay)
+bool ApplicationImp::loadOldLedger (const std::string& l, bool bReplay, CanonicalLedgerForm::pointer ledgerInDB)
 {
     try
     {
         Ledger::pointer loadLedger, replayLedger;
 
-        if (l.empty () || (l == "latest"))
-            loadLedger = Ledger::getLastFullLedger ();
+        if (l.empty() || (l == "latest"))
+        {
+            if (ledgerInDB != nullptr && ledgerInDB->getHash().isNonZero())
+            {
+                loadLedger = ledgerInDB->getLegacyLedger();
+            }
+            else
+            {
+                loadLedger = Ledger::getLastFullLedger ();
+            }
+        }
         else if (l.length () == 64)
         {
             // by hash
@@ -1211,7 +1250,8 @@ bool ApplicationImp::loadOldLedger (const std::string& l, bool bReplay)
             return false;
         }
 
-		if(!getConfig().DONT_WALK_LOADED_LEDGER && !loadLedger->walkLedger())
+        // only walk the ledger if it doesn't match what we have in the db
+        if (!getConfig().DONT_WALK_LOADED_LEDGER && !stellar::gLedgerMaster->ensureSync(loadLedger, false))
         {
             m_journal.fatal << "Ledger is missing nodes.";
             return false;
@@ -1335,96 +1375,11 @@ static bool schemaHas (DatabaseCon* dbc, const std::string& dbName, int line, co
     return schema[line].find (content) != std::string::npos;
 }
 
-static void addTxnSeqField ()
-{
-    if (schemaHas (getApp().getTxnDB (), "AccountTransactions", 0, "TxnSeq"))
-        return;
-
-    Log (lsWARNING) << "Transaction sequence field is missing";
-
-    Database* db = getApp().getTxnDB ()->getDB ();
-
-    std::vector< std::pair<uint256, int> > txIDs;
-    txIDs.reserve (300000);
-
-    Log (lsINFO) << "Parsing transactions";
-    int i = 0;
-    uint256 transID;
-    SQL_FOREACH (db, "SELECT TransID,TxnMeta FROM Transactions;")
-    {
-        Blob rawMeta;
-        int metaSize = 2048;
-        rawMeta.resize (metaSize);
-        metaSize = db->getBinary ("TxnMeta", &*rawMeta.begin (), rawMeta.size ());
-
-        if (metaSize > static_cast<int> (rawMeta.size ()))
-        {
-            rawMeta.resize (metaSize);
-            db->getBinary ("TxnMeta", &*rawMeta.begin (), rawMeta.size ());
-        }
-        else rawMeta.resize (metaSize);
-
-        std::string tid;
-        db->getStr ("TransID", tid);
-        transID.SetHex (tid, true);
-
-        if (rawMeta.size () == 0)
-        {
-            txIDs.push_back (std::make_pair (transID, -1));
-            Log (lsINFO) << "No metadata for " << transID;
-        }
-        else
-        {
-            TransactionMetaSet m (transID, 0, rawMeta);
-            txIDs.push_back (std::make_pair (transID, m.getIndex ()));
-        }
-
-        if ((++i % 1000) == 0)
-            Log (lsINFO) << i << " transactions read";
-    }
-
-    Log (lsINFO) << "All " << i << " transactions read";
-
-    db->executeSQL ("BEGIN TRANSACTION;");
-
-    Log (lsINFO) << "Dropping old index";
-    db->executeSQL ("DROP INDEX AcctTxIndex;");
-
-    Log (lsINFO) << "Altering table";
-    db->executeSQL ("ALTER TABLE AccountTransactions ADD COLUMN TxnSeq INTEGER;");
-
-    boost::format fmt ("UPDATE AccountTransactions SET TxnSeq = %d WHERE TransID = '%s';");
-    i = 0;
-    for (auto& t : txIDs)
-    {
-        db->executeSQL (boost::str (fmt % t.second % to_string (t.first)));
-
-        if ((++i % 1000) == 0)
-            Log (lsINFO) << i << " transactions updated";
-    }
-
-    Log (lsINFO) << "Building new index";
-    db->executeSQL ("CREATE INDEX AcctTxIndex ON AccountTransactions(Account, LedgerSeq, TxnSeq, TransID);");
-    db->executeSQL ("END TRANSACTION;");
-}
-
 void ApplicationImp::updateTables ()
 {
     if (getConfig ().nodeDatabase.size () <= 0)
     {
         Log (lsFATAL) << "The [node_db] configuration setting has been updated and must be set";
-        StopSustain ();
-        exit (1);
-    }
-
-    // perform any needed table updates
-    assert (schemaHas (getApp().getTxnDB (), "AccountTransactions", 0, "TransID"));
-    assert (!schemaHas (getApp().getTxnDB (), "AccountTransactions", 0, "foobar"));
-    addTxnSeqField ();
-
-    if (schemaHas (getApp().getTxnDB (), "AccountTransactions", 0, "PRIMARY"))
-    {
-        Log (lsFATAL) << "AccountTransactions database should not have a primary key";
         StopSustain ();
         exit (1);
     }

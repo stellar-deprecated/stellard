@@ -5,6 +5,10 @@
 namespace ripple
 {
 
+	StellarPublicKey::StellarPublicKey()
+	{
+		mIsValid = false;
+	}
 
 	StellarPublicKey::StellarPublicKey(const Blob& publicKey, RippleAddress::VersionEncoding type)
 	{

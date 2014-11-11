@@ -1166,6 +1166,11 @@ void SHAMap::canonicalize (uint256 const& hash, SHAMapTreeNode::pointer& node)
 
 }
 
+void SHAMap::markAsFull()
+{
+    root->setFullBelow();
+}
+
 //------------------------------------------------------------------------------
 
 class SHAMap_test : public beast::unit_test::suite

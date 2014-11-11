@@ -38,8 +38,7 @@ public:
         sslAndPROXYRequired
     };
 
-    virtual
-    void stop() = 0;
+    virtual void stop() = 0;
 };
 
 std::unique_ptr <PeerDoor>

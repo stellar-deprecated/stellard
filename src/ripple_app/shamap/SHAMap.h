@@ -34,6 +34,7 @@
 #include "../ripple_core/nodestore/api/NodeObject.h"
 #include "../ripple/common/TaggedCache.h"
 #include "../ripple_basics/containers/SyncUnorderedMap.h"
+#include "ripple_app/misc/SerializedLedger.h"
 
 /*
 Used for:
@@ -277,6 +278,8 @@ public:
     {
         treeNodeCache.sweep ();
     }
+
+    void markAsFull();
 
 private:
     // trusted path operations - prove a particular node is in a particular ledger

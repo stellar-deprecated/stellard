@@ -337,14 +337,8 @@
     <Filter Include="[0] Libraries\libsodium\code">
       <UniqueIdentifier>{16646c2b-531d-4719-ae49-45ae15446183}</UniqueIdentifier>
     </Filter>
-    <Filter Include="sanity">
-      <UniqueIdentifier>{c52865dd-9ab7-4028-9e5d-53ed6637ed3a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ledger">
       <UniqueIdentifier>{cbce24e4-95f4-4834-b93e-01184d4542ca}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="transactions">
-      <UniqueIdentifier>{b49cbe8e-cc22-4bb0-bb1c-398f5ca6d427}</UniqueIdentifier>
     </Filter>
     <Filter Include="util">
       <UniqueIdentifier>{05d4adbc-388c-44fd-b964-cdc3dbcc922e}</UniqueIdentifier>
@@ -1728,9 +1722,6 @@
     <ClCompile Include="..\..\src\ripple\types\impl\base_uint.cpp">
       <Filter>[1] Ripple\types\impl</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple_app\transactors\AccountMergeTransactor.cpp">
-      <Filter>[2] Old Ripple\ripple_app\transactors</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\ripple_app\transactors\InflationTransactor.cpp">
       <Filter>[2] Old Ripple\ripple_app\transactors</Filter>
     </ClCompile>
@@ -1779,12 +1770,6 @@
     <ClCompile Include="..\..\src\ripple_app\misc\NetworkOPsImp.cpp">
       <Filter>[2] Old Ripple\ripple_app\misc</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\sanity\FirmezaMaster.cpp">
-      <Filter>sanity</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\sanity\History.cpp">
-      <Filter>sanity</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\ripple\peerfinder\impl\Counts.cpp">
       <Filter>[1] Ripple\peerfinder\impl</Filter>
     </ClCompile>
@@ -1792,9 +1777,6 @@
       <Filter>[1] Ripple\peerfinder\impl</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ledger\AccountEntry.cpp">
-      <Filter>ledger</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ledger\BucketList.cpp">
       <Filter>ledger</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\ledger\LedgerEntry.cpp">
@@ -1809,17 +1791,14 @@
     <ClCompile Include="..\..\src\ledger\LedgerMaster.cpp">
       <Filter>ledger</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ledger\Ledger.cpp">
+    <ClCompile Include="..\..\src\ledger\LegacyCLF.cpp">
       <Filter>ledger</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\transactions\TrustSetTx.cpp">
-      <Filter>transactions</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\transactions\Transaction.cpp">
-      <Filter>transactions</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ledger\LegacyPreimage.cpp">
+    <ClCompile Include="..\..\src\ledger\LedgerDatabase.cpp">
       <Filter>ledger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ripple_app\transactors\AccountMergeTransactor.cpp">
+      <Filter>[2] Old Ripple\ripple_app\transactors</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -3429,9 +3408,6 @@
     <ClInclude Include="..\..\src\ripple\common\UnorderedContainers.h">
       <Filter>[1] Ripple\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\ripple_app\transactors\AccountMergeTransactor.h">
-      <Filter>[2] Old Ripple\ripple_app\transactors</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\ripple_app\transactors\InflationTransactor.h">
       <Filter>[2] Old Ripple\ripple_app\transactors</Filter>
     </ClInclude>
@@ -3603,28 +3579,13 @@
     <ClInclude Include="..\..\src\ripple_data\crypto\StellarPrivateKey.h">
       <Filter>[2] Old Ripple\ripple_data\crypto</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\history.h">
-      <Filter>sanity</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\ripple_app\misc\NetworkOPsImp.h">
       <Filter>[2] Old Ripple\ripple_app\misc</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\sanity\FirmezaMaster.h">
-      <Filter>sanity</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\sanity\TransactionSet.h">
-      <Filter>sanity</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\sanity\History.h">
-      <Filter>sanity</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\ripple\peerfinder\impl\PeerSlotLogic.h">
       <Filter>[1] Ripple\peerfinder\impl</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\ledger\AccountEntry.h">
-      <Filter>ledger</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ledger\BucketList.h">
       <Filter>ledger</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\ledger\LedgerEntry.h">
@@ -3636,47 +3597,20 @@
     <ClInclude Include="..\..\src\ledger\TrustLine.h">
       <Filter>ledger</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\transactions\TransactionSet.h">
-      <Filter>transactions</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\ledger\LedgerMaster.h">
       <Filter>ledger</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\ledger\Ledger.h">
+    <ClInclude Include="..\..\src\ledger\CanonicalLedgerForm.h">
       <Filter>ledger</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\transactions\Transaction.h">
-      <Filter>transactions</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\transactions\PaymentTx.h">
-      <Filter>transactions</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\transactions\CreateOfferTx.h">
-      <Filter>transactions</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\transactions\CancelOfferTx.h">
-      <Filter>transactions</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\transactions\TrustSetTx.h">
-      <Filter>transactions</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\transactions\MergeTx.h">
-      <Filter>transactions</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\transactions\InflationTx.h">
-      <Filter>transactions</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\transactions\SetAccountTx.h">
-      <Filter>transactions</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\transactions\SetRegularKeyTx.h">
-      <Filter>transactions</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\ledger\LedgerPreimage.h">
+    <ClInclude Include="..\..\src\ledger\LegacyCLF.h">
       <Filter>ledger</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\ledger\LegacyPreimage.h">
+    <ClInclude Include="..\..\src\ledger\LedgerDatabase.h">
       <Filter>ledger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\ripple_app\transactors\AccountMergeTransactor.h">
+      <Filter>[2] Old Ripple\ripple_app\transactors</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

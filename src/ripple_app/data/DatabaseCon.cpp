@@ -19,7 +19,8 @@
 
 namespace ripple {
 
-DatabaseCon::DatabaseCon (const std::string& strName, const char* initStrings[], int initCount)
+
+void DatabaseCon::connectHelper(const std::string& strName)
 {
     // VFALCO TODO remove this dependency on the config by making it the caller's
     //         responsibility to pass in the path. Add a member function to Application
@@ -34,9 +35,25 @@ DatabaseCon::DatabaseCon (const std::string& strName, const char* initStrings[],
 
     mDatabase = new SqliteDatabase (pPath.string ().c_str ());
     mDatabase->connect ();
+}
 
-    for (int i = 0; i < initCount; ++i)
-        mDatabase->executeSQL (initStrings[i], true);
+DatabaseCon::DatabaseCon (const std::string& strName, const char* initStrings[], int initCount)
+{
+    connectHelper(strName);
+    for (int i = 0; i < initCount; ++i) {
+        bool res = mDatabase->executeSQL (initStrings[i], false);
+        assert(res);
+    }
+}
+
+DatabaseCon::DatabaseCon (const std::string& strName, const std::vector<const char *> &init)
+{
+    connectHelper(strName);
+
+    for(const char * const &statement: init) {
+        bool res = mDatabase->executeSQL (statement, false);
+        assert(res);
+    }
 }
 
 DatabaseCon::~DatabaseCon ()

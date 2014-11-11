@@ -253,7 +253,19 @@ COMPILED_FILES.extend([
 	'src/ripple_websocket/autosocket/AutoSocket.cpp',
 	'src/ripple/peerfinder/impl/PeerSlotLogic.cpp',
 	'src/ripple/peerfinder/impl/Counts.cpp',
+	'src/ripple_app/transactors/AccountMergeTransactor.cpp',
+	'src/ripple_app/transactors/InflationTransactor.cpp'
     ])
+
+COMPILED_FILES.extend([
+	'src/ledger/AccountEntry.cpp',
+	'src/ledger/LedgerDatabase.cpp',
+	'src/ledger/LedgerEntry.cpp',
+	'src/ledger/LedgerMaster.cpp',
+	'src/ledger/LegacyCLF.cpp',
+	'src/ledger/OfferEntry.cpp',
+	'src/ledger/TrustLine.cpp'
+	])
 
 # ------------------------------
 # New-style Ripple unity sources
