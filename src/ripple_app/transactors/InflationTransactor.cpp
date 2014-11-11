@@ -16,6 +16,7 @@ ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 //==============================================================================
+#include "ripple_app/ripple_app.h"
 #include "InflationTransactor.h"
 #include <boost/multiprecision/cpp_int.hpp>
 #include "ripple_data/protocol/TER.h"
@@ -99,178 +100,118 @@ namespace ripple {
 		WriteLog(lsWARNING, InflationTransactor) << "InflationTransactor::doApply() ****************************** ";
 
 		TER terResult = tesSUCCESS;
+
+        /*
+        
+        Inflation is calculated using the following
+
+        1. calculate tally of votes based on "inflationDest" set on each account
+        2. take the top accounts (by vote) that exceed 1.5% (INFLATION_WIN_MIN_PERCENT) of votes, up to 50 accounts (INFLATION_NUM_WINNERS)
+            exception:
+                if no account crosses the INFLATION_WIN_MIN_PERCENT, the top 50 is used
+        3. share the coins between those accounts proportionally to the number of votes they got
+
+        */
+
 		
-		// make sure it is time to apply inflation
-		// make sure the seq number of this inflation transaction is correct
+		// don't bother to process on the first apply
+		if (!mEngine->mClosingLedger) return tesSUCCESS;
 
-		uint32 seq = mTxn.getFieldU32(sfInflateSeq);
+		boost::multiprecision::cpp_int minBalance(mEngine->getLedger()->getTotalCoins());
+		boost::multiprecision::cpp_int minWinMultiplier(INFLATION_WIN_MIN_PERCENT);
+		boost::multiprecision::cpp_int inflRateDivider(TRILLION);
+		boost::multiprecision::cpp_int totalVoted;
+
+		minBalance *= minWinMultiplier;
+		minBalance /= inflRateDivider;
+
+		WriteLog(lsDEBUG, InflationTransactor) << "minBalance: " << minBalance;
+
+        // limit to large accounts for now, will need different logic to perform well
+        boost::format topAccountsSQL("SELECT sum(balance) as votes,inflationDest from Accounts where inflationDest is not NULL AND inflationDest is NOT 'ggggggggggggggggggggghoLvTs' AND balance > 1000000000 group by inflationDest order by votes desc limit %d");
+		string sql(boost::str(topAccountsSQL % INFLATION_NUM_WINNERS));
 		
+		vector< pair<uint160, boost::multiprecision::cpp_int> > winners;
 
-		if (seq != mEngine->getLedger()->getInflationSeq())
 		{
-			WriteLog(lsINFO, InflationTransactor) << "doInflation: Invalid Seq number.";
+            // lock is already taken as we're running inside processor
+			Database* db = getApp().getWorkingLedgerDB()->getDB();
 
-			return telNOT_TIME;
-		}
-
-		uint32 closeTime=mEngine->getLedger()->getParentCloseTimeNC();
-		uint32 nextTime = (INFLATION_START_TIME + seq*INFLATION_FREQUENCY);
-		if (closeTime < nextTime)
-		{
-			WriteLog(lsINFO, InflationTransactor) << "doInflation: Too early.";
-
-			return telNOT_TIME;
-		}
-
-		if (!mEngine->getLedger()->getInflationAllowed())
-		{
-			WriteLog(lsINFO, InflationTransactor) << "doInflation: cannot allow multiple inflations in a round.";
-
-			return telNOT_TIME;
-		}
-
-		// check previous ledger if this should be applied now
-		// loop through all accounts and tally votes
-		// dole out the inflation amount to the winners
-		uint256 parentHash=mEngine->getLedger()->getParentHash();
-		Ledger::pointer votingLedger=getApp().getLedgerMaster().getLedgerByHash(parentHash);
-		if (votingLedger)
-		{
-			std::map< uint160, uint64 > voteTally;
-			
-			// TODO: is there a better way to do this than walk every element in the ledger?
-			const SHAMap::pointer votingLedgerItems = votingLedger->peekAccountStateMap();
-			SHAMapItem::pointer item = votingLedgerItems->peekFirstItem();
-			while (item)
+			if(db->executeSQL(sql, true) && db->startIterRows())
 			{
-				
-				SLE::pointer s=boost::make_shared<SLE>(item->peekSerializer(), item->getTag());
+				totalVoted = db->getBigInt("votes");
+				uint160 destAccount=db->getAccountID("inflationDest");
+				winners.push_back(pair<uint160, boost::multiprecision::cpp_int>(destAccount, totalVoted));
 
-				if (s->getType() == ltACCOUNT_ROOT)
+				WriteLog(lsWARNING, InflationTransactor) << "totalVoted: " << totalVoted << " minBalance: " << minBalance;
+
+				if(totalVoted <= minBalance)
+				{  // need to take top 50 as nobody crossed the threshold
+					minBalance = 0;
+				} 
+				
+				while(db->getNextRow())
 				{
-					if (s->isFieldPresent(sfInflationDest))
+					boost::multiprecision::cpp_int votes = db->getBigInt("votes");
+					destAccount = db->getAccountID("inflationDest");
+					if(votes>minBalance)
 					{
-						uint160 addr=s->getFieldAccount160(sfInflationDest);
-						STAmount balance = s->getFieldAmount(sfBalance);
-						if (voteTally.find(addr) == voteTally.end()) voteTally[addr] = balance.getNValue();
-						else voteTally[addr] = voteTally[addr] + balance.getNValue();
+						totalVoted += votes;
+						winners.push_back(pair<uint160, boost::multiprecision::cpp_int>(destAccount, votes));
 					}
-					
-				}
-
-				item = votingLedgerItems->peekNextItem(item->getTag());
+					else
+						break;
+				};
+				db->endIterRows();
 			}
-
-			
-			// sort the votes
-			std::vector< std::pair<uint160, uint64> > sortedVotes;
-			copy(voteTally.begin(), voteTally.end(), back_inserter(sortedVotes));
-
-			// TEMP: debug
-			typedef std::pair< uint160, uint64 > vote_pair;
-			BOOST_FOREACH(vote_pair& vote, sortedVotes)
+			else
 			{
-				RippleAddress tempAddr;
-				tempAddr.setAccountID(vote.first);
-				WriteLog(lsWARNING, InflationTransactor) << "votesGotten: " << vote.second << " addr: " << tempAddr.ToString();
+				WriteLog(lsERROR, InflationTransactor) << "SELECT failed";
 			}
-
-			sort(sortedVotes.begin(), sortedVotes.end(), voteSorter);
-
-			boost::multiprecision::cpp_int minBalance( mEngine->getLedger()->getTotalCoins());
-			boost::multiprecision::cpp_int minWinMultiplier( INFLATION_WIN_MIN_PERCENT );
-			boost::multiprecision::cpp_int inflRateDivider( TRILLION );
-			
-			minBalance *= minWinMultiplier;
-			minBalance /= inflRateDivider;
-
-			WriteLog(lsWARNING, InflationTransactor) << "minBalance: " << minBalance ;
-
-			uint64 totalVoted = 0;
-			int maxIndex = MIN(INFLATION_NUM_WINNERS, sortedVotes.size());
-			for (int n = 0; n < maxIndex; n++)
-			{
-				boost::multiprecision::cpp_int votesGotten( sortedVotes[n].second );
-
-				WriteLog(lsWARNING, InflationTransactor) << "votesGotten: " << votesGotten;
-
-				if (votesGotten > minBalance)
-				{
-					totalVoted += sortedVotes[n].second;
-				}else 
-				{
-					if (totalVoted)
-						maxIndex = n;
-					break;
-				}
-			}
-
-			if (!totalVoted)
-			{  // no one crossed the threshold so just take top N
-				for (int n = 0; n < maxIndex; n++)
-				{
-					RippleAddress tempAddr;
-					tempAddr.setAccountID(sortedVotes[n].first);
-					WriteLog(lsWARNING, InflationTransactor) << "votes: " << sortedVotes[n].second << " address: " << tempAddr.ToString();
-					totalVoted += sortedVotes[n].second;
-				}
-			}
-
-
-			boost::multiprecision::cpp_int biCoinsToDole( mEngine->getLedger()->getTotalCoins() );
-			boost::multiprecision::cpp_int inflRateMultiplier( INFLATION_RATE_TRILLIONTHS );
-			boost::multiprecision::cpp_int poolFee( mEngine->getLedger()->getFeePool() );
-
-			/// coinsToDole = totalCoins * INFLATION_RATE + feePool
-			biCoinsToDole *= inflRateMultiplier;
-			biCoinsToDole /= inflRateDivider;
-			biCoinsToDole += poolFee;
-
-
-			boost::multiprecision::cpp_int biTotalVoted( totalVoted );
-
-			WriteLog(lsWARNING, InflationTransactor) << "totalVoted: " << totalVoted << " bi:" << biTotalVoted << " coinsToDole: " << biCoinsToDole;
-
-			
-			for (int n = 0; n < maxIndex; n++)
-			{
-				/// coinsDoled = coinToDole * ( votes / totalVoted )
-				boost::multiprecision::cpp_int biCoinsDoled( sortedVotes[n].second );
-				biCoinsDoled *= biCoinsToDole;
-				biCoinsDoled /= biTotalVoted;
-
-				uint64 coinsDoled = static_cast<uint64>(biCoinsDoled);
-
-				WriteLog(lsWARNING, InflationTransactor) << "coinsDoled: " << coinsDoled;
-
-				SLE::pointer account = mEngine->entryCache(ltACCOUNT_ROOT, Ledger::getAccountRootIndex(sortedVotes[n].first));
-				
-				if (account)
-				{
-					mEngine->entryModify(account);
-					account->setFieldAmount(sfBalance, account->getFieldAmount(sfBalance) + coinsDoled);
-					mEngine->getLedger()->inflateCoins(coinsDoled);
-				}
-				else
-				{
-					RippleAddress tempAddr;
-					tempAddr.setAccountID(sortedVotes[n].first);
-					WriteLog(lsERROR, InflationTransactor) << "Inflation dest account not found: " << tempAddr.ToString();
-				}
-			}
-
-			mEngine->getLedger()->incrementInflationSeq();
-			
 		}
-		else
+
+		boost::multiprecision::cpp_int biCoinsToDole( mEngine->getLedger()->getTotalCoins() );
+		boost::multiprecision::cpp_int inflRateMultiplier( INFLATION_RATE_TRILLIONTHS );
+		boost::multiprecision::cpp_int feePool( mEngine->getLedger()->getFeePool() );
+
+		/// coinsToDole = totalCoins * INFLATION_RATE + feePool
+		biCoinsToDole *= inflRateMultiplier;
+		biCoinsToDole /= inflRateDivider;
+		biCoinsToDole += feePool;
+
+		WriteLog(lsWARNING, InflationTransactor) << "totalVoted: " << totalVoted << " coinsToDole: " << biCoinsToDole;
+
+			
+		for (auto &thisWinner : winners)
 		{
-			WriteLog(lsINFO, InflationTransactor) << "doInflation: Ledger not found?";
+			/// coinsDoled = coinToDole * votes / totalVoted
+			boost::multiprecision::cpp_int biCoinsDoled=biCoinsToDole;
+			biCoinsDoled *= thisWinner.second;
+			biCoinsDoled /= totalVoted;
 
-			return temUNKNOWN;
+			uint64 coinsDoled = static_cast<uint64>(biCoinsDoled);
+
+			WriteLog(lsWARNING, InflationTransactor) << "coinsDoled: " << coinsDoled;
+
+			SLE::pointer account = mEngine->entryCache(ltACCOUNT_ROOT, Ledger::getAccountRootIndex(thisWinner.first));
+				
+			if (account)
+			{
+				mEngine->entryModify(account);
+				account->setFieldAmount(sfBalance, account->getFieldAmount(sfBalance) + coinsDoled);
+				mEngine->getLedger()->inflateCoins(coinsDoled);
+			}
+			else
+			{
+                // SANITY: maybe we should just redistribute votes to the actual accounts in that case?
+				RippleAddress tempAddr;
+				tempAddr.setAccountID(thisWinner.first);
+				WriteLog(lsERROR, InflationTransactor) << "Inflation dest account not found: " << tempAddr.ToString();
+			}
 		}
 
-		
-
+		mEngine->getLedger()->incrementInflationSeq();
+			
 		return terResult;
 	}
 
