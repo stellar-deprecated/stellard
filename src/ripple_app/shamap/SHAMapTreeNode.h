@@ -135,7 +135,7 @@ public:
 
     bool isEmptyBranch (int m) const
     {
-        return (mIsBranch & (1 << m)) == 0;
+        return (mInner->mIsBranch & (1 << m)) == 0;
     }
     bool isEmpty () const;
     int getBranchCount () const;
@@ -143,7 +143,7 @@ public:
     uint256 const& getChildHash (int m) const
     {
         assert ((m >= 0) && (m < 16) && (mType == tnINNER));
-        return mHashes[m];
+        return mInner->mHashes[m];
     }
 
     // item node function
@@ -170,11 +170,11 @@ public:
     // sync functions
     bool isFullBelow (void) const
     {
-        return mFullBelow;
+        return mInner->mFullBelow;
     }
     void setFullBelow (void)
     {
-        mFullBelow = true;
+        mInner->mFullBelow = true;
     }
 
     virtual void dump (SHAMapNodeID const&);
@@ -190,13 +190,18 @@ private:
     friend class SHAMap;
 
     uint256                 mHash;
-    uint256                 mHashes[16];
-    SHAMapTreeNode::pointer mChildren[16];
     SHAMapItem::pointer     mItem;
     std::uint32_t           mSeq;
     TNType                  mType;
-    int                     mIsBranch;
-    bool                    mFullBelow;
+    struct InnerData {
+        InnerData() { mIsBranch = 0; mFullBelow = false; }
+        uint256             mHashes[16];  // hashes of the nodes under this one
+        SHAMapTreeNode::pointer mChildren[16];
+        int                 mIsBranch;   // bitfield that says if the branch at bit i is there or not
+        bool                mFullBelow;
+    };
+
+    std::unique_ptr<InnerData> mInner;
 
     bool updateHash ();
 
