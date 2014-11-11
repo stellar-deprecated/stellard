@@ -972,6 +972,15 @@ int NetworkOPsImp::beginConsensus (uint256 const& networkClosed, Ledger::pointer
 
         return 3;
     }
+    else if (!stellar::gLedgerMaster->ensureSync(prevLedger, true))
+    {
+        if (mMode == omTRACKING || mMode == omFULL)
+        {
+            m_journal.warning << "Don't have LCL in database, going back to syncing";
+            setMode (omSYNCING);
+        }
+        return 3;
+    }
 
     assert (prevLedger->getHash () == closingLedger->getParentHash ());
     assert (closingLedger->getParentHash () == m_ledgerMaster.getClosedLedger ()->getHash ());

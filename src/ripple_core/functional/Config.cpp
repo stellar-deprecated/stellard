@@ -126,7 +126,7 @@ Config::Config ()
 
     TRANSACTION_FEE_BASE    = DEFAULT_FEE_DEFAULT;
 
-    NETWORK_QUORUM          = 0;    // Don't need to see other nodes
+    NETWORK_QUORUM          = 1;
     VALIDATION_QUORUM       = 1;    // Only need one node to vouch
 
     FEE_ACCOUNT_RESERVE     = DEFAULT_FEE_ACCOUNT_RESERVE;

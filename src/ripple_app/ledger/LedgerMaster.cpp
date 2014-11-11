@@ -659,8 +659,11 @@ public:
 
             InboundLedger::pointer l =
                 getApp().getInboundLedgers().findCreate(hash, 0, InboundLedger::fcGENERIC);
-            if (l && l->isComplete() && !l->isFailed())
+            if (l && l->isComplete() && !l->isFailed()) {
+                WriteLog (lsDEBUG, LedgerMaster) << 
+                    "checkAccept has complete ledger " << to_string (hash);
                 ledger = l->getLedger();
+            }
             else
             {
                 WriteLog (lsDEBUG, LedgerMaster) << 
