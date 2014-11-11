@@ -25,6 +25,7 @@
 #include "ripple/common/TaggedCache.h"
 #include "beast/beast/utility/PropertyStream.h"
 #include "ripple_basics/types/BasicTypes.h"
+#include "ripple_core/functional/Job.h"
 
 namespace ripple {
 
