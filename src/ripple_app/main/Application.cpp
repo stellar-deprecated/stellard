@@ -645,6 +645,13 @@ public:
     }
 #endif
 
+    static void terminateHandler()
+    {
+        beast::Debug::breakPoint();
+        std::cerr << "unhandled exception: terminate handler called";
+        abort();
+    }
+
     // VFALCO TODO Break this function up into many small initialization segments.
     //             Or better yet refactor these initializations into RAII classes
     //             which are members of the Application object.
@@ -653,6 +660,8 @@ public:
     {
         // VFALCO NOTE: 0 means use heuristics to determine the thread count.
         m_jobQueue->setThreadCount (0, getConfig ().RUN_STANDALONE);
+
+        std::set_terminate(terminateHandler);
 
     #if ! BEAST_WIN32
     #ifdef SIGINT
