@@ -66,8 +66,8 @@ private:
 
 public:
     virtual ~runner() = default;
-    runner (runner const&) = default;
-    runner& operator= (runner const&) = default;
+    runner (runner const&) = delete;
+    runner& operator= (runner const&) = delete;
 
     runner()
         : m_stream (*this)
