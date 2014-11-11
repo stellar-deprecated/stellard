@@ -644,12 +644,12 @@ int Config::getSize (SizedItemName item)
         { siSLECacheSize,       {   4096,   8192,   16384,  65536,      0       } },
         { siSLECacheAge,        {   30,     60,     90,     120,        300     } },
 
-        { siLedgerSize,         {   32,     128,    256,    384,        0       } },
+        { siLedgerSize,         {   32,     64,    128,    256,        0       } },
         { siLedgerAge,          {   30,     90,     180,    240,        900     } },
 
         { siHashNodeDBCache,    {   4,      12,     24,     64,         128      } },
         { siTxnDBCache,         {   4,      12,     24,     64,         128      } },
-        { siLgrDBCache,         {   4,      8,      16,     32,         128      } },
+        { siLgrDBCache,         {   4,       8,      16,     32,         128      } },
         { siWorkingLgrDBCache,  {   64,    128,      256,   512,        1024      } }
     };
 

@@ -124,23 +124,16 @@ void SHAMap::getMissingNodes (std::vector<SHAMapNodeID>& nodeIDs, std::vector<ui
         return;
     }
 
-    int const maxDefer = getApp().getNodeStore().getDesiredAsyncReadCount ();
-
     // Track the missing hashes we have found so far
     std::set <uint256> missingHashes;
 
-
-    while (1)
     {
-        std::vector <std::tuple <SHAMapTreeNode*, int, SHAMapNodeID>> deferredReads;
-        deferredReads.reserve (maxDefer + 16);
-
-        using StackEntry = std::tuple<SHAMapTreeNode*, SHAMapNodeID, int, int, bool>;
+        using StackEntry = std::tuple<SHAMapTreeNode *, SHAMapNodeID, int, int, bool>;
         std::stack <StackEntry, std::vector<StackEntry>> stack;
 
         // Traverse the map without blocking
 
-        SHAMapTreeNode *node = root.get ();
+        SHAMapTreeNode *node = root.get();
         SHAMapNodeID nodeID;
 
         // The firstChild value is selected randomly so if multiple threads
@@ -164,12 +157,11 @@ void SHAMap::getMissingNodes (std::vector<SHAMapNodeID>& nodeIDs, std::vector<ui
                     if (! mBacked || ! m_fullBelowCache.touch_if_exists (childHash))
                     {
                         SHAMapNodeID childID = nodeID.getChildNodeID (branch);
-                        bool pending = false;
-                        SHAMapTreeNode* d = descendAsync (node, branch, childID, filter, pending);
+                        auto c = descend(node, nodeID, branch, filter);
+                        SHAMapTreeNode *d = c.first;
 
                         if (!d)
                         {
-                            if (!pending)
                             { // node is not in the database
                                 if (missingHashes.insert (childHash).second)
                                 {
@@ -180,12 +172,6 @@ void SHAMap::getMissingNodes (std::vector<SHAMapNodeID>& nodeIDs, std::vector<ui
                                         return;
                                 }
                             }
-                            else
-                            {
-                                // read is deferred
-                                deferredReads.emplace_back (node, branch, childID);
-                            }
-
                             fullBelow = false; // This node is not known full below
                         }
                         else if (d->isInner () && !d->isFullBelow ())
@@ -222,41 +208,8 @@ void SHAMap::getMissingNodes (std::vector<SHAMapNodeID>& nodeIDs, std::vector<ui
                 fullBelow = was && fullBelow; // was and still is
                 stack.pop ();
             }
-
         }
-        while ((node != nullptr) && (deferredReads.size () <= maxDefer));
-
-        // If we didn't defer any reads, we're done
-        if (deferredReads.empty ())
-            break;
-
-        getApp().getNodeStore().waitReads();
-
-        // Process all deferred reads
-        for (auto const& node : deferredReads)
-        {
-            auto parent = std::get<0>(node);
-            auto branch = std::get<1>(node);
-            auto const& nodeID = std::get<2>(node);
-            auto const& nodeHash = parent->getChildHash (branch);
-
-            SHAMapTreeNode::pointer nodePtr = fetchNodeNT (nodeID, nodeHash, filter);
-            if (nodePtr)
-            {
-                if (mBacked)
-                    canonicalize (nodeHash, nodePtr);
-                parent->canonicalizeChild (branch, nodePtr);
-            }
-            else if (missingHashes.insert (nodeHash).second)
-            {
-                nodeIDs.push_back (nodeID);
-                hashes.push_back (nodeHash);
-
-                if (--max <= 0)
-                    return;
-            }
-        }
-
+        while (node != nullptr);
     }
 
     if (nodeIDs.empty ())

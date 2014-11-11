@@ -23,6 +23,7 @@
 #include "../ripple_overlay/api/Overlay.h"
 #include "../ripple_app/tx/TxQueueEntry.h"
 #include "../ripple_app/tx/TxQueue.h"
+#include "../src/ledger/LedgerMaster.h"
 
 #include "NetworkOPsImp.h"
 
@@ -1350,7 +1351,7 @@ NetworkOPsImp::getAccountTxs (const RippleAddress& account, std::int32_t minLedg
             { // Work around a bug that could leave the metadata missing
                 std::uint32_t seq = static_cast<std::uint32_t>(db->getBigInt("LedgerSeq"));
                 m_journal.warning << "Recovering ledger " << seq << ", txn " << txn->getID();
-                Ledger::pointer ledger = getLedgerBySeq(seq);
+                Ledger::pointer ledger = getLedgerBySeq(seq); // ???? this looks up in SQL... and we save it back in SQL afterwards?!
                 if (ledger)
                     ledger->pendSaveValidated(false, false);
             }
@@ -1511,7 +1512,7 @@ NetworkOPsImp::getTxsAccount (const RippleAddress& account, std::int32_t minLedg
                 { // Work around a bug that could leave the metadata missing
                     std::uint32_t seq = static_cast<std::uint32_t>(db->getBigInt("LedgerSeq"));
                     m_journal.warning << "Recovering ledger " << seq << ", txn " << txn->getID();
-                    Ledger::pointer ledger = getLedgerBySeq(seq);
+                    Ledger::pointer ledger = getLedgerBySeq(seq); // ???? this looks up in SQL... and we save it back in SQL afterwards?!
                     if (ledger)
                         ledger->pendSaveValidated(false, false);
                 }
