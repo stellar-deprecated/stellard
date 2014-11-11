@@ -927,13 +927,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple_app\transactors\AccountMergeTransactor.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="..\..\src\ripple_app\transactors\AccountMergeTransactor.cpp" />
     <ClCompile Include="..\..\src\ripple_app\transactors\InflationTransactor.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\ripple_app\transactors\SetAccount.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -2509,6 +2506,29 @@
     <None Include="..\..\src\ripple_overlay\TODO.md" />
     <None Include="..\..\src\ripple_rpc\README.md" />
     <None Include="..\..\src\ripple_rpc\TODO.md" />
+    <None Include="..\..\test\account_merge-test.js" />
+    <None Include="..\..\test\account_set-test.js" />
+    <None Include="..\..\test\account_tx-test.js" />
+    <None Include="..\..\test\config-example.js" />
+    <None Include="..\..\test\config.js" />
+    <None Include="..\..\test\gateway-test.js" />
+    <None Include="..\..\test\indirect-test.js" />
+    <None Include="..\..\test\inflation-test.js" />
+    <None Include="..\..\test\jsonrpc-test.js" />
+    <None Include="..\..\test\monitor-test.js" />
+    <None Include="..\..\test\nodeutils.js" />
+    <None Include="..\..\test\offer-test.js" />
+    <None Include="..\..\test\path-test.js" />
+    <None Include="..\..\test\path-tests.json" />
+    <None Include="..\..\test\path1-test.js" />
+    <None Include="..\..\test\path2-test.js" />
+    <None Include="..\..\test\remote-test.js" />
+    <None Include="..\..\test\send-test.js" />
+    <None Include="..\..\test\server-test.js" />
+    <None Include="..\..\test\server.js" />
+    <None Include="..\..\test\testconfig.js" />
+    <None Include="..\..\test\testutils.js" />
+    <None Include="..\..\test\websocket-test.js" />
     <None Include="..\QtCreator\rippled.pro" />
   </ItemGroup>
   <ItemGroup>
@@ -2555,10 +2575,17 @@
     <Import Project="x64.props" />
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="Common.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="Common.props" />
+  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <TargetName>stellard</TargetName>
+    <IntDir>$(RepoDir)\build\obj\VisualStudio2013\$(Configuration).$(Platform)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -2580,9 +2607,10 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libsodium.lib;ssleay32MT.lib;libeay32MT.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Debug\v120\static\libsodium.lib;ssleay32MTd.lib;libeay32MTd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>c:/code/boost_1_55_0/stage/lib;C:\code\OpenSSL-64\lib64;C:\code\libsodium\x64\Debug\v120\dynamic;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <Bscmake />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -2605,7 +2633,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>libsodium.lib;ssleay32MT.lib;libeay32MT.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Release\v120\static\libsodium.lib;ssleay32MT.lib;libeay32MT.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
       <AdditionalLibraryDirectories>c:/code/boost_1_55_0/stage/lib;C:\code\OpenSSL-64\lib64;C:\code\libsodium\x64\Release\v120\dynamic;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
