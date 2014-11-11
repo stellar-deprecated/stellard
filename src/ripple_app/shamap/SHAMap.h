@@ -274,10 +274,12 @@ public:
         mBacked = false;
     }
 
+#ifdef ENABLE_SHAMAP_CACHE
     static void sweep ()
     {
         treeNodeCache.sweep ();
     }
+#endif
 
     void markAsFull();
 
@@ -366,7 +368,9 @@ private:
     FullBelowCache& m_fullBelowCache;
     std::uint32_t mSeq;
     std::uint32_t mLedgerSeq; // sequence number of ledger this is part of
+#ifdef ENABLE_SHAMAP_CACHE
     static TreeNodeCache treeNodeCache;
+#endif
     SHAMapTreeNode::pointer root;
     SHAMapState mState;
     SHAMapType mType;

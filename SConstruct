@@ -365,7 +365,9 @@ if not OSX:
 
 DEBUGFLAGS  = ['-g', '-DDEBUG', '-D_DEBUG']
 
-env.Append(CCFLAGS = ['-pthread', '-Wall', '-Wno-sign-compare', '-Wno-char-subscripts']+DEBUGFLAGS)
+FEATURESFLAGS = ['-DENABLE_SHAMAP_CACHE', '-DENABLEBACKENDCACHE']
+
+env.Append(CCFLAGS = ['-pthread', '-Wall', '-Wno-sign-compare', '-Wno-char-subscripts']+DEBUGFLAGS+FEATURESFLAGS)
 if not USING_CLANG:
      more_warnings = ['-Wno-unused-local-typedefs']
 else:

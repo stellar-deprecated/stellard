@@ -22,6 +22,7 @@
 
 #include "../ripple_app/shamap/SHAMapNodeID.h"
 #include "../ripple_basics/utility/CountedObject.h"
+#include "../ripple/common/TaggedCache.h"
 
 namespace ripple {
 
@@ -202,7 +203,9 @@ private:
     static std::mutex       childLock;
 };
 
-using TreeNodeCache = TaggedCache <uint256, SHAMapTreeNode>;
+#ifdef ENABLE_SHAMAP_CACHE
+typedef TaggedCache <uint256, SHAMapTreeNode> TreeNodeCache;
+#endif
 
 } // ripple
 
