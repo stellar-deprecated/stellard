@@ -70,29 +70,6 @@ public:
             expect (c.getTrackSize () == 0);
         }
 
-        // Insert an item, maintain a strong pointer, age it, and
-        // verify that the entry still exists.
-        {
-            expect (! c.insert (2, "two"));
-            expect (c.getCacheSize() == 1);
-            expect (c.getTrackSize() == 1);
-
-            {
-                Cache::mapped_ptr p (c.fetch (2));
-                expect (p != nullptr);
-                ++clock;
-                c.sweep ();
-                expect (c.getCacheSize() == 0);
-                expect (c.getTrackSize() == 1);
-            }
-
-            // Make sure its gone now that our reference is gone
-            ++clock;
-            c.sweep ();
-            expect (c.getCacheSize() == 0);
-            expect (c.getTrackSize() == 0);
-        }
-
         // Insert the same key/value pair and make sure we get the same result
         {
             expect (! c.insert (3, "three"));
@@ -103,41 +80,6 @@ public:
                 c.canonicalize (3, p2);
                 expect (p1.get() == p2.get());
             }
-            ++clock;
-            c.sweep ();
-            expect (c.getCacheSize() == 0);
-            expect (c.getTrackSize() == 0);
-        }
-
-        // Put an object in but keep a strong pointer to it, advance the clock a lot,
-        // then canonicalize a new object with the same key, make sure you get the
-        // original object.
-        {
-            // Put an object in
-            expect (! c.insert (4, "four"));
-            expect (c.getCacheSize() == 1);
-            expect (c.getTrackSize() == 1);
-
-            {
-                // Keep a strong pointer to it
-                Cache::mapped_ptr p1 (c.fetch (4));
-                expect (p1 != nullptr);
-                expect (c.getCacheSize() == 1);
-                expect (c.getTrackSize() == 1);
-                // Advance the clock a lot
-                ++clock;
-                c.sweep ();
-                expect (c.getCacheSize() == 0);
-                expect (c.getTrackSize() == 1);
-                // Canonicalize a new object with the same key
-                Cache::mapped_ptr p2 (boost::make_shared <std::string> ("four"));
-                expect (c.canonicalize (4, p2, false));
-                expect (c.getCacheSize() == 1);
-                expect (c.getTrackSize() == 1);
-                // Make sure we get the original object
-                expect (p1.get() == p2.get());
-            }
-
             ++clock;
             c.sweep ();
             expect (c.getCacheSize() == 0);
