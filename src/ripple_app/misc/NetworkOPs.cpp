@@ -506,7 +506,7 @@ Transaction::pointer NetworkOPsImp::processTransactionCb (
             // VFALCO NOTE The value of trans can be changed here!!
             getApp().getMasterTransaction ().canonicalize (&trans);
         }
-        else if (r == tefPAST_SEQ)
+        else if (r == tefPAST_SEQ || r == tefALREADY)
         {
             // duplicate or conflict
             m_journal.info << "Transaction is obsolete";

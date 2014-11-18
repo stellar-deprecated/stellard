@@ -199,7 +199,6 @@ TER PaymentTransactor::doApply ()
 
         try
         {
-            bool const openLedger = is_bit_set (mParams, tapOPEN_LEDGER);
 			bool tooManyPaths = false;
 			if (spsPaths.size() > MAX_NUM_PATHS) tooManyPaths = true;
 			else if (! LedgerDump::enactHistoricalQuirk (QuirkLongPaymentPaths))
@@ -215,7 +214,7 @@ TER PaymentTransactor::doApply ()
 			}
 
 			
-			terResult = openLedger && tooManyPaths
+			terResult = tooManyPaths
 				? telBAD_PATH_COUNT // Too many paths for proposed ledger.
 				: RippleCalc::rippleCalc(
 				mEngine->view(),

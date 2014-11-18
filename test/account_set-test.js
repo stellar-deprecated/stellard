@@ -29,11 +29,7 @@ suite('Account set', function() {
 		.inflation_dest(config.accounts.root.account)
         .on('submitted', function (m) {
           //console.log("proposed: %s", JSON.stringify(m));
-          if (m.engine_result === 'tesSUCCESS') {
-            callback(null);
-          } else {
-            callback(new Error(m.engine_result));
-          }
+            testutils.auto_advance_default( $.remote, m, callback );
         })
         .submit();
       }
@@ -58,11 +54,7 @@ suite('Account set', function() {
         .set_flags('RequireDestTag')
         .on('submitted', function (m) {
           //console.log("proposed: %s", JSON.stringify(m));
-          if (m.engine_result === 'tesSUCCESS') {
-            callback(null);
-          } else {
-            callback(new Error(m.engine_result));
-          }
+            testutils.auto_advance_default( $.remote, m, callback );
         })
         .submit();
       },
@@ -91,7 +83,7 @@ suite('Account set', function() {
         .set_flags('OptionalDestTag')
         .on('submitted', function (m) {
           //console.log("proposed: %s", JSON.stringify(m));
-          callback(m.engine_result === 'tesSUCCESS' ? null : new Error());
+            testutils.auto_advance_default( $.remote, m, callback );
         })
         .submit();
       },
@@ -131,7 +123,7 @@ suite('Account set', function() {
         .set_flags('RequireAuth')
         .on('submitted', function (m) {
           //console.log("proposed: %s", JSON.stringify(m));
-          callback(m.engine_result === 'tesSUCCESS' ? null : new Error(m));
+            testutils.auto_advance_default( $.remote, m, callback );
         })
         .submit();
       },
@@ -162,7 +154,7 @@ suite('Account set', function() {
         .on('submitted', function (m) {
           //console.log("proposed: %s", JSON.stringify(m));
 
-          callback(m.engine_result !== 'tesSUCCESS');
+            testutils.auto_advance_default( $.remote, m, callback );
         })
         .submit();
       },

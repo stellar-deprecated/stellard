@@ -18,6 +18,15 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //==============================================================================
 #include "InflationTransactor.h"
 #include <boost/multiprecision/cpp_int.hpp>
+#include "ripple_data/protocol/TER.h"
+#include "ripple_basics/log/LogPartition.h"
+#include "ripple_basics/log/Log.h"
+#include "ripple_app/tx/TransactionEngine.h"
+#include "ripple_basics/types/BasicTypes.h"
+#include "ripple_app/main/Application.h"
+#include "ripple_app/data/DatabaseCon.h"
+
+using namespace std;
 
 #define INFLATION_FREQUENCY			(60*60*24*7)  // every 7 days
 //inflation is .000190721 per 7 days, or 1% a year
@@ -59,6 +68,30 @@ namespace ripple {
             return Transactor::payFee ();
         else
             return temBAD_FEE;
+    }
+
+    TER InflationTransactor::precheckAgainstLedger()
+    {
+        // make sure it is time to apply inflation
+        // make sure the seq number of this inflation transaction is correct
+
+        uint32 seq = mTxn.getFieldU32(sfInflateSeq);
+        if (seq != mEngine->getLedger()->getInflationSeq())
+        {
+            WriteLog(lsINFO, InflationTransactor) << "doInflation: Invalid Seq number.";
+
+            return telNOT_TIME;
+        }
+
+        uint32 closeTime = mEngine->getLedger()->getParentCloseTimeNC();
+        uint32 nextTime = (INFLATION_START_TIME + seq*INFLATION_FREQUENCY);
+        if (closeTime < nextTime)
+        {
+            WriteLog(lsINFO, InflationTransactor) << "doInflation: Too early.";
+
+            return telNOT_TIME;
+        }
+        return tesSUCCESS;
     }
 
 	TER InflationTransactor::doApply()

@@ -20,6 +20,8 @@
 #ifndef ACCOUNTMERGETRANSACTOR_H
 #define ACCOUNTMERGETRANSACTOR_H
 
+#include "ripple_app/transactors/Transactor.h"
+
 namespace ripple {
 
 class AccountMergeTransactor : public Transactor
@@ -27,6 +29,7 @@ class AccountMergeTransactor : public Transactor
 public:
 	AccountMergeTransactor(const SerializedTransaction& txn, TransactionEngineParams params, TransactionEngine* engine) : Transactor(txn, params, engine) {}
 
+    TER precheckAgainstLedger();
 	TER doApply();
 };
 

@@ -19,8 +19,12 @@
 
 #ifndef RIPPLE_TX_TRANSACTOR_H_INCLUDED
 #define RIPPLE_TX_TRANSACTOR_H_INCLUDED
+#include <memory>
+#include "ripple_app/misc/SerializedTransaction.h"
+#include "ripple_app/ledger/LedgerEntrySet.h"
 
 namespace ripple {
+class TransactionEngine;
 
 class Transactor
 {
@@ -50,7 +54,8 @@ protected:
 
     beast::Journal m_journal;
     
-    virtual TER preCheck ();
+    virtual TER preCheck (); // ledger is not locked for this one
+    virtual TER precheckAgainstLedger ();
     virtual TER checkSeq ();
     virtual TER payFee ();
 

@@ -64,6 +64,8 @@ suite('Basic path finding', function() {
                     callback);
             },
 
+            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
+
             function (callback) {
                 self.what = "Find path from alice to bob";
                 $.remote.request_ripple_path_find("alice", "bob", "5/USD/bob",
@@ -116,6 +118,7 @@ suite('Basic path finding', function() {
                     },
                     callback);
             },
+            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
             function (callback) {
                 self.what = "Payment with auto path";
 
@@ -124,7 +127,7 @@ suite('Basic path finding', function() {
                     .build_path(true)
                     .once('submitted', function (m) {
                         //console.log("proposed: %s", JSON.stringify(m));
-                        callback(m.engine_result !== 'tesSUCCESS');
+                        testutils.auto_advance_default( $.remote, m, callback );
                     })
                     .submit();
             },
@@ -175,6 +178,7 @@ suite('Basic path finding', function() {
                     },
                     callback);
             },
+            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
             function (callback) {
                 self.what = "Find path from alice to mtgox";
 
@@ -233,6 +237,7 @@ suite('Basic path finding', function() {
                     },
                     callback);
             },
+            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
             function (callback) {
                 self.what = "Payment with auto path";
 
@@ -241,7 +246,7 @@ suite('Basic path finding', function() {
                     .build_path(true)
                     .once('submitted', function (m) {
                         // console.log("proposed: %s", JSON.stringify(m));
-                        callback(m.engine_result !== 'tesSUCCESS');
+                        testutils.auto_advance_default( $.remote, m, callback );
                     })
                     .submit();
             },
@@ -304,6 +309,7 @@ suite('Basic path finding', function() {
                     },
                     callback);
             },
+            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
             function (callback) {
                 self.what = "Payment with auto path";
 
@@ -312,7 +318,7 @@ suite('Basic path finding', function() {
                     .build_path(true)
                     .once('submitted', function (m) {
                         // console.log("proposed: %s", JSON.stringify(m));
-                        callback(m.engine_result !== 'tesSUCCESS');
+                        testutils.auto_advance_default( $.remote, m, callback );
                     })
                     .submit();
             },
@@ -351,7 +357,7 @@ suite('Basic path finding', function() {
                     .transfer_rate(1e9*1.1)
                     .once('submitted', function (m) {
                         // console.log("proposed: %s", JSON.stringify(m));
-                        callback(m.engine_result !== 'tesSUCCESS');
+                        testutils.auto_advance_default( $.remote, m, callback );
                     })
                     .submit();
             },
@@ -375,6 +381,7 @@ suite('Basic path finding', function() {
                     },
                     callback);
             },
+            function (callback) { testutils.ledger_close($.remote, callback); },
             function (callback) {
                 self.what = "Payment with auto path";
 
@@ -384,7 +391,7 @@ suite('Basic path finding', function() {
                     .send_max("100/USD/alice")
                     .once('submitted', function (m) {
                         // console.log("proposed: %s", JSON.stringify(m));
-                        callback(m.engine_result !== 'tesSUCCESS');
+                        testutils.auto_advance_default( $.remote, m, callback );
                     })
                     .submit();
             },

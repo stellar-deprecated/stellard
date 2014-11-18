@@ -349,7 +349,7 @@ public:
 
         // Adjust tracking for each peer that takes this position
         std::vector<uint160> peers;
-        BOOST_FOREACH (u160_prop_pair & it, mPeerPositions)
+        for (u160_prop_pair & it: mPeerPositions)
         {
             if (it.second->getCurrentHash () == map->getHash ())
                 peers.push_back (it.second->getPeerID ());
@@ -379,7 +379,7 @@ public:
         if (mAcquired.find (hash) != mAcquired.end ())
             return false;
 
-        BOOST_FOREACH (u160_prop_pair & it, mPeerPositions)
+        for (u160_prop_pair & it: mPeerPositions)
         {
             if (it.second->getCurrentHash () == hash)
                 return true;
@@ -407,7 +407,7 @@ public:
         typedef std::map<uint256, 
             currentValidationCount>::value_type u256_cvc_pair;
 
-        BOOST_FOREACH (u256_cvc_pair & it, vals)
+        for (u256_cvc_pair & it: vals)
         {
             if ((it.second.first > netLgrCount) ||
                 ((it.second.first == netLgrCount) && (it.first == mPrevLedgerHash)))
@@ -456,9 +456,11 @@ public:
 
             if (ShouldLog (lsDEBUG, LedgerConsensus))
             {
-                BOOST_FOREACH (u256_cvc_pair & it, vals)
-                WriteLog (lsDEBUG, LedgerConsensus) 
-                    << "V: " << it.first << ", " << it.second.first;
+                for (u256_cvc_pair & it : vals)
+                {
+                    WriteLog (lsDEBUG, LedgerConsensus) 
+                        << "V: " << it.first << ", " << it.second.first;
+                }
             }
 
             if (mHaveCorrectLCL)
@@ -773,8 +775,6 @@ public:
         {
             WriteLog (lsDEBUG, LedgerConsensus) 
                 << "Don't have tx set for peer";
-            //      BOOST_FOREACH(u256_lct_pair& it, mDisputes)
-            //          it.second->unVote(peerID);
         }
 
         return true;
@@ -789,7 +789,7 @@ public:
             return true;
 
         std::vector< boost::weak_ptr<Peer> >& set = mPeerData[hashSet];
-        BOOST_FOREACH (boost::weak_ptr<Peer>& iit, set)
+        for (boost::weak_ptr<Peer>& iit: set)
             if (iit.lock () == peer)
                 return false;
         set.push_back (peer);
@@ -843,6 +843,7 @@ public:
         WriteLog (lsINFO, LedgerConsensus) << "Simulation complete";
     }
 private:
+
     /** We have a new last closed ledger, process it. Final accept logic
     */
     void accept (SHAMap::pointer set)
@@ -968,26 +969,68 @@ private:
             LedgerMaster::ScopedLockType sl 
                 (getApp().getLedgerMaster ().peekMutex ());
 
-            // Apply disputed transactions that didn't get in
+
+            {
+                Ledger::pointer currentLedger = getApp().getLedgerMaster().getCurrentLedger();
+
+                mFailedTransactions.clear();
+                for(auto tx: failedTransactions)
+                {
+                    mFailedTransactions.push_back(tx.second->getTransactionID());
+                }
+
+                WriteLog (lsDEBUG, LedgerConsensus) << "Propagating changes from current open ledger";
+
+                SHAMap::ref oldTxmap = currentLedger->peekTransactionMap();
+
+                oldTxmap->visitLeaves(
+                    [&currentLedger, this](SHAMapItem::ref smi_tx)
+                        {
+                            SerializedTransaction::pointer tx(currentLedger->getSTransaction(smi_tx, SHAMapTreeNode::tnTRANSACTION_NM));
+                            this->m_localTX.push_back(currentLedger->getLedgerSeq(), tx);
+                        }
+                );
+            }
+
+
+            // m_localTX contains all transactions we want to forward to the next open ledger
+            if (!(getConfig().RUN_STANDALONE))
+            {
+                TransactionEngine engine (newOL);
+                m_localTX.apply (engine);
+            }
+
+            
+             // Apply disputed transactions that didn't get in
+            // this occurs after adding everything else into the considered set (locals have priority)
             TransactionEngine engine (newOL);
-            BOOST_FOREACH (u256_lct_pair & it, mDisputes)
+            for (u256_lct_pair & it: mDisputes)
             {
                 if (!it.second->getOurVote ())
                 {
                     // we voted NO
                     try
                     {
-                        WriteLog (lsDEBUG, LedgerConsensus) 
-                            << "Test applying disputed transaction that did"
-                            << " not get in";
                         SerializerIterator sit (it.second->peekTransaction ());
                         SerializedTransaction::pointer txn 
                             = boost::make_shared<SerializedTransaction> 
                             (boost::ref (sit));
 
-                        if (applyTransaction (engine, txn, newOL, true, false))
+                        if (!m_localTX.contains(txn->getTransactionID()) &&
+                            failedTransactions.find(txn) == failedTransactions.end()) // don't bother with failed transactions
                         {
-                            failedTransactions.push_back (txn);
+                            WriteLog (lsDEBUG, LedgerConsensus) 
+                                << "Test applying disputed transaction that did"
+                                << " not get in";
+
+                            if (!(getConfig().RUN_STANDALONE))
+                            {
+                                if (applyTransaction (engine, txn, newOL, true, false))
+                                {
+                                    WriteLog(lsDEBUG, LedgerConsensus)
+                                        << "Still not able to apply transaction " << txn->getTransactionID();
+                                }
+                            }
                         }
                     }
                     catch (...)
@@ -998,16 +1041,6 @@ private:
                 }
             }
 
-            WriteLog (lsDEBUG, LedgerConsensus) 
-                << "Applying transactions from current open ledger";
-            applyTransactions (getApp().getLedgerMaster ().getCurrentLedger
-                ()->peekTransactionMap (), newOL, newLCL,
-                failedTransactions, true);
-
-            {
-                TransactionEngine engine (newOL);
-                m_localTX.apply (engine);
-            }
 
             getApp().getLedgerMaster ().pushLedger (newLCL, newOL);
             mNewLedgerHash = newLCL->getHash ();
@@ -1121,7 +1154,7 @@ private:
         int dc = 0;
         typedef std::map<uint256, 
             SHAMap::DeltaItem>::value_type u256_diff_pair;
-        BOOST_FOREACH (u256_diff_pair & pos, differences)
+        for (u256_diff_pair & pos: differences)
         {
             ++dc;
             // create disputed transactions (from the ledger that has them)
@@ -1173,7 +1206,7 @@ private:
             (txID, tx, ourVote);
         mDisputes[txID] = txn;
 
-        BOOST_FOREACH (u160_prop_pair & pit, mPeerPositions)
+        for (u160_prop_pair & pit: mPeerPositions)
         {
             ripple::unordered_map<uint256, SHAMap::pointer>::const_iterator cit
                 = mAcquired.find (pit.second->getCurrentHash ());
@@ -1202,10 +1235,10 @@ private:
     */
     void adjustCount (SHAMap::ref map, const std::vector<uint160>& peers)
     {
-        BOOST_FOREACH (u256_lct_pair & it, mDisputes)
+        for (u256_lct_pair & it: mDisputes)
         {
             bool setHas = map->hasItem (it.second->getTransactionID ());
-            BOOST_FOREACH (const uint160 & pit, peers)
+            for (const uint160 & pit: peers)
                 it.second->setVote (pit, setHas);
         }
     }
@@ -1334,14 +1367,14 @@ private:
                 (initialLedger.getParentHash (), txSet, mCloseTime);
         }
 
-        BOOST_FOREACH (u256_lct_pair & it, mDisputes)
+        for (u256_lct_pair & it: mDisputes)
         {
             it.second->setOurVote (initialLedger.hasTransaction (it.first));
         }
 
         // if any peers have taken a contrary position, process disputes
         boost::unordered_set<uint256> found;
-        BOOST_FOREACH (u160_prop_pair & it, mPeerPositions)
+        for (u160_prop_pair & it: mPeerPositions)
         {
             uint256 set = it.second->getCurrentHash ();
 
@@ -1387,8 +1420,8 @@ private:
                 uint160 peerID = it->second->getPeerID ();
                 WriteLog (lsWARNING, LedgerConsensus) 
                     << "Removing stale proposal from " << peerID;
-                BOOST_FOREACH (u256_lct_pair & it, mDisputes)
-                it.second->unVote (peerID);
+                for (u256_lct_pair & it: mDisputes)
+                    it.second->unVote (peerID);
                 it = mPeerPositions.erase (it);
             }
             else
@@ -1399,7 +1432,7 @@ private:
             }
         }
 
-        BOOST_FOREACH (u256_lct_pair & it, mDisputes)
+        for (u256_lct_pair & it: mDisputes)
         {
             // Because the threshold for inclusion increases, 
             //  time can change our position on a dispute
@@ -1427,6 +1460,11 @@ private:
             }
         }
 
+        for(const uint256 &txid: mFailedTransactions)
+        {
+            if (ourPosition->hasItem(txid))
+                ourPosition->delItem(txid);
+        }
 
         int neededWeight;
 
@@ -1546,7 +1584,7 @@ private:
             , end = storedProposals.end (); it != end; ++it)
         {
             bool relay = false;
-            BOOST_FOREACH (LedgerProposal::ref proposal, it->second)
+            for (LedgerProposal::ref proposal: it->second)
             {
                 if (proposal->hasSignature ())
                 {
@@ -1748,6 +1786,10 @@ private:
     ripple::unordered_map<uint256, DisputedTx::pointer> mDisputes;
     boost::unordered_set<uint256> mCompares;
 
+    // known bad transactions detected last time we closed the ledger
+    // used to eliminate failed transaction from our next position in updatePositions()
+    std::vector<uint256> mFailedTransactions;
+
     // Close time estimates
     std::map<std::uint32_t, int> mCloseTimes;
 
@@ -1780,6 +1822,8 @@ LedgerConsensus::applyTransactions (SHAMap::ref set, Ledger::ref applyLedger,
                                     bool openLgr, std::vector<uint256> & applyOrder)
 {
     TransactionEngine engine (applyLedger);
+    
+    engine.mClosingLedger = !openLgr;
 
     std::map<uint256, SerializedTransaction::pointer> txns;
     bool explicitApplyOrder = !applyOrder.empty ();
@@ -1953,15 +1997,31 @@ LedgerConsensus::applyTransaction (TransactionEngine& engine
         bool didApply;
         TER result = engine.applyTransaction (*txn, parms, didApply);
 
+        bool fatalError = (isTefFailure(result) || isTemMalformed
+                (result) || isTelLocal(result));
+
         if (didApply)
         {
             WriteLog (lsDEBUG, LedgerConsensus)
                 << "Transaction success: " << transHuman (result);
             return resultSuccess;
         }
+        else if (fatalError || (!retryAssured && !openLedger)) // if this is the last attempt on the closing ledger
+        {
+            // this section puts in the tx caches the result of the transaction
+            // so that calls such as "tx" return something useful even if there was no operation on the ledger
+            Transaction::pointer trans;
+            // if we did not commit this tx in the db, force update the caches
+            trans = getApp().getMasterTransaction().fetch(txn->getTransactionID(), true);
+            if (!(trans && trans->getLedger() != 0))
+            {
+                trans = boost::make_shared<Transaction>(txn, false);
+                trans->setResult(result);
+                getApp().getMasterTransaction ().canonicalize (&trans);
+            }
+        }
 
-        if (isTefFailure (result) || isTemMalformed
-            (result) || isTelLocal (result))
+        if (fatalError)
         {
             // failure
             WriteLog (lsDEBUG, LedgerConsensus)
@@ -1971,6 +2031,8 @@ LedgerConsensus::applyTransaction (TransactionEngine& engine
 
         WriteLog (lsDEBUG, LedgerConsensus)
             << "Transaction retry: " << transHuman (result);
+            
+        assert (openLedger || !ledger->hasTransaction (txn->getTransactionID ()));
         return resultRetry;
 
 #ifndef TRUST_NETWORK
@@ -1978,7 +2040,7 @@ LedgerConsensus::applyTransaction (TransactionEngine& engine
     catch (...)
     {
         WriteLog (lsWARNING, LedgerConsensus) << "Throws";
-        return false;
+        return resultFail;
     }
 
 #endif

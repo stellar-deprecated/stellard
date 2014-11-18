@@ -122,6 +122,7 @@ bool transResultInfo (TER terCode, std::string& strToken, std::string& strHuman)
         {   terOWNERS,              "terOWNERS",                "Non-zero owner count."                                 },
 
         {   tesSUCCESS,             "tesSUCCESS",               "The transaction was applied."                          },
+        {   tesPENDING,             "tesPENDING",               "The transaction is pending."                           },
     };
 
     int iIndex  = NUMBER (transResultInfoA);

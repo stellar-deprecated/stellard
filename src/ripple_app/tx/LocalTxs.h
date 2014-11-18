@@ -44,6 +44,8 @@ public:
     virtual void sweep (Ledger::ref validLedger) = 0;
 
     virtual std::size_t size () = 0;
+
+    virtual bool contains(uint256 transactionID) = 0;
 };
 
 } // ripple

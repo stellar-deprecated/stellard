@@ -33,6 +33,7 @@ suite('Merging accounts', function() {
   			limits[t.gateways[1]] = "50/USD/alice";
   			testutils.credit_limits( $.remote, limits, callback );
   		},
+        function ( callback ) { testutils.ledger_close( $.remote, callback ); },
 		function ( callback ) {
 			t.what = "Distribute funds.";
 			var dist = {};
@@ -64,7 +65,9 @@ suite('Merging accounts', function() {
 
   	t.gateways = gateways;
 
-    var ac = accountCreatorHelper( t );
+  	var ac = accountCreatorHelper( t );
+
+  	var mergeSubmitResult;
 
     var steps = ac.steps.concat( [
 
@@ -76,15 +79,19 @@ suite('Merging accounts', function() {
 				},
 				callback );
 		},
+        function ( callback ) { testutils.ledger_close( $.remote, callback ); },
 		function ( callback ) {
 			t.what = "Distribute funds.";
 
 			var dist = {};
 			dist[gateways[0]] = ["100/USD/bob"];
 			testutils.payments( $.remote, dist, callback );
-		}],
+		},
+        function ( callback ) { testutils.ledger_close( $.remote, callback ); },
+        ],
 		extra_steps,
 		[
+        function ( callback ) { testutils.ledger_close( $.remote, callback ); },
 		function ( callback ) {
 			t.what = "Get alice's state";
 
@@ -103,29 +110,25 @@ suite('Merging accounts', function() {
 			  	callback();
 			  } ).request();
 		},
-		function ( callback ) {
-			$.remote.once( 'ledger_closed', function ( ledger_closed, ledger_index ) { callback(); } );
-			$.remote.ledger_accept();    // Move it along.
-		},
+        function (callback) { testutils.ledger_close($.remote, callback); },
 
 //		testutils.display_ledger_helper( t, $.remote, "original ledger" ),
 		
-      function ( callback ) {
-      	t.what = "Merge alice -> bob";
-      	$.remote.transaction()
-          .accountMerge( 'alice', 'bob' )
-          .once( 'submitted', function ( m ) {
-          	if (merge_should_fail) {
-          		assert( m.engine_result != 'tesSUCCESS' );
-          	} else {
-          		assert.strictEqual( m.engine_result, 'tesSUCCESS' );
-          	}
-          	t.tx_fee = m.tx_json.Fee;
-          	$.remote.once( 'ledger_closed', function ( ledger_closed, ledger_index ) { callback(); } );
-          	$.remote.ledger_accept();    // Move it along.
-          } )
-          .submit();
-      },
+        function ( callback ) {
+          t.what = "Merge alice -> bob";
+          $.remote.transaction()
+            .accountMerge( 'alice', 'bob' )
+            .once( 'submitted', function ( m ) {
+                mergeSubmitResult = m;
+                t.tx_fee = m.tx_json.Fee;
+                testutils.auto_advance( $.remote, m, function ( err, m2 ) {
+                    var success = ( m2.engine_result === 'tesSUCCESS' );
+                    assert( merge_should_fail ? !success : success );
+                    callback();
+                } );
+            } )
+            .submit();
+        },
 	  
 //	  testutils.display_ledger_helper( t, $.remote, "final ledger"),
 
@@ -162,8 +165,8 @@ suite('Merging accounts', function() {
 	 	t.what = "check that alice is deleted";
 
 	 	// the way we test it here is by looking for the id as we want any reference to the account to be gone
-	 	helper = testutils.custom_ledger_helper( t, $.remote, null, function ( ledger, cb ) {
-	 		s = JSON.stringify( ledger, undefined );
+	 	helper = testutils.custom_ledger_helper( t, $.remote, null, function ( response, cb ) {
+	 	    s = JSON.stringify( response.ledger.accountState, undefined );
 	 		assert( s.indexOf( t.alice_id ) == -1 );
 	 		cb();
 	 	} );
@@ -253,7 +256,7 @@ test( "merge user with negative IOU #1", function ( done ) {
   	} );
   } );
 
-  test( "merge user with negative IOU #2", function ( done ) {
+test( "merge user with negative IOU #2", function ( done ) {
   	var self = this;
   	var steps = iouTestHelper_negative_balance( this, ["mtgox", "bitstamp"] );
   	async.waterfall( steps, function ( error ) {

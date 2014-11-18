@@ -183,8 +183,6 @@ TER TransactionEngine::applyTransaction (const SerializedTransaction& txn, Trans
             Serializer m;
             mNodes.calcRawMeta (m, terResult, mTxnSeq++);
 
-            txnWrite ();
-
             Serializer s;
             txn.add (s);
 
@@ -192,9 +190,11 @@ TER TransactionEngine::applyTransaction (const SerializedTransaction& txn, Trans
             {
                 if (!mLedger->addTransaction (txID, s))
                 {
-                    WriteLog (lsFATAL, TransactionEngine) << "Tried to add transaction to open ledger that already had it";
-                    assert (false);
-                    throw std::runtime_error ("Duplicate transaction applied");
+                    WriteLog (lsDEBUG, TransactionEngine) << "Tried to add transaction to open ledger that already had it";
+                    // there is a race condition that can lead to applying several transactions in parallel.
+                    // not a critical problem for the open ledger
+                    didApply = false;
+                    terResult = tefALREADY;
                 }
             }
             else
@@ -209,6 +209,13 @@ TER TransactionEngine::applyTransaction (const SerializedTransaction& txn, Trans
                 // Charge whatever fee they specified.
                 STAmount saPaid = txn.getTransactionFee ();
                 mLedger->destroyCoins (saPaid.getNValue ());
+            }
+
+            if (didApply)
+            {
+                // perform side effects of the transaction after updating the ledger in case of duplicate tx
+                // effects should be applied only once
+                txnWrite ();
             }
         }
     }
