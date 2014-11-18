@@ -22,14 +22,18 @@ namespace NodeStore {
 
 class LevelDBBackend
     : public Backend
+#ifdef BACKENDBATCHING
     , public BatchWriter::Callback
+#endif
     , public beast::LeakChecked <LevelDBBackend>
 {
 public:
     beast::Journal m_journal;
     size_t const m_keyBytes;
     Scheduler& m_scheduler;
+#ifdef BACKENDBATCHING
     BatchWriter m_batch;
+#endif
     std::string m_name;
     std::unique_ptr <leveldb::DB> m_db;
 
@@ -38,7 +42,9 @@ public:
         : m_journal (journal)
         , m_keyBytes (keyBytes)
         , m_scheduler (scheduler)
+#ifdef BACKENDBATCHING
         , m_batch (*this, scheduler)
+#endif
         , m_name (keyValues ["path"].toStdString ())
     {
         if (m_name.empty())
@@ -54,6 +60,11 @@ public:
         else
         {
             options.block_cache = leveldb::NewLRUCache (keyValues["cache_mb"].getIntValue() * 1024L * 1024L);
+        }
+
+        if (!keyValues["block_size_kb"].isEmpty())
+        {
+            options.block_size = keyValues["block_size_kb"].getIntValue() * 1024L;
         }
 
         if (keyValues["filter_bits"].isEmpty())
@@ -145,7 +156,21 @@ public:
     void
     store (NodeObject::ref object)
     {
+#ifdef BACKENDBATCHING
         m_batch.store (object);
+#else
+        EncodedBlob encoded;
+
+        encoded.prepare (object);
+
+        leveldb::WriteOptions write_options;
+        write_options.sync = false;
+
+        m_db->Put(write_options, leveldb::Slice (reinterpret_cast <char const*> (
+                    encoded.getKey ()), m_keyBytes),
+                leveldb::Slice (reinterpret_cast <char const*> (
+                    encoded.getData ()), encoded.getSize ()));
+#endif
     }
 
     void
@@ -210,16 +235,21 @@ public:
     int
     getWriteLoad ()
     {
+#ifdef BACKENDBATCHING
         return m_batch.getWriteLoad ();
+#else
+        return 0;
+#endif
     }
 
     //--------------------------------------------------------------------------
-
+#ifdef BACKENDBATCHING
     void
     writeBatch (Batch const& batch)
     {
         storeBatch (batch);
     }
+#endif
 };
 
 //------------------------------------------------------------------------------
@@ -227,18 +257,10 @@ public:
 class LevelDBFactory : public Factory
 {
 public:
-    std::unique_ptr <leveldb::Cache> m_lruCache;
-
     class BackendImp;
 
     LevelDBFactory ()
-        : m_lruCache (nullptr)
     {
-        leveldb::Options options;
-        options.create_if_missing = true;
-        options.block_cache = leveldb::NewLRUCache (
-            getConfig ().getSize (siHashNodeDBCache) * 1024 * 1024);
-        m_lruCache.reset (options.block_cache);
     }
 
     ~LevelDBFactory()

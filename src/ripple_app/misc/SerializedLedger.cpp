@@ -147,7 +147,7 @@ bool SerializedLedgerEntry::thread (uint256 const& txID, std::uint32_t ledgerSeq
     if (oldPrevTxID == txID)
     {
         // this transaction is already threaded
-        assert (getFieldU32 (sfPreviousTxnLgrSeq) == ledgerSeq);
+        // note that because of account merge, the txID could be the same but the ledger ID will not
         return false;
     }
 

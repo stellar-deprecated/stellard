@@ -17,7 +17,7 @@
 
 # Ignore object files.
 *.o
-build/**
+**/build/**
 tags
 bin/rippled
 **/Debug/**
@@ -73,15 +73,15 @@ My Amplifier XE Results - RippleD
 # Compiler intermediate output
 /out.txt
 
-# Build Log
-rippled-build.log
+# log files
 .vagrant/
-vagrant/debug.log
-vagrant/debug-private-ledger.log
-vagrant/debug-public-ledger.log
+*.log
 
 # Visual Studio
 *.suo
 *.sdf
 *.opensdf
+*.vspx
+*.vcxproj.user
 Builds/VisualStudio2013/db
+

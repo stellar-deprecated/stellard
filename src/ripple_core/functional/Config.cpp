@@ -126,7 +126,7 @@ Config::Config ()
 
     TRANSACTION_FEE_BASE    = DEFAULT_FEE_DEFAULT;
 
-    NETWORK_QUORUM          = 0;    // Don't need to see other nodes
+    NETWORK_QUORUM          = 1;
     VALIDATION_QUORUM       = 1;    // Only need one node to vouch
 
     FEE_ACCOUNT_RESERVE     = DEFAULT_FEE_ACCOUNT_RESERVE;
@@ -154,6 +154,8 @@ Config::Config ()
     RUN_STANDALONE          = false;
     doImport                = false;
     START_UP                = NORMAL;
+
+    DATABASE_TIMEOUTMS      = 10000;
 }
 
 void Config::setup (const std::string& strConf, bool bQuiet)
@@ -343,6 +345,14 @@ void Config::load ()
             if (SectionSingleB (secConfig, SECTION_DATABASE_PATH, DATABASE_PATH))
                 DATA_DIR    = DATABASE_PATH;
 
+            if (SectionSingleB(secConfig, SECTION_DATABASE_TIMEOUT, strTemp))
+            {
+                DATABASE_TIMEOUTMS  = beast::lexicalCastThrow <int> (strTemp);
+                if (DATABASE_TIMEOUTMS < 0)
+                {
+                    DATABASE_TIMEOUTMS = 0;
+                }
+            }
 
             (void) SectionSingleB (secConfig, SECTION_VALIDATORS_SITE, VALIDATORS_SITE);
 
@@ -634,12 +644,13 @@ int Config::getSize (SizedItemName item)
         { siSLECacheSize,       {   4096,   8192,   16384,  65536,      0       } },
         { siSLECacheAge,        {   30,     60,     90,     120,        300     } },
 
-        { siLedgerSize,         {   32,     128,    256,    384,        0       } },
+        { siLedgerSize,         {   32,     64,    128,    256,        0       } },
         { siLedgerAge,          {   30,     90,     180,    240,        900     } },
 
         { siHashNodeDBCache,    {   4,      12,     24,     64,         128      } },
         { siTxnDBCache,         {   4,      12,     24,     64,         128      } },
-        { siLgrDBCache,         {   4,      8,      16,     32,         128      } },
+        { siLgrDBCache,         {   4,       8,      16,     32,         128      } },
+        { siWorkingLgrDBCache,  {   64,    128,      256,   512,        1024      } }
     };
 
     for (int i = 0; i < (sizeof (sizeTable) / sizeof (SizedItem)); ++i)

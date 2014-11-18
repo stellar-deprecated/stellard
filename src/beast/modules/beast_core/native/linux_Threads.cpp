@@ -52,20 +52,27 @@ void Process::setPriority (const ProcessPriority prior)
 
 bool beast_isRunningUnderDebugger()
 {
-    static char testResult = 0;
+    char buf[1024];
+    bool debugger_present = false;
 
-    if (testResult == 0)
+    int status_fd = open("/proc/self/status", O_RDONLY);
+    if (status_fd == -1)
+        return false;
+
+    ssize_t num_read = read(status_fd, buf, sizeof(buf));
+
+    close(status_fd);
+
+    if (num_read > 0)
     {
-        testResult = (char) ptrace (PT_TRACE_ME, 0, 0, 0);
+        static const char TracerPid[] = "TracerPid:";
+        char *tracer_pid = strstr(buf, TracerPid);
 
-        if (testResult >= 0)
-        {
-            ptrace (PT_DETACH, 0, (caddr_t) 1, 0);
-            testResult = 1;
-        }
+        if (tracer_pid)
+            debugger_present = !!atoi(tracer_pid + sizeof(TracerPid) - 1);
     }
 
-    return testResult < 0;
+    return debugger_present;
 }
 
 bool Process::isRunningUnderDebugger()

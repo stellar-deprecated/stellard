@@ -186,6 +186,31 @@ TER Transactor::checkSeq ()
 
     m_journal.trace << "Aseq=" << a_seq << ", Tseq=" << t_seq;
 
+    // open ledgers only keep track of tx set without actually changing the account sequence number
+    if (!mEngine->mClosingLedger)
+    {
+        // a_seq's value is the one before applying any transaction
+        // we need to predict its actual value by walking transactions on this account
+        std::uint32_t max_tx = 0;
+        mEngine->getLedger()->peekTransactionMap()->visitLeaves([this,&max_tx](SHAMapItem::ref smi)
+            {
+                SerializedTransaction::pointer tx(mEngine->getLedger()->getSTransaction(smi, SHAMapTreeNode::tnTRANSACTION_NM));
+                if (mTxnAccountID == tx->getSourceAccount().getAccountID())
+                {
+                    std::uint32_t nextAccountSeq = tx->getSequence();
+                    if (nextAccountSeq > max_tx)
+                    {
+                        max_tx = nextAccountSeq;
+                    }
+                }
+            }
+        );
+        if (++max_tx > a_seq)
+        {
+            a_seq = max_tx;
+        }
+    }
+
     if (t_seq != a_seq)
     {
         if (a_seq < t_seq)
@@ -197,14 +222,13 @@ TER Transactor::checkSeq ()
         else
         {
             uint256 txID = mTxn.getTransactionID ();
+            m_journal.warning << "apply: transaction has past sequence number";
 
             if (mEngine->getLedger ()->hasTransaction (txID))
                 return tefALREADY;
+            else
+                return tefPAST_SEQ;
         }
-
-        m_journal.warning << "apply: transaction has past sequence number";
-
-        return tefPAST_SEQ;
     }
 
     // Deprecated: Do not use
@@ -262,6 +286,11 @@ TER Transactor::preCheck ()
     return tesSUCCESS;
 }
 
+TER Transactor::precheckAgainstLedger()
+{
+    return tesSUCCESS;
+}
+
 TER Transactor::apply ()
 {
     TER terResult (preCheck ());
@@ -308,6 +337,14 @@ TER Transactor::apply ()
     terResult = checkSig ();
 
     if (terResult != tesSUCCESS) return (terResult);
+
+    terResult = precheckAgainstLedger();
+
+    if (terResult != tesSUCCESS) return (terResult);
+
+    if (!mEngine->mClosingLedger) {
+        return tesSUCCESS;
+    }
 
     if (mTxnAccount)
         mEngine->entryModify (mTxnAccount);

@@ -17,6 +17,8 @@
 */
 //==============================================================================
 
+#include "../src/ledger/OfferEntry.h"
+
 namespace ripple {
 
 SETUP_LOG (OrderBookDB)
@@ -55,43 +57,7 @@ void OrderBookDB::setup (Ledger::ref ledger)
         mSeq = ledger->getLedgerSeq ();
     }
 
-    if (getConfig().RUN_STANDALONE)
-        update(ledger);
-    else
-        getApp().getJobQueue().addJob(jtUPDATE_PF, "OrderBookDB::update",
-            BIND_TYPE(&OrderBookDB::update, this, ledger));
-}
-
-static void updateHelper (SLE::ref entry,
-    boost::unordered_set< uint256 >& seen,
-    ripple::unordered_map< RippleAsset, std::vector<OrderBook::pointer> >& destMap,
-    ripple::unordered_map< RippleAsset, std::vector<OrderBook::pointer> >& sourceMap,
-    boost::unordered_set< RippleAsset >& STRBooks,
-    int& books)
-{
-    if ((entry->getType () == ltDIR_NODE) && (entry->isFieldPresent (sfExchangeRate)) &&
-            (entry->getFieldH256 (sfRootIndex) == entry->getIndex()))
-    {
-        const uint160& ci = entry->getFieldH160 (sfTakerPaysCurrency);
-        const uint160& co = entry->getFieldH160 (sfTakerGetsCurrency);
-        const uint160& ii = entry->getFieldH160 (sfTakerPaysIssuer);
-        const uint160& io = entry->getFieldH160 (sfTakerGetsIssuer);
-
-        uint256 index = Ledger::getBookBase (ci, ii, co, io);
-
-        if (seen.insert (index).second)
-        {
-            // VFALCO TODO Reduce the clunkiness of these parameter wrappers
-            OrderBook::pointer book = boost::make_shared<OrderBook> (boost::cref (index),
-                                      boost::cref (ci), boost::cref (co), boost::cref (ii), boost::cref (io));
-
-            sourceMap[RippleAssetRef (ci, ii)].push_back (book);
-            destMap[RippleAssetRef (co, io)].push_back (book);
-            if (co.isZero())
-                STRBooks.insert(RippleAssetRef (ci, ii));
-            ++books;
-        }
-    }
+    update(ledger);
 }
 
 void OrderBookDB::update (Ledger::pointer ledger)
@@ -103,23 +69,43 @@ void OrderBookDB::update (Ledger::pointer ledger)
 
     WriteLog (lsDEBUG, OrderBookDB) << "OrderBookDB::update>";
 
-    // walk through the entire ledger looking for orderbook entries
     int books = 0;
 
-    try
+    string sql("SELECT * FROM Offers;");
     {
-        ledger->visitStateItems(BIND_TYPE(&updateHelper, P_1, boost::ref(seen), boost::ref(destMap),
-            boost::ref(sourceMap), boost::ref(STRBooks), boost::ref(books)));
-    }
-    catch (const SHAMapMissingNode&)
-    {
-        WriteLog (lsINFO, OrderBookDB) << "OrderBookDB::update encountered a missing node";
-        ScopedLockType sl (mLock);
-        mSeq = 0;
-        return;
+        ScopedLockType sqlLock(getApp().getWorkingLedgerDB()->getDBLock());
+
+        Database* db = getApp().getWorkingLedgerDB()->getDB();
+
+        if(db->executeSQL(sql, true))
+        {
+            for (bool moreOffers = db->startIterRows(); moreOffers; moreOffers = db->getNextRow())
+            {
+                std::unique_ptr<stellar::OfferEntry> oe = std::make_unique<stellar::OfferEntry>(db);
+                const uint160& ci = oe->mTakerPays.getCurrency();
+                const uint160& co = oe->mTakerGets.getCurrency();
+                const uint160& ii = oe->mTakerPays.getIssuer();
+                const uint160& io = oe->mTakerGets.getIssuer();
+
+                uint256 index = Ledger::getBookBase (ci, ii, co, io);
+
+                if (seen.insert (index).second)
+                {
+                    // VFALCO TODO Reduce the clunkiness of these parameter wrappers
+                    OrderBook::pointer book = boost::make_shared<OrderBook> (boost::cref (index),
+                                              boost::cref (ci), boost::cref (co), boost::cref (ii), boost::cref (io));
+
+                    sourceMap[RippleAssetRef (ci, ii)].push_back (book);
+                    destMap[RippleAssetRef (co, io)].push_back (book);
+                    if (co.isZero())
+                        STRBooks.insert(RippleAssetRef (ci, ii));
+                    ++books;
+                }
+            }
+        }
     }
 
-    WriteLog (lsDEBUG, OrderBookDB) << "OrderBookDB::update< " << books << " books found";
+    WriteLog (lsINFO, OrderBookDB) << "OrderBookDB::update< " << books << " books found";
     {
         ScopedLockType sl (mLock);
 

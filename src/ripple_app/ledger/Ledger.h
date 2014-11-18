@@ -93,6 +93,7 @@ class Ledger
     , public CountedObject <Ledger>
     , public beast::Uncopyable
 {
+
 public:
     static char const* getCountedObjectName () { return "Ledger"; }
 
@@ -467,6 +468,8 @@ public:
     bool walkLedger ();
     bool assertSane ();
 
+    bool loadMaps(bool forceFull); // attempts to load the state and tx maps
+
 protected:
     SLE::pointer getASNode (LedgerStateParms & parms, uint256 const & nodeID, LedgerEntryType let);
 
@@ -477,6 +480,7 @@ protected:
     {
         saveValidatedLedger(current);
     }
+
     bool saveValidatedLedger (bool current);
 
     void updateFees ();

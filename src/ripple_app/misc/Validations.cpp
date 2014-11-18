@@ -444,17 +444,20 @@ private:
                     DeprecatedScopedLock dbl (getApp().getLedgerDB ()->getDBLock ());
 
                     Serializer s (1024);
-                    db->executeSQL ("BEGIN TRANSACTION;");
-                    BOOST_FOREACH (SerializedValidation::ref it, vector)
+                    bool tx_ok = db->executeSQL("BEGIN TRANSACTION;");
+                    if (tx_ok)
                     {
-                        s.erase ();
-                        it->add (s);
-                        db->executeSQL (boost::str (
-                            insVal % to_string (it->getLedgerHash ()) %
-                            it->getSignerPublic ().humanNodePublic () %
-                            it->getSignTime () % sqlEscape (s.peekData ())));
+                        BOOST_FOREACH (SerializedValidation::ref it, vector)
+                        {
+                            s.erase ();
+                            it->add (s);
+                            db->executeSQL (boost::str (
+                                insVal % to_string (it->getLedgerHash ()) %
+                                it->getSignerPublic ().humanNodePublic () %
+                                it->getSignTime () % sqlEscape (s.peekData ())));
+                        }
+                        tx_ok = db->executeSQL ("END TRANSACTION;");
                     }
-                    db->executeSQL ("END TRANSACTION;");
                 }
             }
         }

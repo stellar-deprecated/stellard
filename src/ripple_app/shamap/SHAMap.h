@@ -34,6 +34,7 @@
 #include "../ripple_core/nodestore/api/NodeObject.h"
 #include "../ripple/common/TaggedCache.h"
 #include "../ripple_basics/containers/SyncUnorderedMap.h"
+#include "ripple_app/misc/SerializedLedger.h"
 
 /*
 Used for:
@@ -273,10 +274,14 @@ public:
         mBacked = false;
     }
 
+#ifdef ENABLE_SHAMAP_CACHE
     static void sweep ()
     {
         treeNodeCache.sweep ();
     }
+#endif
+
+    void markAsFull();
 
 private:
     // trusted path operations - prove a particular node is in a particular ledger
@@ -363,7 +368,9 @@ private:
     FullBelowCache& m_fullBelowCache;
     std::uint32_t mSeq;
     std::uint32_t mLedgerSeq; // sequence number of ledger this is part of
+#ifdef ENABLE_SHAMAP_CACHE
     static TreeNodeCache treeNodeCache;
+#endif
     SHAMapTreeNode::pointer root;
     SHAMapState mState;
     SHAMapType mType;

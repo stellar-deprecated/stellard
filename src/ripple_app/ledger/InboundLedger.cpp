@@ -135,8 +135,7 @@ bool InboundLedger::tryLocal ()
         }
         else
         {
-            mLedger = boost::make_shared<Ledger> (
-                strCopy (node->getData ()), true);
+            mLedger = boost::make_shared<Ledger> (node->getData (), true);
         }
 
         if (mLedger->getHash () != mHash)
@@ -564,8 +563,10 @@ void InboundLedger::trigger (Peer::ptr const& peer)
 
             // Release the lock while we process the large state map
             sl.unlock();
-            mLedger->peekAccountStateMap ()->getMissingNodes (
-                nodeIDs, nodeHashes, 256, &filter);
+
+            logTimedCall (m_journal.warning, "InboundLedger::trigger", __FILE__, __LINE__, boost::bind (
+               &SHAMap::getMissingNodes, boost::ref(mLedger->peekAccountStateMap ()), boost::ref(nodeIDs), boost::ref(nodeHashes), 256, &filter));
+
             sl.lock();
 
             // Make sure nothing happened while we released the lock
@@ -640,8 +641,10 @@ void InboundLedger::trigger (Peer::ptr const& peer)
             nodeIDs.reserve (256);
             nodeHashes.reserve (256);
             TransactionStateSF filter (mSeq);
-            mLedger->peekTransactionMap ()->getMissingNodes (
-                nodeIDs, nodeHashes, 256, &filter);
+
+
+            logTimedCall (m_journal.warning, "InboundLedger::trigger", __FILE__, __LINE__, boost::bind (
+               &SHAMap::getMissingNodes, boost::ref(mLedger->peekTransactionMap ()), boost::ref(nodeIDs), boost::ref(nodeHashes), 256, &filter));
 
             if (nodeIDs.empty ())
             {
@@ -995,6 +998,7 @@ bool InboundLedger::takeTxRootNode (Blob const& data, SHAMapAddNode& san)
     return san.isGood();
 }
 
+// called to construct set of objects we'd like fetch from peers in aggressive mode
 std::vector<InboundLedger::neededHash_t> InboundLedger::getNeededHashes ()
 {
     std::vector<neededHash_t> ret;

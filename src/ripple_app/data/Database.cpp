@@ -19,13 +19,14 @@
 #include "Database.h"
 #include "ripple_basics/utility/StringUtilities.h"
 #include "ripple/types/api/Base58.h"
+#include "ripple_data/protocol/RippleAddress.h"
 
 using namespace std;
 
 namespace ripple {
 
 Database::Database (const char* host)
-    : mNumCol (0)
+    : mNumCol(0)
 {
     mHost   = host;
 }
@@ -142,8 +143,15 @@ uint160 Database::getAccountID(const char* colName)
 	string accountStr;
 	Blob tempBlob;
 	getStr(colName, accountStr);
-	Base58::decode(accountStr, tempBlob);
-	return uint160(tempBlob);
+	
+	if(Base58::decodeWithCheck(accountStr.c_str(), tempBlob, Base58::getRippleAlphabet()))
+	{
+		if(tempBlob.empty() || tempBlob[0] != RippleAddress::VER_ACCOUNT_ID) return uint160();
+
+		Blob innerBlob;
+		innerBlob.assign(tempBlob.begin() + 1, tempBlob.end());
+		return uint160(innerBlob);
+	} else return uint160();
 }
 
 // returns false if can't find col
@@ -219,5 +227,47 @@ char* Database::getSingleDBValueStr (const char* sql, std::string& retStr)
     return (ret);
 }
 #endif
+
+void Database::connect()
+{
+    mTransactionLevel = 0;
+}
+
+void Database::beginTransaction()
+{
+    string sql;
+    if (mTransactionLevel == 0) {
+        sql = "BEGIN;";
+    }
+    else {
+        assert(mTransactionLevel <= 1); // no need for more levels for now
+        sql = boost::str(boost::format("SAVEPOINT L%d;") % mTransactionLevel);
+    }
+
+    if(!executeSQL(sql, false))
+    {
+        throw std::runtime_error("Could not perform transaction");
+    }
+    ++mTransactionLevel;
+}
+
+void Database::endTransaction(bool commit)
+{
+    string sql;
+    assert(mTransactionLevel > 0);
+    if (--mTransactionLevel == 0) {
+        sql = commit ? "COMMIT;" : "ROLLBACK;";
+    }
+    else {
+        sql = boost::str(boost::format(commit ? "RELEASE SAVEPOINT L%d;" : "ROLLBACK TO SAVEPOINT L%d;") % mTransactionLevel);
+    }
+
+    bool success = executeSQL(sql, false);
+        
+    if (!success)
+    {
+        throw std::runtime_error("Could not commit transaction");
+    }
+}
 
 } // ripple

@@ -31,10 +31,12 @@
 #include "Blob.h"
 #include "strHex.h"
 #include "ByteOrder.h"
+#include "ripple/types/api/Base58.h"
     
 #include "../../beast/beast/container/hardened_hash.h"
 
 #include <functional>
+using namespace std;
 
 namespace ripple {
 
@@ -100,7 +102,7 @@ public:
     const_reverse_iterator crend()   const { return cbegin(); }
 
     /** Value hashing function.
-        The seed prevents crafted inputs from causing degenarate parent containers.
+        The seed prevents crafted inputs from causing degenerate parent containers.
     */
     typedef beast::hardened_hash <base_uint> hasher;
 
@@ -421,6 +423,15 @@ public:
     {
         SetHexExact (str.c_str ());
     }
+
+	string base58Encode(char prefix)
+	{
+		Blob vch(1, prefix);
+
+		vch.insert(vch.end(), begin(), end());
+
+		return Base58::encodeWithCheck(vch);
+	}
 
     unsigned int size () const
     {

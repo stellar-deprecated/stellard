@@ -92,15 +92,13 @@ public:
     amendmentList_t getDesired();    // amendments we support, do not veto, are not enabled
 };
 
-void
-AmendmentTableImpl::addInitial ()
+void AmendmentTableImpl::addInitial ()
 {
     // For each amendment this version supports, construct the AmendmentState object by calling
     // addKnown. Set any vetoes or defaults. A pointer to the AmendmentState can be stashed
 }
 
-AmendmentState*
-AmendmentTableImpl::getCreate (uint256 const& amendmentHash, bool create)
+AmendmentState* AmendmentTableImpl::getCreate (uint256 const& amendmentHash, bool create)
 {
     // call with the mutex held
     auto iter (m_amendmentMap.find (amendmentHash));
@@ -134,8 +132,7 @@ AmendmentTableImpl::getCreate (uint256 const& amendmentHash, bool create)
     return & (iter->second);
 }
 
-uint256
-AmendmentTableImpl::get (const std::string& name)
+uint256 AmendmentTableImpl::get (const std::string& name)
 {
     for (auto const& e : m_amendmentMap)
     {

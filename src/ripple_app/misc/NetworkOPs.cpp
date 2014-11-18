@@ -23,6 +23,7 @@
 #include "../ripple_overlay/api/Overlay.h"
 #include "../ripple_app/tx/TxQueueEntry.h"
 #include "../ripple_app/tx/TxQueue.h"
+#include "../src/ledger/LedgerMaster.h"
 
 #include "NetworkOPsImp.h"
 
@@ -506,7 +507,7 @@ Transaction::pointer NetworkOPsImp::processTransactionCb (
             // VFALCO NOTE The value of trans can be changed here!!
             getApp().getMasterTransaction ().canonicalize (&trans);
         }
-        else if (r == tefPAST_SEQ)
+        else if (r == tefPAST_SEQ || r == tefALREADY)
         {
             // duplicate or conflict
             m_journal.info << "Transaction is obsolete";
@@ -971,6 +972,15 @@ int NetworkOPsImp::beginConsensus (uint256 const& networkClosed, Ledger::pointer
 
         return 3;
     }
+    else if (!stellar::gLedgerMaster->ensureSync(prevLedger, true))
+    {
+        if (mMode == omTRACKING || mMode == omFULL)
+        {
+            m_journal.warning << "Don't have LCL in database, going back to syncing";
+            setMode (omSYNCING);
+        }
+        return 3;
+    }
 
     assert (prevLedger->getHash () == closingLedger->getParentHash ());
     assert (closingLedger->getParentHash () == m_ledgerMaster.getClosedLedger ()->getHash ());
@@ -1350,7 +1360,7 @@ NetworkOPsImp::getAccountTxs (const RippleAddress& account, std::int32_t minLedg
             { // Work around a bug that could leave the metadata missing
                 std::uint32_t seq = static_cast<std::uint32_t>(db->getBigInt("LedgerSeq"));
                 m_journal.warning << "Recovering ledger " << seq << ", txn " << txn->getID();
-                Ledger::pointer ledger = getLedgerBySeq(seq);
+                Ledger::pointer ledger = getLedgerBySeq(seq); // ???? this looks up in SQL... and we save it back in SQL afterwards?!
                 if (ledger)
                     ledger->pendSaveValidated(false, false);
             }
@@ -1511,7 +1521,7 @@ NetworkOPsImp::getTxsAccount (const RippleAddress& account, std::int32_t minLedg
                 { // Work around a bug that could leave the metadata missing
                     std::uint32_t seq = static_cast<std::uint32_t>(db->getBigInt("LedgerSeq"));
                     m_journal.warning << "Recovering ledger " << seq << ", txn " << txn->getID();
-                    Ledger::pointer ledger = getLedgerBySeq(seq);
+                    Ledger::pointer ledger = getLedgerBySeq(seq); // ???? this looks up in SQL... and we save it back in SQL afterwards?!
                     if (ledger)
                         ledger->pendSaveValidated(false, false);
                 }

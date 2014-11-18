@@ -408,6 +408,18 @@ namespace ripple {
 			}
 		}
 
+        bool PeerSlotLogic::is_valid_address(beast::IP::Endpoint const& address)
+        {
+            if (is_unspecified (address))
+                return false;
+#ifndef DEV_SETUP
+            if (! is_public (address))
+                return false;
+#endif
+            if (address.port() == 0)
+                return false;
+            return true;
+        }
 
 		void PeerSlotLogic::on_closed(SlotImp::ptr const& slot)
 		{

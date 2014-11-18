@@ -17,10 +17,11 @@ suite("Offer tests", function() {
   teardown(function(done) {
     testutils.build_teardown().call($, done);
   });
-
+    
   test("offer create then cancel in one ledger", function (done) {
       var self = this;
-      var final_create;
+
+      var tx_verify = [];
 
       async.waterfall([
           function (callback) {
@@ -28,40 +29,27 @@ suite("Offer tests", function() {
               .offer_create("root", "500", "100/USD/root")
               .on('submitted', function (m) {
                   // console.log("PROPOSED: offer_create: %s", JSON.stringify(m));
-                  callback(m.engine_result !== 'tesSUCCESS', m);
-                })
-              .on('final', function (m) {
-                  // console.log("FINAL: offer_create: %s", JSON.stringify(m));
-
-                  assert.strictEqual('tesSUCCESS', m.metadata.TransactionResult);
-
-                  assert(final_create);
+                  tx_verify.push(m.tx_json);
+                  callback(m.engine_result !== 'tesSUCCESS');
                 })
               .submit();
           },
-          function (m, callback) {
+          function (callback) {
             $.remote.transaction()
-              .offer_cancel("root", m.tx_json.Sequence)
+              .offer_cancel("root", tx_verify[0].Sequence)
               .on('submitted', function (m) {
                   // console.log("PROPOSED: offer_cancel: %s", JSON.stringify(m));
-                  callback(m.engine_result !== 'tesSUCCESS', m);
-                })
-              .on('final', function (m) {
-                  // console.log("FINAL: offer_cancel: %s", JSON.stringify(m, undefined, 2));
-
-                  assert.strictEqual('tesSUCCESS', m.metadata.TransactionResult);
-                  assert(final_create);
-                  done();
+                  tx_verify.push(m.tx_json);
+                  callback(m.engine_result !== 'tesSUCCESS');
                 })
               .submit();
           },
-          function (m, callback) {
-            $.remote
-              .once('ledger_closed', function (message) {
-                  // console.log("LEDGER_CLOSED: %d: %s", ledger_index, ledger_hash);
-                  final_create  = message;
-                })
-              .ledger_accept();
+
+          function ( callback ) { testutils.ledger_close( $.remote, callback ); },
+
+          function ( callback ) {
+              self.what = "verify transactions";
+              testutils.verify_transactions($.remote, tx_verify.map(function(e) { return e.hash; } ), callback);
           }
         ], function (error) {
           // console.log("result: error=%s", error);
@@ -73,10 +61,11 @@ suite("Offer tests", function() {
 
   test("offer create then offer create with cancel in one ledger", function (done) {
       var self = this;
-      var final_create;
       var sequence_first;
       var sequence_second;
       var dones = 0;
+
+      var tx_verify = [];
 
       async.waterfall([
           function (callback) {
@@ -84,42 +73,28 @@ suite("Offer tests", function() {
               .offer_create("root", "500", "100/USD/root")
               .on('submitted', function (m) {
                   // console.log("PROPOSED: offer_create: %s", JSON.stringify(m));
-                  callback(m.engine_result !== 'tesSUCCESS', m);
-                })
-              .on('final', function (m) {
-                  // console.log("FINAL: offer_create: %s", JSON.stringify(m));
-
-                  assert.strictEqual('tesSUCCESS', m.metadata.TransactionResult);
-                  assert(final_create);
-
-                  if (3 === ++dones)
-                    done();
+                  tx_verify.push( m.tx_json );
+                  sequence_first = m.tx_json.Sequence;
+                  callback(m.engine_result !== 'tesSUCCESS');
                 })
               .submit();
           },
-          function (m, callback) {
-            sequence_first  = m.tx_json.Sequence;
-
+          function (callback) {
             // Test canceling existant offer.
             $.remote.transaction()
               .offer_create("root", "300", "100/USD/root", undefined, sequence_first)
               .on('submitted', function (m) {
                   // console.log("PROPOSED: offer_create: %s", JSON.stringify(m));
-                  callback(m.engine_result !== 'tesSUCCESS', m);
-                })
-              .on('final', function (m) {
-                  // console.log("FINAL: offer_create: %s", JSON.stringify(m));
-
-                  assert.strictEqual('tesSUCCESS', m.metadata.TransactionResult);
-                  assert(final_create);
-
-                  if (3 === ++dones)
-                    done();
+                  tx_verify.push( m.tx_json );
+                  sequence_second = m.tx_json.Sequence;
+                  callback(m.engine_result !== 'tesSUCCESS');
                 })
               .submit();
           },
-          function (m, callback) {
-            sequence_second  = m.tx_json.Sequence;
+
+          function ( callback ) { testutils.ledger_close( $.remote, callback ); },
+
+          function (callback) {
             self.what = "Verify offer canceled.";
 
             testutils.verify_offer_not_found($.remote, "root", sequence_first, callback);
@@ -135,26 +110,17 @@ suite("Offer tests", function() {
               .offer_create("root", "400", "200/USD/root", undefined, sequence_first)
               .on('submitted', function (m) {
                   // console.log("PROPOSED: offer_create: %s", JSON.stringify(m));
-                  callback(m.engine_result !== 'tesSUCCESS', m);
-                })
-              .on('final', function (m) {
-                  // console.log("FINAL: offer_create: %s", JSON.stringify(m));
-
-                  assert.strictEqual('tesSUCCESS', m.metadata.TransactionResult);
-                  assert(final_create);
-
-                  if (3 === ++dones)
-                    done();
+                  tx_verify.push( m.tx_json );
+                  callback(m.engine_result !== 'tesSUCCESS');
                 })
               .submit();
           },
-          function (callback) {
-            $.remote
-              .once('ledger_closed', function (message) {
-                  // console.log("LEDGER_CLOSED: %d: %s", ledger_index, ledger_hash);
-                  final_create  = message;
-                })
-              .ledger_accept();
+
+          function ( callback ) { testutils.ledger_close( $.remote, callback ); },
+
+          function ( callback ) {
+              self.what = "verify transactions";
+              testutils.verify_transactions( $.remote, tx_verify.map( function ( e ) { return e.hash; } ), callback );
           }
         ], function (error) {
           // console.log("result: error=%s", error);
@@ -166,6 +132,7 @@ suite("Offer tests", function() {
 
   test("offer create then self crossing offer, no trust lines with self", function (done) {
       var self = this;
+      var tx_verify = [];
 
       async.waterfall([
         function (callback) {
@@ -175,7 +142,7 @@ suite("Offer tests", function() {
             .offer_create("root", "500/BTC/root", "100/USD/root")
               .on('submitted', function (m) {
                   // console.log("PROPOSED: offer_create: %s", JSON.stringify(m));
-
+                  tx_verify.push(m.tx_json);
                   callback(m.engine_result !== 'tesSUCCESS');
                 })
               .submit();
@@ -187,11 +154,19 @@ suite("Offer tests", function() {
             .offer_create("root", "100/USD/root", "500/BTC/root")
               .on('submitted', function (m) {
                   // console.log("PROPOSED: offer_create: %s", JSON.stringify(m));
-
+                  tx_verify.push(m.tx_json);
                   callback(m.engine_result !== 'tesSUCCESS');
                 })
               .submit();
+        },
+
+      function ( callback ) { testutils.ledger_close( $.remote, callback ); },
+
+        function ( callback ) {
+            self.what = "verify transactions";
+            testutils.verify_transactions( $.remote, tx_verify.map( function ( e ) { return e.hash; } ), callback );
         }
+
       ], function (error) {
         // console.log("result: error=%s", error);
         assert(!error, self.what);
@@ -204,6 +179,8 @@ suite("Offer tests", function() {
 
       var alices_initial_balance = 499946999680;
       var bobs_initial_balance = 10199999920;
+
+      var tx_verify = [];
 
       async.waterfall([
         function (callback) {
@@ -220,6 +197,8 @@ suite("Offer tests", function() {
 
           testutils.payment($.remote, "root", "bob", bobs_initial_balance, callback);
         },
+        function ( callback ) { testutils.ledger_close( $.remote, callback ); },
+
         function (callback) {
           self.what = "Set transfer rate.";
 
@@ -243,6 +222,7 @@ suite("Offer tests", function() {
             },
             callback);
         },
+        function ( callback ) { testutils.ledger_close( $.remote, callback ); },
         function (callback) {
           self.what = "Distribute funds.";
 
@@ -252,6 +232,8 @@ suite("Offer tests", function() {
             },
             callback);
         },
+        function ( callback ) { testutils.ledger_close( $.remote, callback ); },
+
         function (callback) {
           self.what = "Create first offer.";
 
@@ -264,6 +246,9 @@ suite("Offer tests", function() {
                 })
               .submit();
         },
+
+        function ( callback ) { testutils.ledger_close( $.remote, callback ); },
+
         function (callback) {
           self.what = "Unfund offer.";
 
@@ -273,6 +258,9 @@ suite("Offer tests", function() {
             },
             callback);
         },
+
+        function ( callback ) { testutils.ledger_close( $.remote, callback ); },
+
         function (callback) {
           self.what = "Set limits 2.";
 
@@ -282,6 +270,9 @@ suite("Offer tests", function() {
             },
             callback);
         },
+
+        function ( callback ) { testutils.ledger_close( $.remote, callback ); },
+
         function (callback) {
           self.what = "Verify balances. 1";
 
@@ -299,11 +290,14 @@ suite("Offer tests", function() {
             .offer_create("bob", "2000.0", "1/USD/mtgox")  // get 2,000/STR pay 1/USD (has insufficient USD)
               .once('proposed', function (m) {
                   // console.log("PROPOSED: offer_create: %s", JSON.stringify(m));
-
+                  tx_verify.push(m.tx_json);
                   callback(m.engine_result !== 'tesSUCCESS');
                 })
               .submit();
         },
+
+        function ( callback ) { testutils.ledger_close( $.remote, callback ); },
+
         function (callback) {
           self.what = "Verify balances. 2";
 
@@ -337,6 +331,12 @@ suite("Offer tests", function() {
             },
             callback);
         },
+
+        function ( callback ) {
+            self.what = "verify transactions";
+            testutils.verify_transactions( $.remote, tx_verify.map( function ( e ) { return e.hash; } ), callback );
+        }
+
 //        function (callback) {
 //          self.what = "Display ledger";
 //
@@ -395,6 +395,7 @@ suite("Offer tests", function() {
                 })
               .submit();
         },
+        function ( callback ) { testutils.ledger_close( $.remote, callback ); },
         function (callback) {
           self.what = "Create crossing offer.";
 
@@ -411,6 +412,7 @@ suite("Offer tests", function() {
                 })
               .submit();
         },
+        function ( callback ) { testutils.ledger_close( $.remote, callback ); },
         function (callback) {
           self.what = "Verify balances.";
 
@@ -480,6 +482,7 @@ suite("Offer tests", function() {
                 })
               .submit();
         },
+        function ( callback ) { testutils.ledger_close( $.remote, callback ); },
         function (callback) {
           self.what = "Create crossing offer.";
 
@@ -492,6 +495,7 @@ suite("Offer tests", function() {
                 })
               .submit();
         },
+        function ( callback ) { testutils.ledger_close( $.remote, callback ); },
         function (callback) {
           self.what = "Verify balances.";
 
@@ -552,6 +556,8 @@ suite("Offer tests", function() {
             },
             callback);
         },
+        function ( callback ) { testutils.ledger_close( $.remote, callback ); },
+
         function (callback) {
           self.what = "Create first offer.";
 
@@ -575,6 +581,8 @@ suite("Offer tests", function() {
 //              })
 //            .request();
 //        },
+        function ( callback ) { testutils.ledger_close( $.remote, callback ); },
+
         function (callback) {
           self.what = "Create crossing offer.";
 
@@ -587,6 +595,9 @@ suite("Offer tests", function() {
                 })
               .submit();
         },
+
+        function ( callback ) { testutils.ledger_close( $.remote, callback ); },
+
         function (callback) {
           self.what = "Verify balances.";
 
@@ -614,11 +625,13 @@ suite("Offer tests", function() {
         done();
       });
     });
-
+    
   test("offer_create then ledger_accept then offer_cancel then ledger_accept.", function (done) {
       var self = this;
       var final_create;
       var offer_seq;
+
+      var tx_verify = [];
 
       async.waterfall([
           function (callback) {
@@ -628,7 +641,7 @@ suite("Offer tests", function() {
                   // console.log("PROPOSED: offer_create: %s", JSON.stringify(m));
 
                   offer_seq = m.tx_json.Sequence;
-
+                  tx_verify.push( m.tx_json );
                   callback(m.engine_result !== 'tesSUCCESS');
                 })
               .on('final', function (m) {
@@ -662,6 +675,7 @@ suite("Offer tests", function() {
               .offer_cancel("root", offer_seq)
               .on('submitted', function (m) {
                   // console.log("PROPOSED: offer_cancel: %s", JSON.stringify(m));
+                  tx_verify.push( m.tx_json );
                   callback(m.engine_result !== 'tesSUCCESS');
                 })
               .on('final', function (m) {
@@ -691,6 +705,10 @@ suite("Offer tests", function() {
                 })
               .ledger_accept();
           },
+          function ( callback ) {
+              self.what = "verify transactions";
+              testutils.verify_transactions( $.remote, tx_verify.map( function ( e ) { return e.hash; } ), callback );
+          }
         ], function (error) {
           // console.log("result: error=%s", error);
           assert(!error, self.what);
@@ -705,13 +723,15 @@ suite("Offer tests", function() {
       var self = this;
       var final_create;
       var offer_seq;
+      var tx_verify = [];
 
       async.waterfall([
           function (callback) {
             $.remote.transaction()
               .payment('root', 'alice', "1000")
               .on('submitted', function (m) {
-                // console.log("proposed: %s", JSON.stringify(m));
+                  // console.log("proposed: %s", JSON.stringify(m));
+                  tx_verify.push( m.tx_json );
                 assert.strictEqual(m.engine_result, 'tesSUCCESS');
                 callback();
               })
@@ -724,7 +744,7 @@ suite("Offer tests", function() {
                   // console.log("PROPOSED: offer_create: %s", JSON.stringify(m));
 
                   offer_seq = m.tx_json.Sequence;
-
+                  tx_verify.push( m.tx_json );
                   callback(m.engine_result !== 'tesSUCCESS');
                 })
               .on('final', function (m) {
@@ -758,6 +778,7 @@ suite("Offer tests", function() {
               .offer_cancel("alice", offer_seq)
               .on('submitted', function (m) {
                   // console.log("PROPOSED: offer_cancel: %s", JSON.stringify(m));
+                  tx_verify.push( m.tx_json );
                   callback(m.engine_result !== 'tesSUCCESS');
                 })
               .on('final', function (m) {
@@ -787,6 +808,11 @@ suite("Offer tests", function() {
                 })
               .ledger_accept();
           },
+
+          function ( callback ) {
+              self.what = "verify transactions";
+              testutils.verify_transactions( $.remote, tx_verify.map( function ( e ) { return e.hash; } ), callback );
+          }
         ], function (error) {
           // console.log("result: error=%s", error);
           assert(!error, self.what);
@@ -794,81 +820,73 @@ suite("Offer tests", function() {
         });
     });
 
-  test("offer cancel past and future sequence", function (done) {
+  test( "offer cancel past and future sequence", function ( done ) {
       var self = this;
       var final_create;
 
-      async.waterfall([
-          function (callback) {
-            $.remote.transaction()
-              .payment('root', 'alice', Amount.from_json("10000.0"))
-              .once('submitted', function (m) {
-                  //console.log("PROPOSED: CreateAccount: %s", JSON.stringify(m));
-                  callback(m.engine_result !== 'tesSUCCESS', m);
-                })
-              .once('error', function(m) {
-                  //console.log("error: %s", m);
-                  assert(false);
-                  callback(m);
-                })
-              .submit();
+      var seq = 1;
+
+      async.waterfall( [
+          function ( callback ) {
+              $.remote.transaction()
+                .payment( 'root', 'alice', Amount.from_json( "10000.0" ) )
+                .once( 'submitted', function ( m ) {
+                    testutils.auto_advance_default( $.remote, m, callback );
+                } )
+                .once( 'error', function ( m ) {
+                    assert( false );
+                    callback( m );
+                } )
+                .submit();
           },
+
           // Past sequence but wrong
-          function (m, callback) {
-            $.remote.transaction()
-              .offer_cancel("root", m.tx_json.Sequence)
-              .once('submitted', function (m) {
-                  //console.log("PROPOSED: offer_cancel past: %s", JSON.stringify(m));
-                  callback(m.engine_result !== 'tesSUCCESS', m);
-                })
-              .submit();
+          function ( callback ) {
+              self.what = "past sequence";
+              $.remote.transaction()
+                .offer_cancel( "root", seq )
+                .once( 'submitted', function ( m ) {
+                    testutils.auto_advance_default( $.remote, m, callback );
+                } )
+                .submit();
           },
           // Same sequence
-          function (m, callback) {
-            $.remote.transaction()
-              .offer_cancel("root", m.tx_json.Sequence+1)
-              .once('submitted', function (m) {
-                  //console.log("PROPOSED: offer_cancel same: %s", JSON.stringify(m));
-                  callback(m.engine_result !== 'temBAD_SEQUENCE', m);
-                })
-              .submit();
+          function ( callback ) {
+              self.what = "same sequence";
+              $.remote.transaction()
+                .offer_cancel( "root", seq+2) // previous succeeded and modified
+                .once( 'submitted', function ( m ) {
+                    testutils.auto_advance( $.remote, m, function ( err, m2 ) {
+                        callback( m2.engine_result !== 'temBAD_SEQUENCE' );
+                    } );
+                } )
+                .submit();
           },
+
+          function ( callback ) { // force load the sequence number for alice as the previous call failed
+              $.remote.account( 'root' )._transactionManager._loadSequence( function ( err, sequence ) {
+                  callback();
+              } );
+          },
+
           // Future sequence
-          function (m, callback) {
-            $.remote.transaction()
-              .offer_cancel("root", m.tx_json.Sequence+2)
-              .once('submitted', function (m) {
-                  //console.log("ERROR: offer_cancel future: %s", JSON.stringify(m));
-                  callback(m.engine_result !== 'temBAD_SEQUENCE');
-                })
-              .submit();
+          function ( callback ) {
+              self.what = "future sequence";
+              $.remote.transaction()
+                .offer_cancel( "root", seq + 10 )
+                .once( 'submitted', function ( m ) {
+                    testutils.auto_advance( $.remote, m, function ( err, m2 ) {
+                        callback( m2.engine_result !== 'temBAD_SEQUENCE' );
+                    } );
+                } )
+                .submit();
           },
-          // See if ledger_accept will crash.
-          function (callback) {
-            $.remote
-              .once('ledger_closed', function (message) {
-                  //console.log("LEDGER_CLOSED: A: %d: %s", message.ledger_index, message.ledger_hash);
-                  callback();
-                })
-              .ledger_accept();
-          },
-          function (callback) {
-            $.remote
-              .once('ledger_closed', function (mesage) {
-                  //console.log("LEDGER_CLOSED: B: %d: %s", message.ledger_index, message.ledger_hash);
-                  callback();
-                })
-              .ledger_accept();
-          },
-          function (callback) {
-            callback();
-          }
-        ], function (error) {
-          //console.log("result: error=%s", error);
-          assert(!error, self.what);
+      ], function ( error ) {
+          if ( error ) { console.log( "result: error=%s", JSON.stringify( error ) ); }
+          assert( !error, self.what );
           done();
-        });
-    });
+      } );
+  } );
 
   test("ripple currency conversion : entire offer", function (done) {
     // mtgox in, STR out
@@ -896,6 +914,7 @@ suite("Offer tests", function() {
               },
               callback);
           },
+          function ( callback ) { testutils.ledger_close( $.remote, callback ); },
           function (callback) {
             self.what = "Owner counts after trust.";
 
@@ -915,6 +934,7 @@ suite("Offer tests", function() {
               },
               callback);
           },
+
           function (callback) {
             self.what = "Create offer.";
 
@@ -928,6 +948,7 @@ suite("Offer tests", function() {
                 })
               .submit();
           },
+          function ( callback ) { testutils.ledger_close( $.remote, callback ); },
           function (callback) {
             self.what = "Owner counts after offer create.";
 
@@ -956,6 +977,7 @@ suite("Offer tests", function() {
                 })
               .submit();
           },
+          function ( callback ) { testutils.ledger_close( $.remote, callback ); },
           function (callback) {
             self.what = "Verify balances.";
 
@@ -1009,6 +1031,7 @@ suite("Offer tests", function() {
               },
               callback);
           },
+          function ( callback ) { testutils.ledger_close( $.remote, callback ); },
           function (callback) {
             self.what = "Create offer to exchange.";
 
@@ -1016,9 +1039,10 @@ suite("Offer tests", function() {
               .offer_create("bob", "50/USD/alice", "200/EUR/carol")
               .on('submitted', function (m) {
                   // console.log("PROPOSED: offer_create: %s", JSON.stringify(m));
-                  callback(m.engine_result !== 'tecUNFUNDED_OFFER');
-
                   seq = m.tx_json.Sequence;
+                  testutils.auto_advance( $.remote, m, function ( err, m2 ) {
+                      callback( m2.engine_result !== 'tecUNFUNDED_OFFER' );
+                  } );
                 })
               .submit();
           },
@@ -1101,6 +1125,7 @@ suite("Offer cross currency", function() {
               },
               callback);
           },
+          function ( callback ) { testutils.ledger_close( $.remote, callback ); },
           function (callback) {
             self.what = "Create offer.";
 
@@ -1114,6 +1139,7 @@ suite("Offer cross currency", function() {
                 })
               .submit();
           },
+          function ( callback ) { testutils.ledger_close( $.remote, callback ); },
           function (callback) {
             self.what = "Alice send USD/mtgox converting from STR.";
 
@@ -1127,6 +1153,7 @@ suite("Offer cross currency", function() {
                 })
               .submit();
           },
+          function ( callback ) { testutils.ledger_close( $.remote, callback ); },
           function (callback) {
             self.what = "Verify balances.";
 
@@ -1172,6 +1199,7 @@ suite("Offer cross currency", function() {
               },
               callback);
           },
+          function ( callback ) { testutils.ledger_close( $.remote, callback ); },
           function (callback) {
             self.what = "Distribute funds.";
 
@@ -1181,6 +1209,7 @@ suite("Offer cross currency", function() {
               },
               callback);
           },
+          function ( callback ) { testutils.ledger_close( $.remote, callback ); },
           function (callback) {
             self.what = "Create offer.";
 
@@ -1194,6 +1223,7 @@ suite("Offer cross currency", function() {
                 })
               .submit();
           },
+          function ( callback ) { testutils.ledger_close( $.remote, callback ); },
           function (callback) {
             self.what = "Alice send STR to bob converting from USD/mtgox.";
 
@@ -1207,6 +1237,7 @@ suite("Offer cross currency", function() {
                 })
               .submit();
           },
+          function ( callback ) { testutils.ledger_close( $.remote, callback ); },
           function (callback) {
             self.what = "Verify balances.";
 
@@ -1255,6 +1286,7 @@ suite("Offer cross currency", function() {
               },
               callback);
           },
+          function ( callback ) { testutils.ledger_close( $.remote, callback ); },
           function (callback) {
             self.what = "Distribute funds.";
 
@@ -1265,6 +1297,7 @@ suite("Offer cross currency", function() {
               },
               callback);
           },
+          function ( callback ) { testutils.ledger_close( $.remote, callback ); },
           function (callback) {
             self.what = "Create offer carol.";
 
@@ -1305,6 +1338,7 @@ suite("Offer cross currency", function() {
                 })
               .submit();
           },
+          function ( callback ) { testutils.ledger_close( $.remote, callback ); },
           function (callback) {
             self.what = "Verify balances.";
 
@@ -1345,7 +1379,7 @@ suite("Offer tests 3", function() {
     testutils.build_teardown().call($, done);
   });
 
-  test("offer fee consumes funds", function (done) {
+  test( "offer fee consumes funds", function ( done ) {
       var self = this;
       var final_create;
 
@@ -1410,8 +1444,8 @@ suite("Offer tests 3", function() {
               .offer_create("bob", "200.0", "200/USD/mtgox")
               .on('submitted', function (m) {
                   // console.log("proposed: offer_create: %s", json.stringify(m));
-                  callback(m.engine_result !== 'tesSUCCESS');
                   seq_carol = m.tx_json.sequence;
+                  testutils.auto_advance_default( $.remote, m, callback );
                 })
               .submit();
           },
@@ -1424,9 +1458,8 @@ suite("Offer tests 3", function() {
               .offer_create("alice", "200/USD/mtgox", "200.0")
               .on('submitted', function (m) {
                   // console.log("proposed: offer_create: %s", json.stringify(m));
-                  callback(m.engine_result !== 'tesSUCCESS');
-
                   seq_carol = m.tx_json.sequence;
+                  testutils.auto_advance_default( $.remote, m, callback );
                 })
               .submit();
           },
@@ -1518,9 +1551,8 @@ suite("Offer tests 3", function() {
               .offer_create("alice", "50/USD/mtgox", "150000.0")
               .once('submitted', function (m) {
                   // console.log("proposed: offer_create: %s", json.stringify(m));
-                  callback(m.engine_result !== 'tesSUCCESS');
-
                   seq_carol = m.tx_json.sequence;
+                  testutils.auto_advance_default( $.remote, m, callback );
                 })
               .submit();
           },
@@ -1531,9 +1563,8 @@ suite("Offer tests 3", function() {
               .offer_create("bob", "100.0", ".1/USD/mtgox")
               .once('submitted', function (m) {
                   // console.log("proposed: offer_create: %s", json.stringify(m));
-                  callback(m.engine_result !== 'tesSUCCESS');
-
                   seq_carol = m.tx_json.sequence;
+                  testutils.auto_advance_default( $.remote, m, callback );
                 })
               .submit();
           },
@@ -1565,7 +1596,6 @@ suite("Offer tests 3", function() {
         });
     });
 });
-
 suite("Offer tfSell", function() {
   var $ = { };
 
@@ -1617,11 +1647,8 @@ suite("Offer tfSell", function() {
               .set_flags('Sell')            // Should not matter at all.
               .on('submitted', function (m) {
                   // console.log("proposed: offer_create: %s", json.stringify(m));
-                  if (m.engine_result !== 'tesSUCCESS') {
-                    throw new Error("Bob's OfferCreate tx did not succeed: "+m.engine_result);
-                  } else callback(null);
-
                   seq_carol = m.tx_json.sequence;
+                  testutils.auto_advance_default( $.remote, m, callback );
                 })
               .submit();
           },
@@ -1635,9 +1662,8 @@ suite("Offer tfSell", function() {
               .set_flags('Sell')            // Should not matter at all.
               .on('submitted', function (m) {
                   // console.log("proposed: offer_create: %s", json.stringify(m));
-                  callback(m.engine_result !== 'tesSUCCESS');
-
                   seq_carol = m.tx_json.sequence;
+                  testutils.auto_advance_default( $.remote, m, callback );
                 })
               .submit();
           },
@@ -1713,8 +1739,8 @@ suite("Offer tfSell", function() {
               .offer_create("bob", "100.0", "200/USD/mtgox")
               .on('submitted', function (m) {
                   // console.log("proposed: offer_create: %s", json.stringify(m));
-                  callback(m.engine_result !== 'tesSUCCESS');
                   seq_carol = m.tx_json.sequence;
+                  testutils.auto_advance_default( $.remote, m, callback );
                 })
               .submit();
           },
@@ -1731,11 +1757,8 @@ suite("Offer tfSell", function() {
               .set_flags('Sell')
               .on('submitted', function (m) {
                   // console.log("proposed: offer_create: %s", json.stringify(m));
-                  if (m.engine_result !== 'tesSUCCESS') {
-                    callback(new Error("Alice's OfferCreate didn't succeed: "+m.engine_result));
-                  } else callback(null);
-
                   seq_carol = m.tx_json.sequence;
+                  testutils.auto_advance_default( $.remote, m, callback );
                 })
               .submit();
           },
@@ -1823,9 +1846,8 @@ suite("Client Issue #535", function() {
               .offer_create("alice", "100/XTS/mtgox", "100/XXX/mtgox")
               .on('submitted', function (m) {
                   // console.log("proposed: offer_create: %s", json.stringify(m));
-                  callback(m.engine_result !== 'tesSUCCESS');
-
                   seq_carol = m.tx_json.sequence;
+                  testutils.auto_advance_default( $.remote, m, callback );
                 })
               .submit();
           },
@@ -1837,10 +1859,7 @@ suite("Client Issue #535", function() {
               .send_max("1.5/XTS/bob")
               .build_path(true)
               .on('submitted', function (m) {
-                  if (m.engine_result !== 'tesSUCCESS')
-                    console.log("proposed: %s", JSON.stringify(m, undefined, 2));
-
-                  callback(m.engine_result !== 'tesSUCCESS');
+                  testutils.auto_advance_default( $.remote, m, callback );
                 })
               .submit();
           },

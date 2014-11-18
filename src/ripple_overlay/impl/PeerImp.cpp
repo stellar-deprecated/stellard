@@ -630,7 +630,7 @@ namespace ripple {
 				else
 					m_journal.warning << "getNodeFat returns false";
 			}
-			catch (std::exception&)
+			catch (std::exception& e)
 			{
 				std::string info;
 
@@ -646,7 +646,7 @@ namespace ripple {
 				if (!packet.has_ledgerhash())
 					info += ", no hash specified";
 
-				m_journal.warning << "getNodeFat( " << mn << ") throws exception: " << info;
+				m_journal.warning << "getNodeFat( " << mn << ") throws exception: " << info << " " << e.what();
 			}
 		}
 

@@ -19,6 +19,7 @@
 
 #ifndef RIPPLE_LOADMANAGER_H_INCLUDED
 #define RIPPLE_LOADMANAGER_H_INCLUDED
+#include "../beast/beast/Threads.h"
 
 namespace ripple {
 

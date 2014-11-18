@@ -202,7 +202,7 @@ traceLedgerContents(Ledger& ledger)
 {
     if (ShouldLog (lsTRACE, LedgerDump))
     {
-        std::map<LedgerEntryType, uint> entryTypeCounts;
+        std::map<LedgerEntryType, int> entryTypeCounts;
         ledger.peekAccountStateMap ()->visitLeaves (
             [&](SHAMapItem::ref item)
             {
@@ -267,7 +267,7 @@ void
 LedgerDump::loadTransactions (std::string const& filename)
 {
     std::ifstream in (filename);
-    require (in, "opening file");
+    require ((bool)in, "opening file");
 
     std::unique_ptr <Application> app (make_Application ());
     app->setup ();

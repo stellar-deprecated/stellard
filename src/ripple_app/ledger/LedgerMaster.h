@@ -20,8 +20,11 @@
 #ifndef RIPPLE_LEDGERMASTER_H_INCLUDED
 #define RIPPLE_LEDGERMASTER_H_INCLUDED
 
+#include "beast/beast/Threads.h"
+#include "beast/modules/beast_core/beast_core.h"
 #include "ripple_app/ledger/Ledger.h"
 #include "ripple_app/ledger/LedgerEntrySet.h"
+#include "ripple/types/ripple_types.h"
 
 namespace ripple {
 

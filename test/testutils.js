@@ -219,7 +219,13 @@ function create_accounts(remote, src, amount, accounts, callback) {
     });
 
     tx.submit();
-  }, callback);
+  }, function ( err ) {
+      if ( err ) {
+          callback( err );
+      } else {
+          ledger_close( remote, callback );
+      }
+  });
 };
 
 // Account should be {name,balance}
@@ -243,7 +249,6 @@ function createAccountsFromObjects(remote, src, accounts, callback) {
 
         var tx = remote.transaction();
 
-        //console.log(account.balance);
         tx.payment(src, account.name, account.balance);
 
         tx.once('proposed', function (m) {
@@ -257,7 +262,13 @@ function createAccountsFromObjects(remote, src, accounts, callback) {
         });
 
         tx.submit();
-    }, callback);
+    }, function ( err ) {
+        if ( err ) {
+            callback( err );
+        } else {
+            ledger_close( remote, callback );
+        }
+    });
 };
 
 function credit_limit(remote, src, amount, callback) {
@@ -361,7 +372,6 @@ function payment(remote, src, dst, amount, callback) {
   assert(arguments.length === 5);
 
   //console.log( "payment src:%s  dst:%s", src, dst );
-  remote.set_account_seq( src, 1 );
   var tx = remote.transaction();
 
   tx.payment(src, dst, amount);
@@ -552,6 +562,78 @@ function verify_owner_counts(remote, counts, callback) {
   async.each( tests, iterator, callback );
 };
 
+function verify_transaction_success ( remote, tx_hash, callback ) {
+
+    verify_transaction( remote, tx_hash, callback, function ( m ) {
+        return ( m.meta != undefined ) && ( m.meta.TransactionResult === 'tesSUCCESS' );
+    } );
+}
+
+function verify_transaction( remote, tx_hash, callback, predicate ) {
+    remote.requestTransaction( tx_hash )
+    .on( 'success', function ( m ) {
+        //console.log( '----> ' + JSON.stringify( m ) );
+        if ( m.meta ) {
+            m.meta.engine_result = m.meta.TransactionResult;
+        }
+        callback( null, predicate(m), m );
+    } ).on( 'error', function ( m ) {
+        console.log( ' <verify tx error> ' + JSON.stringify( m ) );
+        callback( new Error( m ) );
+    } ).request();
+}
+
+
+function verify_transactions( remote, hashes, callback, predicate, startindex) {
+    startindex = startindex || 0;
+    if ( startindex >= hashes.length) {
+        callback();
+    }
+    if ( !predicate )
+    {
+        predicate = function ( m ) {
+            return ( m.meta != undefined ) && ( m.meta.TransactionResult === 'tesSUCCESS' );
+        };
+    }
+    verify_transaction( remote, hashes[startindex], function ( err, success, m ) {
+        if ( err || !success) {
+            callback( new Error( "Transaction " + hashes[startindex] + " not found" ) );
+        } else {
+            verify_transactions( remote, hashes, callback, predicate, startindex + 1 );
+        }
+    }, predicate );
+}
+
+function auto_advance( remote, m, callback ) {
+    ledger_close( remote, function ( cb ) {
+        // note that here we're checking for the original request,
+        // this is to ensure that we also close ledger properly
+        if ( m.engine_result === 'tesSUCCESS' ) {
+            verify_transaction_success( remote, m.tx_json.hash, function ( err, success, m2 ) {
+                callback( err, m2.meta );
+            } );
+        } else {
+            callback( new Error( m ), m );
+        }
+    } );
+}
+
+function auto_advance_default( remote, m, callback ) {
+    auto_advance( remote, m, function ( err, m2 ) {
+        if ( err ) {
+            console.log( "auto advance error: " + JSON.stringify( err ) );
+            callback( err );
+        }
+        var success = ( m2.engine_result === 'tesSUCCESS' );
+        if ( success ) {
+            callback( null );
+        } else {
+            console.log( "unexpected result: " + JSON.stringify( m2 ) );
+            callback( new Error( m2.engine_result ) );
+        }
+    } );
+}
+
 // takes an object or a string
 function rpc(config,tx)
 {
@@ -637,7 +719,11 @@ exports.verify_owner_count      = verify_owner_count;
 exports.verify_owner_counts     = verify_owner_counts;
 exports.rpc                     = rpc;
 exports.display_ledger_helper   = display_ledger_helper;
-exports.custom_ledger_helper    = custom_ledger_helper;
+exports.custom_ledger_helper = custom_ledger_helper;
+exports.verify_transaction_success = verify_transaction_success;
+exports.verify_transactions = verify_transactions;
+exports.auto_advance            = auto_advance;
+exports.auto_advance_default    = auto_advance_default;
 
 process.on('uncaughtException', function() {
   Object.keys(server).forEach(function(host) {

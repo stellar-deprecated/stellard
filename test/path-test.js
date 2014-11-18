@@ -37,7 +37,7 @@ suite('More path finding', function() {
                     .transfer_rate(1e9*1.1)
                     .once('submitted', function (m) {
                         //console.log("proposed: %s", JSON.stringify(m));
-                        callback(m.engine_result !== 'tesSUCCESS');
+                        testutils.auto_advance_default( $.remote, m, callback );
                     })
                     .submit();
             },
@@ -63,6 +63,7 @@ suite('More path finding', function() {
                     },
                     callback);
             },
+            function (callback) { testutils.ledger_close($.remote, callback); },
             // XXX What should this check?
             function (callback) {
                 self.what = "Find path from alice to bob";
@@ -106,7 +107,7 @@ suite('More path finding', function() {
       .transfer_rate(1e9*1.1)
       .once('submitted', function (m) {
         //console.log("proposed: %s", JSON.stringify(m));
-        callback(m.engine_result !== 'tesSUCCESS');
+          testutils.auto_advance_default( $.remote, m, callback );
       })
       .submit();
     },
@@ -132,6 +133,7 @@ suite('More path finding', function() {
          },
          callback);
     },
+    function ( callback ) { testutils.ledger_close( $.remote, callback ); },
     // XXX What should this check?
     function (callback) {
       self.what = "Find path from alice to bob";
@@ -197,6 +199,7 @@ suite('More path finding', function() {
               },
               callback);
           },
+          function ( callback ) { testutils.ledger_close( $.remote, callback ); },
           function (callback) {
             self.what = "Payment with auto path";
 
@@ -205,7 +208,7 @@ suite('More path finding', function() {
               .build_path(true)
               .once('submitted', function (m) {
                   // console.log("proposed: %s", JSON.stringify(m));
-                  callback(m.engine_result !== 'tesSUCCESS');
+                  testutils.auto_advance_default( $.remote, m, callback );
                 })
               .submit();
           },
@@ -244,7 +247,7 @@ suite('More path finding', function() {
               .transfer_rate(1e9*1.1)
               .once('submitted', function (m) {
                   // console.log("proposed: %s", JSON.stringify(m));
-                  callback(m.engine_result !== 'tesSUCCESS');
+                  testutils.auto_advance_default( $.remote, m, callback );
                 })
               .submit();
           },
@@ -268,6 +271,7 @@ suite('More path finding', function() {
               },
               callback);
           },
+          function (callback) { testutils.ledger_close($.remote, callback); },
           function (callback) {
             self.what = "Payment with auto path";
 
@@ -277,7 +281,7 @@ suite('More path finding', function() {
               .send_max("100/USD/alice")
               .once('submitted', function (m) {
                   // console.log("proposed: %s", JSON.stringify(m));
-                  callback(m.engine_result !== 'tesSUCCESS');
+                  testutils.auto_advance_default( $.remote, m, callback );
                 })
               .submit();
           },
@@ -342,7 +346,7 @@ suite('More path finding', function() {
                 .once('submitted', function (m) {
                     // console.log("proposed: %s", JSON.stringify(m));
 
-                    callback(m.engine_result !== 'tesSUCCESS');
+                    testutils.auto_advance_default( $.remote, m, callback );
                   })
                 .submit();
             },
@@ -390,7 +394,9 @@ suite('More path finding', function() {
                 .payment('alice', 'bob', "25/USD/alice")
                 .once('submitted', function (m) {
                     // console.log("proposed: %s", JSON.stringify(m));
-                    callback(m.engine_result !== 'tecPATH_DRY');
+                    testutils.auto_advance( $.remote, m, function ( err, r2 ) {
+                        callback( r2.engine_result !== 'tecPATH_DRY' );
+                    } );
                   })
                 .submit();
             },
@@ -437,6 +443,7 @@ suite('More path finding', function() {
                 },
                 callback);
             },
+            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
             function (callback) {
               self.what = "Payment.";
 
@@ -445,7 +452,7 @@ suite('More path finding', function() {
                 .build_path(true)
                 .once('submitted', function (m) {
                     // console.log("proposed: %s", JSON.stringify(m));
-                    callback(m.engine_result !== 'tesSUCCESS');
+                    testutils.auto_advance_default( $.remote, m, callback );
                   })
                 .submit();
             },
@@ -500,6 +507,7 @@ suite('More path finding', function() {
                 },
                 callback);
             },
+            function ( callback ) { testutils.ledger_close( $.remote, callback ); },
             function (callback) {
               self.what = "Payment.";
 
@@ -508,7 +516,7 @@ suite('More path finding', function() {
                 .build_path(true)
                 .once('submitted', function (m) {
                     // console.log("proposed: %s", JSON.stringify(m));
-                    callback(m.engine_result !== 'tesSUCCESS');
+                    testutils.auto_advance_default( $.remote, m, callback );
                   })
                 .submit();
             },
@@ -573,7 +581,7 @@ suite('More path finding', function() {
         .transfer_rate(1005000000)
         .once('submitted', function (m) {
           //console.log("proposed: %s", JSON.stringify(m));
-          callback(m.engine_result !== 'tesSUCCESS');
+            testutils.auto_advance_default( $.remote, m, callback );
         })
         .submit();
       },
@@ -603,9 +611,7 @@ suite('More path finding', function() {
         .offer_create("carol", "50.0", "50/AUD/mtgox")
         .once('submitted', function (m) {
           //console.log("PROPOSED: offer_create: %s", JSON.stringify(m));
-          callback(m.engine_result !== 'tesSUCCESS');
-
-          seq_carol = m.tx_json.Sequence;
+            testutils.auto_advance_default( $.remote, m, callback );
         })
         .submit();
       },
@@ -620,7 +626,7 @@ suite('More path finding', function() {
         .once('submitted', function (m) {
           //console.log("proposed: %s", JSON.stringify(m));
 
-          callback(m.engine_result !== 'tesSUCCESS');
+            testutils.auto_advance_default( $.remote, m, callback );
         })
         .submit();
       },
@@ -687,7 +693,7 @@ suite('More path finding', function() {
         .transfer_rate(1005000000)
         .once('submitted', function (m) {
           //console.log("proposed: %s", JSON.stringify(m));
-          callback(m.engine_result !== 'tesSUCCESS');
+            testutils.auto_advance_default( $.remote, m, callback );
         })
         .submit();
       },
@@ -717,9 +723,7 @@ suite('More path finding', function() {
         .offer_create("carol", "50", "50/AUD/mtgox")
         .once('submitted', function (m) {
           // console.log("PROPOSED: offer_create: %s", JSON.stringify(m));
-          callback(m.engine_result !== 'tesSUCCESS');
-
-          seq_carol = m.tx_json.Sequence;
+            testutils.auto_advance_default( $.remote, m, callback );
         })
         .submit();
       },
@@ -734,7 +738,7 @@ suite('More path finding', function() {
         .once('submitted', function (m) {
           // console.log("proposed: %s", JSON.stringify(m));
 
-          callback(m.engine_result !== 'tesSUCCESS');
+            testutils.auto_advance_default( $.remote, m, callback );
         })
         .submit();
       },

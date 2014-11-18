@@ -20,14 +20,16 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifndef __INFLATIONTRANSACTOR__
 #define __INFLATIONTRANSACTOR__
 
-namespace ripple {
+#include "Transactor.h"
 
+namespace ripple {
 	class InflationTransactor : public Transactor
 	{
 	public:
 		InflationTransactor(const SerializedTransaction& txn, TransactionEngineParams params, TransactionEngine* engine) : Transactor(txn, params, engine) {}
 
 		TER checkSig();
+        TER precheckAgainstLedger();
         TER payFee();
 
 		TER doApply();
