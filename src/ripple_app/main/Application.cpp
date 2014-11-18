@@ -718,6 +718,12 @@ public:
 
         m_ledgerMaster->setMinValidations (getConfig ().VALIDATION_QUORUM);
 
+        mValidations->tune (getConfig ().getSize (siValidationsSize), getConfig ().getSize (siValidationsAge));
+        m_nodeStore->tune (getConfig ().getSize (siNodeCacheSize), getConfig ().getSize (siNodeCacheAge));
+        m_ledgerMaster->tune (getConfig ().getSize (siLedgerSize), getConfig ().getSize (siLedgerAge));
+        m_sleCache.setTargetSize (getConfig ().getSize (siSLECacheSize));
+        m_sleCache.setTargetAge (getConfig ().getSize (siSLECacheAge));
+
         stellar::gLedgerMaster->loadLastKnownCLF();
 
         std::string ledgerToLoad;
@@ -767,12 +773,6 @@ public:
         //
         if (!getConfig ().RUN_STANDALONE)
             getUNL ().nodeBootstrap ();
-
-        mValidations->tune (getConfig ().getSize (siValidationsSize), getConfig ().getSize (siValidationsAge));
-        m_nodeStore->tune (getConfig ().getSize (siNodeCacheSize), getConfig ().getSize (siNodeCacheAge));
-        m_ledgerMaster->tune (getConfig ().getSize (siLedgerSize), getConfig ().getSize (siLedgerAge));
-        m_sleCache.setTargetSize (getConfig ().getSize (siSLECacheSize));
-        m_sleCache.setTargetAge (getConfig ().getSize (siSLECacheAge));
 
         //----------------------------------------------------------------------
         //
