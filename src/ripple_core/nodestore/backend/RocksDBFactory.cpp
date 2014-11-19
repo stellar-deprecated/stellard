@@ -19,7 +19,23 @@
 
 #if RIPPLE_ROCKSDB_AVAILABLE
 
+#if BEAST_WIN32
+# define ROCKSDB_PLATFORM_WINDOWS
+#else
+# define ROCKSDB_PLATFORM_POSIX
+# if BEAST_MAC || BEAST_IOS
+#  define OS_MACOSX
+# elif BEAST_BSD
+#  define OS_FREEBSD
+# else
+#  define OS_LINUX
+# endif
+#endif
+
 #include "../../../beast/beast/threads/Thread.h"
+#include "../../../ripple/rocksdb/rocksdb/include/rocksdb/db.h"
+#include "../../../ripple/rocksdb/rocksdb/port/port.h"
+#include "../../../ripple/rocksdb/rocksdb/db/db_statistics.h"
 
 #include <atomic>
 
@@ -168,6 +184,10 @@ public:
                 options.compression = rocksdb::kNoCompression;
             }
         }
+
+        // enable stats collection in log file
+        options.statistics = rocksdb::CreateDBStatistics();
+        options.stats_dump_period_sec = 300;
 
         rocksdb::DB* db = nullptr;
         rocksdb::Status status = rocksdb::DB::Open (options, m_name, &db);
