@@ -225,6 +225,8 @@ namespace stellar
                 // delete all
                 LedgerEntry::dropAll(mCurrentDB);
 
+                WriteLog(ripple::lsDEBUG, ripple::Ledger) << "Importing node store";
+
                 int counter = 0, totalImports = 0;
                 time_t start = time(nullptr);
 
