@@ -263,6 +263,8 @@ namespace stellar
                 WriteLog(ripple::lsINFO, ripple::Ledger) << "Imported " << totalImports << " items";
 
                 updateDBFromLedger(newLedger);
+
+                tx.endTransaction(true);
             }
             catch (...) {
                 WriteLog(ripple::lsWARNING, ripple::Ledger) << "Could not import state";
