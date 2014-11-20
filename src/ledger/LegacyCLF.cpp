@@ -44,11 +44,14 @@ namespace stellar
                     }
 
                     ledger->setFull();
+
+                    baseLedger = ledger;
                 }
             }
         }
 
         if (!baseLedger) {
+            WriteLog(ripple::lsWARNING, ripple::Ledger) << "could not construct ledger from ledger database, attempting to load from node store";
             baseLedger = getApp().getLedgerMaster().getLedgerByHash(ledgerHash);
         }
 
