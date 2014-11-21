@@ -385,10 +385,15 @@ LedgerDump::loadTransactions (std::string const& filename)
         // Apply transactions, transitioning from one ledger state to next.
         WriteLog (lsDEBUG, LedgerDump)
             << "Applying set of " << txOrder.size() << " transactions";
-        CanonicalTXSet failedTransactions (txSet->getHash ());
+        CanonicalTXSet retriableTransactions (txSet->getHash ());
+        std::set<uint256> failedTransactions;
         LedgerConsensus::applyTransactions (txSet, currentLedger, currentLedger,
-                                            failedTransactions, false, txOrder);
+                                            retriableTransactions, failedTransactions,
+                                            false, txOrder);
+
+        require (retriableTransactions.empty (), "failed retriable tx set is not empty");
         require (failedTransactions.empty (), "failed tx set is not empty");
+
         currentLedger->updateSkipList ();
         currentLedger->setClosed ();
         currentLedger->setCloseTime (deserializedLedger->getCloseTimeNC ());

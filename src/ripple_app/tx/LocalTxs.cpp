@@ -63,6 +63,7 @@ public:
         , m_id (txn->getTransactionID ())
         , m_account (txn->getSourceAccount ())
         , m_seq (txn->getSequence())
+        , m_failed(false)
     {
         if (txn->isFieldPresent (sfLastLedgerSequence))
         {
@@ -96,6 +97,9 @@ public:
         return m_account;
     }
 
+    void setFailed() { m_failed = true; }
+    bool isFailed() { return m_failed; }
+
 private:
 
     SerializedTransaction::pointer m_txn;
@@ -103,11 +107,17 @@ private:
     uint256                        m_id;
     RippleAddress                  m_account;
     std::uint32_t                  m_seq;
+    bool                           m_failed;
 };
 
 class LocalTxsImp : public LocalTxs
 {
 public:
+
+    // when out of sync, use the local current ledger as an approximation for the ledgerindex
+    // but shift it even more in the (non probable) case that the current non validated closed faster than
+    // the validated one
+    static int const holdLedgerNonValidatedGap = 10;
 
     LocalTxsImp()
     { }
@@ -121,8 +131,10 @@ public:
         m_txns.insert(make_pair(tx.getID(), tx)); // will not insert if there is already an entry with the same hash
     }
 
-    bool can_remove (LocalTx& txn, Ledger::pointer ledger)
+    bool can_remove (LocalTx& txn, Ledger::pointer ledger, LedgerIndex currentLedgerIndex)
     {
+        if (txn.isExpired(currentLedgerIndex))
+            return true;
 
         if (txn.isExpired (ledger->getLedgerSeq ()))
             return true;
@@ -157,7 +169,7 @@ public:
 
         CanonicalTXSet tset (uint256 {});
 
-        doSweep(); // housekeeping
+        doSweep(engine.getLedger()->getLedgerSeq()); // housekeeping
 
         // Get the set of local transactions as a canonical
         // set (so they apply in a valid order)
@@ -165,16 +177,20 @@ public:
             std::lock_guard <std::mutex> lock (m_lock);
 
             for (auto& it : m_txns)
-                tset.push_back (it.second.getTX());
+            {
+                if (!it.second.isFailed())
+                    tset.push_back (it.second.getTX());
+            }
         }
 
-        for (auto it : tset)
+        for(auto &it: tset)
         {
+            TER tx_res = temUNCERTAIN;
+            bool didApply = false;
             try
             {
                 TransactionEngineParams parms = tapOPEN_LEDGER;
-                bool didApply;
-                engine.applyTransaction (*it.second, parms, didApply);
+                tx_res = engine.applyTransaction (*it.second, parms, didApply);
             }
             catch (...)
             {
@@ -182,6 +198,15 @@ public:
                 // It's possible a cleverly malformed transaction or
                 // corrupt back end database could cause an exception
                 // during transaction processing.
+            }
+            if (!didApply &&
+                (isTelLocal(tx_res) || isTemMalformed(tx_res) || isTefFailure(tx_res))
+                )
+            {
+                // mark this transaction as failed, will not attempt to apply it in the future
+                // but keep it in the local tx set as a way to temporary ignore any other attempts to apply
+                // this transaction
+                m_txns.at(it.first.getTXID()).setFailed();
             }
         }
     }
@@ -194,14 +219,24 @@ public:
 
     // Remove transactions that have either been accepted into a fully-validated
     // ledger, are (now) impossible, or have expired
-    void doSweep ()
+    void doSweep (LedgerIndex currentLedgerIndex)
     {
+        // adjust currentLedgerIndex to be threshold for expiration
+        if (currentLedgerIndex > holdLedgerNonValidatedGap)
+        {
+            currentLedgerIndex -= holdLedgerNonValidatedGap;
+        }
+        else
+        {
+            currentLedgerIndex = 0;
+        }
+
         std::lock_guard <std::mutex> lock (m_lock);
         for (auto ledger = mSweepLedgers.begin(); ledger != mSweepLedgers.end(); ledger++)
         {
             for (auto it = m_txns.begin (); it != m_txns.end (); )
             {
-                if (can_remove (it->second, *ledger))
+                if (can_remove (it->second, *ledger, currentLedgerIndex))
                     it = m_txns.erase (it);
                 else
                     ++it;

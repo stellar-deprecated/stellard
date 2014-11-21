@@ -26,8 +26,6 @@ SETUP_LOG (LedgerConsensus)
 
 // #define TRUST_NETWORK
 
-enum {resultSuccess, resultFail, resultRetry};
-
 class LedgerConsensusImp
     : public LedgerConsensus
     , public boost::enable_shared_from_this <LedgerConsensusImp>
@@ -885,7 +883,8 @@ private:
                 << "Report: TxSt = " << set->getHash () 
                 << ", close " << closeTime << (closeTimeCorrect ? "" : "X");
 
-            CanonicalTXSet failedTransactions (set->getHash ());
+            CanonicalTXSet retriableTransactions (set->getHash ());
+            std::set<uint256> failedTransactions;
 
             if (!stellar::gLedgerMaster->ensureSync(mPreviousLedger, true))
             {
@@ -904,7 +903,7 @@ private:
             WriteLog (lsDEBUG, LedgerConsensus)
                 << "Applying consensus set transactions to the"
                 << " last closed ledger";
-            applyTransactions (set, newLCL, newLCL, failedTransactions, false);
+            applyTransactions (set, newLCL, newLCL, retriableTransactions, failedTransactions, false);
             newLCL->updateSkipList ();
             newLCL->setClosed ();
 
@@ -990,9 +989,9 @@ private:
                 Ledger::pointer currentLedger = getApp().getLedgerMaster().getCurrentLedger();
 
                 mFailedTransactions.clear();
-                for(auto tx: failedTransactions)
+                for(auto &tx: failedTransactions)
                 {
-                    mFailedTransactions.push_back(tx.second->getTransactionID());
+                    mFailedTransactions.insert(tx);
                 }
 
                 WriteLog (lsDEBUG, LedgerConsensus) << "Propagating changes from current open ledger";
@@ -1032,8 +1031,9 @@ private:
                             = boost::make_shared<SerializedTransaction> 
                             (boost::ref (sit));
 
-                        if (!m_localTX.contains(txn->getTransactionID()) &&
-                            failedTransactions.find(txn) == failedTransactions.end()) // don't bother with failed transactions
+                        uint256 txnID = txn->getTransactionID();
+                        if (!m_localTX.contains(txnID) && // if we're not tracking it already
+                            failedTransactions.find(txnID) == failedTransactions.end()) // don't bother with failed transactions
                         {
                             WriteLog (lsDEBUG, LedgerConsensus) 
                                 << "Test applying disputed transaction that did"
@@ -1041,7 +1041,7 @@ private:
 
                             if (!(getConfig().RUN_STANDALONE))
                             {
-                                if (applyTransaction (engine, txn, newOL, true, false))
+                                if (applyTransaction (engine, txn, newOL, true, false) != resultSuccess)
                                 {
                                     WriteLog(lsDEBUG, LedgerConsensus)
                                         << "Still not able to apply transaction " << txn->getTransactionID();
@@ -1809,7 +1809,7 @@ private:
 
     // known bad transactions detected last time we closed the ledger
     // used to eliminate failed transaction from our next position in updatePositions()
-    std::vector<uint256> mFailedTransactions;
+    std::set<uint256> mFailedTransactions;
 
     // Close time estimates
     std::map<std::uint32_t, int> mCloseTimes;
@@ -1839,11 +1839,12 @@ make_LedgerConsensus (LedgerConsensus::clock_type& clock, LocalTxs& localtx,
  */
 void
 LedgerConsensus::applyTransactions (SHAMap::ref set, Ledger::ref applyLedger,
-                                    Ledger::ref checkLedger, CanonicalTXSet& failedTransactions,
+                                    Ledger::ref checkLedger, CanonicalTXSet &retriableTransactions,
+                                    std::set<uint256> &failedTransactions,
                                     bool openLgr, std::vector<uint256> & applyOrder)
 {
     TransactionEngine engine (applyLedger);
-    
+
     engine.mClosingLedger = !openLgr;
 
     std::map<uint256, SerializedTransaction::pointer> txns;
@@ -1880,13 +1881,18 @@ LedgerConsensus::applyTransactions (SHAMap::ref set, Ledger::ref applyLedger,
         {
 #endif
             auto txn = txns.at (hash);
-            if (applyTransaction (engine, txn,
-                                  applyLedger, openLgr, true) == resultRetry)
+            ApplytransactionResult tx_res = applyTransaction(engine, txn,
+                applyLedger, openLgr, true);
+            if (tx_res == resultRetry)
             {
-                failedTransactions.push_back (txn);
+                retriableTransactions.push_back (txn);
             }
             else
             {
+                if (tx_res == resultFail)
+                {
+                    failedTransactions.insert(hash);
+                }
                 txns.erase (hash);
             }
 
@@ -1906,7 +1912,7 @@ LedgerConsensus::applyTransactions (SHAMap::ref set, Ledger::ref applyLedger,
     if (!explicitApplyOrder)
     {
         applyOrder.clear ();
-        for (auto const& pair : failedTransactions)
+        for (auto const& pair : retriableTransactions)
         {
             applyOrder.push_back (pair.second->getTransactionID ());
         }
@@ -1915,7 +1921,7 @@ LedgerConsensus::applyTransactions (SHAMap::ref set, Ledger::ref applyLedger,
     for (int pass = 0; pass < LEDGER_TOTAL_PASSES; ++pass)
     {
         WriteLog (lsINFO, LedgerConsensus) << "Pass: " << pass << " Txns: "
-                                            << failedTransactions.size ()
+                                            << retriableTransactions.size ()
                                             << (certainRetry ? " retriable" : " final");
         changes = 0;
 
@@ -1931,13 +1937,14 @@ LedgerConsensus::applyTransactions (SHAMap::ref set, Ledger::ref applyLedger,
                                           applyLedger, openLgr, certainRetry))
                 {
                 case resultSuccess:
-                    failedTransactions.erase (txn);
+                    retriableTransactions.erase (txn);
                     txns.erase (hash);
                     ++changes;
                     break;
 
                 case resultFail:
-                    failedTransactions.erase (txn);
+                    failedTransactions.insert(hash);
+                    retriableTransactions.erase (txn);
                     txns.erase (hash);
                     break;
 
@@ -1949,7 +1956,8 @@ LedgerConsensus::applyTransactions (SHAMap::ref set, Ledger::ref applyLedger,
             {
                 WriteLog (lsWARNING, LedgerConsensus)
                     << "Transaction throws";
-                failedTransactions.erase (txn);
+                failedTransactions.insert(hash);
+                retriableTransactions.erase (txn);
                 txns.erase (hash);
             }
         }
@@ -1972,17 +1980,18 @@ LedgerConsensus::applyTransactions (SHAMap::ref set, Ledger::ref applyLedger,
  */
 void
 LedgerConsensus::applyTransactions (SHAMap::ref set, Ledger::ref applyLedger,
-                                    Ledger::ref checkLedger, CanonicalTXSet& failedTransactions,
+                                    Ledger::ref checkLedger, CanonicalTXSet& retriableTransactions,
+                                    std::set<uint256> &failedTransactions,
                                     bool openLgr)
 {
     std::vector<uint256> applyOrder;
-    applyTransactions (set, applyLedger, checkLedger, failedTransactions, openLgr, applyOrder);
+    applyTransactions (set, applyLedger, checkLedger, retriableTransactions, failedTransactions, openLgr, applyOrder);
 }
 
 
 /** Apply a transaction to a ledger
  */
-int
+LedgerConsensus::ApplytransactionResult
 LedgerConsensus::applyTransaction (TransactionEngine& engine
                                    , SerializedTransaction::ref txn, Ledger::ref ledger
                                    , bool openLedger, bool retryAssured)
