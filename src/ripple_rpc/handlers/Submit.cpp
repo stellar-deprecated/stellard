@@ -32,7 +32,7 @@ Json::Value RPCHandler::doSubmit (Json::Value params, Resource::Charge& loadType
 
     if (!params.isMember ("tx_blob"))
     {
-        bool bFailHard = params.isMember ("fail_hard") && params["fail_hard"].asBool ();
+        bool bFailHard = !params.isMember ("fail_hard") || params["fail_hard"].asBool ();
         return RPC::transactionSign (params, true, bFailHard, masterLockHolder, *mNetOps, mRole);
     }
 
@@ -77,7 +77,7 @@ Json::Value RPCHandler::doSubmit (Json::Value params, Resource::Charge& loadType
     try
     {
         (void) mNetOps->processTransaction (tpTrans, mRole == Config::ADMIN, true,
-            params.isMember ("fail_hard") && params["fail_hard"].asBool ());
+            !params.isMember ("fail_hard") || params["fail_hard"].asBool ());
     }
     catch (std::exception& e)
     {

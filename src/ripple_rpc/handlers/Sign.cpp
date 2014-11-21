@@ -29,7 +29,7 @@ Json::Value RPCHandler::doSign (Json::Value params, Resource::Charge& loadType, 
     masterLockHolder.unlock ();
 
     loadType = Resource::feeHighBurdenRPC;
-    bool bFailHard = params.isMember ("fail_hard") && params["fail_hard"].asBool ();
+    bool bFailHard = !params.isMember ("fail_hard") || params["fail_hard"].asBool ();
     return RPC::transactionSign (params, false, bFailHard, masterLockHolder, *mNetOps, mRole);
 }
 
