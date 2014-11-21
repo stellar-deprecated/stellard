@@ -135,7 +135,13 @@ public:
             return false;
         }
 
-        SLE::pointer sle = ledger->getAccountRoot (txn.getAccount ());
+        SLE::pointer sle;
+        try {
+            sle = ledger->getAccountRoot(txn.getAccount());
+        }
+        catch (SHAMapMissingNode) {
+            // can't tell if we can't find the account
+        }
         if (!sle)
             return false;
 
