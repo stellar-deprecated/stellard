@@ -17,7 +17,6 @@
 */
 //==============================================================================
 
-
 namespace ripple {
 
 // {
@@ -62,31 +61,44 @@ Json::Value RPCHandler::doSubmit (Json::Value params, Resource::Charge& loadType
 
     Transaction::pointer            tpTrans;
 
-    try
-    {
-        tpTrans     = boost::make_shared<Transaction> (stpTrans, false);
-    }
-    catch (std::exception& e)
-    {
-        jvResult[jss::error]           = "internalTransaction";
-        jvResult["error_exception"] = e.what ();
+    tpTrans = getApp().getMasterTransaction().fetch(stpTrans->getTransactionID(), false);
 
-        return jvResult;
-    }
-
-    try
+    if (tpTrans)
     {
-        (void) mNetOps->processTransaction (tpTrans, mRole == Config::ADMIN, true,
-            !params.isMember ("fail_hard") || params["fail_hard"].asBool ());
-    }
-    catch (std::exception& e)
-    {
-        jvResult[jss::error]           = "internalSubmit";
-        jvResult[jss::error_exception] = e.what ();
-
-        return jvResult;
+        TER res = tpTrans->getResult();
+        if (!(isTelLocal(res) || isTemMalformed(res) || isTefFailure(res)))
+        {
+            tpTrans = Transaction::pointer();
+        }
     }
 
+    if (!tpTrans)
+    {
+        try
+        {
+            tpTrans     = boost::make_shared<Transaction> (stpTrans, false);
+        }
+        catch (std::exception& e)
+        {
+            jvResult[jss::error]           = "internalTransaction";
+            jvResult["error_exception"] = e.what ();
+
+            return jvResult;
+        }
+
+        try
+        {
+            (void) mNetOps->processTransaction (tpTrans, mRole == Config::ADMIN, true,
+                !params.isMember ("fail_hard") || params["fail_hard"].asBool ());
+        }
+        catch (std::exception& e)
+        {
+            jvResult[jss::error]           = "internalSubmit";
+            jvResult[jss::error_exception] = e.what ();
+
+            return jvResult;
+        }
+    }
 
     try
     {

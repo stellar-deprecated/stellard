@@ -351,32 +351,46 @@ Json::Value transactionSign (
 
     Transaction::pointer tpTrans;
 
-    try
-    {
-        tpTrans     = boost::make_shared<Transaction> (stpTrans, false);
-    }
-    catch (std::exception&)
-    {
-        return RPC::make_error (rpcINTERNAL,
-            "Exception occurred during transaction");
-    }
+    tpTrans = getApp().getMasterTransaction().fetch(stpTrans->getTransactionID(), false);
 
-    try
+    if (tpTrans)
     {
-        // FIXME: For performance, should use asynch interface
-        tpTrans = netOps.submitTransactionSync (tpTrans,
-            role == Config::ADMIN, true, bFailHard, bSubmit);
-
-        if (!tpTrans)
+        TER res = tpTrans->getResult();
+        if (!(isTelLocal(res) || isTemMalformed(res) || isTefFailure(res)))
         {
-            return RPC::make_error (rpcINTERNAL,
-                "Unable to sterilize transaction.");
+            tpTrans = Transaction::pointer();
         }
     }
-    catch (std::exception&)
+
+    if (!tpTrans)
     {
-        return RPC::make_error (rpcINTERNAL,
-            "Exception occurred during transaction submission.");
+        try
+        {
+            tpTrans     = boost::make_shared<Transaction> (stpTrans, false);
+        }
+        catch (std::exception&)
+        {
+            return RPC::make_error (rpcINTERNAL,
+                "Exception occurred during transaction");
+        }
+
+        try
+        {
+            // FIXME: For performance, should use asynch interface
+            tpTrans = netOps.submitTransactionSync (tpTrans,
+                role == Config::ADMIN, true, bFailHard, bSubmit);
+
+            if (!tpTrans)
+            {
+                return RPC::make_error (rpcINTERNAL,
+                    "Unable to sterilize transaction.");
+            }
+        }
+        catch (std::exception&)
+        {
+            return RPC::make_error (rpcINTERNAL,
+                "Exception occurred during transaction submission.");
+        }
     }
 
     try
