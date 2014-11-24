@@ -625,11 +625,6 @@ public:
     */
     void stateEstablish ()
     {
-
-        // Give everyone a chance to take an initial position
-		if(mCurrentMSeconds < LEDGER_MIN_CONSENSUS_TIME)
-            return;
-
         updateOurPositions ();
 
         if (!mHaveCloseTimeConsensus)
