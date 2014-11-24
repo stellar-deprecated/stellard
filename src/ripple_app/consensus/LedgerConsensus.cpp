@@ -586,7 +586,7 @@ public:
             ->peekTransactionMap ()->getHash ().isNonZero ();
         int proposersClosed = mPeerPositions.size ();
         int proposersValidated 
-            = getApp().getValidations ().getTrustedValidationCount
+            = getApp().getValidations ().getNodesAfter
             (mPrevLedgerHash);
 
         // This ledger is open. This computes how long since last ledger closed

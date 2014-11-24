@@ -35,7 +35,7 @@ bool ContinuousLedgerTiming::shouldClose (
     bool anyTransactions,
     int previousProposers,      // proposers in the last closing
     int proposersClosed,        // proposers who have currently closed this ledgers
-    int proposersValidated,     // proposers who have validated the last closed ledger
+    int proposersValidated,     // proposers who have validated a future ledger
     int previousMSeconds,       // milliseconds the previous ledger took to reach consensus
     int currentMSeconds,        // milliseconds since the previous ledger closed
     int openMSeconds,           // milliseconds since the previous LCL was computed
@@ -46,7 +46,6 @@ bool ContinuousLedgerTiming::shouldClose (
 		WriteLog(lsWARNING, LedgerTiming) <<
 			"CLC::shouldClose gFORCE_CLOSE ";
 
-		gFORCE_CLOSE = false;
 		return true;
 	}
     if ((previousMSeconds < -1000) || (previousMSeconds > 600000) ||
