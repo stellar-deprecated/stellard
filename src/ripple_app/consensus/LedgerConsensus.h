@@ -32,6 +32,8 @@ class LedgerConsensus
 public:    
     typedef beast::abstract_clock <std::chrono::seconds> clock_type;
 
+    enum ApplytransactionResult {resultSuccess, resultFail, resultRetry};
+
     virtual ~LedgerConsensus() = 0;
 
     virtual int startup () = 0;
@@ -81,12 +83,14 @@ public:
 
     // static helpers
     static void applyTransactions (SHAMap::ref set, Ledger::ref applyLedger,
-                                   Ledger::ref checkLedger, CanonicalTXSet& failedTransactions,
+                                   Ledger::ref checkLedger, CanonicalTXSet &retriableTransactions,
+                                   std::set<uint256> &failedTransactions,
                                    bool openLgr, std::vector<uint256> & applyOrder);
     static void applyTransactions (SHAMap::ref set, Ledger::ref applyLedger,
-                                   Ledger::ref checkLedger, CanonicalTXSet& failedTransactions, 
+                                   Ledger::ref checkLedger, CanonicalTXSet &retriableTransactions,
+                                   std::set<uint256> &failedTransactions,
                                    bool openLgr);
-    static int applyTransaction (TransactionEngine& engine
+    static ApplytransactionResult applyTransaction (TransactionEngine& engine
                                  , SerializedTransaction::ref txn, Ledger::ref ledger
                                  , bool openLedger, bool retryAssured);
 };

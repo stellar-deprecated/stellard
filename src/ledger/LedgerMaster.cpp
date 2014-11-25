@@ -175,13 +175,15 @@ namespace stellar
 
         for(SHAMap::Delta::value_type &it: delta)
         {
-            SLE::pointer newEntry = updatedCurrentCLF->getLegacyLedger()->getSLEi(it.first);
-            SLE::pointer oldEntry = mCurrentCLF->getLegacyLedger()->getSLEi(it.first);
+            SHAMapItem::pointer &newItem = it.second.first;
+            SHAMapItem::pointer &oldItem = it.second.second;
 
-            if (newEntry)
+            if (newItem)
             {
+                SLE::pointer newEntry = boost::make_shared<SLE> (newItem->peekSerializer (), newItem->getTag ());
                 LedgerEntry::pointer entry = LedgerEntry::makeEntry(newEntry);
-                if (oldEntry)
+
+                if (oldItem)
                 {	// SLE updated
                     if (entry) entry->storeChange();
                 }
@@ -192,7 +194,8 @@ namespace stellar
             }
             else
             { // SLE must have been deleted
-                assert(oldEntry);
+                assert(oldItem);
+                SLE::pointer oldEntry = boost::make_shared<SLE> (oldItem->peekSerializer (), oldItem->getTag ());
                 LedgerEntry::pointer entry = LedgerEntry::makeEntry(oldEntry);
                 if (entry) entry->storeDelete();
             }
