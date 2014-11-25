@@ -23,7 +23,6 @@ ask contributors to follow so that we can merge your changes quickly.
 
 ## Submitting Changes
 
-* <a href="https://www.clahub.com/agreements/stellar/stellard">Sign the Contributor License Agreement</a>.
 * Push your changes to a topic branch in your fork of the repository.
 * Submit a pull request to the [stellard repository](https://github.com/stellar/stellard) in the Stellar organization.
  * Include a descriptive [commit message](https://github.com/erlang/otp/wiki/Writing-good-commit-messages).
@@ -44,7 +43,6 @@ an issue number.
 # Additional Resources
 
 * [Bug tracker (Github)](https://github.com/stellar/stellard/issues)
-* <a href="https://www.clahub.com/agreements/stellar/stellard">Contributor License Agreement</a>
 * [Explore the API](https://www.stellar.org/api/)
 * [Readme for stellard](https://github.com/stellar/stellard/blob/master/README.md)
 * #stellar-dev IRC channel on freenode.org
