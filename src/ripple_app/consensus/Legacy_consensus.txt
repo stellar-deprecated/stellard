@@ -1,0 +1,104 @@
+1. Introduction
+ 
+Peers on the network are tracking state (modeled as ledger) and state transitions (modeled as "transaction sets").
+The consensus is the process that allows the various peers to track to the same state over time, applying the same set of transactions.
+ 
+Ripple's implementation is one that allows partial network splits aka partitions:
+	* In some events, a set of peers can be consistent with each other but not consistent with the overall network causing a "fork" in history (much in the same way you can fork code in a branch)
+	* At some point, this faulty group can "snap back" into place by pointing to the majority branch; currently there is no attempt in doing a "merge" of the bad branch, it's simply abandoned.
+ 
+2. General organization
+ 
+Consensus is tracked by a "LedgerConsensus" object.
+ 
+There are two ways to initiate the creation of this object:
+	* A timer that triggers every LEDGER_GRANULARITY (1 second)
+	* Event triggered when receiving certain things off the network
+		* TX Map
+		* Trusted proposals
+ 
+Once this object is created, its state is refreshed by the heartbeattimer by calling timerEntry every LEDGER_GRANULARITY to move between states.
+
+timerEntry's duty is to
+	* Perform checks that the local instance is on the proper ledger compared to other peers on the network (using validations for the most part). Trigger downloading of Last Closed Ledger if necessary.
+	* Compute the time elapsed in the current state (stored in mCurrentMSeconds) as well as the ratio mClosePercent that represents current/previous
+	* Call the handler for each state
+ 
+3. Consensus states
+
+The consensus object moves between the following states
+ 
+3.1 lcsPRE_CLOSE
+This is the state the consensus starts in.
+It's a buffer state where peers wait for each other, most likely downloading the "current ledger" from the network if not on it already.
+Note that peers are not perfectly synced to each other therefore relying purely on timing is not practical and instead peers have to rely on other signals that inform them on the overall state of the network.
+
+3.1.1 Conditions for moving forward to establishing consensus
+
+If the local instance didn’t close for more than 600 seconds, it moves to lcsESTABLISH.
+
+If the local instance has a potential transaction set, it stays in the lcsPRE_CLOSE state if one of the following conditions is true:
+	* The instance has been in the PRE_CLOSE state for less than LEDGER_MIN_CLOSE (2 s) time AND PeersAhead < 50%
+	* The instance has been in the PRE_CLOSE state for less than previousMsTime AND PeersAhead < 100%
+
+PeersAhead is a percentage that represents how much of the network is ahead of the set of peers that the local instance is tagging along with. It is currently computed as the ratio
+"Number of peers in the lcsESTABLISH state" + "number of peers that moved on past this consensus", versus "number of peers joined in the previous consensus".
+
+previousMsTime is the time the local peer spent last time around in the “lcsESTABLISH” state.
+
+If the local instance has no position (local tx set is empty), it stays in the lcsPRE_CLOSE state if the instance has been in the PRE_CLOSE state for less than idleInterval (computed as max(15 seconds, 2 * lastCloseResolution)  ) AND "number of peers in the lcsETABLISH state" is more than 25% of "number of peers joined in the previous consensus".
+Open: this doesn’t seem to make much sense, special casing no tx set seems like a bad move as it favors entering consensus without any peers (and actually reducing the chances of catching up faster).
+
+"close resolution" is a metric updated to round close time (ranges is 10-120 seconds, values defined LedgerTimeResolution )
+
+!!!!!!!! Open: being in consensus with few hosts (let’s say less than ¾ of the previous), doesn’t seem to make sense as the tx set etc are going to be wrong, consensus is probably better off waiting longer (catching up to peers that are going to turn around).
+
+
+3.1.2 What happens when all conditions are met?
+When moving to lcsESTABLISH, closeLedger is called.
+There, the local instance sends a “neCLOSING_LEDGER” message that contains which ledger it thinks of as “current”.
+This is also when the initial position is computed as well as closing time.
+
+3.2 lcsESTABLISH
+This state is where peers decide on what the next ledger is going to be.
+The next ledger can be think of as (previous ledger, close time, transaction set).
+Consensus must be reached for close time and transaction set (previous ledger is not enforced to allow for forks).
+
+updateOurPosition is the main method to internalize the local instance position+disputes (via updateVote) /close time based on messages it gets from the network.
+
+3.2.1 Updating close time
+Local instance will change its close time towards a larger majority subset: local instance will snap to the largest group if possible.
+A group is considered "valid" if it represents more than 50% of the peers, then evolves to up to 95% if consensus is stuck (see AV_INIT_CONSENSUS_PCT ).
+To consider that consensus is met on the close time the percentage has to be higher than AV_CT_CONSENSUS_PCT and the group has to be valid.
+
+!!!!!!!! Open: it seems that we can be in situations where 80% of the peers agree yet we don’t consider this consensus because of this notion of validity.
+
+3.2.2 Declaring consensus
+The evaluation if the peers reached consensus is performed in "haveConsensus".
+
+Consensus is declared if one of the following conditions is met:
+	* The node has fallen behind - "count of validated ledgers after this one" versus "count of proposers in current consensus" is over 80%
+	* Local instance has been in "ESTABLISH" state for longer than LEDGER_MIN_CONSENSUS_TIME (3 s)
+		* And
+		* (Local instance sees ¾ of the participants from the previous round OR current time more than previous_time + LEDGER_MIN_CONSENSUS_TIME)
+		* 80% of the current proposers agree with local instance
+
+!!!!!! Open: not sure if there is any reason to close purely based on time (ignoring other peers)
+
+!!!!!! Open: LEDGER_GRANULARITY being 1 second means that local instance will see things ~1 second late; this means only 2 updates in a 3 seconds block, which is not a lot of updates to reach consensus. We probably need to move to a smaller value like 500ms or smaller.
+
+
+3.2.3 What happens when consensus is declared?
+When consensus is met, the state is set to lcsFINISHED, the information about the last consensus is updated (number of participants, time, hash) and "accept" is called asynchronously.
+
+3.3 lcsFINISHED
+Actual code is running in the background at that point.
+"Accept" applies the result of consensus to the local instance.
+At the end of accept the state is set to lcsACCEPTED and the close time offset is updated (bias compared to the network, so that there is less contention for close time next time around).
+
+
+3.4 lcsACCEPTED
+Destroys consensus object.
+Consensus object will be recreated when the timer triggers again (LEDGER_GRANULARITY later) or on network event
+
+
