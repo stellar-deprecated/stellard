@@ -70,6 +70,7 @@ JSS ( engine_result_code );
 JSS ( engine_result_message );
 JSS ( error );
 JSS ( error_exception );
+JSS ( extended_build_version );
 JSS ( fee_base );
 JSS ( fee_ref );
 JSS ( fetch_pack );

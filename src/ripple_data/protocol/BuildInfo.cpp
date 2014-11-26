@@ -119,8 +119,16 @@ char const* BuildInfo::getFullVersionString ()
         PrettyPrinter ()
         {
             beast::String s;
-            
+
+            std::string verHash = "$Id$"; // git substitutes this with hash of last commit
+
+            verHash = verHash.substr(5, 7);
+
             s << "Stellar-" << getVersionString ();
+            if (!verHash.empty())
+            {
+                s << " (" << verHash << ")";
+            }
 
             fullVersionString = s.toStdString ();
         }
@@ -231,7 +239,7 @@ public:
         testValues ();
 
         log <<
-            "  Ripple version: " <<
+            "  Stellar version: " <<
             BuildInfo::getVersionString();
     }
 };

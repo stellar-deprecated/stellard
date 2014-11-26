@@ -11,3 +11,8 @@ LICENSE binary
 *.vcxproj   text eol=crlf
 *.props     text eol=crlf
 *.filters   text eol=crlf
+
+# Enable version substitution on some files
+
+BuildInfo.cpp   ident
+
