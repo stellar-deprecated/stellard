@@ -625,6 +625,23 @@ public:
     */
     void stateEstablish ()
     {
+        // Give everyone a chance to take an initial position
+        if(mCurrentMSeconds <= LEDGER_MIN_CONSENSUS_TIME)
+        {
+            int currentValidations = getApp().getValidations ()
+                .getNodesAfter (mPrevLedgerHash);
+
+            // if we have not fallen too much behind, we stand our initial position
+            if (((currentValidations * 100) / (mPeerPositions.size() + 1)) <= 80)
+            {
+                // (re)send our position to the network
+                if (mProposing)
+                    propose ();
+                return;
+            }
+            // otherwise, establish consensus with the rest of the proposers
+        }
+
         updateOurPositions ();
 
         if (!mHaveCloseTimeConsensus)
@@ -1401,9 +1418,6 @@ private:
                 }
             }
         }
-
-        if (mProposing)
-            propose ();
     }
 
     // For a given number of participants and required percent
