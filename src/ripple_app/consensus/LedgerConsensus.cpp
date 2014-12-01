@@ -632,7 +632,7 @@ public:
                 .getNodesAfter (mPrevLedgerHash);
 
             // if we have not fallen too much behind, we stand our initial position
-            if (((currentValidations * 100) / (mPeerPositions.size() + 1)) <= 80)
+            if (((currentValidations * 100) / (mPreviousProposers + 1)) <= 60)
             {
                 // (re)send our position to the network
                 if (mProposing)
