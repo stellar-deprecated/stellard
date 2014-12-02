@@ -25,6 +25,8 @@
 #include "beast/modules/beast_core/diagnostic/SemanticVersion.h"
 #include "BuildInfo.h"
 
+#include "../../BuildSignature.h"
+
 namespace ripple {
 
 char const* BuildInfo::getRawVersionString ()
@@ -119,8 +121,13 @@ char const* BuildInfo::getFullVersionString ()
         PrettyPrinter ()
         {
             beast::String s;
-            
+
+            std::string buildSignature(BUILD_SIGNATURE);
             s << "Stellar-" << getVersionString ();
+            if (!buildSignature.empty())
+            {
+                s << " (" << buildSignature << ")";
+            }
 
             fullVersionString = s.toStdString ();
         }
@@ -231,7 +238,7 @@ public:
         testValues ();
 
         log <<
-            "  Ripple version: " <<
+            "  Stellar version: " <<
             BuildInfo::getVersionString();
     }
 };

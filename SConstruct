@@ -10,6 +10,7 @@ import platform
 import re
 import sys
 import textwrap
+import subprocess
 
 OSX = bool(platform.mac_ver()[0])
 FreeBSD = bool('FreeBSD' == platform.system())
@@ -568,6 +569,16 @@ def build_test(env,path):
         env_.Append(LIBS = libs)
     env_.Program (bin, srcs)
 
+# generates an include file with the hash of the latest commit
+def generate_build_signature():
+    cmd = ['git', 'describe', '--always', '--dirty']
+    entry = subprocess.check_output(cmd).decode('ascii').strip(" \t\r\n")
+    if len(entry) <= 3:
+        entry = "0" * 7
+    f = open('src/BuildSignature.h', 'w')
+    print >> f, '#define BUILD_SIGNATURE "%s"' % entry
+    f.close()
+
 #-------------------------------------------------------------------------------
 
 def main():
@@ -597,6 +608,8 @@ def main():
         '-frtti',
         '-g'
         ])
+
+    generate_build_signature()
 
     for root, dirs, files in os.walk('src/ripple'):
         for path in files:

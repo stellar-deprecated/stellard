@@ -251,8 +251,8 @@ int run (int argc, char** argv)
 
     if (vm.count ("version"))
     {
-        beast::String const& s (BuildInfo::getVersionString ());
-        std::cout << "rippled version " << s.toStdString() << std::endl;
+        beast::String const& s (BuildInfo::getFullVersionString ());
+        std::cout << "stellard version " << s.toStdString() << std::endl;
         return 0;
     }
 

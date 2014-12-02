@@ -693,6 +693,8 @@ public:
             LogPartition::setConsoleOutput (getConfig().CONSOLE_LOG_OUTPUT);
         }
 
+        Log (lsWARNING) << "Starting up stellard version " << BuildInfo::getFullVersionString ();
+
         if (!getConfig ().RUN_STANDALONE)
             m_sntpClient->init (getConfig ().SNTP_SERVERS);
 
