@@ -47,5 +47,6 @@ namespace ripple
         static void dumpLedger (int ledgerNum);
         static void dumpTransactions (std::string const& filename);
         static void loadTransactions (std::string const& filename);
+        static void salvageTransactions (int ledgerStart, int ledgerCount);
     };
 }

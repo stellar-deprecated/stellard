@@ -199,6 +199,7 @@ int run (int argc, char** argv)
     ("replay","Replay a ledger close.")
     ("dump_transactions", po::value <std::string> (), "Write a log of all transactions to a sequential file.")
     ("load_transactions", po::value <std::string> (), "Load and apply a log of transactions from a sequential file.")
+    ("salvage_transactions", po::value <int> (), "Replay <N> ledgers of transactions, from any/all lineages (even abandoned). Requires --ledger <K>.")
     ("dump_ledger", po::value <int> (), "Emit a ledger in full, including account-state.")
     ("ledger", po::value<std::string> (), "Load the specified ledger and start from .")
     ("start", "Start from a fresh Ledger.")
@@ -265,6 +266,7 @@ int run (int argc, char** argv)
         && !vm.count ("standalone")
         && !vm.count ("unittest")
         && !vm.count ("dump_ledger")
+        && !vm.count ("salvage_transactions")
         && !vm.count ("dump_transactions")
         && !vm.count ("load_transactions"))
     {
@@ -363,6 +365,23 @@ int run (int argc, char** argv)
         getConfig ().START_UP = Config::FRESH;
         auto filename = vm["load_transactions"].as<std::string> ();
         LedgerDump::loadTransactions (filename);
+        return EXIT_SUCCESS;
+    }
+
+    if (vm.count ("salvage_transactions"))
+    {
+        getConfig ().RUN_STANDALONE = true;
+        getConfig ().START_UP = Config::LOAD;
+        getConfig ().START_LEDGER = "latest";
+        try {
+            auto ledgerStr = vm["ledger"].as<std::string> ();
+            auto ledgerStart = beast::lexicalCastThrow <std::uint32_t> (ledgerStr);
+            auto ledgerCount = vm["salvage_transactions"].as<int> ();
+            LedgerDump::salvageTransactions (ledgerStart, ledgerCount);
+        } catch (...) {
+            printHelp(desc);
+            throw;
+        }
         return EXIT_SUCCESS;
     }
 

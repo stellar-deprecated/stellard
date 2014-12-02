@@ -438,4 +438,99 @@ LedgerDump::loadTransactions (std::string const& filename)
     exit (0);
 }
 
+
+void
+LedgerDump::salvageTransactions (int ledgerStart, int ledgerCount)
+{
+    std::unique_ptr <Application> app (make_Application ());
+    app->setup ();
+    auto &lm = app->getLedgerMaster ();
+    WriteLog (lsINFO, LedgerDump)
+        << "Scanning DB for " << ledgerCount
+        << " ledgers worth of transactions, starting from " << ledgerStart;
+
+    std::map<int, std::set<NodeObject::Ptr>> txs;
+    size_t nObjs = 0;
+    size_t nTxs = 0;
+    size_t nMatch = 0;
+
+    app->getNodeStore().for_each(
+        [&](NodeObject::Ptr np)
+        {
+            ++nObjs;
+            if ((nObjs & 0xffff) == 0) {
+                Job j;
+                app->doSweep (j);
+                WriteLog (lsINFO, LedgerDump)
+                    << "Scanned "
+                    << nObjs << " objects, "
+                    << nTxs << " transactions, "
+                    << nMatch << " matching ledger range";
+            }
+            if (np->getType() == hotTRANSACTION_NODE) {
+                ++nTxs;
+                auto ix = np->getIndex();
+                if (ix >= ledgerStart && ix < ledgerStart + ledgerCount) {
+                    ++nMatch;
+                    txs[ix].insert(np);
+                }
+            }
+        });
+
+    std::ostringstream fn;
+    fn << "salvaged-transactions-"
+       << ledgerStart << "-" << ledgerCount << "-" << time(NULL) << ".json";
+
+    WriteLog (lsINFO, LedgerDump)
+        << "Writing recovered " << nMatch
+        << " transactions in ledger-sequence order to "
+        << fn.str();
+
+    std::ofstream out(fn.str());
+
+    size_t nOther = 0;
+    size_t nMeta = 0;
+    size_t nNoMeta = 0;
+
+    for (auto const &pair : txs)
+    {
+        map<size_t, Json::Value> jsons;
+        for (auto const &tx : pair.second)
+        {
+            SHAMapTreeNode tn(tx->getData(), 0, snfPREFIX, tx->getHash(), true);
+            auto item = tn.peekItem();
+            if (tn.getType() == SHAMapTreeNode::tnTRANSACTION_NM)
+            {
+                SerializerIterator sit (tn.peekItem()->peekSerializer());
+                SerializedTransaction stx(sit);
+                jsons[jsons.size()] = stx.getJson(0);
+                ++nNoMeta;
+            }
+            else if (tn.getType() == SHAMapTreeNode::tnTRANSACTION_MD)
+            {
+                SerializerIterator sit (item->peekSerializer ());
+                Serializer sTxn (sit.getVL ());
+                SerializerIterator tsit (sTxn);
+                SerializedTransaction txn (tsit);
+                TransactionMetaSet meta (item->getTag (), pair.first, sit.getVL ());
+                jsons[meta.getIndex()] = txn.getJson(0);
+                ++nMeta;
+            }
+            else
+            {
+                ++nOther;
+            }
+        }
+        for (auto const &js : jsons) {
+            out << js.second;
+        }
+    }
+    WriteLog (lsINFO, LedgerDump)
+        << "Wrote "
+        << nNoMeta << " non-metadata txns, "
+        << nMeta << " metadata txns, to "
+        << fn.str() << "; skipped "
+        << nOther << " other txn nodes (inner/error/other)";
+}
+
 } // ripple
