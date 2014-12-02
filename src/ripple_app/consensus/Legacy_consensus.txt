@@ -127,14 +127,10 @@ on messages it gets from the network.
 
 The local instance will change its close time towards a larger majority
 subset: it will snap to the largest group if possible. A group is
-considered "valid" if it represents more than 50% of the peers, then
-evolves to up to 95% if consensus is stuck (see AV_INIT_CONSENSUS_PCT).
+considered "valid" if it represents more than 30% of the peers, then
+evolves to up to 51% if consensus is stuck (see AV_INIT_CONSENSUS_PCT).
 To consider that consensus is met on the close time the percentage has to
-be higher than AV_CT_CONSENSUS_PCT and the group has to be valid.
-
-!!!!!!!! Open: it seems that we can be in situations where 80% of the peers
-         agree yet we don't consider this consensus because of this notion
-         of validity.
+be higher than AV_CT_CONSENSUS_PCT (75%) and the group has to be valid.
 
 3.3.2 Declaring consensus
 

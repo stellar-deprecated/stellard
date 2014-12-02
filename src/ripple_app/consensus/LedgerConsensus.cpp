@@ -1558,13 +1558,13 @@ private:
         int neededWeight;
 
         if (mClosePercent < AV_MID_CONSENSUS_TIME)
-            neededWeight = AV_INIT_CONSENSUS_PCT;
+            neededWeight = AV_INIT_CT_CONSENSUS_PCT;
         else if (mClosePercent < AV_LATE_CONSENSUS_TIME)
-            neededWeight = AV_MID_CONSENSUS_PCT;
+            neededWeight = AV_MID_CT_CONSENSUS_PCT;
         else if (mClosePercent < AV_STUCK_CONSENSUS_TIME)
-            neededWeight = AV_LATE_CONSENSUS_PCT;
+            neededWeight = AV_LATE_CT_CONSENSUS_PCT;
         else
-            neededWeight = AV_STUCK_CONSENSUS_PCT;
+            neededWeight = AV_STUCK_CT_CONSENSUS_PCT;
 
         std::uint32_t closeTime = 0;
         mHaveCloseTimeConsensus = false;
