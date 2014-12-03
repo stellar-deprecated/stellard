@@ -444,7 +444,6 @@ LedgerDump::salvageTransactions (int ledgerStart, int ledgerCount)
 {
     std::unique_ptr <Application> app (make_Application ());
     app->setup ();
-    auto &lm = app->getLedgerMaster ();
     WriteLog (lsINFO, LedgerDump)
         << "Scanning DB for " << ledgerCount
         << " ledgers worth of transactions, starting from " << ledgerStart;
@@ -502,8 +501,11 @@ LedgerDump::salvageTransactions (int ledgerStart, int ledgerCount)
             if (tn.getType() == SHAMapTreeNode::tnTRANSACTION_NM)
             {
                 SerializerIterator sit (tn.peekItem()->peekSerializer());
-                SerializedTransaction stx(sit);
-                jsons[jsons.size()] = stx.getJson(0);
+                SerializedTransaction txn(sit);
+                Json::Value j;
+                j["tx_json"] = txn.getJson (0);
+                j["tx_blob"] = strHex (txn.getSerializer ().peekData ());
+                jsons[jsons.size()] = j;
                 ++nNoMeta;
             }
             else if (tn.getType() == SHAMapTreeNode::tnTRANSACTION_MD)
@@ -513,7 +515,10 @@ LedgerDump::salvageTransactions (int ledgerStart, int ledgerCount)
                 SerializerIterator tsit (sTxn);
                 SerializedTransaction txn (tsit);
                 TransactionMetaSet meta (item->getTag (), pair.first, sit.getVL ());
-                jsons[meta.getIndex()] = txn.getJson(0);
+                Json::Value j;
+                j["tx_json"] = txn.getJson (0);
+                j["tx_blob"] = strHex (txn.getSerializer ().peekData ());
+                jsons[meta.getIndex()] = j;
                 ++nMeta;
             }
             else
