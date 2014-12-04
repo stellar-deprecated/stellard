@@ -584,7 +584,7 @@ public:
             ->peekTransactionMap ()->getHash ().isNonZero ();
         int proposersClosed = mPeerPositions.size ();
         int proposersValidated 
-            = getApp().getValidations ().getTrustedValidationCount
+            = getApp().getValidations ().getNodesAfter
             (mPrevLedgerHash);
 
         // This ledger is open. This computes how long since last ledger closed
@@ -623,10 +623,22 @@ public:
     */
     void stateEstablish ()
     {
-
         // Give everyone a chance to take an initial position
-		if(mCurrentMSeconds < LEDGER_MIN_CONSENSUS_TIME)
-            return;
+        if(mCurrentMSeconds <= LEDGER_MIN_CONSENSUS_TIME)
+        {
+            int currentValidations = getApp().getValidations ()
+                .getNodesAfter (mPrevLedgerHash);
+
+            // if we have not fallen too much behind, we stand our initial position
+            if (((currentValidations * 100) / (mPreviousProposers + 1)) <= 60)
+            {
+                // (re)send our position to the network
+                if (mProposing)
+                    propose ();
+                return;
+            }
+            // otherwise, establish consensus with the rest of the proposers
+        }
 
         updateOurPositions ();
 
@@ -1406,9 +1418,6 @@ private:
                 }
             }
         }
-
-        if (mProposing)
-            propose ();
     }
 
     // For a given number of participants and required percent
