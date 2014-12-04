@@ -1704,6 +1704,8 @@ Json::Value NetworkOPsImp::getServerInfo (bool human, bool admin)
 
     info [jss::build_version] = BuildInfo::getVersionString ();
 
+    info [jss::extended_build_version] = BuildInfo::getFullVersionString ();
+
     info [jss::server_state] = strOperatingMode ();
 
     if (mNeedNetworkLedger)

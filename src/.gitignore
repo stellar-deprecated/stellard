@@ -1,2 +1,6 @@
 # boost subtree
 /boost
+
+#generated automatically
+
+BuildSignature.h
