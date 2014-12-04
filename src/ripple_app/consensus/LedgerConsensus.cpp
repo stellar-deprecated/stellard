@@ -261,7 +261,7 @@ public:
                 WriteLog (lsDEBUG, LedgerConsensus) 
                     << "Map " << hash << " is our current";
                 currentMap = currentMap->snapShot (false);
-                mapComplete (hash, currentMap, false);
+                mapCompleteInternal (hash, currentMap, false);
                 return currentMap;
             }
         }
@@ -276,7 +276,7 @@ public:
                 {
                     SHAMap::pointer empty = boost::make_shared<SHAMap> (
                         smtTRANSACTION, std::ref (getApp().getFullBelowCache()));
-                    mapComplete (hash, empty, false);
+                    mapCompleteInternal (hash, empty, false);
                     return empty;
                 }
 
@@ -291,6 +291,21 @@ public:
     /** We have a complete transaction set, typically acquired from the network
     */
     void mapComplete (uint256 const& hash, SHAMap::ref map, bool acquired)
+    {
+        try
+        {
+            mapCompleteInternal (hash, map, acquired);
+        }
+        catch (SHAMapMissingNode const& mn)
+        {
+            leaveConsensus();
+            WriteLog (lsERROR, LedgerConsensus) <<
+                "Missind node processing complete map " << mn;
+            throw;
+        }
+    }
+
+    void mapCompleteInternal (uint256 const& hash, SHAMap::ref map, bool acquired)
     {
         CondLog (acquired, lsINFO, LedgerConsensus) 
             << "We have acquired TXS " << hash;
@@ -534,10 +549,22 @@ public:
                                mPreviousLedger->getLedgerSeq () + 1);
     }
 
-
-
-
     void timerEntry ()
+    {
+        try
+        {
+           doTimer();
+        }
+        catch (SHAMapMissingNode const& mn)
+        {
+            leaveConsensus ();
+            WriteLog (lsERROR, LedgerConsensus) <<
+               "Missing node during consensus process " << mn;
+            throw;
+        }
+    }
+
+    void doTimer ()
     {
         if ((mState != lcsFINISHED) && (mState != lcsACCEPTED))
             checkLCL ();
@@ -1259,6 +1286,23 @@ private:
         }
     }
     
+    /** 
+      Revoke our outstanding proposal, if any, and
+      cease proposing at least until this round ends
+    */
+    void leaveConsensus ()
+    {
+        if (mProposing)
+        {
+            if (mOurPosition && ! mOurPosition->isBowOut ())
+            {
+                mOurPosition->bowOut();
+                propose();
+	    }
+            mProposing = false;
+        }
+    }
+
     /** Make and send a proposal
     */
     void propose ()
@@ -1367,7 +1411,7 @@ private:
 
         uint256 txSet = initialSet->getHash ();
         WriteLog (lsINFO, LedgerConsensus) << "initial position " << txSet;
-        mapComplete (txSet, initialSet, false);
+        mapCompleteInternal (txSet, initialSet, false);
 
         if (mValidating)
         {
@@ -1585,7 +1629,7 @@ private:
                 if (mProposing)
                     propose ();
 
-                mapComplete (newHash, ourPosition, false);
+                mapCompleteInternal (newHash, ourPosition, false);
             }
         }
     }
