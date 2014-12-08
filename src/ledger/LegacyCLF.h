@@ -17,6 +17,8 @@ namespace stellar
 
     public:
         static CanonicalLedgerForm::pointer load(LedgerMaster *ledgerMaster, uint256 ledgerHash);
+        static ripple::Ledger::pointer loadLegacyLedger(LedgerMaster *ledgerMaster, bool lastClosed);
+        static void saveLedgerForImport(LedgerMaster *ledgerMaster, CanonicalLedgerForm::pointer ledgerToImport);
 
         LegacyCLF(LedgerMaster *ledgerMaster);
         LegacyCLF(LedgerMaster *ledgerMaster, ripple::Ledger::pointer ledger);

@@ -12,6 +12,8 @@ namespace stellar
 {
     LedgerMaster::pointer gLedgerMaster;
 
+    static const int kBatchSize = 100000;
+
     LedgerMaster::LedgerMaster() : mCurrentDB(getApp().getWorkingLedgerDB())
     {
         mCaughtUp = false;
@@ -133,9 +135,31 @@ namespace stellar
                 needreset = false;
             }
         }
+        // ensure that we complete import now
+        ripple::Ledger::pointer toImport = LegacyCLF::loadLegacyLedger(this, false);
+        if (toImport && toImport->getHash().isNonZero() &&
+            toImport->getHash() != mLastLedgerHash)
+        {
+            WriteLog(ripple::lsINFO, ripple::Ledger) << "Store at " <<
+                mLastLedgerHash << " but import marked for " << toImport->getHash();
+
+            if (!ensureSync(toImport, false))
+            {
+                // not a fatal error, probably will have to download more nodes
+                WriteLog(ripple::lsERROR, ripple::Ledger) << "Import failed";
+            }
+        }
+        
         if (needreset) {
             reset();
         }
+    }
+
+    void LedgerMaster::resetHeartbeat()
+    {
+        Application& app(getApp());
+        LoadManager& mgr(app.getLoadManager());
+        mgr.resetDeadlockDetector();
     }
 
     CanonicalLedgerForm::pointer LedgerMaster::catchUp(CanonicalLedgerForm::pointer updatedCurrentCLF)
@@ -145,6 +169,10 @@ namespace stellar
         bool needFull = false;
 
         WriteLog(ripple::lsINFO, ripple::Ledger) << "catching up from " << mCurrentCLF->getHash() << " to " << updatedCurrentCLF->getHash();
+
+        LegacyCLF::saveLedgerForImport(this, updatedCurrentCLF);
+
+        resetHeartbeat();
 
         if (mCurrentCLF->getHash().isZero())
         {
@@ -163,20 +191,33 @@ namespace stellar
                 WriteLog(ripple::lsWARNING, ripple::Ledger) << "Could not compute delta " << e.what();
                 needFull = true;
             }
+            resetHeartbeat();
         }
 
         if (needFull){
-            return importLedgerState(updatedCurrentCLF->getHash());
+            CanonicalLedgerForm::pointer res = importLedgerState(updatedCurrentCLF->getHash());
+            if (res)
+            {
+                // clear ledger to import on success
+                mCurrentDB.setState(LedgerDatabase::kLedgerToImport, "");
+            }
+            return res;
         }
 
         // incremental update
 
         LedgerDatabase::ScopedTransaction tx(mCurrentDB);
 
+        int counter = 0, totalImports = 0;
+
+        int start = time(nullptr);
+
         for(SHAMap::Delta::value_type &it: delta)
         {
             SHAMapItem::pointer &newItem = it.second.first;
             SHAMapItem::pointer &oldItem = it.second.second;
+
+            totalImports++;
 
             if (newItem)
             {
@@ -184,11 +225,11 @@ namespace stellar
                 LedgerEntry::pointer entry = LedgerEntry::makeEntry(newEntry);
 
                 if (oldItem)
-                {	// SLE updated
+                {   // SLE updated
                     if (entry) entry->storeChange();
                 }
                 else
-                {	// SLE added
+                {   // SLE added
                     if (entry) entry->storeAdd();
                 }
             }
@@ -199,8 +240,26 @@ namespace stellar
                 LedgerEntry::pointer entry = LedgerEntry::makeEntry(oldEntry);
                 if (entry) entry->storeDelete();
             }
+
+            if (++counter >= kBatchSize)
+            {
+                tx.endTransaction(true);
+                tx.beginTransaction(this->mCurrentDB);
+
+                int elapsed = time(nullptr) - start;
+                int rate = totalImports / (elapsed ? elapsed : 1);
+                WriteLog(ripple::lsINFO, ripple::Ledger) << "Imported " <<
+                    totalImports << " items @" << rate;
+
+                resetHeartbeat();
+                counter = 0;
+            }
         }
         updateDBFromLedger(updatedCurrentCLF);
+
+        // clear ledger to import on success
+        mCurrentDB.setState(LedgerDatabase::kLedgerToImport, "");
+
         tx.endTransaction(true);
 
         setLastClosedLedger(updatedCurrentCLF);
@@ -238,8 +297,6 @@ namespace stellar
                 // import all anew
                 newLedger->getLegacyLedger()->visitStateItems(
                     [&counter, &totalImports, &tx, this, start](SLE::ref curEntry) {
-                        static const int kProgressCount = 100000;
-
                         totalImports++;
 
                         LedgerEntry::pointer entry = LedgerEntry::makeEntry(curEntry);
@@ -247,7 +304,7 @@ namespace stellar
                             entry->storeAdd();
                         }
 
-                        if (++counter >= kProgressCount)
+                        if (++counter >= kBatchSize)
                         {
                             tx.endTransaction(true);
                             tx.beginTransaction(this->mCurrentDB);
@@ -259,9 +316,7 @@ namespace stellar
                             counter = 0;
 
                             // reset the timer with every batch
-                            Application& app(getApp());
-                            LoadManager& mgr(app.getLoadManager());
-                            mgr.resetDeadlockDetector();
+                            this->resetHeartbeat();
                         }
                 });
 

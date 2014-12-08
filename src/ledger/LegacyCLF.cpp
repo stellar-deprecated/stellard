@@ -22,18 +22,17 @@ namespace stellar
     {
     }
 
-    CanonicalLedgerForm::pointer LegacyCLF::load(LedgerMaster *ledgerMaster, uint256 ledgerHash)
+    ripple::Ledger::pointer LegacyCLF::loadLegacyLedger(LedgerMaster *ledgerMaster, bool lastClosed)
     {
-        ripple::Ledger::pointer baseLedger;
-        CanonicalLedgerForm::pointer res;
-
+        ripple::Ledger::pointer res;
         // retrieve blob from SQL DB
-        string s = ledgerMaster->getLedgerDatabase().getState(LedgerDatabase::kLastClosedLedgerContent);
+        string s = ledgerMaster->getLedgerDatabase().getState(lastClosed?
+            LedgerDatabase::kLastClosedLedgerContent : LedgerDatabase::kLedgerToImport);
 
         if (!s.empty())
         {
             ripple::Ledger::pointer ledger = boost::make_shared<ripple::Ledger>(s, true);
-            if (ledger && ledger->getHash() == ledgerHash) {
+            if (ledger) {
                 if (ledger->loadMaps(true)) {
                     ledger->setClosed();
                     ledger->setImmutable();
@@ -45,12 +44,29 @@ namespace stellar
 
                     ledger->setFull();
 
-                    baseLedger = ledger;
+                    res = ledger;
                 }
             }
         }
+        return res;
+    }
 
-        if (!baseLedger) {
+    void LegacyCLF::saveLedgerForImport(LedgerMaster *ledgerMaster, CanonicalLedgerForm::pointer ledgerToImport)
+    {
+        Serializer s(128);
+        s.add32(ripple::HashPrefix::ledgerMaster);
+        ledgerToImport->getLegacyLedger()->addRaw(s);
+        ledgerMaster->getLedgerDatabase().setState(LedgerDatabase::kLedgerToImport, s.getString());
+    }
+
+    CanonicalLedgerForm::pointer LegacyCLF::load(LedgerMaster *ledgerMaster, uint256 ledgerHash)
+    {
+        ripple::Ledger::pointer baseLedger;
+        CanonicalLedgerForm::pointer res;
+
+        baseLedger = loadLegacyLedger(ledgerMaster, true);
+
+        if (!baseLedger || baseLedger->getHash() != ledgerHash) {
             WriteLog(ripple::lsWARNING, ripple::Ledger) << "could not construct ledger from ledger database, attempting to load from node store";
             baseLedger = getApp().getLedgerMaster().getLedgerByHash(ledgerHash);
         }

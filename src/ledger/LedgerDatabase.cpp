@@ -46,7 +46,7 @@ namespace stellar
     }
 
     const char *LedgerDatabase::getStoreStateName(StoreStateName n) {
-        static const char *mapping[kLastEntry] = { "lastClosedLedger", "lastClosedLedgerContent" };
+        static const char *mapping[kLastEntry] = { "lastClosedLedger", "lastClosedLedgerContent", "ledgerToImport" };
         if (n < 0 || n >= kLastEntry) {
             throw out_of_range("unknown entry");
         }
