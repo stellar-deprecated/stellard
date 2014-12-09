@@ -4,7 +4,7 @@
 This is the repository for Stellar's `stellard`, reference P2P server.
 
 ###Build instructions:
-* https://wiki.stellar.org/Building_Stellard
+* https://github.com/stellar/stellard/blob/master/doc/building-stellard.md
 
 ### Vagrant (your very own testnet)
 
@@ -46,6 +46,6 @@ mocha test/*-test.js
 Stellar is open source and permissively licensed under the ISC license. See the
 LICENSE file for more details.
 
-###For more information:
+### For more information:
 * https://www.stellar.org
-* https://wiki.stellar.org
+* https://www.stellar.org/developers/
