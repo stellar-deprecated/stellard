@@ -129,6 +129,8 @@ Config::Config ()
     NETWORK_QUORUM          = 1;
     VALIDATION_QUORUM       = 1;    // Only need one node to vouch
 
+    CONSENSUS_THRESHOLD     = 80;   // 80% of the unl should be in consensus
+
     FEE_ACCOUNT_RESERVE     = DEFAULT_FEE_ACCOUNT_RESERVE;
     FEE_OWNER_RESERVE       = DEFAULT_FEE_OWNER_RESERVE;
     FEE_NICKNAME_CREATE     = DEFAULT_FEE_NICKNAME_CREATE;
@@ -543,6 +545,9 @@ void Config::load ()
 
             if (SectionSingleB (secConfig, SECTION_VALIDATION_QUORUM, strTemp))
                 VALIDATION_QUORUM   = std::max (0, beast::lexicalCastThrow <int> (strTemp));
+
+            if (SectionSingleB(secConfig, SECTION_CONSENSUS_THRESHOLD, strTemp))
+                CONSENSUS_THRESHOLD = beast::lexicalCastThrow <int>(strTemp);
 
 			if(SectionSingleB(secConfig, SECTION_DONT_WALK_LOADED_LEDGER, strTemp))
 				DONT_WALK_LOADED_LEDGER = beast::lexicalCastThrow <bool>(strTemp);

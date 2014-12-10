@@ -84,17 +84,16 @@ public:
 
     // Returns the number of seconds the ledger was or should be open
     // Call when a consensus is reached and when any transaction is relayed to be added
-    static bool shouldClose (
-        bool anyTransactions,
-        int previousProposers,      int proposersClosed,    int proposerersValidated,
-        int previousMSeconds,       int currentMSeconds,    int openMSeconds,
+    static bool shouldClose(
+        bool anyTransactions, int targetProposers,
+        int proposersClosed, int sinceLastCloseMSeconds, int currentMSeconds,
         int idleInterval);
 
     static bool haveConsensus (
-        int previousProposers,      int currentProposers,
-        int currentAgree,           int currentClosed,
-        int previousAgreeTime,      int currentAgreeTime,
-        bool forReal,               bool& failed);
+        int previousProposers, int currentProposers,
+        int currentAgree,      int previousAgreeTime,
+        int currentAgreeTime,  bool forReal,
+        bool& failed);
 
     static int getNextLedgerTimeResolution (int previousResolution, bool previousAgree, int ledgerSeq);
 };
