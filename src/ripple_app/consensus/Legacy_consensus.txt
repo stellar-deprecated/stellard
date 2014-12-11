@@ -165,12 +165,35 @@ Actual code is running in the background at that point.
 LedgerConsensus::accept() applies the result of consensus to the local
 instance.
 
-At the end of accept() the state is set to lcsACCEPTED and the close time
-offset is updated (bias compared to the network, so that there is less
-contention for close time next time around).
+It also creates a new open ledger and propagates transaction that should be included
+in the next ledger.
+
+At the end of accept() the state is set to lcsBUILT_LEDGER.
+
+note: as this code runs in the background, the main timer may pick up on the
+state change any time between 0 and LEDGER_GRANULARITY seconds.
+
+3.5 lcsBUILT_LEDGER
+
+Purpose of this state is to wait and advertise the newly built ledger.
+
+The holding period is to avoid confusing nodes that could still be in
+ESTABLISH phase about which ledger is the current ledger (and avoid triggering code
+to download the latest validated ledger).
+
+This state is a holding state that waits LEDGER_MIN_ADVERTISE_TIME (2 s) before
+proceeding at which point it advertises to the network the newly built ledger
+(including its validation if the node is a validator).
+ 
+This is also where the close time offset is updated (bias compared to the network,
+so that there is less contention for close time next time around).
 
 
-3.5 lcsACCEPTED
+
+The node then moves to the lcsACCEPTED state
+
+
+3.6 lcsACCEPTED
 
 Destroys consensus object.
 

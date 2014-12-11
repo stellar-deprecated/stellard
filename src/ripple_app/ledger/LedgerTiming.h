@@ -37,8 +37,11 @@ namespace ripple {
 // The number of milliseconds we wait minimum to ensure participation
 #   define LEDGER_MIN_CONSENSUS_TIME     3000
 
-// The number of milliseconds we wait minimum to ensure others have computed the LCL
+// Buffer time in milliseconds that we wait to ensure nodes are entering consensus
 #   define LEDGER_MIN_CLOSE         2000
+
+// The number of milliseconds we wait minimum to ensure nodes have computed the LCL
+#   define LEDGER_MIN_ADVERTISE_TIME  2000
 
 // Initial resolution of ledger close time
 #   define LEDGER_TIME_ACCURACY     30
