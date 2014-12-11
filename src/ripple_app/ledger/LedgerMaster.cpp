@@ -27,6 +27,8 @@ namespace ripple {
 
 SETUP_LOG (LedgerMaster)
 
+static bool hackforinit = true;
+
 class LedgerCleanerLog;
 template <> char const* LogPartition::getPartitionName <LedgerCleanerLog> () { return "LedgerCleaner"; }
 
@@ -843,6 +845,12 @@ public:
 
     void advanceThread()
     {
+        if (hackforinit)
+        {
+            hackforinit = false;
+            beast::Thread::sleep(5 * 1000);
+        }
+
         ScopedLockType sl (m_mutex);
         assert (!mValidLedger.empty () && mAdvanceThread);
 
