@@ -86,7 +86,7 @@ void InboundLedger::init (ScopedLockType& collectionLock)
 
     if (!tryLocal ())
     {
-        addPeers ();
+        if(!getConfig().VALIDATION_SEED.isSet()) addPeers ();  // TEMP
         setTimer ();
 
         // For historical nodes, wait a bit since a
