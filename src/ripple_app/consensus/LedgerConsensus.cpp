@@ -41,6 +41,7 @@ class LedgerConsensusImp
                             // quorum
         lcsESTABLISH,       // Establishing consensus
         lcsFINISHED,        // We have closed on a transaction set
+        lcsBUILT_LEDGER,    // We have built a new ledger
         lcsACCEPTED,        // We have accepted/validated 
                             //  a new last closed ledger
     };
@@ -160,6 +161,10 @@ public:
 
         case lcsFINISHED:
             ret["state"] = "finished";
+            break;
+
+        case lcsBUILT_LEDGER:
+            ret["state"] = "built_ledger";
             break;
 
         case lcsACCEPTED:
@@ -462,6 +467,9 @@ public:
                 status = "Finished";
                 break;
 
+            case lcsBUILT_LEDGER:
+                status = "built_ledger";
+
             case lcsACCEPTED:
                 status = "Accepted";
                 break;
@@ -564,7 +572,7 @@ public:
     void moveToState(LCState newState)
     {
         mState = newState;
-        if (newState == lcsPRE_CLOSE || newState == lcsINITIAL_POSITION)
+        if (newState == lcsPRE_CLOSE || newState == lcsINITIAL_POSITION || newState == lcsBUILT_LEDGER)
             mConsensusStartTime = boost::posix_time::microsec_clock::universal_time();
 
         updateProgress();
@@ -580,7 +588,8 @@ public:
 
     void timerEntry ()
     {
-        if ((mState != lcsFINISHED) && (mState != lcsACCEPTED))
+        if ((mState != lcsFINISHED) && (mState != lcsBUILT_LEDGER) &&
+            (mState != lcsACCEPTED))
             checkLCL ();
 
         updateProgress();
@@ -607,10 +616,15 @@ public:
         case lcsFINISHED:
             stateFinished ();
 
+            if (mState != lcsBUILT_LEDGER) return;
+
+            // Fall through
+        case lcsBUILT_LEDGER:
+            stateBuiltLedger(true);
+
             if (mState != lcsACCEPTED) return;
 
             // Fall through
-
         case lcsACCEPTED:
             stateAccepted ();
             return;
@@ -906,6 +920,7 @@ public:
         closeLedger ();
         mCurrentMSeconds = 100;
         beginAccept (true);
+        stateBuiltLedger(false);
         endConsensus ();
         WriteLog (lsINFO, LedgerConsensus) << "Simulation complete";
     }
@@ -997,7 +1012,6 @@ private:
             WriteLog (lsDEBUG, LedgerConsensus) 
                 << "Report: NewL  = " << newLCL->getHash () 
                 << ":" << newLCL->getLedgerSeq ();
-            uint256 newLCLHash = newLCL->getHash ();
 
             bool dbcom = stellar::gLedgerMaster->commitLedgerClose(newLCL);
             if (!dbcom)
@@ -1006,43 +1020,29 @@ private:
                 return;
             }
 
-            statusChange (protocol::neACCEPTED_LEDGER, *newLCL);
-
             if (mValidating && !mConsensusFail)
             {
                 uint256 signingHash;
-                SerializedValidation::pointer v = 
+                mLastClosedLedgerValidation = 
                     boost::make_shared<SerializedValidation>
-                    (newLCLHash, getApp().getOPs ().getValidationTimeNC ()
+                    (newLCL->getHash(), getApp().getOPs ().getValidationTimeNC ()
                     , mValPublic, mProposing);
-                v->setFieldU32 (sfLedgerSequence, newLCL->getLedgerSeq ());
-                addLoad(v);
+                mLastClosedLedgerValidation->setFieldU32 (sfLedgerSequence, newLCL->getLedgerSeq ());
+                addLoad(mLastClosedLedgerValidation);
 
                 if (((newLCL->getLedgerSeq () + 1) % 256) == 0)
                 // next ledger is flag ledger   
                 {
-                    m_feeVote.doValidation (newLCL, *v);
-                    getApp().getAmendmentTable ().doValidation (newLCL, *v);
+                    m_feeVote.doValidation (newLCL, *mLastClosedLedgerValidation);
+                    getApp().getAmendmentTable ().doValidation (newLCL, *mLastClosedLedgerValidation);
                 }
 
-                v->sign (signingHash, mValPrivate);
-                v->setTrusted ();
+                mLastClosedLedgerValidation->sign (signingHash, mValPrivate);
+                mLastClosedLedgerValidation->setTrusted ();
                 // suppress it if we receive it - FIXME: wrong suppression
                 getApp().getHashRouter ().addSuppression (signingHash);
-                getApp().getValidations ().addValidation (v, "local");
-                getApp().getOPs ().setLastValidation (v);
-                Blob validation = v->getSigned ();
-                protocol::TMValidation val;
-                val.set_validation (&validation[0], validation.size ());
-                getApp ().overlay ().foreach (send_always (
-                    boost::make_shared <Message> (
-                        val, protocol::mtVALIDATION)));
-                WriteLog (lsINFO, LedgerConsensus) 
-                    << "CNF Val " << newLCLHash;
+                getApp().getValidations ().addValidation (mLastClosedLedgerValidation, "local");
             }
-            else
-                WriteLog (lsINFO, LedgerConsensus) 
-                    << "CNF newLCL " << newLCLHash;
 
             // See if we can accept a ledger as fully-validated
             getApp().getLedgerMaster().consensusBuilt (newLCL);
@@ -1051,7 +1051,6 @@ private:
                 (true, boost::ref (*newLCL));
             LedgerMaster::ScopedLockType sl 
                 (getApp().getLedgerMaster ().peekMutex ());
-
 
             {
                 Ledger::pointer currentLedger = getApp().getLedgerMaster().getCurrentLedger();
@@ -1125,45 +1124,81 @@ private:
                 }
             }
 
-
             getApp().getLedgerMaster ().pushLedger (newLCL, newOL);
-            mNewLedgerHash = newLCL->getHash ();
-            moveToState(lcsACCEPTED);
-            sl.unlock ();
 
-            if (mValidating)
-            {
-                // see how close our close time is to other node's
-                //  close time reports
-                WriteLog (lsINFO, LedgerConsensus) 
-                    << "We closed at " 
-                    << beast::lexicalCastThrow <std::string> (mCloseTime);
-                std::uint64_t closeTotal = mCloseTime;
-                int closeCount = 1;
+            mNewLastClosedLedger = newLCL;
 
-                for (std::map<std::uint32_t, int>::iterator it = mCloseTimes.begin ()
-                    , end = mCloseTimes.end (); it != end; ++it)
-                {
-                    // FIXME: Use median, not average
-                    WriteLog (lsINFO, LedgerConsensus) 
-                        << beast::lexicalCastThrow <std::string> (it->second) 
-                        << " time votes for " 
-                        << beast::lexicalCastThrow <std::string> (it->first);
-                    closeCount += it->second;
-                    closeTotal += static_cast<std::uint64_t> 
-                        (it->first) * static_cast<std::uint64_t> (it->second);
-                }
-
-                closeTotal += (closeCount / 2);
-                closeTotal /= closeCount;
-                int offset = static_cast<int> (closeTotal) 
-                    - static_cast<int> (mCloseTime);
-                WriteLog (lsINFO, LedgerConsensus) 
-                    << "Our close offset is estimated at " 
-                    << offset << " (" << closeCount << ")";
-                getApp().getOPs ().closeTimeOffset (offset);
-            }
+            moveToState(lcsBUILT_LEDGER);
         }
+    }
+
+    void stateBuiltLedger(bool waitMinTime)
+    {
+        if (waitMinTime && mCurrentMSeconds < LEDGER_MIN_ADVERTISE_TIME)
+        {
+            return;
+        }
+
+        Application::ScopedLockType lock 
+                (getApp ().getMasterLock ());
+
+        LedgerMaster::ScopedLockType sl(getApp().getLedgerMaster ().peekMutex ());
+
+        uint256 newLCLHash = mNewLastClosedLedger->getHash ();
+        statusChange (protocol::neACCEPTED_LEDGER, *mNewLastClosedLedger);
+
+        if (mValidating && !mConsensusFail)
+        {
+            getApp().getOPs ().setLastValidation (mLastClosedLedgerValidation);
+            Blob validation = mLastClosedLedgerValidation->getSigned ();
+            protocol::TMValidation val;
+            val.set_validation (&validation[0], validation.size ());
+            getApp ().overlay ().foreach (send_always (
+                boost::make_shared <Message> (
+                    val, protocol::mtVALIDATION)));
+            WriteLog (lsINFO, LedgerConsensus) 
+                << "CNF Val " << newLCLHash;
+        }
+        else
+            WriteLog (lsINFO, LedgerConsensus) 
+                << "CNF newLCL " << newLCLHash;
+
+        if (mValidating)
+        {
+            // see how close our close time is to other node's
+            //  close time reports
+            WriteLog (lsINFO, LedgerConsensus) 
+                << "We closed at " 
+                << beast::lexicalCastThrow <std::string> (mCloseTime);
+            std::uint64_t closeTotal = mCloseTime;
+            int closeCount = 1;
+
+            for (std::map<std::uint32_t, int>::iterator it = mCloseTimes.begin ()
+                , end = mCloseTimes.end (); it != end; ++it)
+            {
+                // FIXME: Use median, not average
+                WriteLog (lsINFO, LedgerConsensus) 
+                    << beast::lexicalCastThrow <std::string> (it->second) 
+                    << " time votes for " 
+                    << beast::lexicalCastThrow <std::string> (it->first);
+                closeCount += it->second;
+                closeTotal += static_cast<std::uint64_t> 
+                    (it->first) * static_cast<std::uint64_t> (it->second);
+            }
+
+            closeTotal += (closeCount / 2);
+            closeTotal /= closeCount;
+            int offset = static_cast<int> (closeTotal) 
+                - static_cast<int> (mCloseTime);
+            WriteLog (lsINFO, LedgerConsensus) 
+                << "Our close offset is estimated at " 
+                << offset << " (" << closeCount << ")";
+            getApp().getOPs ().closeTimeOffset (offset);
+        }
+
+        mNewLedgerHash = newLCLHash;
+
+        moveToState(lcsACCEPTED);
     }
 
     /** Begin acquiring a transaction set
@@ -1871,6 +1906,10 @@ private:
 
     // nodes that have bowed out of this consensus process
     boost::unordered_set<uint160> mDeadNodes;
+
+    // used to hold new ledger information built at the end of consensus
+    Ledger::pointer mNewLastClosedLedger;
+    SerializedValidation::pointer mLastClosedLedgerValidation;
 };
 
 //------------------------------------------------------------------------------
