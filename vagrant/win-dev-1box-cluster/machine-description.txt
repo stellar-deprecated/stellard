@@ -1,0 +1,29 @@
+single box 0
+used to bootstrap network (quorum is 0)
+
+validation quorum, consensus threshold: 1 peer
+1
+2
+
+validation quorum, consensus threshold: 2 peers
+3
+
+validation quorum 2, consensus threshold: 3 peers
+4
+5
+
+
+standing up the test network
+
+start with (box 0)
+start up (box 1)
+start up (box 2)
+
+-- stop (box 0)
+
+start up (box 3)
+start up (box 4)
+start up (box 5)
+
+-- optional (stop 1, 2)
+

@@ -77,6 +77,8 @@ public:
     virtual Json::Value getUnlJson () = 0;
 
     virtual int iSourceScore (ValidatorSource vsWhy) = 0;
+
+    virtual int getUnlSize() = 0;
 };
 
 } // ripple
