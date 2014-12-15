@@ -149,6 +149,23 @@ TER AccountSetTransactor::doApply ()
 
     }
 
+    if(mTxn.isFieldPresent(sfSetAuthKey))
+    {
+        RippleAddress authKey = mTxn.getFieldAccount(sfSetAuthKey);
+
+        if(!authKey.isSet()){
+            m_journal.debug << "AccountSet: Removing sfSetAuthKey.";
+
+            mTxnAccount->makeFieldAbsent(sfSetAuthKey);
+        } else
+        {
+            m_journal.debug << "AccountSet: Set sfSetAuthKey.";
+
+            mTxnAccount->setFieldAccount(sfSetAuthKey, authKey);
+        }
+
+    }
+
     
 
     //

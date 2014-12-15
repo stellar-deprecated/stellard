@@ -33,6 +33,7 @@ LedgerFormats::LedgerFormats ()
             << SOElement (sfTransferRate,        SOE_OPTIONAL)
             << SOElement (sfDomain,              SOE_OPTIONAL)
             << SOElement (sfInflationDest,       SOE_OPTIONAL)
+            << SOElement (sfSetAuthKey,          SOE_OPTIONAL)
             ;
 
     add ("Contract", ltCONTRACT)
