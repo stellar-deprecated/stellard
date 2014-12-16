@@ -31,6 +31,20 @@ class LedgerConsensusImp
     , public boost::enable_shared_from_this <LedgerConsensusImp>
     , public CountedObject <LedgerConsensusImp>
 {
+
+    // VFALCO TODO Rename these to look pretty
+    enum LCState
+    {
+        lcsPRE_CLOSE,       // We haven't closed our ledger yet, 
+                            //  but others might have
+        lcsINITIAL_POSITION,// We took our initial position, and are waiting for
+                            // quorum
+        lcsESTABLISH,       // Establishing consensus
+        lcsFINISHED,        // We have closed on a transaction set
+        lcsACCEPTED,        // We have accepted/validated 
+                            //  a new last closed ledger
+    };
+
 public:
 
     static char const* getCountedObjectName () { return "LedgerConsensus"; }
@@ -41,25 +55,33 @@ public:
         : m_clock (clock)
         , m_localTX (localtx)
         , m_feeVote (feeVote)
-        , mState (lcsPRE_CLOSE)
         , mCloseTime (closeTime)
         , mPrevLedgerHash (prevLCLHash)
         , mPreviousLedger (previousLedger)
         , mValPublic (getConfig ().VALIDATION_PUB)
         , mValPrivate (getConfig ().VALIDATION_PRIV)
         , mConsensusFail (false)
-        , mCurrentMSeconds (0)
-        , mClosePercent (0)
         , mHaveCloseTimeConsensus (false)
-        , mConsensusStartTime 
-            (boost::posix_time::microsec_clock::universal_time ())
     {
         WriteLog (lsDEBUG, LedgerConsensus) << "Creating consensus object";
         WriteLog (lsDEBUG, LedgerConsensus) 
             << "LCL:" << previousLedger->getHash () << ", ct=" << closeTime;
-        mPreviousProposers = getApp().getOPs ().getPreviousProposers ();
+
         mPreviousMSeconds = getApp().getOPs ().getPreviousConvergeTime ();
         assert (mPreviousMSeconds);
+
+        moveToState(lcsPRE_CLOSE);
+
+        if (getConfig().CONSENSUS_THRESHOLD > 0)
+        {
+            mTargetProposers = (getApp().getUNL().getUnlSize() *
+                getConfig().CONSENSUS_THRESHOLD) / 100;
+        }
+        else
+        {
+            mTargetProposers = -getConfig().CONSENSUS_THRESHOLD;
+        }
+        mTargetProposers++; // count local instance in target
 
         mCloseResolution = ContinuousLedgerTiming::getNextLedgerTimeResolution (
             mPreviousLedger->getCloseResolution (), 
@@ -128,6 +150,9 @@ public:
         case lcsPRE_CLOSE:
             ret["state"] = "open";
             break;
+        case lcsINITIAL_POSITION:
+            ret["state"] = "initial";
+            break;
 
         case lcsESTABLISH:
             ret["state"] = "consensus";
@@ -157,7 +182,7 @@ public:
             ret["close_percent"] = mClosePercent;
             ret["close_resolution"] = mCloseResolution;
             ret["have_time_consensus"] = mHaveCloseTimeConsensus;
-            ret["previous_proposers"] = mPreviousProposers;
+            ret["target_proposers"] = mTargetProposers;
             ret["previous_mseconds"] = mPreviousMSeconds;
 
             if (!mPeerPositions.empty ())
@@ -426,7 +451,9 @@ public:
             case lcsPRE_CLOSE:
                 status = "PreClose";
                 break;
-
+            case lcsINITIAL_POSITION:
+                status = "Initial";
+                break;
             case lcsESTABLISH:
                 status = "Establish";
                 break;
@@ -533,25 +560,42 @@ public:
                                mPreviousLedger->getCloseResolution (), mPreviousLedger->getCloseAgree (),
                                mPreviousLedger->getLedgerSeq () + 1);
     }
+    
+    void moveToState(LCState newState)
+    {
+        mState = newState;
+        if (newState == lcsPRE_CLOSE || newState == lcsINITIAL_POSITION)
+            mConsensusStartTime = boost::posix_time::microsec_clock::universal_time();
 
+        updateProgress();
+    }
 
-
+    void updateProgress()
+    {
+        mCurrentMSeconds =
+            (boost::posix_time::microsec_clock::universal_time () 
+            - mConsensusStartTime).total_milliseconds ();
+        mClosePercent = mCurrentMSeconds * 100 / mPreviousMSeconds;
+    }
 
     void timerEntry ()
     {
         if ((mState != lcsFINISHED) && (mState != lcsACCEPTED))
             checkLCL ();
 
-        mCurrentMSeconds =
-            (boost::posix_time::microsec_clock::universal_time () 
-            - mConsensusStartTime).total_milliseconds ();
-        mClosePercent = mCurrentMSeconds * 100 / mPreviousMSeconds;
+        updateProgress();
 
         switch (mState)
         {
         case lcsPRE_CLOSE:
             statePreClose ();
             return;
+        case lcsINITIAL_POSITION:
+            stateInitialPosition();
+
+            if (mState != lcsESTABLISH) return;
+
+            // Fall through
 
         case lcsESTABLISH:
             stateEstablish ();
@@ -583,9 +627,6 @@ public:
             = getApp().getLedgerMaster ().getCurrentLedger ()
             ->peekTransactionMap ()->getHash ().isNonZero ();
         int proposersClosed = mPeerPositions.size ();
-        int proposersValidated 
-            = getApp().getValidations ().getTrustedValidationCount
-            (mPrevLedgerHash);
 
         // This ledger is open. This computes how long since last ledger closed
         int sinceClose;
@@ -611,23 +652,52 @@ public:
         idleInterval = std::max (idleInterval, LEDGER_IDLE_INTERVAL);
         idleInterval = std::max (idleInterval, 2 * mPreviousLedger->getCloseResolution ());
 
-        if (ContinuousLedgerTiming::shouldClose (anyTransactions
-            , mPreviousProposers, proposersClosed, proposersValidated
-            , mPreviousMSeconds, sinceClose, mCurrentMSeconds
+        if (mHaveCorrectLCL && ContinuousLedgerTiming::shouldClose (anyTransactions
+            , mTargetProposers, proposersClosed, sinceClose, mCurrentMSeconds
             , idleInterval))
         {
             closeLedger ();
         }
     }
+
+    void stateInitialPosition()
+    {
+        bool moveToEstablish = true;
+
+        int currentProposers = mPeerPositions.size()+1; // including us
+
+        if ( currentProposers < mTargetProposers)
+        {
+            WriteLog(lsDEBUG, LedgerConsensus) 
+                << "Waiting for more proposers " << currentProposers << "/" << mTargetProposers;
+            moveToEstablish = false;
+        }
+
+        // Give proposers a chance to take an initial position
+        if(mCurrentMSeconds <= LEDGER_MIN_CONSENSUS_TIME)
+        {
+            moveToEstablish = false;
+        }
+
+        // (re)send our position to the network
+        if (mProposing)
+        {
+            propose ();
+        }
+
+        if (moveToEstablish)
+        {
+            WriteLog(lsDEBUG, LedgerConsensus) 
+                << "Entering establish with " << currentProposers << "/" << mTargetProposers;
+
+            moveToState(lcsESTABLISH);
+        }
+    }
+
     /** We are establishing a consensus
     */
     void stateEstablish ()
     {
-
-        // Give everyone a chance to take an initial position
-		if(mCurrentMSeconds < LEDGER_MIN_CONSENSUS_TIME)
-            return;
-
         updateOurPositions ();
 
         if (!mHaveCloseTimeConsensus)
@@ -640,7 +710,7 @@ public:
             WriteLog (lsINFO, LedgerConsensus) 
                 << "Converge cutoff (" << mPeerPositions.size () 
                 << " participants)";
-            mState = lcsFINISHED;
+            moveToState(lcsFINISHED);
             beginAccept (false);
         }
     }
@@ -698,16 +768,14 @@ public:
                 }
             }
         }
-        int currentValidations = getApp().getValidations ()
-            .getNodesAfter (mPrevLedgerHash);
 
         WriteLog (lsDEBUG, LedgerConsensus) 
             << "Checking for TX consensus: agree=" << agree 
             << ", disagree=" << disagree;
 
-        return ContinuousLedgerTiming::haveConsensus (mPreviousProposers, 
-            agree + disagree, agree, currentValidations
-            , mPreviousMSeconds, mCurrentMSeconds, forReal, mConsensusFail);
+        return ContinuousLedgerTiming::haveConsensus (mTargetProposers, 
+            agree + disagree, agree, mPreviousMSeconds, mCurrentMSeconds,
+            forReal, mConsensusFail);
     }
 
     /** A server has taken a new position, adjust our tracking
@@ -1060,7 +1128,7 @@ private:
 
             getApp().getLedgerMaster ().pushLedger (newLCL, newOL);
             mNewLedgerHash = newLCL->getHash ();
-            mState = lcsACCEPTED;
+            moveToState(lcsACCEPTED);
             sl.unlock ();
 
             if (mValidating)
@@ -1406,9 +1474,6 @@ private:
                 }
             }
         }
-
-        if (mProposing)
-            propose ();
     }
 
     // For a given number of participants and required percent
@@ -1661,9 +1726,7 @@ private:
     void closeLedger ()
     {
         checkOurValidation ();
-        mState = lcsESTABLISH;
-        mConsensusStartTime 
-            = boost::posix_time::microsec_clock::universal_time ();
+        moveToState(lcsINITIAL_POSITION);
         mCloseTime = getApp().getOPs ().getCloseTimeNC ();
         getApp().getOPs ().setLastCloseTime (mCloseTime);
         statusChange (protocol::neCLOSING_LEDGER, *mPreviousLedger);
@@ -1766,17 +1829,6 @@ private:
     LocalTxs& m_localTX;
     FeeVote& m_feeVote;
 
-    // VFALCO TODO Rename these to look pretty
-    enum LCState
-    {
-        lcsPRE_CLOSE,       // We haven't closed our ledger yet, 
-                            //  but others might have
-        lcsESTABLISH,       // Establishing consensus
-        lcsFINISHED,        // We have closed on a transaction set
-        lcsACCEPTED,        // We have accepted/validated 
-                            //  a new last closed ledger
-    };
-
     LCState mState;
     std::uint32_t mCloseTime;      // The wall time this ledger closed
     uint256 mPrevLedgerHash, mNewLedgerHash, mAcquiringLedger;
@@ -1789,7 +1841,10 @@ private:
     bool mHaveCloseTimeConsensus;
 
     boost::posix_time::ptime        mConsensusStartTime;
-    int                             mPreviousProposers;
+
+    // target number of proposers for this round of consensus, including this node
+    int                             mTargetProposers;
+
     int                             mPreviousMSeconds;
 
     // Convergence tracking, trusted peers indexed by hash of public key

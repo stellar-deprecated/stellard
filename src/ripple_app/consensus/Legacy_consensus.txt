@@ -18,6 +18,14 @@ Ripple's implementation allows partial network splits, aka partitions:
 
 2. General organization
 
+2.1 High level flow
+
+The local instance tries to reach consensus with nodes proposing from the UNL.
+The UNL is populated through the combination of
+  * explicit entries in the stellard config file,
+  * a "validator list" configuration file
+  * a "validation url" to reach a server that serves UNL entries
+
 Consensus is tracked by a "LedgerConsensus" object.
 
 There are two ways to initiate the creation of this object:
@@ -50,10 +58,25 @@ all states preceding (and including) lcsETABLISH. A ledger is
 considered the network ledger if it has the most validations, peers
 or the highest peer ID (evaluated in this order).
 
+Note that the current implementation tries to limit as much as possible
+forks by not closing ledgers that are not on the network ledger.
+This causes peers not on the network ledger to be sweeped by the
+"checkLCL" code until they run on the network ledger.
+
 !!!!! Open: it seems that the peerID is used as a tie breaker between
 validators, giving unfair advantage to some validators when
 tie breaking is important, such as deciding to switch over to a new
 fork.
+
+2.2 parameters influencing consensus
+
+The config option "consensus_threshold" controls how many peers must participate in the
+consensus round.
+If the value is positive, it represents a percentage of the UNL.
+If the value is negative, it represents directly (in absolute) the number of peers.
+
+Target proposers (mTargetProposers) is then simply computed as the number of peers
+that must participate in consensus plus one (for the local instance).
 
 3. Consensus states
 
@@ -73,58 +96,42 @@ signals that inform them on the overall state of the network.
 3.1.1 Conditions for moving forward from lcsPRE_CLOSE, to establishing
 consensus
 
-If the local instance didn't close for more than 600s (10m), it moves to
-lcsESTABLISH.
 
-If the local instance has a potential transaction set, it stays in the
-lcsPRE_CLOSE state if one of the following conditions is true:
+To move out of the lcsPRE_CLOSE state, the local instance must be running
+on the consensus ledger and one of the following conditions must be true:
 
-    * The instance has been in the PRE_CLOSE state for less than
-      LEDGER_MIN_CLOSE (2s) time AND PeersAhead < 50%
+    * The instance has been in the PRE_CLOSE state for more than
+      LEDGER_MIN_CLOSE (2s) time AND if no transactions are seen the time since closed
+      is greater than idle_time defined as max(15s, 2 * lastCloseResolution).
 
-    * The instance has been in the PRE_CLOSE state for less than
-      LedgerConsensus::mPreviousMSeconds AND PeersAhead < 100%
-
-PeersAhead is a percentage that represents how much of the network is ahead
-of the set of peers that the local instance is tagging along with. It is
-currently computed as the ratio "Number of peers in the lcsESTABLISH state"
-+ "number of peers that have validated the current ledger", versus "number of
-peers joined in the previous consensus".
-
-LedgerConsensus::mPreviousMSeconds is the time the local peer spent last
-time around in the "lcsESTABLISH" state.
-
-If the local instance has no position (local tx set is empty), it stays in
-the lcsPRE_CLOSE state if the time since last close time is
-less than idleInterval (computed as max(15s, 2 * lastCloseResolution) ) AND
-"number of peers in the lcsETABLISH state" is more than 25% of "number of
-peers joined in the previous consensus".  Open: this doesn't seem to make
-much sense, special casing no tx set seems like a bad move as it favors
-entering consensus without any peers (and actually reducing the chances of
-catching up faster).
+    * The instance detected that over 75% of peers (based on target proposers) moved
+      to lcsINITIAL_POSITION or lcsESTABLISH already (peers that advertised a position).
 
 Logic for these judgments is mostly in ContinuousLedgerTiming::shouldClose.
 
-"close resolution" is a metric updated to round close time (ranges is
-10-120s, values defined LedgerTimeResolution )
-
-!!!!!!!! Open: being in consensus with few hosts (let's say less than 75% of
-         the previous), doesn't seem to make sense as the tx set etc are
-         going to be wrong, consensus is probably better off waiting longer
-         (catching up to peers that are going to turn around).
-!!!!!!!! Open: PeersAhead does not seem to make sense: validating nodes
-will always see validations from the previous round so it ends up double
-counting peers that just participated in consensus.
+"close resolution" is a metric updated to round close time (range is
+10-120s, values defined LedgerTimeResolution).
 
 
 3.1.2 What happens when all conditions are met?
 
-When moving to lcsESTABLISH, LedgerConsensusImp::closeLedger() is
+When moving to lcsINITIAL_POSITION, LedgerConsensusImp::closeLedger() is
 called. There, the local instance sends a "neCLOSING_LEDGER" message that
 contains which ledger it thinks of as "current".  This is also when the
 initial position is computed as well as closing time.
 
-3.2 lcsESTABLISH
+3.2 lcsINITIAL_POSITION
+This state is a holding state where proposers send out their initial position and
+wait for the right condition to actually perform consensus on the set of initial
+positions.
+
+Two conditions must be met:
+  * enough participants must be participating (at least mTargetProposers)
+  * more than LEDGER_MIN_CONSENSUS_TIME must have elapsed in the lcsINITIAL_POSITION
+     state. This gives time for all proposers to send out their proposal, not just the
+     first mTargetProposers one.
+
+3.3 lcsESTABLISH
 
 This state is where peers decide on what the next ledger is going to be.
 The next ledger can be thought of as (previous ledger, close time,
@@ -135,7 +142,7 @@ LedgerConsensusImp::updateOurPosition() is the main method to internalize
 the local instance position + disputes (via updateVote) / close time based
 on messages it gets from the network.
 
-3.2.1 Updating close time
+3.3.1 Updating close time
 
 The local instance will change its close time towards a larger majority
 subset: it will snap to the largest group if possible. A group is
@@ -148,45 +155,33 @@ be higher than AV_CT_CONSENSUS_PCT and the group has to be valid.
          agree yet we don't consider this consensus because of this notion
          of validity.
 
-3.2.2 Declaring consensus
+3.3.2 Declaring consensus
 
 The evaluation if the peers reached consensus is performed in
 LedgerConsensusImp::haveConsensus(), which deers part of its judgment
 ContinuousLedgerTiming::haveConsensus().
 
-Consensus is declared if one of the following conditions is met:
+Consensus is declared if all of the following conditions are met:
 
-    * The node has fallen behind: ratio of "count of validated ledgers
-      after this one" to "count of proposers in current consensus" is over
-      80%
+    * the number of proposers is above the consensus threshold
 
-    * The node has been in "ESTABLISH" state for longer than
-      LEDGER_MIN_CONSENSUS_TIME (3s), and both the following are met:
-
-        * 80% of the current proposers the node sees agree with the node.
-
-        * The current proposers the node sees are 75% of the participants
-          from the previous round, OR the current time is more than
-          previous_time + LEDGER_MIN_CONSENSUS_TIME
-
-
-!!!!!! Open: not sure if there is any reason to close purely based on time
-       (ignoring other peers)
+    * 80% of the proposers agree with the local instance.
 
 !!!!!! Open: LEDGER_GRANULARITY being 1 second means that local instance
        will see things ~1 second late; this means only 2 updates in a 3s
        block, which is not a lot of updates to reach consensus. We probably
        need to move to a smaller value like 500ms or smaller.
+!!!!!! Open: there is a chance that consensus could be called by the instance, yet
+       the network, due to message propagation timing issues would change its vote.
 
-
-3.2.3 What happens when consensus is declared?
+3.3.3 What happens when consensus is declared?
 
 When consensus is met, the state is set to lcsFINISHED, the information
 about the last consensus is updated (number of participants, time, hash)
 and "accept" is called asynchronously.
 
 
-3.3 lcsFINISHED
+3.4 lcsFINISHED
 
 Actual code is running in the background at that point.
 
@@ -198,7 +193,7 @@ offset is updated (bias compared to the network, so that there is less
 contention for close time next time around).
 
 
-3.4 lcsACCEPTED
+3.5 lcsACCEPTED
 
 Destroys consensus object.
 

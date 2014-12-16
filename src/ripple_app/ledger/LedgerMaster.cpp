@@ -913,7 +913,7 @@ public:
                                             WriteLog (lsTRACE, LedgerMaster) << "tryAdvance no fetch pack for " << missing;
                                     }
                                     else
-                                        WriteLog (lsDEBUG, LedgerMaster) << "tryAdvance found failed acquire";
+                                        WriteLog (lsDEBUG, LedgerMaster) << "tryAdvance found failed acquire " << missing << " / " << nextLedger->getParentHash();
                                 }
                                 if (ledger)
                                 {

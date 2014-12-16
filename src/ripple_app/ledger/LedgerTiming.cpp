@@ -33,12 +33,10 @@ extern bool gFORCE_CLOSE;
 // is in process, or when a close completes. Returns the number of seconds the ledger should be be open.
 bool ContinuousLedgerTiming::shouldClose (
     bool anyTransactions,
-    int previousProposers,      // proposers in the last closing
+    int targetProposers,        // proposers we're targetting for this consensus round
     int proposersClosed,        // proposers who have currently closed this ledgers
-    int proposersValidated,     // proposers who have validated the last closed ledger
-    int previousMSeconds,       // milliseconds the previous ledger took to reach consensus
-    int currentMSeconds,        // milliseconds since the previous ledger closed
-    int openMSeconds,           // milliseconds since the previous LCL was computed
+    int sinceLastCloseMSeconds, // milliseconds since the previous ledger closed
+    int currentMSeconds,        // milliseconds since consensus started
     int idleInterval)           // network's desired idle interval
 {
 	if(gFORCE_CLOSE)
@@ -46,58 +44,27 @@ bool ContinuousLedgerTiming::shouldClose (
 		WriteLog(lsWARNING, LedgerTiming) <<
 			"CLC::shouldClose gFORCE_CLOSE ";
 
-		gFORCE_CLOSE = false;
 		return true;
 	}
-    if ((previousMSeconds < -1000) || (previousMSeconds > 600000) ||
-            (currentMSeconds < -1000) || (currentMSeconds > 600000))
+
+    if ((proposersClosed * 100) / targetProposers >= 75)
     {
-        WriteLog (lsWARNING, LedgerTiming) <<
-            "CLC::shouldClose range Trans=" << (anyTransactions ? "yes" : "no") <<
-            " Prop: " << previousProposers << "/" << proposersClosed <<
-            " Secs: " << currentMSeconds << " (last: " << previousMSeconds << ")";
+        WriteLog (lsTRACE, LedgerTiming) << 
+            "many proposers: now (" << proposersClosed <<
+            " closed, " << targetProposers << " expected)";
         return true;
     }
 
-    if (!anyTransactions)
-    {
-        // no transactions so far this interval
-        if (proposersClosed > (previousProposers / 4)) // did we miss a transaction?
-        {
-            WriteLog (lsTRACE, LedgerTiming) << 
-                "no transactions, many proposers: now (" << proposersClosed <<
-                " closed, " << previousProposers << " before)";
-            return true;
-        }
-
-#if 0 // This false triggers on the genesis ledger
-
-        if (previousMSeconds > (1000 * (LEDGER_IDLE_INTERVAL + 2))) // the last ledger was very slow to close
-        {
-            WriteLog (lsTRACE, LedgerTiming) << "was slow to converge (p=" << (previousMSeconds) << ")";
-
-            if (previousMSeconds < 2000)
-                return previousMSeconds;
-
-            return previousMSeconds - 1000;
-        }
-
-#endif
-        return currentMSeconds >= (idleInterval * 1000); // normal idle
-    }
-
-    if ((openMSeconds < LEDGER_MIN_CLOSE) && ((proposersClosed + proposersValidated) < (previousProposers / 2 )))
+    if (currentMSeconds <= LEDGER_MIN_CLOSE)
     {
         WriteLog (lsDEBUG, LedgerTiming) <<
             "Must wait minimum time before closing";
         return false;
     }
 
-    if ((currentMSeconds < previousMSeconds) && ((proposersClosed + proposersValidated) < previousProposers))
+    if (!anyTransactions)
     {
-        WriteLog (lsDEBUG, LedgerTiming) <<
-            "We are waiting for more closes/validations";
-        return false;
+        return sinceLastCloseMSeconds >= (idleInterval * 1000); // normal idle
     }
 
     return true; // this ledger should close now
@@ -106,10 +73,9 @@ bool ContinuousLedgerTiming::shouldClose (
 // Returns whether we have a consensus or not. If so, we expect all honest nodes
 // to already have everything they need to accept a consensus. Our vote is 'locked in'.
 bool ContinuousLedgerTiming::haveConsensus (
-    int previousProposers,      // proposers in the last closing (not including us)
+    int targetProposers,        // target number of proposers
     int currentProposers,       // proposers in this closing so far (not including us)
     int currentAgree,           // proposers who agree with us
-    int currentFinished,        // proposers who have validated a ledger after this one
     int previousAgreeTime,      // how long it took to agree on the last ledger
     int currentAgreeTime,       // how long we've been trying to agree
     bool forReal,               // deciding whether to stop consensus process
@@ -117,8 +83,8 @@ bool ContinuousLedgerTiming::haveConsensus (
 {
     WriteLog (lsDEBUG, LedgerTiming) <<
         "CLC::haveConsensus: prop=" << currentProposers <<
-        "/" << previousProposers <<
-        " agree=" << currentAgree << " validated=" << currentFinished <<
+        "/" << targetProposers <<
+        " agree=" << currentAgree <<
         " time=" << currentAgreeTime <<  "/" << previousAgreeTime <<
         (forReal ? "" : "X");
 
@@ -131,41 +97,16 @@ bool ContinuousLedgerTiming::haveConsensus (
 		return true;
 	}
 
-    // move on asap if we are behind
-    // If 80% of the nodes on your UNL have moved on, you should declare consensus
-    if (((currentFinished * 100) / (currentProposers + 1)) > 80)
+    if ( (currentProposers+1) < targetProposers)
     {
-        CondLog (forReal, lsWARNING, LedgerTiming) <<
-            "We see no consensus, but 80% of nodes have moved on";
-        failed = true;
-        return true;
-    }
-
-    if (currentAgreeTime <= LEDGER_MIN_CONSENSUS_TIME)
-    {
+        WriteLog(lsDEBUG, LedgerConsensus) 
+            << "Waiting for more proposers " << (currentProposers+1) << "/" << targetProposers;
         return false;
-    }
-
-    if (currentProposers < (previousProposers * 3 / 4))
-    {
-        /* SANITY: probably need to not allow for this and replace the code with :
-        CondLog (forReal, lsDEBUG, LedgerTiming) << "cannot enter consensus: too few proposers";
-        return false;
-        */
-
-        // Less than 3/4 of the last ledger's proposers are present, we may need more time
-        if (currentAgreeTime < (previousAgreeTime + LEDGER_MIN_CONSENSUS_TIME))
-        {
-            CondLog (forReal, lsDEBUG, LedgerTiming) <<
-                "too fast, not enough proposers";
-            return false;
-        }
-        CondLog (forReal, lsDEBUG, LedgerTiming) <<
-                "Ignoring lack of proposers as we're " << (currentAgreeTime - previousAgreeTime) << " ms passed last concensus";
     }
 
     // If 80% of current proposers (plus us) agree on a set, we have consensus
-    if (((currentAgree * 100 + 100) / (currentProposers + 1)) > 80)
+    int inConsensus = ((currentAgree * 100 + 100) / (currentProposers + 1));
+    if ( inConsensus >= 80 )
     {
         CondLog (forReal, lsINFO, LedgerTiming) << "normal consensus";
         failed = false;
@@ -173,7 +114,7 @@ bool ContinuousLedgerTiming::haveConsensus (
     }
 
     // no consensus yet
-    CondLog (forReal, lsDEBUG, LedgerTiming) << "no consensus";
+    CondLog (forReal, lsDEBUG, LedgerTiming) << "no consensus: agree = " << inConsensus << "%";
     return false;
 }
 
