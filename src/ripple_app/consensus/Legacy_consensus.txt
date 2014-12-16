@@ -5,16 +5,51 @@ transitions (modeled as "transaction sets"). Consensus is the process that
 allows the peers to track to the same state over time, applying the same
 set of transactions.
 
-Ripple's implementation allows partial network splits, aka partitions:
+Consensus is established in two distinct phases:
+    * the first phase, described in this document is consensus to transition
+      from a given ledger X to a ledger X' for a set of peers.
+    * the second phase (to be documented) uses validations as a way to advance
+      the validated ledger.
 
-    * In some events, a set of peers can be consistent with each other but
-      not consistent with the overall network, causing a "fork" in history
+The two phases are important to distinguish as clients decrease their risk of
+having their transactions invalidated the more they wait which can be illustrated by:
+      open ledger < closed ledger < validated ledger
+
+About invalidation of transactions:
+    * phase 1 of consensus reconciles peers that have the same starting ledger by
+      invalidating open ledgers that are in disagreement with the consensus ledger.
+
+    * When a subset of peers agree on the starting ledger but not with the rest
+      of the network, they will basically be in a "fork" of the ledger history
       (much in the same way you can fork code in a branch).
 
     * At some point, this faulty group can "snap back" into place by
-      pointing to the majority branch; currently there is no attempt in
-      doing a "merge" of the bad branch, it's simply abandoned.
+      pointing to the majority branch (the majority branch is defined as the
+      one with most validations); currently there is no attempt in doing a
+      "merge" of the bad branch, it's simply abandoned.
 
+The premise of this approach to consensus is that while partial network splits,
+aka partitions can happen during the first phase, it's much more difficult to break
+consensus during the second phase as the validated ledger is used as a way to
+signal forks that they are not on the "mainline" of consensus.
+
+The current implementation attempts to limit the potential for creating forks
+in the first phase but does not guarantee that there won't be any triggered
+by inconsistent UNL sets between peers participating in the network, threshold
+misconfigurations or large topology changes.
+
+A word on validators vs public nodes:
+      public nodes are nodes joined to the Stellar network that are not validating.
+      The way nodes transition their current ledger to the next one is by joining
+      consensus as a tracking node. One can think of this as doing everything that a
+      validator does in terms of consensus except that they don't have any voting
+      rights on the consensus process (as if losing consensus every time).
+      One of the benefits of this approach is to not special case passive nodes
+      in terms of state replication of the ledger.
+
+note: one way to limit the risk of phase 1 partitions (or worst, phase 2 failure)
+is to limit the number of validators to 1 while we observe the effect of timing through
+public nodes.
 
 2. General organization
 
