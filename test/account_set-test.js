@@ -2,7 +2,7 @@ var async     = require("async");
 var assert    = require('assert');
 var Remote    = require("stellar-lib").Remote;
 var testutils = require("./testutils");
-var unirest   = require('unirest');
+var unirest = require('unirest');
 var config    = testutils.init_config();
 
 suite('Account set', function() {
@@ -79,14 +79,14 @@ suite('Account set', function() {
 
                 //console.log(config.accounts.root.account);
 
-                $.remote.transaction()
+                var tx=$.remote.transaction()
                     .account_set(config.accounts.root.account)
                     .set_auth_key(config.accounts.mtgox.account)
                     .on('submitted', function (m) {
                         //console.log("result: %s", JSON.stringify(m));
                         testutils.auto_advance_default( $.remote, m, callback );
-                    })
-                    .submit();
+                    });
+                tx.submit();
             },
 
             function (callback) {

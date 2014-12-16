@@ -15,7 +15,7 @@
     "simple-jsonrpc": "~0.0.2",
     "deep-equal": "0.0.0",
     "bluebird": "^2.2.2",
-      "stellar-lib": "~0.9.3",
+      "stellar-lib": "~0.10.3",
     "unirest": "*"
   },
   "devDependencies": {
