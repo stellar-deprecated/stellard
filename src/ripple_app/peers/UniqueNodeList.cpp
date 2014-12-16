@@ -2004,6 +2004,13 @@ private:
                                                  % getConfig ().VALIDATORS_BASE);
         }
     }
+
+    int getUnlSize()
+    {
+        ScopedUNLLockType sl (mUNLLock);
+        return mUNL.size();
+    }
+
 private:
     typedef RippleMutex FetchLockType;
     typedef std::lock_guard <FetchLockType> ScopedFetchLockType;

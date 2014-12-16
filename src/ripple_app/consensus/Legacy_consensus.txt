@@ -1,0 +1,222 @@
+1. Introduction
+
+Peers on the network are tracking state (modeled as ledgers) and state
+transitions (modeled as "transaction sets"). Consensus is the process that
+allows the peers to track to the same state over time, applying the same
+set of transactions.
+
+Ripple's implementation allows partial network splits, aka partitions:
+
+    * In some events, a set of peers can be consistent with each other but
+      not consistent with the overall network, causing a "fork" in history
+      (much in the same way you can fork code in a branch).
+
+    * At some point, this faulty group can "snap back" into place by
+      pointing to the majority branch; currently there is no attempt in
+      doing a "merge" of the bad branch, it's simply abandoned.
+
+
+2. General organization
+
+2.1 High level flow
+
+The local instance tries to reach consensus with nodes proposing from the UNL.
+The UNL is populated through the combination of
+  * explicit entries in the stellard config file,
+  * a "validator list" configuration file
+  * a "validation url" to reach a server that serves UNL entries
+
+Consensus is tracked by a "LedgerConsensus" object.
+
+There are two ways to initiate the creation of this object:
+    * A timer that triggers every LEDGER_GRANULARITY (1 second)
+    * Event triggered when receiving certain things off the network
+        * TX Map
+        * Trusted proposals
+
+Once a LedgerConsensus object is created, its state is regularly
+refreshed/advanced by NetworkOPsImp::m_heartbeatTimer calling
+LedgerConsensus::timerEntry() every LEDGER_GRANULARITY seconds.
+
+LedgerConsensus::timerEntry's duty is to:
+
+    * Check that the local instance is on the proper ledger compared to
+      other peers on the network (using validations for the most part), and
+      trigger downloading of Last Closed Ledger (LCL) if necessary.
+
+    * Compute the time elapsed in the current state (stored in
+      mCurrentMSeconds) as well as mClosePercent, that represents
+      the ratio between mCurrentMSeconds and mPreviousMSeconds.
+
+    * Call the handler for each state.
+
+During consensus, positions are filtered to only be the ones that
+match the local instance's "last closed ledger". In other words,
+a fork only "sees" peers that are participating to the fork.
+Switching ledger is done by the checkLCL method that runs during
+all states preceding (and including) lcsETABLISH. A ledger is
+considered the network ledger if it has the most validations, peers
+or the highest peer ID (evaluated in this order).
+
+Note that the current implementation tries to limit as much as possible
+forks by not closing ledgers that are not on the network ledger.
+This causes peers not on the network ledger to be sweeped by the
+"checkLCL" code until they run on the network ledger.
+
+!!!!! Open: it seems that the peerID is used as a tie breaker between
+validators, giving unfair advantage to some validators when
+tie breaking is important, such as deciding to switch over to a new
+fork.
+
+2.2 parameters influencing consensus
+
+The config option "consensus_threshold" controls how many peers must participate in the
+consensus round.
+If the value is positive, it represents a percentage of the UNL.
+If the value is negative, it represents directly (in absolute) the number of peers.
+
+Target proposers (mTargetProposers) is then simply computed as the number of peers
+that must participate in consensus plus one (for the local instance).
+
+3. Consensus states
+
+The consensus object moves between the following states
+
+3.1 lcsPRE_CLOSE
+
+This is the state the consensus starts in.
+
+It's a buffer state where peers wait for each other, most likely
+downloading the "current ledger" from the network if not on it already.
+
+Note that peers are not perfectly synced to each other, therefore relying
+purely on timing is not practical and instead peers have to rely on other
+signals that inform them on the overall state of the network.
+
+3.1.1 Conditions for moving forward from lcsPRE_CLOSE, to establishing
+consensus
+
+
+To move out of the lcsPRE_CLOSE state, the local instance must be running
+on the consensus ledger and one of the following conditions must be true:
+
+    * The instance has been in the PRE_CLOSE state for more than
+      LEDGER_MIN_CLOSE (2s) time AND if no transactions are seen the time since closed
+      is greater than idle_time defined as max(15s, 2 * lastCloseResolution).
+
+    * The instance detected that over 75% of peers (based on target proposers) moved
+      to lcsINITIAL_POSITION or lcsESTABLISH already (peers that advertised a position).
+
+Logic for these judgments is mostly in ContinuousLedgerTiming::shouldClose.
+
+"close resolution" is a metric updated to round close time (range is
+10-120s, values defined LedgerTimeResolution).
+
+
+3.1.2 What happens when all conditions are met?
+
+When moving to lcsINITIAL_POSITION, LedgerConsensusImp::closeLedger() is
+called. There, the local instance sends a "neCLOSING_LEDGER" message that
+contains which ledger it thinks of as "current".  This is also when the
+initial position is computed as well as closing time.
+
+3.2 lcsINITIAL_POSITION
+This state is a holding state where proposers send out their initial position and
+wait for the right condition to actually perform consensus on the set of initial
+positions.
+
+Two conditions must be met:
+  * enough participants must be participating (at least mTargetProposers)
+  * more than LEDGER_MIN_CONSENSUS_TIME must have elapsed in the lcsINITIAL_POSITION
+     state. This gives time for all proposers to send out their proposal, not just the
+     first mTargetProposers one.
+
+3.3 lcsESTABLISH
+
+This state is where peers decide on what the next ledger is going to be.
+The next ledger can be thought of as (previous ledger, close time,
+transaction set). Consensus must be reached for close time and transaction
+set (previous ledger is not enforced to allow for forks).
+
+LedgerConsensusImp::updateOurPosition() is the main method to internalize
+the local instance position + disputes (via updateVote) / close time based
+on messages it gets from the network.
+
+3.3.1 Updating close time
+
+The local instance will change its close time towards a larger majority
+subset: it will snap to the largest group if possible. A group is
+considered "valid" if it represents more than 30% of the peers, then
+evolves to up to 51% if consensus is stuck (see AV_INIT_CONSENSUS_PCT).
+To consider that consensus is met on the close time the percentage has to
+be higher than AV_CT_CONSENSUS_PCT (75%) and the group has to be valid.
+
+3.3.2 Declaring consensus
+
+The evaluation if the peers reached consensus is performed in
+LedgerConsensusImp::haveConsensus(), which deers part of its judgment
+ContinuousLedgerTiming::haveConsensus().
+
+Consensus is declared if all of the following conditions are met:
+
+    * the number of proposers is above the consensus threshold
+
+    * 80% of the proposers agree with the local instance.
+
+!!!!!! Open: LEDGER_GRANULARITY being 1 second means that local instance
+       will see things ~1 second late; this means only 2 updates in a 3s
+       block, which is not a lot of updates to reach consensus. We probably
+       need to move to a smaller value like 500ms or smaller.
+!!!!!! Open: there is a chance that consensus could be called by the instance, yet
+       the network, due to message propagation timing issues would change its vote.
+
+3.3.3 What happens when consensus is declared?
+
+When consensus is met, the state is set to lcsFINISHED, the information
+about the last consensus is updated (number of participants, time, hash)
+and "accept" is called asynchronously.
+
+
+3.4 lcsFINISHED
+
+Actual code is running in the background at that point.
+
+LedgerConsensus::accept() applies the result of consensus to the local
+instance.
+
+It also creates a new open ledger and propagates transaction that should be included
+in the next ledger.
+
+At the end of accept() the state is set to lcsBUILT_LEDGER.
+
+note: as this code runs in the background, the main timer may pick up on the
+state change any time between 0 and LEDGER_GRANULARITY seconds.
+
+3.5 lcsBUILT_LEDGER
+
+Purpose of this state is to wait and advertise the newly built ledger.
+
+The holding period is to avoid confusing nodes that could still be in
+ESTABLISH phase about which ledger is the current ledger (and avoid triggering code
+to download the latest validated ledger).
+
+This state is a holding state that waits LEDGER_MIN_ADVERTISE_TIME (2 s) before
+proceeding at which point it advertises to the network the newly built ledger
+(including its validation if the node is a validator).
+ 
+This is also where the close time offset is updated (bias compared to the network,
+so that there is less contention for close time next time around).
+
+
+
+The node then moves to the lcsACCEPTED state
+
+
+3.6 lcsACCEPTED
+
+Destroys consensus object.
+
+Consensus object will be recreated when the timer triggers again
+(LEDGER_GRANULARITY later) or on network event.
+
+
