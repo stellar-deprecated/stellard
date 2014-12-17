@@ -19,6 +19,16 @@
 
 namespace ripple {
 
+    TER TrustSetTransactor::checkSig()
+    {
+        if( mTxnAccount->isFieldPresent(sfSetAuthKey) && 
+            mSigningPubKey.getAccountID() == mTxnAccount->getFieldAccount160(sfSetAuthKey))
+        {
+            return tesSUCCESS;
+        }
+        return Transactor::checkSig();
+    }
+
 TER TrustSetTransactor::doApply ()
 {
     TER terResult = tesSUCCESS;

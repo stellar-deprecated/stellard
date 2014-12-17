@@ -26,6 +26,7 @@ TxFormats::TxFormats ()
             << SOElement (sfSetFlag,         SOE_OPTIONAL)
             << SOElement (sfClearFlag,       SOE_OPTIONAL)
             << SOElement (sfInflationDest,   SOE_OPTIONAL)
+            << SOElement (sfSetAuthKey,      SOE_OPTIONAL)
             ;
 
     add("AccountMerge", ttACCOUNT_MERGE)
