@@ -2534,6 +2534,7 @@
   <ItemGroup>
     <Text Include="..\..\doc\stellar-example.txt" />
     <Text Include="..\..\doc\validators-example.txt" />
+    <Text Include="..\..\src\ripple_app\consensus\Legacy_consensus.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B7F39ECD-473C-484D-BC34-31F8362506A5}</ProjectGuid>
@@ -2608,7 +2609,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>Debug\v120\static\libsodium.lib;ssleay32MTd.lib;libeay32MTd.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>c:/code/boost_1_55_0/stage/lib;C:\code\OpenSSL-64\lib64;C:\code\libsodium\x64\Debug\v120\dynamic;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>c:/code/boost_1_55_0/stage/lib;C:\code\OpenSSL-64\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Bscmake />
   </ItemDefinitionGroup>

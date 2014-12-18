@@ -3832,5 +3832,8 @@
     <Text Include="..\..\doc\validators-example.txt">
       <Filter>[3] doc</Filter>
     </Text>
+    <Text Include="..\..\src\ripple_app\consensus\Legacy_consensus.txt">
+      <Filter>[3] doc</Filter>
+    </Text>
   </ItemGroup>
 </Project>

@@ -37,8 +37,11 @@ namespace ripple {
 // The number of milliseconds we wait minimum to ensure participation
 #   define LEDGER_MIN_CONSENSUS_TIME     3000
 
-// The number of milliseconds we wait minimum to ensure others have computed the LCL
+// Buffer time in milliseconds that we wait to ensure nodes are entering consensus
 #   define LEDGER_MIN_CLOSE         2000
+
+// The number of milliseconds we wait minimum to ensure nodes have computed the LCL
+#   define LEDGER_MIN_ADVERTISE_TIME  2000
 
 // Initial resolution of ledger close time
 #   define LEDGER_TIME_ACCURACY     30
@@ -64,17 +67,21 @@ namespace ripple {
 
 // Avalanche tuning
 #   define AV_INIT_CONSENSUS_PCT    50  // percentage of nodes on our UNL that must vote yes
+#   define AV_INIT_CT_CONSENSUS_PCT 30  // smallest group (in % of UNL) used for consensus time consensus
 
 #   define AV_MID_CONSENSUS_TIME    50  // percentage of previous close time before we advance
 #   define AV_MID_CONSENSUS_PCT     65  // percentage of nodes that most vote yes after advancing
+#   define AV_MID_CT_CONSENSUS_PCT  30  // smallest group (in % of UNL) used for consensus time consensus
 
 #   define AV_LATE_CONSENSUS_TIME   85  // percentage of previous close time before we advance
 #   define AV_LATE_CONSENSUS_PCT    70  // percentage of nodes that most vote yes after advancing
+#   define AV_LATE_CT_CONSENSUS_PCT 40  // smallest group (in % of UNL) used for consensus time consensus
 
 #   define AV_STUCK_CONSENSUS_TIME  200
 #   define AV_STUCK_CONSENSUS_PCT   95
+#   define AV_STUCK_CT_CONSENSUS_PCT 51  // smallest group (in % of UNL) used for consensus time consensus
 
-#   define AV_CT_CONSENSUS_PCT      75
+#   define AV_CT_CONSENSUS_PCT      75   // % of UNL needed to agree on a close time to call consensus
 
 class ContinuousLedgerTiming
 {
@@ -84,17 +91,16 @@ public:
 
     // Returns the number of seconds the ledger was or should be open
     // Call when a consensus is reached and when any transaction is relayed to be added
-    static bool shouldClose (
-        bool anyTransactions,
-        int previousProposers,      int proposersClosed,    int proposerersValidated,
-        int previousMSeconds,       int currentMSeconds,    int openMSeconds,
+    static bool shouldClose(
+        bool anyTransactions, int targetProposers,
+        int proposersClosed, int sinceLastCloseMSeconds, int currentMSeconds,
         int idleInterval);
 
     static bool haveConsensus (
-        int previousProposers,      int currentProposers,
-        int currentAgree,           int currentClosed,
-        int previousAgreeTime,      int currentAgreeTime,
-        bool forReal,               bool& failed);
+        int previousProposers, int currentProposers,
+        int currentAgree,      int previousAgreeTime,
+        int currentAgreeTime,  bool forReal,
+        bool& failed);
 
     static int getNextLedgerTimeResolution (int previousResolution, bool previousAgree, int ledgerSeq);
 };

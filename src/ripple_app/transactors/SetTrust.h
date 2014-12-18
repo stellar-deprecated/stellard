@@ -47,6 +47,7 @@ public:
     {
     }
 
+    TER checkSig();
     TER doApply ();
 };
 

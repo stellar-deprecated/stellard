@@ -38,6 +38,7 @@ struct ConfigSection
 // VFALCO TODO Rename and replace these macros with variables.
 #define SECTION_ACCOUNT_PROBE_MAX       "account_probe_max"
 #define SECTION_CLUSTER_NODES           "cluster_nodes"
+#define SECTION_CONSENSUS_THRESHOLD     "consensus_threshold"
 #define SECTION_DATABASE_PATH           "database_path"
 #define SECTION_DATABASE_TIMEOUT        "database_timeout_ms"
 #define SECTION_DEBUG_LOGFILE           "debug_logfile"
