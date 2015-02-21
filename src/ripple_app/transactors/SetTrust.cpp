@@ -64,7 +64,8 @@ TER TrustSetTransactor::doApply ()
         return temINVALID_FLAG;
     }
 
-    bool const bSetAuth = is_bit_set (uTxFlags, tfSetfAuth);
+    bool const bSetAuth = is_bit_set(uTxFlags, tfSetfAuth);
+    bool const bClearAuth = is_bit_set(uTxFlags, tfClearAuth);
     bool const bSetNoRipple = is_bit_set (uTxFlags, tfSetNoRipple);
     bool const bClearNoRipple  = is_bit_set (uTxFlags, tfClearNoRipple);
 
@@ -279,6 +280,11 @@ TER TrustSetTransactor::doApply ()
             uFlagsOut           |= (bHigh ? lsfHighAuth : lsfLowAuth);
         }
 
+        if(bClearAuth)
+        {
+            uFlagsOut &= ~(bHigh ? lsfHighAuth : lsfLowAuth);
+        }
+
         if (bLowReserveSet && !bLowReserved)
         {
             // Set reserve for low account.
@@ -330,7 +336,7 @@ TER TrustSetTransactor::doApply ()
                  && mPriorBalance.getNValue () < uReserveCreate) // Reserve is not scaled by load.
         {
             m_journal.trace <<
-                "Delay transaction: Insufficent reserve to add trust line.";
+                "Delay transaction: Insufficient reserve to add trust line.";
 
             // Another transaction could provide STR to the account and then
             // this transaction would succeed.
@@ -345,9 +351,11 @@ TER TrustSetTransactor::doApply ()
         }
     }
     // Line does not exist.
-    else if (!saLimitAmount                                     // Setting default limit.
-             && (!bQualityIn || !uQualityIn)                         // Not setting quality in or setting default quality in.
-             && (!bQualityOut || !uQualityOut))                      // Not setting quality out or setting default quality out.
+    else if (!saLimitAmount                     // Setting default limit.
+             && (!bQualityIn || !uQualityIn)    // Not setting quality in or setting default quality in.
+             && (!bQualityOut || !uQualityOut)  // Not setting quality out or setting default quality out.
+             && !bSetAuth
+             && !bClearAuth)                      
     {
         m_journal.trace <<
             "Redundant: Setting non-existent ripple line to defaults.";
@@ -356,7 +364,7 @@ TER TrustSetTransactor::doApply ()
     else if (mPriorBalance.getNValue () < uReserveCreate)       // Reserve is not scaled by load.
     {
         m_journal.trace <<
-            "Delay transaction: Line does not exist. Insufficent reserve to create line.";
+            "Delay transaction: Line does not exist. Insufficient reserve to create line.";
 
         // Another transaction could create the account and then this transaction would succeed.
         terResult = tecNO_LINE_INSUF_RESERVE;

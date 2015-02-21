@@ -79,7 +79,8 @@ const std::uint32_t tfPaymentMask          = ~ (tfUniversal | tfPartialPayment |
 const std::uint32_t tfSetfAuth             = 0x00010000;
 const std::uint32_t tfSetNoRipple          = 0x00020000;
 const std::uint32_t tfClearNoRipple        = 0x00040000;
-const std::uint32_t tfTrustSetMask         = ~ (tfUniversal | tfSetfAuth | tfSetNoRipple | tfClearNoRipple);
+const std::uint32_t tfClearAuth            = 0x00080000;
+const std::uint32_t tfTrustSetMask         = ~(tfUniversal | tfSetfAuth | tfSetNoRipple | tfClearNoRipple | tfClearAuth);
 
 } // ripple
 

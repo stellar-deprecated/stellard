@@ -877,7 +877,7 @@ void PathState::checkNoRipple (uint160 const& uDstAccountID, uint160 const& uSrc
 
 
     // Loop through all nodes that have a prior node and successor nodes
-    // These are the nodes whose no ripple constratints could be violated
+    // These are the nodes whose no ripple constraints could be violated
     for (int i = 1; i < (vpnNodes.size() - 1); ++i)
     {
 
@@ -900,6 +900,61 @@ void PathState::checkNoRipple (uint160 const& uDstAccountID, uint160 const& uSrc
                 return;
         }
 
+    }
+}
+
+/** Check if an expanded path violates freeze rules */
+void PathState::checkFreeze()
+{
+    assert(vpnNodes.size() >= 2);
+    
+    // A path with no intermediaries -- pure issue/redeem
+    // cannot be frozen.
+    if(vpnNodes.size() == 2)
+        return;
+    
+ 
+    WriteLog(lsERROR, RippleCalc) << "starting checkFreeze";
+    
+    for(std::size_t i = 0; i < (vpnNodes.size() - 1); ++i)
+    {  
+        // Check each account change to make sure funds can leave
+        if(vpnNodes[i].uFlags & STPathElement::typeAccount)
+        {
+            uint160 const& currencyID = vpnNodes[i].uCurrencyID;
+            uint160 const& inAccount = vpnNodes[i].uAccountID;
+
+            
+            uint160 const& issuingAccount = vpnNodes[i+1].uAccountID;
+
+
+            WriteLog(lsERROR, RippleCalc) << "checkFreeze:" <<
+                "\n acct: " << RippleAddress::createHumanAccountID(inAccount) <<
+                "\n issu: " << RippleAddress::createHumanAccountID(issuingAccount);
+
+
+            
+            if(inAccount != issuingAccount)
+            {
+                SLE::pointer sle = lesEntries.entryCache(ltACCOUNT_ROOT,
+                    Ledger::getAccountRootIndex(issuingAccount));
+                
+                if(sle && sle->isFlag(lsfRequireAuth))
+                {
+                    sle = lesEntries.entryCache(ltRIPPLE_STATE,
+                        Ledger::getRippleStateIndex(inAccount,
+                        issuingAccount, currencyID));
+                
+                    if(sle && !sle->isFlag(
+                        (issuingAccount > inAccount) ? lsfHighAuth : lsfLowAuth))
+                    {
+                        terStatus = terNO_LINE;
+                        return;
+                    }
+                    
+                }
+            }
+        }
     }
 }
 

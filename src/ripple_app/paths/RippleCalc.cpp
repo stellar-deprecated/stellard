@@ -2519,6 +2519,9 @@ TER RippleCalc::rippleCalc (
         if (tesSUCCESS == pspDirect->terStatus)
            pspDirect->checkNoRipple (uDstAccountID, uSrcAccountID);
 
+        if(pspDirect->terStatus == tesSUCCESS)
+            pspDirect->checkFreeze();
+
         pspDirect->setIndex (vpsExpanded.size ());
 
         WriteLog (lsDEBUG, RippleCalc)
@@ -2568,6 +2571,9 @@ TER RippleCalc::rippleCalc (
 
         if (tesSUCCESS == pspExpanded->terStatus)
            pspExpanded->checkNoRipple (uDstAccountID, uSrcAccountID);
+
+        if(pspExpanded->terStatus == tesSUCCESS)
+            pspExpanded->checkFreeze();
 
         WriteLog (lsDEBUG, RippleCalc)
             << "rippleCalc:"

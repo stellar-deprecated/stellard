@@ -1122,6 +1122,23 @@ STAmount LedgerEntrySet::rippleOwed (const uint160& uToAccountID, const uint160&
 
     if (sleRippleState)
     {
+        { // check freeze
+            
+            SLE::pointer sleIssuer = entryCache(ltACCOUNT_ROOT,
+                Ledger::getAccountRootIndex(uToAccountID));
+            if(sleIssuer)
+            {
+                if(sleIssuer->isFlag(lsfRequireAuth))
+                {
+                    if(sleRippleState->isFlag(
+                        (uFromAccountID > uToAccountID) ? lsfHighAuth : lsfLowAuth))
+                    {  // account is frozen
+                        return saBalance;
+                    }
+                }
+            }
+        }
+
         saBalance   = sleRippleState->getFieldAmount (sfBalance);
 
         if (uToAccountID < uFromAccountID)
@@ -1264,19 +1281,35 @@ STAmount LedgerEntrySet::rippleHolds (const uint160& uAccountID, const uint160& 
     if (!sleRippleState)
     {
         saBalance.clear (uCurrencyID, uIssuerID);
-    }
-    else if (uAccountID > uIssuerID)
-    {
-        saBalance   = sleRippleState->getFieldAmount (sfBalance);
-        saBalance.negate ();    // Put balance in uAccountID terms.
-
-        saBalance.setIssuer (uIssuerID);
-    }
+    } 
     else
     {
-        saBalance   = sleRippleState->getFieldAmount (sfBalance);
+        SLE::pointer sleIssuer = entryCache(ltACCOUNT_ROOT,
+            Ledger::getAccountRootIndex(uIssuerID));
+        if(sleIssuer)
+        {
+            if(sleIssuer->isFlag(lsfRequireAuth))
+            {
+                if(sleRippleState->isFlag(
+                    (uAccountID > uIssuerID) ? lsfHighAuth : lsfLowAuth))
+                {  // account is frozen
+                    return saBalance;
+                }
+            }
 
-        saBalance.setIssuer (uIssuerID);
+            if(uAccountID > uIssuerID)
+            {
+                saBalance = sleRippleState->getFieldAmount(sfBalance);
+                saBalance.negate();    // Put balance in uAccountID terms.
+
+                saBalance.setIssuer(uIssuerID);
+            } else
+            {
+                saBalance = sleRippleState->getFieldAmount(sfBalance);
+
+                saBalance.setIssuer(uIssuerID);
+            }
+        }
     }
 
     return saBalance;
