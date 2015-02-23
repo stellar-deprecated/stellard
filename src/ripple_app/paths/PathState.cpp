@@ -913,9 +913,6 @@ void PathState::checkFreeze()
     if(vpnNodes.size() == 2)
         return;
     
- 
-    WriteLog(lsERROR, RippleCalc) << "starting checkFreeze";
-    
     for(std::size_t i = 0; i < (vpnNodes.size() - 1); ++i)
     {  
         // Check each account change to make sure funds can leave
