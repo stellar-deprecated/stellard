@@ -15,7 +15,7 @@ suite('Account set', function() {
   teardown(function(done) {
     testutils.build_teardown().call($, done);
   });
-    /*
+   
   test('set InflationDest', function(done) {
     var self = this;
 
@@ -287,7 +287,7 @@ suite('Account set', function() {
     });
   });
 
-    */
+    
   test("freeze", function (done) {
       var self = this;
 
@@ -481,7 +481,7 @@ suite('Account set', function() {
               })
               .request();
           },
-          /* TODO
+          
            function (callback) {
                self.what = "Bob sends to alice.";
 
@@ -494,7 +494,7 @@ suite('Account set', function() {
                            console.log("auto advance error: " + JSON.stringify(err));
                            callback(err);
                        }
-                       var success = (m2.engine_result === 'tecPATH_DRY');
+                       var success = (m2.engine_result === 'terNO_AUTH');
                        if (success) {
                            callback(null);
                        } else {
@@ -520,7 +520,6 @@ suite('Account set', function() {
                })
                .request();
            },
-       */
       ]
 
       async.waterfall(steps, function (error) {

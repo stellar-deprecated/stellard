@@ -306,8 +306,7 @@ TER PathState::pushNode (
                         terResult   = terNO_ACCOUNT;
                     }
                     else if ((is_bit_set (sleBck->getFieldU32 (sfFlags), lsfRequireAuth)
-                             && !is_bit_set (sleRippleState->getFieldU32 (sfFlags), (bHigh ? lsfHighAuth : lsfLowAuth)))
-                             && sleRippleState->getFieldAmount(sfBalance) == zero) // CHECKME
+                             && !is_bit_set (sleRippleState->getFieldU32 (sfFlags), (bHigh ? lsfHighAuth : lsfLowAuth)))) 
                     {
                         WriteLog (lsWARNING, RippleCalc) << "pushNode: delay: can't receive IOUs from issuer without auth.";
 
@@ -912,10 +911,7 @@ void PathState::checkFreeze()
     // cannot be frozen.
     if(vpnNodes.size() == 2)
         return;
-    
- 
-    WriteLog(lsERROR, RippleCalc) << "starting checkFreeze";
-    
+       
     for(std::size_t i = 0; i < (vpnNodes.size() - 1); ++i)
     {  
         // Check each account change to make sure funds can leave
@@ -923,16 +919,8 @@ void PathState::checkFreeze()
         {
             uint160 const& currencyID = vpnNodes[i].uCurrencyID;
             uint160 const& inAccount = vpnNodes[i].uAccountID;
-
-            
+       
             uint160 const& issuingAccount = vpnNodes[i+1].uAccountID;
-
-
-            WriteLog(lsERROR, RippleCalc) << "checkFreeze:" <<
-                "\n acct: " << RippleAddress::createHumanAccountID(inAccount) <<
-                "\n issu: " << RippleAddress::createHumanAccountID(issuingAccount);
-
-
             
             if(inAccount != issuingAccount)
             {
