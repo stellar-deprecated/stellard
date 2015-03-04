@@ -15,7 +15,7 @@ suite('Account set', function() {
   teardown(function(done) {
     testutils.build_teardown().call($, done);
   });
-
+   
   test('set InflationDest', function(done) {
     var self = this;
 
@@ -287,4 +287,244 @@ suite('Account set', function() {
     });
   });
 
+    
+  test("freeze", function (done) {
+      var self = this;
+
+      var steps = [
+           function (callback) {
+               self.what = "Create accounts.";
+               testutils.create_accounts($.remote, "root", "10000.0", ["alice", "bob","mtgox"], callback);
+           },
+           
+           
+        function (callback) {
+            self.what = "Set RequireAuth.";
+
+            $.remote.transaction()
+            .account_set("mtgox")
+            .set_flags('RequireAuth')
+            .on('submitted', function (m) {
+                //console.log("proposed: %s", JSON.stringify(m));
+                testutils.auto_advance_default($.remote, m, callback);
+            })
+            .submit();
+        },
+
+        function (callback) { testutils.ledger_close($.remote, callback); },
+
+        function (callback) {
+            self.what = "Create a credit limit.";
+            testutils.credit_limit($.remote, "bob", "800/USD/mtgox", callback);
+        },
+
+        function (callback) {
+            self.what = "Create a credit limit.";
+            testutils.credit_limit($.remote, "alice", "800/USD/mtgox", callback);
+        },
+        
+        function (callback) { testutils.ledger_close($.remote, callback); },
+
+        function (callback) {
+            self.what = "Allow alice to hold";
+         
+            console.log("Allow alice to hold");
+            var tx = $.remote.transaction();
+            tx = tx.ripple_line_set("mtgox", "0/USD/alice");
+            //console.dir(tx);
+            tx = tx.set_flags('SetAuth');
+            tx=tx.on('submitted', function (m) {
+                //console.log("result: %s", JSON.stringify(m));
+                testutils.auto_advance_default($.remote, m, callback);
+            });
+            tx.submit();
+        },
+        
+         function (callback) {
+             self.what = "Allow bob to hold";
+             console.log("Allow bob to hold");
+             var tx = $.remote.transaction()
+                 .ripple_line_set("mtgox", "0/USD/bob")
+                 .set_flags('SetAuth')
+                 .on('submitted', function (m) {
+                     //console.log("result: %s", JSON.stringify(m));
+                     testutils.auto_advance_default($.remote, m, callback);
+                 })
+             .submit();
+         },
+         
+
+         function (callback) { testutils.ledger_close($.remote, callback); },
+
+         function (callback) {
+             self.what = "Mtgox sends to alice.";
+
+             $.remote.transaction()
+             .payment('mtgox', 'alice', "200/USD/mtgox")
+             .once('submitted', function (m) {
+                 // console.log("submitted: %s", JSON.stringify(m));
+                 testutils.auto_advance_default($.remote, m, callback);
+             })
+             .submit();
+         },
+
+         function (callback) {
+
+             self.what = "Verify alice's balance";
+             $.remote.request_ripple_balance("alice", "mtgox", "USD", 'CURRENT')
+             .once('ripple_state', function (m) {
+                 console.log(m.account_balance.to_text_full() +" should be 200");
+                 
+                 callback();
+             })
+             .request();
+         },
+
+         function (callback) {
+             self.what = "Alice sends to bob.";
+
+             $.remote.transaction()
+             .payment('alice', 'bob', "110/USD/mtgox")
+             .once('submitted', function (m) {
+                 // console.log("submitted: %s", JSON.stringify(m));
+                 testutils.auto_advance_default($.remote, m, callback);
+             })
+             .submit();
+         },
+
+         function (callback) {
+             self.what = "Verify alice's balance";
+             console.log("Verify alice's balance");
+
+             $.remote.request_ripple_balance("alice", "mtgox", "USD", 'CURRENT')
+             .once('ripple_state', function (m) {
+                 console.log(m.account_balance.to_text_full()+" should be 90/USD/mtgox");
+                 //assert(m.account_balance.equals("90/USD/mtgox"));
+
+                 callback();
+             })
+             .request();
+         },
+
+         function (callback) {
+             self.what = "disallow alice to hold";
+             console.log("disallow alice to hold");
+
+             var tx = $.remote.transaction()
+                 .ripple_line_set("mtgox", "0/USD/alice")
+                 .set_flags('ClearAuth')
+                 .on('submitted', function (m) {
+                     //console.log("result: %s", JSON.stringify(m));
+                     testutils.auto_advance_default($.remote, m, callback);
+                 })
+             .submit();
+         },
+         function (callback) { testutils.ledger_close($.remote, callback); },
+
+         function (callback) {
+             self.what = "Alice sends to bob.";
+             console.log("Frozen Alice sends to bob.");
+             $.remote.transaction()
+             .payment('alice', 'bob', "20/USD/mtgox")
+             .once('submitted', function (m) {
+                 testutils.auto_advance($.remote, m, function (err, m2) {
+                     if (err) {
+                         console.log("auto advance error: " + JSON.stringify(err));
+                         callback(err);
+                     }
+                     var success = (m2.engine_result === 'tecPATH_DRY');
+                     if (success) {
+                         callback(null);
+                     } else {
+                         console.log("unexpected result: " + JSON.stringify(m2));
+                         callback(new Error(m2.engine_result));
+                     }
+                 });
+             })
+             .submit();
+         },
+
+         function (callback) {
+             self.what = "Verify alice's balance";
+             $.remote.request_ripple_balance("alice", "mtgox", "USD", 'CURRENT')
+             .once('ripple_state', function (m) {
+                 console.log(m.account_balance.to_text_full() + "should be 90");
+
+                 //assert(m.account_balance.equals("90/USD/mtgox"));
+                 callback();
+             })
+             .request();
+         },
+
+          function (callback) {
+              self.what = "Alice sends back to mtgox.";
+              $.remote.transaction()
+              .payment('alice', 'mtgox', "25/USD/mtgox")
+              .once('submitted', function (m) {
+                  // console.log("submitted: %s", JSON.stringify(m));
+                  testutils.auto_advance_default($.remote, m, callback);
+              })
+              .submit();
+          },
+
+          function (callback) { testutils.ledger_close($.remote, callback); },
+
+          function (callback) {
+              self.what = "Verify alice's balance";
+              
+              $.remote.request_ripple_balance("alice", "mtgox", "USD", 'CURRENT')
+              .once('ripple_state', function (m) {
+                  console.log(m.account_balance.to_text_full()+" should be 65");
+                  //assert(m.account_balance.equals("65/USD/mtgox"));
+
+                  callback();
+              })
+              .request();
+          },
+          
+           function (callback) {
+               self.what = "Bob sends to alice.";
+
+               $.remote.transaction()
+               .payment('bob', 'alice', "16/USD/mtgox")
+               .once('submitted', function (m) {
+                   // console.log("submitted: %s", JSON.stringify(m));
+                   testutils.auto_advance($.remote, m, function (err, m2) {
+                       if (err) {
+                           console.log("auto advance error: " + JSON.stringify(err));
+                           callback(err);
+                       }
+                       var success = (m2.engine_result === 'terNO_AUTH');
+                       if (success) {
+                           callback(null);
+                       } else {
+                           console.log("unexpected result: " + JSON.stringify(m2));
+                           callback(new Error(m2.engine_result));
+                       }
+                   });
+               })
+               .submit();
+           },
+
+           function (callback) { testutils.ledger_close($.remote, callback); },
+
+           function (callback) {
+               self.what = "Verify alice's balance";
+
+               $.remote.request_ripple_balance("alice", "mtgox", "USD", 'CURRENT')
+               .once('ripple_state', function (m) {
+                   console.log(m.account_balance.to_text_full() + "should be: 65/USD/mtgox");
+                   //assert(m.account_balance.equals("65/USD/mtgox"));
+
+                   callback();
+               })
+               .request();
+           },
+      ]
+
+      async.waterfall(steps, function (error) {
+          assert(!error, self.what);
+          done();
+      });
+  });
 });

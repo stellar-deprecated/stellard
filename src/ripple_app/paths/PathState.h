@@ -130,6 +130,8 @@ public:
 
     void checkNoRipple (uint160 const& destinationAccountID, uint160 const& sourceAccountID);
     void checkNoRipple (uint160 const&, uint160 const&, uint160 const&, uint160 const&);
+    
+    void checkFreeze();
 
     void setCanonical (
         const PathState&        psExpanded
@@ -158,7 +160,7 @@ public:
     // When processing, don't want to complicate directory walking with deletion.
     std::vector<uint256>        vUnfundedBecame;    // Offers that became unfunded or were completely consumed.
 
-    // First time scanning foward, as part of path contruction, a funding source was mentioned for accounts. Source may only be
+    // First time scanning forward, as part of path construction, a funding source was mentioned for accounts. Source may only be
     // used there.
     curIssuerNode               umForward;          // Map of currency, issuer to node index.
 
@@ -168,8 +170,8 @@ public:
 
     LedgerEntrySet              lesEntries;
 
-    int                         mIndex;             // Index/rank amoung siblings.
-    std::uint64_t               uQuality;           // 0 = no quality/liquity left.
+    int                         mIndex;             // Index/rank among siblings.
+    std::uint64_t               uQuality;           // 0 = no quality/liquidity left.
     const STAmount&             saInReq;            // --> Max amount to spend by sender.
     STAmount                    saInAct;            // --> Amount spent by sender so far.
     STAmount                    saInPass;           // <-- Amount spent by sender.
