@@ -9,7 +9,7 @@ all commands and their implications.
 
 stellard is built with a software construction tool named scons. The
 build process checks that key packages - OpenSSL and Boost - are
-up-to-date; you can also override compilation flag defaults, or set tags
+at the right versions; you can also override compilation flag defaults, or set tags
 to control aspects of the build like debug mode.
 
 See also:
@@ -26,7 +26,7 @@ boost
 -----
 -   <http://www.boost.org>
 
-The latest version of boost is typically required to build stellard. We
+Version 1.55 of boost is required to build stellard. We
 suggest a separate installation of boost just for stellard, following
 the build instructions for boost provided at <http://boost.org>.
 
