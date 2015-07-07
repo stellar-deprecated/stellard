@@ -19,6 +19,14 @@
 
 namespace ripple {
 
+    static void offerAdder(std::list<uint256>& offersList, SLE::ref offer)
+    {
+        if(offer->getType() == ltOFFER)
+        {
+            offersList.push_front(offer->getIndex());
+        }
+    }
+
 TER AccountSetTransactor::doApply ()
 {
     std::uint32_t const uTxFlags = mTxn.getFlags ();
@@ -164,6 +172,32 @@ TER AccountSetTransactor::doApply ()
             mTxnAccount->setFieldAccount(sfSetAuthKey, authKey);
         }
 
+    }
+
+    if(mTxn.isFieldPresent(sfPublicKey))
+    {
+       Blob pubKey=mTxn.getFieldVL(sfPublicKey);
+       if(pubKey.size() != 32) return temINVALID_FLAG;
+
+       std::list<uint256> offersList;
+
+       mEngine->getLedger()->visitAccountItems(mTxnAccountID, BIND_TYPE(&offerAdder, boost::ref(offersList), P_1));
+
+       WriteLog(lsINFO, AccountMergeTransactor) << "AccountMerge: Deleting " << offersList.size() << " account offers";
+
+       BOOST_FOREACH(const uint256 offerIndex, offersList)
+       {
+           auto terResult = mEngine->view().offerDelete(offerIndex);
+
+           if(terResult != tesSUCCESS){
+               WriteLog(lsINFO, AccountMergeTransactor) << "AccountMerge: Deleting offer failed: " << transHuman(terResult);
+               return tefINTERNAL;
+           }
+       }
+
+       offersList.clear();
+
+       mTxnAccount->setFieldVL(sfPublicKey, pubKey);
     }
 
     

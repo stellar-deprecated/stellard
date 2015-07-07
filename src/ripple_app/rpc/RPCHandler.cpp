@@ -201,7 +201,7 @@ Json::Value RPCHandler::doCommand (const Json::Value& params, int iRole, Resourc
 
         if ((commandsA[i].iOptions & optNetwork) && (mNetOps->getOperatingMode () < NetworkOPs::omSYNCING))
         {
-            WriteLog (lsINFO, RPCHandler) << "Insufficient network mode for RPC: " << mNetOps->strOperatingMode ();
+            WriteLog (lsDEBUG, RPCHandler) << "Insufficient network mode for RPC: " << mNetOps->strOperatingMode ();
 
             return rpcError (rpcNO_NETWORK);
         }

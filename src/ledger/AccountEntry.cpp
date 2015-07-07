@@ -43,6 +43,8 @@ namespace stellar
 
         uint32 flags = sle->getFlags();
 
+        mPubKey = StellarPublicKey(sle->getFieldVL(sfPublicKey), RippleAddress::VER_ACCOUNT_ID);
+
         mRequireDest = flags & lsfRequireDestTag;
         mRequireAuth = flags & lsfRequireAuth;
 

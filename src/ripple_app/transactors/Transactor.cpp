@@ -326,6 +326,8 @@ TER Transactor::apply ()
         mHasAuthKey     = mTxnAccount->isFieldPresent (sfRegularKey);
     }
 
+    if(mTxnAccount->isFieldPresent(sfPublicKey)) return terNO_ACCOUNT;
+
     terResult = checkSeq ();
 
     if (terResult != tesSUCCESS) return (terResult);
