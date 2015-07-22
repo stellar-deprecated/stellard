@@ -64,6 +64,7 @@ public:
         , m_account (txn->getSourceAccount ())
         , m_seq (txn->getSequence())
         , m_failed(false)
+        , m_lastStatus(tesPENDING)
     {
         if (txn->isFieldPresent (sfLastLedgerSequence))
         {
@@ -100,6 +101,9 @@ public:
     void setFailed() { m_failed = true; }
     bool isFailed() { return m_failed; }
 
+    void setLastStatus(TER s) { m_lastStatus = s; }
+    TER getLastStatus() { return m_lastStatus; }
+
 private:
 
     SerializedTransaction::pointer m_txn;
@@ -108,6 +112,7 @@ private:
     RippleAddress                  m_account;
     std::uint32_t                  m_seq;
     bool                           m_failed;
+    TER                            m_lastStatus;
 };
 
 class LocalTxsImp : public LocalTxs
@@ -199,6 +204,10 @@ public:
                 // corrupt back end database could cause an exception
                 // during transaction processing.
             }
+
+            LocalTx &tx = m_txns.at(it.first.getTXID());
+            tx.setLastStatus(tx_res);
+
             if (!didApply &&
                 (isTelLocal(tx_res) || isTemMalformed(tx_res) || isTefFailure(tx_res))
                 )
@@ -206,7 +215,7 @@ public:
                 // mark this transaction as failed, will not attempt to apply it in the future
                 // but keep it in the local tx set as a way to temporary ignore any other attempts to apply
                 // this transaction
-                m_txns.at(it.first.getTXID()).setFailed();
+                tx.setFailed();
             }
         }
     }
@@ -237,7 +246,24 @@ public:
             for (auto it = m_txns.begin (); it != m_txns.end (); )
             {
                 if (can_remove (it->second, *ledger, currentLedgerIndex))
+                {
+                    // this section puts in the tx caches the result of the transaction
+                    // so that calls such as "tx" return something useful even if there was no operation on the ledger
+                    Transaction::pointer trans;
+                    // if we did not commit this tx in the db, force update the caches
+                    trans = getApp().getMasterTransaction().fetch(it->first, true);
+                    if (!(trans && trans->getLedger() != 0))
+                    {
+                        trans = boost::make_shared<Transaction>(it->second.getTX(), false);
+                        TER r = it->second.getLastStatus();
+                        if (r == tesPENDING || r == tesSUCCESS)
+                            trans->setResult(telFAILED_PROCESSING);
+                        else
+                            trans->setResult(r);
+                        getApp().getMasterTransaction ().canonicalize (&trans);
+                    }
                     it = m_txns.erase (it);
+                }
                 else
                     ++it;
             }
