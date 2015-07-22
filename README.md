@@ -1,3 +1,5 @@
+INACTIVE. This repository is not in active development. It is being replaced by [stellar-core](https://github.com/stellar/stellar-core)
+
 #stellard - Stellar P2P server
 [![Build Status](https://travis-ci.org/stellar/stellard.svg?branch=master)](https://travis-ci.org/stellar/stellard)
 
