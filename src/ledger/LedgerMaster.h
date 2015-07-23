@@ -62,6 +62,8 @@ namespace stellar
         uint256 getLastClosedLedgerHash();
 
         void reset();
+
+        void resetHeartbeat();
     };
 
     extern LedgerMaster::pointer gLedgerMaster;

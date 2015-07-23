@@ -17,6 +17,7 @@ namespace stellar
         enum StoreStateName {
             kLastClosedLedger = 0,
             kLastClosedLedgerContent,
+            kLedgerToImport,
             kLastEntry
         };
 
