@@ -17,6 +17,8 @@
 */
 //==============================================================================
 
+#include "ripple_data/crypto/StellarPublicKey.h"
+
 namespace ripple {
 
 AccountState::AccountState (RippleAddress const& naAccountID)
@@ -67,6 +69,12 @@ void AccountState::addJson (Json::Value& val)
     {
         if (mLedgerEntry->isFieldPresent (sfEmailHash))
             val["urlgravatar"]  = createGravatarUrl (mLedgerEntry->getFieldH128 (sfEmailHash));
+
+        if(mLedgerEntry->isFieldPresent(sfPublicKey))
+        {
+            StellarPublicKey pubKey(mLedgerEntry->getFieldVL(sfPublicKey), RippleAddress::VER_ACCOUNT_ID);
+            val["pubkey"] = pubKey.base58Key();
+        }
     }
     else
     {

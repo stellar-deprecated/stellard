@@ -183,14 +183,14 @@ TER AccountSetTransactor::doApply ()
 
        mEngine->getLedger()->visitAccountItems(mTxnAccountID, BIND_TYPE(&offerAdder, boost::ref(offersList), P_1));
 
-       WriteLog(lsINFO, AccountMergeTransactor) << "AccountMerge: Deleting " << offersList.size() << " account offers";
+       m_journal.info << "Locking account. Deleting Offers: " << offersList.size() << " account offers";
 
        BOOST_FOREACH(const uint256 offerIndex, offersList)
        {
            auto terResult = mEngine->view().offerDelete(offerIndex);
 
            if(terResult != tesSUCCESS){
-               WriteLog(lsINFO, AccountMergeTransactor) << "AccountMerge: Deleting offer failed: " << transHuman(terResult);
+               m_journal.info << "Locking account: Deleting offer failed: " << transHuman(terResult);
                return tefINTERNAL;
            }
        }
