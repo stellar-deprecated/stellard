@@ -29,6 +29,8 @@ namespace ripple {
 
 TER AccountSetTransactor::doApply ()
 {
+    m_journal.info << "AccountSetTransactor::doApply ";
+
     std::uint32_t const uTxFlags = mTxn.getFlags ();
 
     std::uint32_t const uFlagsIn = mTxnAccount->getFieldU32 (sfFlags);
