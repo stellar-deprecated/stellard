@@ -29,7 +29,7 @@ namespace ripple {
 
 TER AccountSetTransactor::doApply ()
 {
-    m_journal.info << "AccountSetTransactor::doApply ";
+    WriteLog(lsINFO, TransactionEngine) << "AccountSetTransactor::doApply ";
 
     std::uint32_t const uTxFlags = mTxn.getFlags ();
 
@@ -57,7 +57,7 @@ TER AccountSetTransactor::doApply ()
 
     if (bSetRequireAuth && bClearRequireAuth)
     {
-        m_journal.trace << "Malformed transaction: Contradictory flags set.";
+        WriteLog(lsINFO, TransactionEngine) << "Malformed transaction: Contradictory flags set.";
         return temINVALID_FLAG;
     }
 
@@ -65,18 +65,18 @@ TER AccountSetTransactor::doApply ()
     {
         if (!mEngine->view().dirIsEmpty (Ledger::getOwnerDirIndex (mTxnAccountID)))
         {
-            m_journal.trace << "Retry: Owner directory not empty.";
+            WriteLog(lsINFO, TransactionEngine) << "Retry: Owner directory not empty.";
 
             return is_bit_set(mParams, tapRETRY) ? terOWNERS : tecOWNERS;
         }
 
-        m_journal.trace << "Set RequireAuth.";
+        WriteLog(lsINFO, TransactionEngine) << "Set RequireAuth.";
         uFlagsOut   |= lsfRequireAuth;
     }
 
     if (bClearRequireAuth && is_bit_set (uFlagsIn, lsfRequireAuth))
     {
-        m_journal.trace << "Clear RequireAuth.";
+        WriteLog(lsINFO, TransactionEngine) << "Clear RequireAuth.";
         uFlagsOut   &= ~lsfRequireAuth;
     }
 
@@ -185,14 +185,14 @@ TER AccountSetTransactor::doApply ()
 
        mEngine->getLedger()->visitAccountItems(mTxnAccountID, BIND_TYPE(&offerAdder, boost::ref(offersList), P_1));
 
-       m_journal.info << "Locking account. Deleting Offers: " << offersList.size() << " account offers";
+       WriteLog(lsINFO, TransactionEngine) << "Locking account. Deleting Offers: " << offersList.size() << " account offers";
 
        BOOST_FOREACH(const uint256 offerIndex, offersList)
        {
            auto terResult = mEngine->view().offerDelete(offerIndex);
 
            if(terResult != tesSUCCESS){
-               m_journal.info << "Locking account: Deleting offer failed: " << transHuman(terResult);
+               WriteLog(lsINFO, TransactionEngine) << "Locking account: Deleting offer failed: " << transHuman(terResult);
                return tefINTERNAL;
            }
        }
